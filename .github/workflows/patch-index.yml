@@ -3,12 +3,12 @@ name: Patch index
 on:
   workflow_dispatch:
     inputs:
-      patch_old:
-        description: "Variável CSS ou texto a substituir"
+      css_variable:
+        description: "Variável CSS, por exemplo --board-edge"
         required: true
         type: string
-      patch_new:
-        description: "Novo valor"
+      new_value:
+        description: "Novo valor, por exemplo #07101d"
         required: true
         type: string
 
@@ -23,10 +23,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Apply patch
+      - name: Apply CSS patch
         env:
-          PATCH_OLD: ${{ inputs.patch_old }}
-          PATCH_NEW: ${{ inputs.patch_new }}
+          CSS_VARIABLE: ${{ inputs.css_variable }}
+          NEW_VALUE: ${{ inputs.new_value }}
         run: |
           python3 - <<'PY'
           import os
@@ -40,91 +40,50 @@ jobs:
 
           text = path.read_text(encoding="utf-8")
 
-          old = os.environ["PATCH_OLD"].strip()
-          new = os.environ["PATCH_NEW"].strip()
+          variable = os.environ["CSS_VARIABLE"].strip()
+          new_value = os.environ["NEW_VALUE"].strip()
 
-          if not old:
-              raise SystemExit("ERRO: PATCH_OLD está vazio.")
+          if not re.fullmatch(r'--[A-Za-z0-9_-]+', variable):
+              raise SystemExit(
+                  f"ERRO: variável CSS inválida: {variable}"
+              )
 
-          if not new:
-              raise SystemExit("ERRO: PATCH_NEW está vazio.")
+          if not new_value:
+              raise SystemExit("ERRO: novo valor está vazio.")
 
-          # Caso seja uma variável CSS, por exemplo:
-          # --board:#16241f;
-          # --green:#b7ddba;
-          #
-          # A indentação e os espaços são ignorados.
-          css_match = re.fullmatch(
-              r'(--[a-zA-Z0-9_-]+)\s*:\s*(.+?)\s*;',
-              old
+          pattern = re.compile(
+              rf'(?P<indent>[ \t]*)'
+              rf'{re.escape(variable)}'
+              rf'\s*:\s*'
+              rf'[^;]+'
+              rf'\s*;',
+              re.MULTILINE
           )
 
-          if css_match:
-              variable = css_match.group(1)
-              old_value = css_match.group(2).strip()
+          matches = list(pattern.finditer(text))
 
-              new_match = re.fullmatch(
-                  rf'{re.escape(variable)}\s*:\s*(.+?)\s*;',
-                  new
+          if len(matches) != 1:
+              raise SystemExit(
+                  f"ERRO: variável {variable} deve aparecer "
+                  f"exatamente 1 vez; encontrado: {len(matches)}"
               )
 
-              if not new_match:
-                  raise SystemExit(
-                      f"ERRO: PATCH_NEW não corresponde à variável {variable}."
-                  )
+          match = matches[0]
+          indent = match.group("indent")
 
-              new_value = new_match.group(1).strip()
+          replacement = f"{indent}{variable}:{new_value};"
 
-              pattern = re.compile(
-                  rf'(?P<indent>[ \t]*)'
-                  rf'{re.escape(variable)}'
-                  rf'\s*:\s*'
-                  rf'{re.escape(old_value)}'
-                  rf'\s*;',
-                  re.MULTILINE
-              )
+          updated = (
+              text[:match.start()]
+              + replacement
+              + text[match.end():]
+          )
 
-              matches = list(pattern.finditer(text))
+          path.write_text(updated, encoding="utf-8")
 
-              if len(matches) != 1:
-                  raise SystemExit(
-                      f"ERRO: variável {variable} com valor "
-                      f"{old_value} deve aparecer exatamente 1 vez; "
-                      f"encontrado: {len(matches)}"
-                  )
-
-              indent = matches[0].group("indent")
-
-              replacement = (
-                  f"{indent}{variable}:{new_value};"
-              )
-
-              text = (
-                  text[:matches[0].start()]
-                  + replacement
-                  + text[matches[0].end():]
-              )
-
-              print(
-                  f"OK: {variable} alterado de "
-                  f"{old_value} para {new_value}."
-              )
-
-          else:
-              # Fallback para substituições literais.
-              count = text.count(old)
-
-              if count != 1:
-                  raise SystemExit(
-                      f"ERRO: PATCH_OLD deve aparecer exatamente 1 vez; "
-                      f"encontrado: {count}"
-                  )
-
-              text = text.replace(old, new, 1)
-
-              print("OK: substituição literal aplicada.")
-
-          path.write_text(text, encoding="utf-8")
+          print(
+              f"OK: {variable} alterado para {new_value}."
+          )
           PY
 
       - name: Validate index.html
@@ -144,5 +103,5 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: patch index"
+          git commit -m "chore: update CSS variable"
           git push
