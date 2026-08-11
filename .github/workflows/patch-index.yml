@@ -1,1 +1,69 @@
+name: Patch index.html
 
+on:
+  workflow_dispatch:
+    inputs:
+      old_text:
+        description: "Trecho exato que será substituído"
+        required: true
+        type: string
+      new_text:
+        description: "Novo trecho"
+        required: true
+        type: string
+      commit_message:
+        description: "Mensagem do commit"
+        required: true
+        default: "Aplicar patch no index.html"
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Verificar arquivos
+        run: |
+          test -f index.html
+          test -f tools/patch-index.js
+
+      - name: Aplicar patch
+        env:
+          PATCH_OLD: ${{ inputs.old_text }}
+          PATCH_NEW: ${{ inputs.new_text }}
+        run: |
+          node tools/patch-index.js
+
+      - name: Verificar resultado
+        run: |
+          test -s index.html
+          grep -q '<!DOCTYPE html>' index.html
+          echo "index.html validado."
+
+      - name: Mostrar alteração
+        run: |
+          git diff --stat
+          git diff --check
+
+      - name: Commit e envio
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add index.html
+
+          if git diff --cached --quiet; then
+            echo "Nenhuma alteração para enviar."
+            exit 0
+          fi
+
+          git commit -m "${{ inputs.commit_message }}"
+          git push
