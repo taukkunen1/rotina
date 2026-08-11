@@ -1,94 +1,70 @@
-const fs = require("fs");
-const path = require("path");
+name: Patch index
 
-const file = path.join(__dirname, "..", "index.html");
+on:
+  workflow_dispatch:
+    inputs:
+      patch_old:
+        description: "Texto exato a substituir"
+        required: true
+        type: string
+      patch_new:
+        description: "Texto novo"
+        required: true
+        type: string
 
-function fail(message) {
-  console.error(`ERRO: ${message}`);
-  process.exit(1);
-}
+permissions:
+  contents: write
 
-function getEnv(name) {
-  return process.env[name] ?? "";
-}
+jobs:
+  patch:
+    runs-on: ubuntu-latest
 
-function applyPatch() {
-  const oldText = getEnv("PATCH_OLD");
-  const newText = getEnv("PATCH_NEW");
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  if (!oldText) {
-    fail("PATCH_OLD não foi informado.");
-  }
+      - name: Apply patch
+        env:
+          PATCH_OLD: ${{ inputs.patch_old }}
+          PATCH_NEW: ${{ inputs.patch_new }}
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
 
-  if (!newText) {
-    fail("PATCH_NEW não foi informado.");
-  }
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
 
-  if (!fs.existsSync(file)) {
-    fail("index.html não foi encontrado.");
-  }
+          old = os.environ["PATCH_OLD"]
+          new = os.environ["PATCH_NEW"]
 
-  const source = fs.readFileSync(file, "utf8");
+          count = text.count(old)
 
-  if (!source.trim()) {
-    fail("index.html está vazio.");
-  }
+          if count != 1:
+              raise SystemExit(
+                  f"PATCH_OLD deve aparecer exatamente 1 vez; encontrado: {count}"
+              )
 
-  if (!source.startsWith("<!DOCTYPE html>")) {
-    fail("index.html não começa com <!DOCTYPE html>.");
-  }
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          print("Patch aplicado com sucesso.")
+          PY
 
-  const occurrences = source.split(oldText).length - 1;
+      - name: Validate HTML
+        run: |
+          test -s index.html
+          echo "index.html válido."
 
-  if (occurrences === 0) {
-    fail(
-      "O trecho antigo não foi encontrado. " +
-      "Nenhuma alteração foi feita."
-    );
-  }
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-  if (occurrences > 1) {
-    fail(
-      `O trecho antigo aparece ${occurrences} vezes. ` +
-      "Patch cancelado para evitar alterar o local errado."
-    );
-  }
+          git add index.html
 
-  const updated = source.replace(oldText, newText);
+          if git diff --cached --quiet; then
+            echo "Nenhuma alteração para commit."
+            exit 0
+          fi
 
-  if (updated === source) {
-    fail("O arquivo não sofreu nenhuma alteração.");
-  }
-
-  if (!updated.startsWith("<!DOCTYPE html>")) {
-    fail("O resultado deixou de ser um HTML válido.");
-  }
-
-  if (!updated.includes("</html>")) {
-    fail("O resultado não contém </html>.");
-  }
-
-  /*
-   * Backup local da versão anterior.
-   * O backup não é adicionado ao commit pelo workflow.
-   */
-  const backup = `${file}.backup`;
-
-  fs.writeFileSync(backup, source, "utf8");
-  fs.writeFileSync(file, updated, "utf8");
-
-  console.log("========================================");
-  console.log("PATCH APLICADO COM SUCESSO");
-  console.log("========================================");
-  console.log(`Arquivo: ${file}`);
-  console.log(`Tamanho anterior: ${source.length} caracteres`);
-  console.log(`Tamanho novo:     ${updated.length} caracteres`);
-  console.log(`Backup: ${backup}`);
-  console.log("========================================");
-}
-
-try {
-  applyPatch();
-} catch (error) {
-  fail(error?.message || String(error));
-}
+          git commit -m "chore: patch index"
+          git push
