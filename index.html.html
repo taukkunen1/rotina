@@ -1,0 +1,2952 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rotina do Hector — Pacus</title>
+<style>
+  /* =====================================================================
+     Arquivo local, sem internet, sem instalação. Abra num navegador.
+     Todo o conteúdo (tarefas, hábitos ruins, recompensas) agora é editado
+     pelo botão "Editar tudo" na tela — não precisa mexer no código.
+     Os dados ficam salvos no navegador (localStorage). O DEFAULT_CONFIG
+     lá embaixo no <script> só é usado na primeira vez que o arquivo abre.
+     ===================================================================== */
+
+  :root{
+    --board:#16241f;
+    --board-edge:#0e1712;
+    --chalk:#f7f4ec;
+    --chalk-dim:#c7c0b0;
+    --yellow:#f5d878;
+    --pink:#eeb0cb;
+    --blue:#9ad2ee;
+    --orange:#f3ad6c;
+    --green:#b7ddba;
+    --red:#ef9a9a;
+    --wood:#8a5a34;
+    --wood-dark:#6b4324;
+    --line:rgba(247,244,236,.18);
+    --focus:#ffe08a;
+  }
+
+  *{box-sizing:border-box;}
+  ::selection{ background:var(--yellow); color:#1b2e28; }
+
+  :focus-visible{
+    outline:2px solid var(--focus);
+    outline-offset:2px;
+    border-radius:4px;
+  }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:Verdana, Geneva, sans-serif;
+    color:var(--chalk);
+    background:
+      radial-gradient(ellipse at 15% 0%, rgba(255,255,255,.05), transparent 55%),
+      radial-gradient(ellipse at 85% 100%, rgba(255,255,255,.04), transparent 55%),
+      var(--board);
+    padding:20px 14px 50px;
+  }
+
+  body::before{
+    content:"";
+    position:fixed; inset:0; pointer-events:none; opacity:.04;
+    background-image:
+      repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, #fff 0 1px, transparent 1px 3px);
+    mix-blend-mode:overlay;
+  }
+
+  .board-frame{
+    max-width:1040px;
+    margin:0 auto;
+    background:var(--board-edge);
+    border-radius:12px;
+    padding:8px;
+    box-shadow:0 20px 50px rgba(0,0,0,.5), inset 0 0 0 6px var(--wood-dark);
+  }
+
+  .board-inner{
+    border:3px solid var(--wood);
+    border-radius:8px;
+    padding:0 0 24px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  /* ---------- topbar: fica visível ao rolar ---------- */
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:20;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:14px 18px;
+    background:linear-gradient(180deg, rgba(19,32,25,.97), rgba(19,32,25,.9));
+    border-bottom:2px dashed var(--line);
+    backdrop-filter:blur(2px);
+  }
+
+  .topbar h1{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    font-size:1.5rem;
+    margin:0;
+    color:var(--yellow);
+    text-shadow:0 0 12px rgba(242,214,117,.2);
+    white-space:nowrap;
+  }
+
+  .topbar-right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .pacus-total{
+    display:flex;
+    align-items:baseline;
+    gap:7px;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:6px 16px;
+  }
+  .pacus-total .label{
+    font-size:.68rem;
+    color:var(--chalk-dim);
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+  .pacus-total .num{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:1.5rem;
+    color:var(--green);
+    transition:transform .15s ease;
+    min-width:1.4ch;
+    text-align:right;
+  }
+  .pacus-total .num.bump{ transform:scale(1.3); }
+
+  .icon-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:none;
+    border:1px solid var(--line);
+    color:var(--chalk-dim);
+    font-size:.78rem;
+    padding:7px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    font-family:inherit;
+    transition:border-color .15s, color .15s, background .15s;
+  }
+  .icon-btn:hover{ color:var(--chalk); border-color:rgba(242,237,225,.4); background:rgba(255,255,255,.04); }
+  .icon-btn.danger:hover{ color:var(--red); border-color:var(--red); }
+  .icon-btn.primary{ color:var(--yellow); border-color:rgba(242,214,117,.4); }
+  .icon-btn.primary:hover{ background:rgba(242,214,117,.1); }
+
+  .content{ padding:18px 18px 0; }
+
+  .subtitle{
+    color:var(--chalk-dim);
+    font-size:.82rem;
+    text-align:center;
+    margin:2px 0 20px;
+  }
+
+  .weekend-indicator{
+    text-align:center;
+    font-size:.75rem;
+    color:var(--orange);
+    background:rgba(240,168,108,.1);
+    border:1px solid rgba(240,168,108,.35);
+    border-radius:8px;
+    padding:6px 10px;
+    margin-bottom:14px;
+  }
+
+  /* ---------- Pacus, o axolote de estimação ---------- */
+  .pet-section{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    background:linear-gradient(180deg, rgba(143,201,230,.06), rgba(255,255,255,.015));
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px 16px 16px;
+    margin-bottom:22px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .pet-mascot{
+    width:150px;
+    height:150px;
+    display:block;
+  }
+
+  .pet-name{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:1.35rem;
+    color:var(--pink);
+    margin:2px 0 0;
+  }
+
+  .pet-stage-label{
+    font-size:.78rem;
+    color:var(--chalk-dim);
+    margin-bottom:8px;
+  }
+
+  .pet-milestones{
+    width:min(560px,100%);
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:6px;
+    margin:4px 0 8px;
+  }
+  .pet-milestone{
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:5px 4px;
+    text-align:center;
+    font-size:.58rem;
+    color:var(--chalk-dim);
+    background:rgba(255,255,255,.025);
+  }
+  .pet-milestone.active{
+    color:#16241f;
+    background:var(--green);
+    border-color:var(--green);
+    font-weight:bold;
+  }
+  .pet-milestone.current{
+    outline:2px solid var(--yellow);
+    outline-offset:1px;
+  }
+  @media(max-width:520px){
+    .pet-milestones{ grid-template-columns:repeat(3,1fr); }
+  }
+
+  .pet-caption{
+    font-size:.8rem;
+    color:var(--chalk-dim);
+    text-align:center;
+    max-width:420px;
+    line-height:1.4;
+  }
+  .pet-caption b{ color:var(--green); }
+
+  .pet-evolved-banner{
+    background:rgba(242,214,117,.12);
+    border:1px solid rgba(242,214,117,.4);
+    color:var(--yellow);
+    font-size:.82rem;
+    padding:8px 14px;
+    border-radius:8px;
+    margin-top:10px;
+    text-align:center;
+    animation: popIn .3s ease;
+  }
+  @keyframes popIn{
+    from{ transform:scale(.85); opacity:0; }
+    to{ transform:scale(1); opacity:1; }
+  }
+
+  /* ---------- crescimento diário do Pacus ---------- */
+  .pet-day-progress{
+    width:min(520px, 100%);
+    margin:6px 0 2px;
+  }
+  .pet-day-progress-head{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-size:.68rem;
+    color:var(--chalk-dim);
+    margin-bottom:5px;
+  }
+  .pet-day-progress-head b{ color:var(--green); }
+  .pet-day-track{
+    height:7px;
+    border-radius:999px;
+    overflow:hidden;
+    background:rgba(255,255,255,.08);
+    border:1px solid var(--line);
+  }
+  .pet-day-fill{
+    height:100%;
+    width:0;
+    background:var(--blue);
+    border-radius:999px;
+    transition:width .7s cubic-bezier(.2,.8,.2,1);
+  }
+  .pet-mascot.pet-egg{
+    transform-origin:50% 70%;
+    animation:eggLife 2.8s ease-in-out infinite;
+  }
+  .pet-mascot.pet-growth-burst{
+    animation:petGrowthBurst .75s cubic-bezier(.2,.8,.2,1);
+  }
+  .pet-egg .egg-shell{
+    transform-box:fill-box;
+    transform-origin:center;
+  }
+  .pet-egg .egg-crack{
+    transition:opacity .5s ease, stroke-width .5s ease;
+  }
+  @keyframes eggLife{
+    0%,100%{ transform:translateY(0) rotate(0deg); }
+    50%{ transform:translateY(-2px) rotate(.7deg); }
+  }
+  @keyframes petGrowthBurst{
+    0%{ transform:scale(1) rotate(0deg); }
+    25%{ transform:scale(1.08) rotate(-3deg); }
+    50%{ transform:scale(.96) rotate(3deg); }
+    75%{ transform:scale(1.035) rotate(-1deg); }
+    100%{ transform:scale(1) rotate(0deg); }
+  }
+  .pet-hatch-crack{ animation:crackFlash .55s ease-out; }
+  @keyframes crackFlash{
+    0%{ filter:brightness(1); }
+    35%{ filter:brightness(1.28); }
+    100%{ filter:brightness(1); }
+  }
+  .pet-status-line{
+    font-size:.68rem;
+    color:var(--chalk-dim);
+    text-align:center;
+    margin-top:2px;
+  }
+  .pet-status-line b{ color:var(--yellow); }
+
+  .streak-strip{ margin-top:14px; text-align:center; }
+  .streak-title{
+    font-size:.65rem;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--chalk-dim);
+    margin-bottom:6px;
+  }
+  .streak-row{ display:flex; gap:6px; justify-content:center; }
+  .streak-cell{
+    width:26px; height:26px;
+    border-radius:7px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.03);
+  }
+  .streak-letter{ font-size:.62rem; color:var(--chalk-dim); }
+  .streak-cell.perfect{ background:var(--green); border-color:var(--green); }
+  .streak-cell.perfect .streak-letter{ color:#132015; font-weight:bold; }
+  .streak-cell.partial{ background:rgba(242,214,117,.35); border-color:var(--yellow); }
+  .streak-cell.partial .streak-letter{ color:#2a2410; font-weight:bold; }
+  .streak-cell.none{ background:rgba(224,138,138,.18); border-color:rgba(224,138,138,.4); }
+  .streak-cell.today{ box-shadow:0 0 0 2px var(--yellow); }
+
+  /* ---------- períodos ---------- */
+  .periods{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:0;
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  @media (max-width:760px){
+    .periods{ grid-template-columns:1fr; }
+  }
+
+  .period{
+    background:rgba(255,255,255,.015);
+    padding:16px 16px 14px;
+  }
+  .period:not(:last-child){ border-right:1px dashed var(--line); }
+  @media (max-width:760px){
+    .period:not(:last-child){ border-right:none; border-bottom:1px dashed var(--line); }
+  }
+
+  .period-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:2px;
+  }
+  .period h2{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    font-size:1.3rem;
+    margin:0;
+  }
+  .period .time{
+    font-size:.68rem;
+    color:var(--chalk-dim);
+  }
+  .period .progress-txt{
+    font-size:.68rem;
+    color:var(--chalk-dim);
+    margin-bottom:10px;
+    display:block;
+  }
+
+  .manha h2{ color:var(--yellow); }
+  .tarde h2{ color:var(--orange); }
+  .noite h2{ color:var(--blue); }
+
+  .progress-bar{
+    height:4px;
+    border-radius:2px;
+    background:rgba(255,255,255,.08);
+    margin:6px 0 12px;
+    overflow:hidden;
+  }
+  .progress-bar > div{
+    height:100%;
+    background:var(--green);
+    transition:width .25s ease;
+  }
+
+  ul.tasks{ list-style:none; margin:0; padding:0; }
+
+  .task{
+    display:flex;
+    align-items:flex-start;
+    gap:9px;
+    padding:6px 6px;
+    border-radius:6px;
+    user-select:none;
+  }
+  .task:hover{ background:rgba(255,255,255,.045); }
+
+  .mark-group{
+    display:flex;
+    gap:5px;
+    flex-shrink:0;
+    margin-top:1px;
+  }
+  .mark-btn{
+    width:30px; height:30px;
+    border-radius:7px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.03);
+    color:var(--chalk-dim);
+    font-size:.9rem;
+    line-height:1;
+    cursor:pointer;
+    font-family:inherit;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+    transition:transform .12s ease, background .12s ease, border-color .12s ease;
+  }
+  .mark-btn:hover{ border-color:rgba(242,237,225,.4); color:var(--chalk); transform:scale(1.06); }
+  .mark-btn:active{ transform:scale(.92); }
+  .mark-done.active{ background:var(--green); border-color:var(--green); color:#132015; font-weight:bold; animation:markPop .3s ease; }
+  .mark-na.active{ background:var(--chalk-dim); border-color:var(--chalk-dim); color:#1b2e28; font-weight:bold; }
+  .mark-x.active{ background:var(--red); border-color:var(--red); color:#2a1414; font-weight:bold; }
+  @keyframes markPop{
+    0%{ transform:scale(1); }
+    40%{ transform:scale(1.35); }
+    100%{ transform:scale(1); }
+  }
+
+  .task .txt{ flex:1; font-size:.9rem; line-height:1.35; }
+  .task .sub{ display:block; font-size:.7rem; color:var(--chalk-dim); margin-top:1px; }
+  .task.done .txt{ text-decoration:line-through; color:var(--chalk-dim); }
+  .task.na .txt{ color:var(--chalk-dim); font-style:italic; }
+  .task.na .pts{ color:var(--chalk-dim); border-color:var(--line); }
+  .task.notdone .txt{ color:var(--red); }
+  .task.notdone .pts{ color:var(--red); border-color:rgba(224,138,138,.4); }
+  .task-icon{ font-size:1.05rem; margin-right:6px; flex-shrink:0; }
+
+  .pts{
+    font-size:.68rem;
+    color:var(--green);
+    border:1px solid rgba(169,211,173,.4);
+    border-radius:10px;
+    padding:1px 7px;
+    white-space:nowrap;
+    flex-shrink:0;
+    height:fit-content;
+  }
+
+  section.block{
+    margin-top:22px;
+    padding-top:16px;
+    border-top:2px dashed var(--line);
+  }
+
+  h3.block-title{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    font-size:1.2rem;
+    margin:0 0 12px;
+    text-align:center;
+  }
+  .bad-title{ color:var(--red); }
+  .reward-title{ color:var(--pink); }
+
+  .bad-habits{ display:flex; flex-wrap:wrap; gap:9px; justify-content:center; }
+
+  .bad-btn{
+    background:rgba(224,138,138,.08);
+    border:1px solid rgba(224,138,138,.4);
+    color:var(--chalk);
+    padding:7px 13px;
+    border-radius:8px;
+    font-size:.82rem;
+    cursor:pointer;
+    font-family:inherit;
+    transition:background .15s;
+  }
+  .bad-btn:hover{ background:rgba(224,138,138,.2); }
+  .bad-btn .minus{ color:var(--red); font-weight:bold; margin-left:6px; }
+
+  .rewards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(150px,1fr));
+    gap:10px;
+  }
+
+  .reward{
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(232,163,192,.3);
+    border-radius:10px;
+    padding:12px;
+    text-align:center;
+  }
+  .reward .name{ font-size:.88rem; margin-bottom:2px; }
+  .reward .cost{ font-size:.7rem; color:var(--green); margin-bottom:8px; display:block; }
+  .reward button{
+    background:var(--pink);
+    color:#2a1420;
+    border:none;
+    padding:6px 14px;
+    border-radius:6px;
+    font-size:.78rem;
+    cursor:pointer;
+    font-family:inherit;
+    font-weight:bold;
+  }
+  .reward button:disabled{
+    background:rgba(255,255,255,.08);
+    color:var(--chalk-dim);
+    cursor:not-allowed;
+  }
+
+  .screen-note{
+    text-align:center;
+    font-size:.74rem;
+    color:var(--chalk-dim);
+    margin-top:12px;
+  }
+  .screen-note b{ color:var(--blue); }
+
+  .log{
+    margin-top:20px;
+    padding-top:12px;
+    border-top:1px dashed var(--line);
+    font-size:.72rem;
+    color:var(--chalk-dim);
+    max-height:100px;
+    overflow-y:auto;
+  }
+  .log-title{ text-transform:uppercase; letter-spacing:1px; font-size:.62rem; margin-bottom:5px; }
+  .log div{ padding:2px 0; }
+
+  .perfect-note{
+    text-align:center;
+    font-size:.74rem;
+    color:var(--chalk-dim);
+    margin-top:10px;
+  }
+  .perfect-note b{ color:var(--yellow); }
+
+
+  .hair-section{
+    margin-top:18px;
+    padding:14px 16px;
+    border:1px solid rgba(169,211,173,.3);
+    border-radius:12px;
+    background:rgba(255,255,255,.025);
+  }
+  .hair-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .hair-title{font-size:1rem;color:var(--chalk);font-weight:bold;}
+  .hair-note{font-size:.7rem;color:var(--chalk-dim);}
+  .hair-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .hair-btn{border:1px solid var(--line);background:rgba(255,255,255,.035);color:var(--chalk);border-radius:9px;padding:9px 10px;font:inherit;font-size:.78rem;cursor:pointer;}
+  .hair-btn.active-washed{background:rgba(169,211,173,.22);border-color:var(--green);color:var(--green);font-weight:bold;}
+  .hair-btn.active-notwashed{background:rgba(242,214,117,.12);border-color:rgba(242,214,117,.45);color:var(--yellow);font-weight:bold;}
+  .hair-status{text-align:center;margin-top:8px;font-size:.72rem;color:var(--chalk-dim);}
+  .hair-history-washed{color:var(--green);font-weight:bold;}
+  .hair-history-notwashed{color:var(--yellow);font-weight:bold;}
+  .hair-history-unknown{color:var(--chalk-dim);}
+
+  .history{ overflow-x:auto; }
+  table.history-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:.8rem;
+  }
+  table.history-table th, table.history-table td{
+    padding:8px 10px;
+    text-align:left;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  table.history-table th{
+    color:var(--chalk-dim);
+    font-weight:normal;
+    font-size:.68rem;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+  }
+  table.history-table td.pts-cell{ color:var(--green); }
+  table.history-table td.screen-cell{ color:var(--blue); }
+  .badge-perfect{
+    display:inline-block;
+    background:rgba(242,214,117,.15);
+    color:var(--yellow);
+    border:1px solid rgba(242,214,117,.4);
+    border-radius:999px;
+    padding:1px 8px;
+    font-size:.68rem;
+    margin-left:6px;
+  }
+  tr.today-row td{ color:var(--chalk); font-weight:bold; }
+  .edit-day-btn{
+    padding:3px 7px;
+    font-size:.75rem;
+    border:1px solid var(--line);
+  }
+  .edit-row label{ color:var(--chalk-dim); }
+
+  .weekly-review{
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(169,211,173,.3);
+    border-radius:12px;
+    padding:16px 18px;
+  }
+  .weekly-review .wr-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:10px;
+  }
+  .weekly-review .wr-range{ font-size:.72rem; color:var(--chalk-dim); }
+  .weekly-review .wr-stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(110px,1fr));
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .wr-stat{ text-align:center; }
+  .wr-stat .wr-num{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:1.5rem;
+    color:var(--green);
+    display:block;
+  }
+  .wr-stat .wr-label{ font-size:.68rem; color:var(--chalk-dim); }
+  .weekly-review .wr-msg{ font-size:.82rem; color:var(--chalk); text-align:center; }
+  .weekly-review .wr-msg b{ color:var(--yellow); }
+
+  .drive-sync{
+    background:rgba(143,201,230,.08);
+    border:1px solid rgba(143,201,230,.35);
+    border-radius:12px;
+    padding:14px 16px;
+  }
+  .drive-sync h3{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    color:var(--blue);
+    margin:0 0 4px;
+    font-size:1.1rem;
+  }
+  .drive-sync .hint{ font-size:.72rem; color:var(--chalk-dim); margin-bottom:10px; }
+  .drive-sync .status{ font-size:.8rem; color:var(--chalk); margin-bottom:10px; }
+  .drive-sync .status b{ color:var(--blue); }
+  .drive-sync-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .drive-setup{
+    margin-top:12px;
+    padding-top:10px;
+    border-top:1px dashed var(--line);
+    font-size:.72rem;
+    color:var(--chalk-dim);
+  }
+  .drive-setup ol{ margin:6px 0 0 18px; padding:0; }
+  .drive-setup li{ margin-bottom:3px; }
+  .drive-setup code{
+    background:rgba(255,255,255,.08);
+    padding:1px 5px;
+    border-radius:4px;
+    font-size:.7rem;
+  }
+
+  .backup-reminder{
+    background:rgba(242,214,120,.1);
+    border:1px solid rgba(242,214,120,.4);
+    border-radius:8px;
+    padding:8px 12px;
+    font-size:.75rem;
+    color:var(--chalk);
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .backup-reminder button{
+    background:var(--yellow);
+    color:#2a2410;
+    border:none;
+    padding:4px 10px;
+    border-radius:6px;
+    font-size:.72rem;
+    font-weight:bold;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .backup-reminder .dismiss{
+    background:none;
+    color:var(--chalk-dim);
+    padding:4px 6px;
+    font-weight:normal;
+  }
+
+  .test-mode-banner{
+    background:var(--red);
+    color:#2a1414;
+    font-weight:bold;
+    font-size:.8rem;
+    text-align:center;
+    padding:8px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .test-mode-banner button{
+    background:#2a1414;
+    color:#fff;
+    border:none;
+    padding:4px 10px;
+    border-radius:6px;
+    font-size:.72rem;
+    cursor:pointer;
+    font-family:inherit;
+  }
+
+  .test-panel{
+    margin:14px 18px 0;
+    background:rgba(224,138,138,.06);
+    border:1px dashed rgba(224,138,138,.5);
+    border-radius:10px;
+    padding:14px 16px;
+  }
+  .test-panel h3{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    color:var(--red);
+    margin:0 0 4px;
+    font-size:1.05rem;
+  }
+  .test-panel .hint{ font-size:.72rem; color:var(--chalk-dim); margin-bottom:10px; }
+  .test-panel .test-date{
+    font-size:.85rem;
+    color:var(--chalk);
+    margin-bottom:10px;
+  }
+  .test-panel .test-date b{ color:var(--yellow); }
+  .test-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+  }
+  .test-row input[type=date]{
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    border-radius:6px;
+    padding:6px 8px;
+    font-size:.8rem;
+    font-family:inherit;
+  }
+
+  .confetti-piece{
+    position:fixed;
+    top:0; left:0;
+    width:8px; height:8px;
+    pointer-events:none;
+    z-index:200;
+    border-radius:2px;
+    animation:confetti-fall 900ms ease-out forwards;
+  }
+  @keyframes confetti-fall{
+    0%{ transform:translate(0,0) rotate(0deg); opacity:1; }
+    100%{ transform:translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity:0; }
+  }
+
+  footer{
+    text-align:center;
+    margin-top:22px;
+    font-size:.68rem;
+    color:rgba(242,237,225,.28);
+  }
+
+  /* ---------- editor (modal) ---------- */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(10,16,13,.72);
+    display:none;
+    align-items:flex-start;
+    justify-content:center;
+    padding:30px 14px;
+    overflow-y:auto;
+    z-index:100;
+  }
+  .overlay.open{ display:flex; }
+
+  .editor{
+    width:100%;
+    max-width:720px;
+    background:var(--board);
+    border:3px solid var(--wood);
+    border-radius:10px;
+    padding:20px 20px 24px;
+    box-shadow:0 20px 60px rgba(0,0,0,.6);
+  }
+
+  .editor-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:2px dashed var(--line);
+    padding-bottom:12px;
+    margin-bottom:16px;
+  }
+  .editor-head h2{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    color:var(--yellow);
+    margin:0;
+    font-size:1.4rem;
+  }
+
+  .editor-section{ margin-bottom:22px; }
+  .editor-section h3{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    font-size:1.05rem;
+    margin:0 0 4px;
+    color:var(--chalk);
+  }
+  .editor-section .hint{ font-size:.7rem; color:var(--chalk-dim); margin-bottom:10px; }
+
+  .edit-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:7px;
+  }
+  .edit-row-task{
+    flex-direction:column;
+    align-items:stretch;
+    gap:5px;
+    padding-bottom:8px;
+    margin-bottom:9px;
+    border-bottom:1px dashed var(--line);
+  }
+  .edit-row-task:last-child{ border-bottom:none; }
+  .edit-row-main{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .edit-row-main input[type=text]{ flex:1; }
+  .reorder-group{ display:flex; flex-direction:column; gap:1px; flex-shrink:0; }
+  .reorder-btn{
+    width:20px; height:15px;
+    font-size:.6rem;
+    line-height:1;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk-dim);
+    cursor:pointer;
+    border-radius:3px;
+    padding:0;
+  }
+  .reorder-btn:hover:not(:disabled){ color:var(--chalk); border-color:rgba(242,237,225,.4); }
+  .reorder-btn:disabled{ opacity:.25; cursor:not-allowed; }
+
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap:2px;
+    flex-shrink:0;
+  }
+  .stepper input[type=number]{
+    width:44px;
+    text-align:center;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    border-radius:6px;
+    padding:6px 2px;
+    font-size:.82rem;
+    font-family:inherit;
+  }
+  .step-btn{
+    width:24px; height:28px;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk-dim);
+    border-radius:6px;
+    font-size:.9rem;
+    cursor:pointer;
+    font-family:inherit;
+    line-height:1;
+  }
+  .step-btn:hover{ color:var(--chalk); border-color:rgba(242,237,225,.4); }
+
+  .sub-input{
+    font-size:.74rem !important;
+    color:var(--chalk-dim);
+    padding:5px 9px !important;
+  }
+  .edit-row input[type=text]{
+    flex:1;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    border-radius:6px;
+    padding:7px 9px;
+    font-size:.82rem;
+    font-family:inherit;
+  }
+  .edit-row input[type=number]{
+    width:58px;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    border-radius:6px;
+    padding:7px 6px;
+    font-size:.82rem;
+    text-align:center;
+    font-family:inherit;
+  }
+  .edit-row input:focus, .edit-row select:focus{ outline:1px solid var(--yellow); }
+  .edit-row select{
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    border-radius:6px;
+    padding:7px 6px;
+    font-size:.78rem;
+    font-family:inherit;
+  }
+  .edit-row .del{
+    background:none;
+    border:none;
+    color:var(--red);
+    font-size:1rem;
+    cursor:pointer;
+    padding:2px 6px;
+    line-height:1;
+  }
+  .edit-row .del:hover{ opacity:.7; }
+
+  .add-row-btn{
+    background:none;
+    border:1px dashed var(--line);
+    color:var(--chalk-dim);
+    font-size:.78rem;
+    padding:7px 12px;
+    border-radius:6px;
+    cursor:pointer;
+    font-family:inherit;
+    width:100%;
+    margin-top:2px;
+  }
+  .add-row-btn:hover{ color:var(--green); border-color:var(--green); }
+
+  .editor-footer{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    border-top:2px dashed var(--line);
+    padding-top:16px;
+    margin-top:6px;
+  }
+
+  .btn{
+    font-family:inherit;
+    font-size:.85rem;
+    padding:9px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    border:1px solid var(--line);
+    background:none;
+    color:var(--chalk-dim);
+  }
+  .btn:hover{ color:var(--chalk); border-color:rgba(242,237,225,.4); }
+  .btn.save{
+    background:var(--yellow);
+    color:#2a2410;
+    border-color:var(--yellow);
+    font-weight:bold;
+  }
+  .btn.save:hover{ opacity:.9; }
+
+  @media (max-width:500px){
+    .topbar{ flex-wrap:wrap; }
+    .topbar h1{ font-size:1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="board-frame">
+  <div class="board-inner">
+
+    <div id="testModeBanner"></div>
+
+    <div class="topbar">
+      <h1>🥚 Rotina do Hector</h1>
+      <div class="topbar-right">
+        <div class="pacus-total">
+          <span class="label">Pacus Points</span>
+          <span class="num" id="totalPoints">0</span>
+        </div>
+        <button class="icon-btn primary" id="addPointsBtn" title="Ajuste manual de Pacus Points">+ pontos</button>
+        <button class="icon-btn primary" id="editBtn">🔒 Área dos adultos</button>
+      </div>
+    </div>
+
+    <section class="block" id="testPanel" style="display:none;"></section>
+
+    <div class="content">
+
+
+      <section class="pet-section" id="petSection"></section>
+
+      <div id="weekendIndicator"></div>
+      <div class="periods" id="periods"></div>
+
+      <section class="hair-section" id="hairSection">
+        <div class="hair-head">
+          <div class="hair-title">🧴 Lavar o cabelo</div>
+          <div class="hair-note">Registro diário, sem interferir no dia perfeito</div>
+        </div>
+        <div class="hair-actions">
+          <button type="button" class="hair-btn" id="hairWashedBtn">💧 Lavei o cabelo</button>
+          <button type="button" class="hair-btn" id="hairNotWashedBtn">○ Não lavei</button>
+        </div>
+        <div class="hair-status" id="hairStatus">Hoje: ainda não registrado</div>
+      </section>
+
+      <section class="block">
+        <h3 class="block-title bad-title">✨ Pacus Points Extra</h3>
+        <div class="bad-habits" id="badHabits"></div>
+      </section>
+
+      <section class="block">
+        <h3 class="block-title reward-title">🎁 Loja de Recompensas</h3>
+        <div class="rewards" id="rewards"></div>
+        <div class="perfect-note" id="perfectNote"></div>
+      </section>
+
+      <div class="log">
+        <div class="log-title">Histórico de hoje</div>
+        <div id="logList"></div>
+      </div>
+
+      <section class="block" id="weeklyReviewSection"></section>
+
+      <section class="block">
+        <h3 class="block-title" style="color:var(--green);">📅 Histórico dos dias</h3>
+        <div class="history">
+          <table class="history-table" id="historyTable">
+            <thead>
+              <tr><th>Dia</th><th>Tarefas</th><th>Pacus Points</th><th>Cabelo</th><th></th></tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="block" id="driveSyncSection"></section>
+
+      <footer>
+        <div id="backupReminder"></div>
+        Rotina do Hector · ${APP_VERSION}<br>
+        Funciona offline. O Google Drive é a fonte de sincronização quando configurado.
+        <br>
+        <button class="icon-btn" id="exportBtn" style="margin-top:8px;">⬇️ exportar backup</button>
+        <button class="icon-btn" id="importBtn" style="margin-top:8px;">⬆️ importar backup</button>
+        <input type="file" id="importFile" accept=".json" style="display:none;">
+        <br><button class="icon-btn danger" id="resetBtn" style="margin-top:8px;">reiniciar Pacus Points e histórico</button>
+      </footer>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================== MODAL DE EDIÇÃO DE DIA ANTERIOR ===================== -->
+<div class="overlay" id="dayOverlay">
+  <div class="editor" style="max-width:420px;">
+    <div class="editor-head">
+      <h2 id="dayEditorTitle">Editar dia</h2>
+      <button class="icon-btn" id="dayCloseBtn">fechar ✕</button>
+    </div>
+
+    <div class="editor-section">
+      <div class="edit-row">
+        <label style="flex:1; font-size:.82rem;">Tarefas feitas</label>
+        <input type="number" min="0" id="dayDone" style="width:70px;">
+      </div>
+      <div class="edit-row">
+        <label style="flex:1; font-size:.82rem;">Tarefas aplicáveis no dia</label>
+        <input type="number" min="0" id="dayTotal" style="width:70px;">
+      </div>
+      <div class="edit-row">
+        <label style="flex:1; font-size:.82rem;">Pacus Points ganhos naquele dia</label>
+        <input type="number" min="0" id="dayPoints" style="width:70px;">
+      </div>
+      <div class="edit-row">
+        <label style="flex:1; font-size:.82rem;">Cabelo</label>
+        <select id="dayHair" style="width:150px;">
+          <option value="">Não registrado</option>
+          <option value="washed">💧 Lavou</option>
+          <option value="not-washed">○ Não lavou</option>
+        </select>
+      </div>
+      <div class="hint">Mudar "Pacus Points ganhos" ajusta automaticamente o saldo total de Pacus Points. O registro de cabelo não interfere no dia perfeito.</div>
+    </div>
+
+    <div class="editor-footer">
+      <button class="btn" id="dayCancelBtn">cancelar</button>
+      <button class="btn save" id="daySaveBtn">salvar dia</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL DE EDIÇÃO ===================== -->
+<div class="overlay" id="overlay">
+  <div class="editor">
+    <div class="editor-head">
+      <h2>Editar tudo</h2>
+      <button class="icon-btn" id="closeBtn">fechar ✕</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>🌅 Manhã</h3>
+      <div class="hint">Tarefa, pontos e (opcional) um detalhe menor embaixo do nome.</div>
+      <div id="editManha"></div>
+      <button class="add-row-btn" data-add="manha">+ adicionar tarefa</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>☀️ Tarde</h3>
+      <div id="editTarde"></div>
+      <button class="add-row-btn" data-add="tarde">+ adicionar tarefa</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>🌙 Noite</h3>
+      <div id="editNoite"></div>
+      <button class="add-row-btn" data-add="noite">+ adicionar tarefa</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>🏖️ Rotina de fim de semana</h3>
+      <div class="hint">Se ativado, sábado e domingo usam essa lista em vez da rotina de dia de escola.</div>
+      <label style="display:flex; align-items:center; gap:8px; font-size:.85rem; margin-bottom:12px;">
+        <input type="checkbox" id="weekendToggle" style="width:16px; height:16px;">
+        Usar rotina diferente no fim de semana
+      </label>
+      <div id="weekendEditorBody" style="display:none;">
+        <h3 style="font-size:.95rem; margin-top:14px;">🌅 Manhã (fim de semana)</h3>
+        <div id="editManhaWeekend"></div>
+        <button class="add-row-btn" data-add="manhaWeekend">+ adicionar tarefa</button>
+
+        <h3 style="font-size:.95rem; margin-top:14px;">☀️ Tarde (fim de semana)</h3>
+        <div id="editTardeWeekend"></div>
+        <button class="add-row-btn" data-add="tardeWeekend">+ adicionar tarefa</button>
+
+        <h3 style="font-size:.95rem; margin-top:14px;">🌙 Noite (fim de semana)</h3>
+        <div id="editNoiteWeekend"></div>
+        <button class="add-row-btn" data-add="noiteWeekend">+ adicionar tarefa</button>
+      </div>
+    </div>
+
+    <div class="editor-section">
+      <h3>✨ Pacus Points Extra</h3>
+      <div id="editBad"></div>
+      <button class="add-row-btn" data-add="bad">+ adicionar hábito</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>🎁 Recompensas</h3>
+      <div id="editRewards"></div>
+      <button class="add-row-btn" data-add="reward">+ adicionar recompensa</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>🔒 Segurança</h3>
+      <div class="hint">Define um PIN pra pedir antes de abrir "Editar tudo" — protege de mudanças acidentais.</div>
+      <div class="edit-row">
+        <input type="text" inputmode="numeric" id="editorPinInput" placeholder="ex: 1234 (deixe vazio pra não pedir PIN)" maxlength="8">
+      </div>
+    </div>
+
+    <div class="editor-footer">
+      <button class="btn" id="adultTestBtn">🧪 modo teste</button>
+      <button class="btn" id="cancelBtn">fechar</button>
+      <button class="btn save" id="saveBtn">salvar tudo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   DEFAULT_CONFIG só é usado da primeira vez que o arquivo abre (sem nada
+   salvo ainda no navegador). Depois disso tudo é editado pela tela e fica
+   guardado em localStorage — o botão "Editar tudo" já resolve tudo.
+   ========================================================================= */
+const DEFAULT_CONFIG = {
+  periods: {
+    manha: {
+      label: "Manhã", time: "8:20 – 12:00",
+      tasks: [
+        { id:"m1", txt:"Arrumar a cama", pts:1 },
+        { id:"m2", txt:"Beber 1 copo de água", pts:1 },
+        { id:"m3", txt:"Escovar os dentes", pts:1 },
+        { id:"m4", txt:"Lavar o rosto", pts:1 },
+        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:4 },
+        { id:"m6", txt:"Ler", sub:"1 capítulo do livro de casa", pts:4 },
+        { id:"m7", txt:"Vestir o uniforme", pts:1 },
+        { id:"m8", txt:"Arrumar a mochila", pts:1 },
+      ]
+    },
+    tarde: {
+      label: "Tarde", time: "12:00 – 18:00",
+      tasks: [
+        { id:"t1", txt:"Beber 1 copo de água", pts:1 },
+        { id:"t2", txt:"Almoçar", pts:1 },
+        { id:"t3", txt:"Escovar os dentes", pts:1 },
+        { id:"t4", txt:"Ir para a escola", pts:5 },
+        { id:"t5", txt:"Arrumar a mochila", pts:1 },
+      ]
+    },
+    noite: {
+      label: "Noite", time: "18:00 – 22:00",
+      tasks: [
+        { id:"n1", txt:"Jantar", pts:1 },
+        { id:"n2", txt:"Beber 1 copo de água", pts:1 },
+        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha", pts:3 },
+        { id:"n5", txt:"Arrumar a bagunça", pts:2 },
+        { id:"n6", txt:"Escovar os dentes", pts:1 },
+      ]
+    },
+  },
+  // rotina de fim de semana: fica null (desativada) até os pais ativarem
+  // no editor — quando ativada, é editada separadamente da de dia de escola
+  periodsWeekend: null,
+  // PIN opcional pra travar o botão "Editar tudo" — vazio = sem trava
+  editorPin: "",
+  badHabits: [],
+  rewards: [
+    { id:"r1", txt:"1 hora de tela", cost:90 },
+    { id:"r2", txt:"Hot Wheels (brinquedo)", cost:300 },
+  ],
+  screenNote: "10 Pacus Points = 1 hora de tela. Limite sugerido: 2 horas de tela por dia.",
+  screenPointsPerHour: 10,
+  screenDailyLimitHours: 2,
+  perfectDayBonusMinutes: 30,
+  historyStartDate: "2026-08-09",
+
+  // Pacus, o axolote: começa em 09/08 e cresce um passo a cada dia
+  // em que todas as tarefas aplicáveis são concluídas. O ciclo termina
+  // em 31/08. São 23 dias de crescimento, contando 09/08 e 31/08.
+  // O Pacus nunca regride por dias já concluídos.
+  pet: {
+    name: "Pacus",
+    growthStartDate: "2026-08-09",
+    growthEndDate: "2026-08-31",
+    stages: [
+      { key:"ovo", label:"Ovo intacto" },
+      { key:"ovo1", label:"Primeira rachadura" },
+      { key:"ovo2", label:"Rachadura inicial" },
+      { key:"ovo3", label:"Rachando" },
+      { key:"ovo4", label:"Mais rachaduras" },
+      { key:"ovo5", label:"Casca cedendo" },
+      { key:"ovo6", label:"Quase abrindo" },
+      { key:"ovo7", label:"Casca bem rachada" },
+      { key:"ovo8", label:"Pronto para nascer" },
+      { key:"hatch1", label:"Começando a eclodir" },
+      { key:"hatch2", label:"Cabeça aparecendo" },
+      { key:"hatch3", label:"Saindo da casca" },
+      { key:"hatch4", label:"Recém-nascido" },
+      { key:"hatch5", label:"Primeiros movimentos" },
+      { key:"baby1", label:"Bebê Pacus" },
+      { key:"baby2", label:"Bebê crescendo" },
+      { key:"baby3", label:"Filhote" },
+      { key:"baby4", label:"Filhote forte" },
+      { key:"baby5", label:"Jovem" },
+      { key:"young1", label:"Jovem crescendo" },
+      { key:"young2", label:"Quase adulto" },
+      { key:"young3", label:"Quase pronto" },
+      { key:"young4", label:"Última fase" },
+      { key:"adulto", label:"Pacus adulto" },
+    ],
+  }};
+
+const STORAGE_CONFIG_KEY = "hector_rotina_config_v3";
+const STORAGE_STATE_KEY  = "hector_rotina_state_v3";
+const APP_VERSION = "2026.08.11-pacus-v4";
+
+/* =========================================================================
+   SINCRONIZAÇÃO COM GOOGLE DRIVE (opcional) — via Google Apps Script
+   Não precisa hospedar esse arquivo em lugar nenhum: o próprio Apps Script
+   serve o app (essa URL abre o app direto) e guarda os dados no Drive.
+
+   Depois de configurado, o jeito certo de abrir em qualquer aparelho é
+   pela URL do Apps Script (a que termina em /exec) — não pelo arquivo
+   local. Assim, quando o app for atualizado, basta substituir o
+   conteúdo do arquivo "rotina-hector.html" no Drive uma vez, e todo
+   aparelho já abre a versão nova sozinho, sem copiar arquivo nenhum.
+
+   Passo a passo pra ativar:
+   1. Acesse https://script.google.com/ → "Novo projeto".
+   2. Apague o código de exemplo e cole o código que aparece no botão
+      "📋 ver código do Apps Script" logo abaixo, na seção de sincronização.
+   3. Clique em "Implantar" → "Nova implantação".
+   4. Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer
+      pessoa".
+   5. Clique em "Implantar", autorize o acesso (é a sua própria conta), e
+      copie a URL gerada (termina em /exec).
+   6. Cole essa URL na constante abaixo, entre aspas.
+   7. No Google Drive, salve o código deste arquivo com o nome exato
+      "rotina-hector.html". A partir daí, abram sempre a URL do Apps
+      Script (não o arquivo local) em todos os aparelhos.
+   ========================================================================= */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec";
+const DRIVE_SYNC_TOKEN = 'HectorAPI-2026-8fK3mQ7vX2pL9zR4';
+// A mesma URL agora também serve o próprio app (HTML) quando aberta sem
+// parâmetro — pra pedir só os dados (backup), usamos ?data=1.
+const DATA_ENDPOINT = APPS_SCRIPT_URL + "?data=1";
+
+function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9); }
+
+// mapeia palavras-chave do nome da tarefa pra um emoji — reforça o texto
+// com uma pista visual (útil pra leitura rápida / crianças ainda alfabetizando)
+const ICON_RULES = [
+  [/cama/i, "🛏️"], [/água/i, "💧"], [/dente/i, "🦷"], [/rosto|banho/i, "🧼"],
+  [/duolingo|inglês|idioma/i, "🗣️"], [/ler|livro|capítulo/i, "📖"],
+  [/uniforme|vestir/i, "👕"], [/mochila/i, "🎒"], [/almoç/i, "🍽️"],
+  [/escola/i, "🏫"], [/jantar/i, "🍲"], [/bagunça|arrumar/i, "🧹"],
+  [/toalha|cesto|roupa/i, "🧺"], [/tela|jogo|vídeo/i, "📺"],
+  [/dever|tarefa|estud/i, "✏️"], [/dormir|soneca/i, "😴"],
+];
+function taskIcon(txt){
+  for(const [re, icon] of ICON_RULES){ if(re.test(txt)) return icon; }
+  return "⭐";
+}
+
+function isWeekendISO(dateISO){
+  const day = new Date(dateISO+"T00:00:00").getDay();
+  return day === 0 || day === 6;
+}
+
+function getPeriodsFor(dateISO){
+  if(CONFIG.periodsWeekend && isWeekendISO(dateISO)) return CONFIG.periodsWeekend;
+  return CONFIG.periods;
+}
+
+function allTasks(dateISO){
+  const periods = getPeriodsFor(dateISO || todayISO());
+  return [
+    ...periods.manha.tasks,
+    ...periods.tarde.tasks,
+    ...periods.noite.tasks,
+  ];
+}
+
+function loadConfig(){
+  try{
+    const raw = localStorage.getItem(STORAGE_CONFIG_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+}
+function saveConfig(cfg){
+  try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(cfg)); }catch(e){}
+  scheduleAutoPush();
+}
+
+let TEST_DATE_OVERRIDE = null; // string ISO "yyyy-mm-dd" ou null (usa a data real do sistema)
+// IMPORTANTE: o modo de teste nunca fica salvo entre aberturas do arquivo —
+// toda vez que a página abre, começa sempre na data real do sistema.
+try{ localStorage.removeItem('hector_rotina_testdate_v1'); }catch(e){}
+
+function todayISO(){
+  if(TEST_DATE_OVERRIDE) return TEST_DATE_OVERRIDE;
+  const d = new Date();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return d.getFullYear()+"-"+m+"-"+day;
+}
+function setTestDate(iso){
+  TEST_DATE_OVERRIDE = iso; // só em memória — some sozinho ao recarregar a página
+}
+function formatDateBR(iso){
+  const [y,m,d] = iso.split("-");
+  return d+"/"+m;
+}
+
+function loadState(){
+  let raw = null;
+  try{ raw = localStorage.getItem(STORAGE_STATE_KEY); }catch(e){}
+  let state = raw ? JSON.parse(raw) : null;
+  if(!state) state = { totalPoints:120, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveLastSyncISO:null, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, hairByDate:{} };
+  return reconcileState(state);
+}
+
+function seedKnownPerfectDays(state){
+  // Dias já realizados antes do início do uso do histórico no app.
+  // 09/08 e 10/08 foram dias perfeitos confirmados pelo usuário.
+  const knownPerfectDates = ["2026-08-09", "2026-08-10"];
+  const tasks = allTasks("2026-08-09");
+  const total = tasks.length;
+  const points = tasks.reduce((sum, task) => sum + (Number(task.pts) || 0), 0);
+
+  if(!state.history) state.history = {};
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+
+  knownPerfectDates.forEach(iso => {
+    state.history[iso] = {
+      done: total,
+      total: total,
+      pointsEarnedThatDay: points,
+      perfect: true,
+      screenMinutes: CONFIG.perfectDayBonusMinutes || 30,
+      periodsCompleted: 3
+    };
+
+    if(!state.petCompletedDays.includes(iso)){
+      state.petCompletedDays.push(iso);
+    }
+  });
+
+  state.petCompletedDays.sort();
+  state.petLastCompletionISO = state.petCompletedDays.length
+    ? state.petCompletedDays[state.petCompletedDays.length - 1]
+    : null;
+}
+
+function reconcileState(state){
+  if(state.driveFileId === undefined) state.driveFileId = null;
+  if(state.driveLastSyncISO === undefined) state.driveLastSyncISO = null;
+  if(state.lastSeenPetStage === undefined) state.lastSeenPetStage = 0;
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+  if(state.petLastCompletionISO === undefined) state.petLastCompletionISO = null;
+  if(typeof state.revision !== 'number') state.revision = 0;
+  if(typeof state.driveRevision !== 'number') state.driveRevision = 0;
+  if(typeof state.driveConflictCount !== 'number') state.driveConflictCount = 0;
+  if(state.lastBackupISO === undefined) state.lastBackupISO = null;
+  if(state.backupReminderDismissedFor === undefined) state.backupReminderDismissedFor = null;
+  if(!state.checkedToday) state.checkedToday = {};
+  if(!state.log) state.log = [];
+  if(!state.history) state.history = {};
+  if(!state.hairByDate || typeof state.hairByDate !== "object") state.hairByDate = {};
+
+  seedKnownPerfectDays(state);
+
+  // limpeza: remove qualquer registro de histórico com data no futuro (só pode
+  // ter vindo de uma sessão anterior de teste de data) — evita que isso
+  // inflacione o crescimento do Pacus ou bagunce as tabelas depois
+  let cleaned = false;
+  if(!TEST_DATE_OVERRIDE){
+    const realToday = todayISO();
+    Object.keys(state.history).forEach(iso=>{
+      if(iso > realToday){ delete state.history[iso]; cleaned = true; }
+    });
+    if(state.lastDate > realToday){ state.lastDate = realToday; cleaned = true; }
+  }
+
+  if(state.lastDate !== todayISO()){
+    // fecha o dia anterior no histórico antes de zerar o checklist
+    closeOutDay(state, state.lastDate);
+    state.checkedToday = {};
+    state.log = [];
+    state.lastDate = todayISO();
+    saveState(state);
+  } else if(cleaned){
+    saveState(state);
+  }
+  return state;
+}
+
+function periodsCompletedFrom(checkedMap, dateISO){
+  let count = 0;
+  Object.values(getPeriodsFor(dateISO || todayISO())).forEach(period=>{
+    const applicable = period.tasks.filter(t=>checkedMap[t.id] !== 'na');
+    if(applicable.length>0 && applicable.every(t=>checkedMap[t.id]==='done')) count++;
+  });
+  return count;
+}
+
+function registerPetDayCompletion(dateISO){
+  const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
+  const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
+  if(dateISO < startISO || dateISO > endISO) return false;
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+  if(state.petCompletedDays.includes(dateISO)) return false;
+  state.petCompletedDays.push(dateISO);
+  state.petCompletedDays.sort();
+  state.petLastCompletionISO = dateISO;
+  return true;
+}
+
+function isDayPerfect(dateISO){
+  if(dateISO === todayISO()){
+    const tasks = allTasks(dateISO);
+    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    return applicable.length > 0 && applicable.every(t=>state.checkedToday[t.id] === 'done');
+  }
+  return !!(state.history[dateISO] && state.history[dateISO].perfect);
+}
+
+function syncPetCompletionFromDay(dateISO){
+  if(isDayPerfect(dateISO)) return registerPetDayCompletion(dateISO);
+  return false;
+}
+
+function closeOutDay(state, dateISO){
+  if(!dateISO) return;
+  const tasks = allTasks(dateISO);
+  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+  const total = applicable.length;
+  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+  const pointsEarnedThatDay = tasks
+    .filter(t=>state.checkedToday[t.id] === 'done')
+    .reduce((s,t)=>s+t.pts, 0);
+  const perfect = total > 0 && done === total;
+  if(perfect) registerPetDayCompletion(dateISO);
+  const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
+  const periodsCompleted = periodsCompletedFrom(state.checkedToday, dateISO);
+  state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
+}
+
+function saveState(state, options={}){
+  if(!options.remote){
+    state.revision = (Number(state.revision)||0) + 1;
+    state.updatedAt = new Date().toISOString();
+  }
+  try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+  scheduleAutoPush();
+}
+
+let CONFIG = loadConfig();
+let state = loadState();
+
+/* ---------- sincronização automática com o Google Drive ----------
+   Sempre que o arquivo abre, ele tenta buscar a versão mais nova salva
+   no Drive (via Apps Script) e usa ela — assim, não importa em qual
+   aparelho vocês abrirem, todos mostram a mesma coisa. Sempre que algo
+   muda aqui, ele também manda a atualização pro Drive sozinho, alguns
+   segundos depois (sem precisar clicar em nada). Se estiver offline, o
+   arquivo continua funcionando normal com os dados salvos localmente. */
+let suppressAutoPush = false;
+let autoPushTimer = null;
+
+function scheduleAutoPush(){
+  if(!APPS_SCRIPT_URL || suppressAutoPush) return;
+  clearTimeout(autoPushTimer);
+  autoPushTimer = setTimeout(doAutoPush, 2000);
+}
+
+async function doAutoPush(){
+  if(!APPS_SCRIPT_URL) return;
+  try{
+    const payload = {
+      appVersion: APP_VERSION,
+      config: CONFIG,
+      state: state,
+      baseRevision: Number(state.driveRevision)||0,
+      clientRevision: Number(state.revision)||0,
+      clientUpdatedAt: state.updatedAt || new Date().toISOString(),
+      exportedAt: new Date().toISOString()
+    };
+    const res = await fetch(DATA_ENDPOINT, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if(result.ok){
+      state.driveRevision = Number(result.revision)||state.driveRevision;
+      state.driveLastSyncISO = todayISO();
+      state.driveConflictCount = 0;
+      try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+      renderDriveSync();
+      return;
+    }
+    if(result.conflict && result.data){
+      state.driveConflictCount = (Number(state.driveConflictCount)||0)+1;
+      const server = result.data;
+      const merged = mergeRemoteData(server);
+      CONFIG = merged.config;
+      state = merged.state;
+      state.driveRevision = Number(result.revision)||Number(server.state?.driveRevision)||0;
+      state.driveLastSyncISO = todayISO();
+      saveState(state);
+      saveConfig(CONFIG);
+      render();
+    }
+  }catch(err){
+    renderDriveSync();
+  }
+}
+
+function isValidPeriodsConfig(cfg){
+  try{
+    const p = cfg && cfg.periods;
+    return !!(
+      p &&
+      p.manha && Array.isArray(p.manha.tasks) && p.manha.tasks.length > 0 &&
+      p.tarde && Array.isArray(p.tarde.tasks) && p.tarde.tasks.length > 0 &&
+      p.noite && Array.isArray(p.noite.tasks) && p.noite.tasks.length > 0
+    );
+  }catch(e){
+    return false;
+  }
+}
+
+function sanitizeRemoteConfig(remoteConfig){
+  if(!isValidPeriodsConfig(remoteConfig)) return null;
+  const safe = JSON.parse(JSON.stringify(remoteConfig));
+  if(!safe.periodsWeekend) safe.periodsWeekend = null;
+  if(!Array.isArray(safe.badHabits)) safe.badHabits = [];
+  if(!Array.isArray(safe.rewards)) safe.rewards = [];
+  if(!safe.pet || !Array.isArray(safe.pet.stages) || safe.pet.stages.length < 2) {
+    safe.pet = JSON.parse(JSON.stringify(DEFAULT_CONFIG.pet));
+  }
+  return safe;
+}
+
+function mergeRemoteData(remote){
+  const remoteState = remote.state || {};
+  const localState = state || {};
+  const merged = JSON.parse(JSON.stringify(remoteState));
+  merged.history = {...(remoteState.history||{})};
+  Object.entries(localState.history||{}).forEach(([iso,entry])=>{
+    const remoteEntry = merged.history[iso];
+    if(!remoteEntry || JSON.stringify(entry) !== JSON.stringify(remoteEntry)){
+      const localUpdated = entry.updatedAt || localState.updatedAt || '';
+      const remoteUpdated = remoteEntry.updatedAt || remoteState.updatedAt || '';
+      if(localUpdated >= remoteUpdated) merged.history[iso] = entry;
+    }
+  });
+  merged.petCompletedDays = [...new Set([...(remoteState.petCompletedDays||[]), ...(localState.petCompletedDays||[])])].sort();
+  merged.hairByDate = {...(remoteState.hairByDate||{}), ...(localState.hairByDate||{})};
+  merged.totalPoints = Math.max(Number(remoteState.totalPoints)||0, Number(localState.totalPoints)||0);
+  merged.lastSeenPetStage = Math.max(Number(remoteState.lastSeenPetStage)||0, Number(localState.lastSeenPetStage)||0);
+  merged.log = [...(localState.log||[]), ...(remoteState.log||[])].slice(0,30);
+  merged.revision = Math.max(Number(localState.revision)||0, Number(remoteState.revision)||0)+1;
+  merged.updatedAt = new Date().toISOString();
+  const remoteConfig = sanitizeRemoteConfig(remote.config);
+  const localConfigValid = isValidPeriodsConfig(CONFIG);
+  const useRemoteConfig = remoteConfig && (!localConfigValid || localState.updatedAt < (remoteState.updatedAt||''));
+  return {
+    config: useRemoteConfig ? remoteConfig : (localConfigValid ? CONFIG : JSON.parse(JSON.stringify(DEFAULT_CONFIG))),
+    state: merged
+  };
+}
+
+async function autoPullOnStartup(){
+  if(!APPS_SCRIPT_URL) return;
+  suppressAutoPush = true;
+  try{
+    const res = await fetch(DATA_ENDPOINT, {method:'GET', cache:'no-store'});
+    if(res.ok){
+      const backup = await res.json();
+      if(backup && backup.config && backup.state){
+        const localRevision = Number(state.driveRevision)||0;
+        const localDirty = (Number(state.revision)||0) > localRevision;
+        const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
+        if(localDirty && remoteRevision !== localRevision){
+          const merged = mergeRemoteData(backup);
+          CONFIG = merged.config;
+          state = merged.state;
+          state.driveRevision = remoteRevision;
+          saveConfig(CONFIG);
+          saveState(state);
+          render();
+        } else if(remoteRevision >= localRevision){
+          const remoteConfig = sanitizeRemoteConfig(backup.config);
+          if(remoteConfig){
+            CONFIG = remoteConfig;
+            state = reconcileState(backup.state);
+            state.driveRevision = remoteRevision;
+            state.driveLastSyncISO = todayISO();
+            try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(CONFIG)); }catch(e){}
+            try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+            render();
+          }else{
+            // Nunca substituir uma rotina válida por um backup remoto vazio/incompleto.
+            // O app continua com a configuração local que já funcionava.
+            render();
+          }
+        }
+      }
+    }
+  }catch(err){
+    renderDriveSync();
+  }
+  suppressAutoPush = false;
+}
+
+function addLog(text){
+  const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  state.log.unshift(time+" — "+text);
+  state.log = state.log.slice(0, 30);
+}
+function bumpTotal(){
+  const el = document.getElementById('totalPoints');
+  el.textContent = state.totalPoints;
+  el.classList.remove('bump');
+  void el.offsetWidth;
+  el.classList.add('bump');
+}
+
+/* ---------------- render principal ---------------- */
+/* ===================== PACUS, O AXOLOTE ===================== */
+function getDayEntry(iso){
+  if(iso === todayISO()){
+    const tasks = allTasks();
+    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    const total = applicable.length;
+    const done = applicable.filter(t=>state.checkedToday[t.id]==='done').length;
+    const perfect = total>0 && done===total;
+    return { exists:true, perfect };
+  }
+  const e = state.history[iso];
+  if(!e) return { exists:false, perfect:false };
+  return { exists:true, perfect: !!e.perfect };
+}
+
+function todayPeriodsCompleted(){
+  return periodsCompletedFrom(state.checkedToday);
+}
+
+function getPetCycle(){
+  const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
+  const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
+  const start = new Date(startISO+"T00:00:00");
+  const end = new Date(endISO+"T00:00:00");
+  const totalDays = Math.max(1, Math.round((end-start)/86400000)+1);
+  return { startISO, endISO, start, end, totalDays };
+}
+
+function computePetStage(){
+  const cycle = getPetCycle();
+  const maxStage = CONFIG.pet.stages.length - 1;
+  const completed = new Set(Array.isArray(state.petCompletedDays) ? state.petCompletedDays : []);
+  const validDays = [];
+  for(let i=0;i<cycle.totalDays;i++){
+    const d = new Date(cycle.start);
+    d.setDate(d.getDate()+i);
+    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+    if(completed.has(iso)) validDays.push(iso);
+  }
+  const completedDays = Math.min(cycle.totalDays, validDays.length);
+  const stageFloat = Math.min(maxStage, completedDays);
+  const stage = Math.min(maxStage, completedDays);
+  const todayPerfect = isDayPerfect(todayISO());
+  const canGrowToday = todayISO() >= cycle.startISO && todayISO() <= cycle.endISO && todayPerfect && !completed.has(todayISO());
+  return {
+    stage, stageFloat, unitsCompleted:completedDays, totalUnits:cycle.totalDays,
+    maxStage, daysEquivalent:completedDays, cycleDays:cycle.totalDays,
+    todayPerfect, canGrowToday, completedDays:validDays
+  };
+}
+
+function svgAttrs(){
+  return 'viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Evolução do Pacus"';
+}
+
+function buildEggSVG(progress){
+  const p = Math.max(0, Math.min(1, progress));
+  const wobble = Math.sin(p*Math.PI*3)*1.4;
+  const crackOpacity = Math.min(1, p*1.5);
+  const cracks = [
+    ["M94 80 L106 96 L98 109 L112 125 L103 142", 0.12],
+    ["M80 96 L92 108 L84 122 L96 136", 0.32],
+    ["M124 90 L113 105 L126 117 L116 132 L123 147", 0.52],
+    ["M76 124 L89 131 L82 147", 0.72],
+    ["M132 119 L122 128 L134 141", 0.88]
+  ];
+  const crackSvg = cracks.map(([d,start],i)=>{
+    const opacity = p < start ? 0 : Math.min(1,(p-start)/0.16);
+    return `<path d="${d}" class="egg-crack" stroke="var(--pink)" stroke-width="${2+i*.25}" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>`;
+  }).join('');
+  const shellBreak = p > .78 ? `<path d="M62 118 Q100 ${142+p*10} 158 118" stroke="var(--pink)" stroke-width="2.4" fill="none" opacity="${(p-.78)/.22}"/>` : '';
+  return `<svg class="pet-mascot pet-egg" ${svgAttrs()}>
+    <g transform="rotate(${wobble} 110 130)">
+      <ellipse cx="110" cy="130" rx="48" ry="60" fill="#f6ecd9" stroke="#e8a3c0" stroke-width="3"/>
+      <ellipse cx="93" cy="106" rx="12" ry="18" fill="#fff" opacity=".48"/>
+      ${crackSvg}${shellBreak}
+    </g>
+    <circle cx="72" cy="169" r="4" fill="var(--pink)" opacity=".55"/>
+    <circle cx="151" cy="165" r="3" fill="var(--pink)" opacity=".45"/>
+  </svg>`;
+}
+
+function buildPacusSVG(stageFloat){
+  const s = Math.max(0, Math.min(23, stageFloat));
+  const hatch = Math.max(0, Math.min(1, (s-8)/6));
+  const growth = Math.max(0, Math.min(1, (s-14)/9));
+  const adult = Math.max(0, Math.min(1, (s-21)/2));
+  const scale = 0.52 + growth*0.42 + adult*0.06;
+  const bodyW = 45 + growth*10 + adult*4;
+  const bodyH = 30 + growth*5 + adult*3;
+  const gillLen = 12 + growth*11 + adult*4;
+  const faceY = 92 - hatch*7;
+  const bodyY = 128 - hatch*5;
+  const shell = hatch < 1 ? `
+    <path d="M62 151 Q45 158 54 174 Q70 184 85 170" fill="#f6ecd9" stroke="#e8a3c0" stroke-width="2.5" opacity="${1-hatch*.75}"/>
+    <path d="M158 151 Q175 158 166 174 Q150 184 135 170" fill="#f6ecd9" stroke="#e8a3c0" stroke-width="2.5" opacity="${1-hatch*.75}"/>` : '';
+  const gills = [];
+  const gillCount = 2 + Math.floor(Math.min(2,growth*2));
+  for(let i=0;i<gillCount;i++){
+    const y = faceY-4+i*7;
+    const len = gillLen-(i*2);
+    gills.push(`<path d="M${74-i*2} ${y} Q ${58-len} ${y-8} ${50-len/2} ${y+2}" stroke="var(--pink)" stroke-width="3.2" fill="none" stroke-linecap="round"/>`);
+    gills.push(`<path d="M${146+i*2} ${y} Q ${162+len} ${y-8} ${170+len/2} ${y+2}" stroke="var(--pink)" stroke-width="3.2" fill="none" stroke-linecap="round"/>`);
+  }
+  const sparkle = adult > .8 ? `<text x="35" y="64" font-size="18">✨</text><text x="166" y="75" font-size="16">✨</text>` : '';
+  return `<svg class="pet-mascot pet-hatch-crack" ${svgAttrs()}>
+    ${shell}
+    <g transform="translate(110 115) scale(${scale.toFixed(3)}) translate(-110 -115)">
+      ${sparkle}
+      <ellipse cx="110" cy="${bodyY}" rx="${bodyW}" ry="${bodyH}" fill="#f6c7dc"/>
+      <ellipse cx="110" cy="${bodyY+8}" rx="${bodyW*.68}" ry="${bodyH*.52}" fill="#fbe2ec" opacity=".85"/>
+      <circle cx="110" cy="${faceY}" r="32" fill="#f6c7dc"/>
+      ${gills.join('')}
+      <circle cx="97" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="123" cy="${faceY-4}" r="4.5" fill="#3a2430"/>
+      <circle cx="98" cy="${faceY-5.5}" r="1.4" fill="#fff"/><circle cx="124" cy="${faceY-5.5}" r="1.4" fill="#fff"/>
+      <path d="M96 ${faceY+12} Q110 ${faceY+18+growth*2} 124 ${faceY+12}" stroke="#b9607f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <circle cx="89" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/><circle cx="131" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/>
+      <ellipse cx="110" cy="${bodyY+bodyH+5}" rx="22" ry="7" fill="#f6c7dc"/>
+    </g>
+  </svg>`;
+}
+
+function buildPetVisual(stageFloat){
+  if(stageFloat < 9) return buildEggSVG(stageFloat/8);
+  return buildPacusSVG(stageFloat);
+}
+
+function renderPet(){
+  const el = document.getElementById('petSection');
+  const data = computePetStage();
+  const { stage, stageFloat, daysEquivalent, cycleDays, maxStage, todayPerfect, canGrowToday } = data;
+  const stageInfo = CONFIG.pet.stages[stage];
+  const progressPct = Math.round((daysEquivalent/cycleDays)*100);
+
+  const milestones = [
+    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
+  ];
+  const milestoneHtml = milestones.map(([day,label])=>{
+    const active = daysEquivalent >= day;
+    const current = stage >= day && (stage === day || (stage > day && day === 23));
+    return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label}<small>dia ${day}</small></span>`;
+  }).join('');
+
+  let caption;
+  if(stage === maxStage){
+    caption = `Pacus adulto. <b>O ciclo terminou em 31/08.</b>`;
+  } else if(canGrowToday){
+    caption = `<b>Dia completo!</b> O Pacus está pronto para avançar uma etapa.`;
+  } else if(todayPerfect){
+    caption = `Dia completo. <b>Essa evolução já foi registrada.</b>`;
+  } else if(daysEquivalent === 0){
+    caption = `O ovo está esperando. <b>Complete o dia para começar a rachadura.</b>`;
+  } else {
+    caption = `O Pacus está esperando você. <b>Ele não perde progresso.</b>`;
+  }
+
+  const previousProgress = Number(el.dataset.pacusProgress ?? daysEquivalent);
+  const grewNow = daysEquivalent > previousProgress;
+  el.dataset.pacusProgress = String(daysEquivalent);
+
+  el.innerHTML = `
+    ${buildPetVisual(stageFloat)}
+    <div class="pet-name">${CONFIG.pet.name}</div>
+    <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
+    <div class="pet-day-progress">
+      <div class="pet-day-progress-head"><span>Progresso do Pacus</span><b>${progressPct}%</b></div>
+      <div class="pet-day-track" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
+    </div>
+    <div class="pet-milestones">${milestoneHtml}</div>
+    <div class="pet-status-line">${daysEquivalent === cycleDays ? 'Ciclo concluído' : `Próxima evolução após completar mais ${cycleDays-daysEquivalent} ${cycleDays-daysEquivalent===1?'dia':'dias'}.`}</div>
+    <div class="pet-caption">${caption}</div>
+    <div id="petEvolvedBanner"></div>
+    <div class="streak-strip">${buildStreakStrip()}</div>
+  `;
+
+  if(grewNow){
+    const mascotEl = el.querySelector('.pet-mascot');
+    if(mascotEl){
+      mascotEl.classList.remove('pet-growth-burst');
+      void mascotEl.offsetWidth;
+      mascotEl.classList.add('pet-growth-burst');
+      if(stage < 9){ mascotEl.classList.add('pet-hatch-crack'); }
+    }
+  }
+
+  if(stage > state.lastSeenPetStage){
+    document.getElementById('petEvolvedBanner').innerHTML = `<div class="pet-evolved-banner">Pacus avançou para <b>${stageInfo.label}</b>.</div>`;
+    state.lastSeenPetStage = stage;
+    saveState(state);
+    fireConfetti(el.querySelector('.pet-mascot'), stage === maxStage ? 50 : 18);
+  }
+}
+
+function buildStreakStrip(){
+  const days = [];
+  for(let i=6; i>=0; i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+    days.push(iso);
+  }
+  const weekdayLetters = ['D','S','T','Q','Q','S','S'];
+  const cells = days.map(iso=>{
+    const isToday = iso === todayISO();
+    const d = new Date(iso+"T00:00:00");
+    const letter = weekdayLetters[d.getDay()];
+    let entry = isToday ? liveTodayEntry() : state.history[iso];
+    let cls = 'streak-cell empty';
+    if(entry && entry.total > 0){
+      if(entry.perfect) cls = 'streak-cell perfect';
+      else if(entry.done > 0) cls = 'streak-cell partial';
+      else cls = 'streak-cell none';
+    }
+    if(isToday) cls += ' today';
+    return `<span class="${cls}" title="${formatDateBR(iso)}"><span class="streak-letter">${letter}</span></span>`;
+  }).join('');
+  return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${cells}</div>`;
+}
+
+function liveTodayEntry(){
+  const tasks = allTasks();
+  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+  const total = applicable.length;
+  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+  const perfect = total>0 && done===total;
+  return { total, done, perfect };
+}
+
+function getHairStatus(dateISO){
+  return state.hairByDate && state.hairByDate[dateISO] ? state.hairByDate[dateISO] : null;
+}
+
+function setHairStatus(status){
+  const iso = todayISO();
+  if(!state.hairByDate) state.hairByDate = {};
+  state.hairByDate[iso] = status;
+  if(!state.history) state.history = {};
+  if(state.history[iso]) state.history[iso].hair = status;
+  saveState(state);
+  renderHair();
+  renderHistory();
+}
+
+function renderHair(){
+  const section = document.getElementById('hairSection');
+  if(!section) return;
+  const status = getHairStatus(todayISO());
+  const washedBtn = document.getElementById('hairWashedBtn');
+  const notWashedBtn = document.getElementById('hairNotWashedBtn');
+  const statusEl = document.getElementById('hairStatus');
+  washedBtn.classList.toggle('active-washed', status === 'washed');
+  notWashedBtn.classList.toggle('active-notwashed', status === 'not-washed');
+  statusEl.innerHTML = status === 'washed'
+    ? 'Hoje: <b class="hair-history-washed">💧 cabelo lavado</b>'
+    : status === 'not-washed'
+      ? 'Hoje: <b class="hair-history-notwashed">○ não lavou</b>'
+      : 'Hoje: ainda não registrado';
+}
+
+function render(){
+  document.getElementById('totalPoints').textContent = state.totalPoints;
+
+  renderPet();
+  renderHair();
+
+  const weekendEl = document.getElementById('weekendIndicator');
+  if(weekendEl){
+    weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
+      ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
+      : '';
+  }
+
+  const periodsEl = document.getElementById('periods');
+  periodsEl.innerHTML = '';
+  Object.entries(getPeriodsFor(todayISO())).forEach(([key, period])=>{
+    const div = document.createElement('div');
+    div.className = 'period ' + key;
+
+    const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    const doneCount = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+    const remaining = applicable.length - doneCount;
+    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
+
+    let progressMsg;
+    if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
+    else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
+    else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
+    else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
+
+    const ul = document.createElement('ul');
+    ul.className = 'tasks';
+    period.tasks.forEach(task=>{
+      const li = document.createElement('li');
+      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
+      li.className = 'task'
+        + (status === 'done' ? ' done' : '')
+        + (status === 'na' ? ' na' : '')
+        + (status === 'x' ? ' notdone' : '');
+      li.innerHTML = `
+        <span class="mark-group" data-id="${task.id}">
+          <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
+          <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
+          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, não ganha ponto">✕</button>
+        </span>
+        <span class="txt"><span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
+        <span class="pts">${status==='na' ? 'n/a' : '+'+task.pts}</span>
+      `;
+      ul.appendChild(li);
+    });
+
+    div.innerHTML = `
+      <div class="period-head"><h2>${period.label}</h2><span class="time">${period.time}</span></div>
+      <span class="progress-txt">${progressMsg}</span>
+      <div class="progress-bar"><div style="width:${pct}%"></div></div>
+    `;
+    div.appendChild(ul);
+    periodsEl.appendChild(div);
+  });
+
+  periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
+    btn.addEventListener('click', onMarkClick);
+  });
+
+  const badEl = document.getElementById('badHabits');
+  badEl.innerHTML = '';
+  CONFIG.badHabits.forEach(h=>{
+    const btn = document.createElement('button');
+    btn.className = 'bad-btn';
+    btn.innerHTML = `${h.txt}<span class="minus">−${h.pts}</span>`;
+    btn.addEventListener('click', ()=>{
+      state.totalPoints = Math.max(0, state.totalPoints - h.pts);
+      addLog(`−${h.pts} · ${h.txt}`);
+      saveState(state);
+      bumpTotal();
+      renderLog();
+    });
+    badEl.appendChild(btn);
+  });
+
+  renderRewards();
+  document.getElementById('perfectNote').innerHTML =
+    `Dia com <b>todas as tarefas certinhas</b> = bônus de <b>${CONFIG.perfectDayBonusMinutes||30} minutos de tela</b>, direto — sem precisar trocar Pacus Points.`;
+  renderLog();
+  renderHistory();
+  renderWeeklyReview();
+  renderBackupReminder();
+  renderTestPanel();
+  renderTestModeBanner();
+  renderDriveSync();
+}
+
+function daysBetween(isoA, isoB){
+  const a = new Date(isoA+"T00:00:00");
+  const b = new Date(isoB+"T00:00:00");
+  return Math.round((b-a)/86400000);
+}
+
+function shiftISODate(iso, deltaDays){
+  const d = new Date(iso+"T00:00:00");
+  d.setDate(d.getDate()+deltaDays);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+}
+
+function goToTestDate(iso){
+  setTestDate(iso);
+  state = loadState();
+  render();
+}
+
+let testPanelOpen = false;
+
+function renderTestModeBanner(){
+  const el = document.getElementById('testModeBanner');
+  if(!el) return;
+  if(!TEST_DATE_OVERRIDE){ el.innerHTML=''; return; }
+  el.innerHTML = `
+    <div class="test-mode-banner">
+      🧪 MODO TESTE ATIVO — data simulada: ${formatDateBR(TEST_DATE_OVERRIDE)}
+      <button id="bannerRealDateBtn">voltar pra data real</button>
+    </div>
+  `;
+  document.getElementById('bannerRealDateBtn').addEventListener('click', ()=>{
+    setTestDate(null);
+    state = loadState();
+    render();
+  });
+}
+
+function renderTestPanel(){
+  const el = document.getElementById('testPanel');
+  if(!el) return;
+  if(!testPanelOpen){ el.style.display='none'; el.innerHTML=''; return; }
+  el.style.display='block';
+
+  const realToday = (()=>{
+    const d = new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+  })();
+  const usingOverride = !!TEST_DATE_OVERRIDE;
+
+  el.innerHTML = `
+    <div class="test-panel">
+      <h3>🧪 Modo de teste</h3>
+      <div class="hint">Ferramentas só pra conferir se o crescimento do Pacus e o histórico estão funcionando. Não mexe nas tarefas de verdade — só simula dias.</div>
+      <div class="test-date">Data simulada agora: <b>${formatDateBR(todayISO())}/${todayISO().split('-')[0]}</b>${usingOverride ? ' (modo teste ativo)' : ' (data real do sistema)'}</div>
+      <div class="test-row">
+        <button class="icon-btn" id="testCompleteDayBtn">✅ completar tudo hoje</button>
+        <button class="icon-btn" id="testPrevDayBtn">◀ dia anterior</button>
+        <button class="icon-btn" id="testNextDayBtn">dia seguinte ▶</button>
+        <input type="date" id="testDatePicker" value="${todayISO()}">
+        <button class="icon-btn" id="testGoDateBtn">ir pra essa data</button>
+        <button class="icon-btn danger" id="testResetDateBtn">voltar pra data real</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('testCompleteDayBtn').addEventListener('click', ()=>{
+    allTasks().forEach(t=>{
+      if(state.checkedToday[t.id] !== 'done'){
+        state.totalPoints += t.pts;
+      }
+      state.checkedToday[t.id] = 'done';
+    });
+    syncPetCompletionFromDay(todayISO());
+    addLog('🧪 (teste) todas as tarefas de hoje marcadas como feitas');
+    saveState(state);
+    render();
+  });
+
+  document.getElementById('testPrevDayBtn').addEventListener('click', ()=>{
+    goToTestDate(shiftISODate(todayISO(), -1));
+  });
+  document.getElementById('testNextDayBtn').addEventListener('click', ()=>{
+    goToTestDate(shiftISODate(todayISO(), 1));
+  });
+  document.getElementById('testGoDateBtn').addEventListener('click', ()=>{
+    const val = document.getElementById('testDatePicker').value;
+    if(val) goToTestDate(val);
+  });
+  document.getElementById('testResetDateBtn').addEventListener('click', ()=>{
+    goToTestDate(realToday);
+    setTestDate(null);
+    state = loadState();
+    render();
+  });
+}
+
+function renderBackupReminder(){
+  const el = document.getElementById('backupReminder');
+  if(!el) return;
+
+  const today = todayISO();
+  const daysSinceBackup = state.lastBackupISO ? daysBetween(state.lastBackupISO, today) : Infinity;
+  const daysSinceStart = state.history && Object.keys(state.history).length
+    ? Infinity // se já há histórico, não depende do início — usamos direto o critério de 7 dias
+    : 0;
+  const dismissed = state.backupReminderDismissedFor === today;
+
+  const shouldShow = daysSinceBackup >= 7 && !dismissed;
+
+  if(!shouldShow){ el.innerHTML=''; return; }
+
+  const msg = state.lastBackupISO
+    ? `Já faz ${daysSinceBackup} dias desde o último backup. Que tal exportar de novo?`
+    : `Vocês ainda não fizeram nenhum backup. Vale exportar um agora pra não perder o progresso.`;
+
+  el.innerHTML = `
+    <div class="backup-reminder">
+      <span>💾 ${msg}</span>
+      <span>
+        <button id="backupReminderExportBtn">exportar agora</button>
+        <button class="dismiss" id="backupReminderDismissBtn">lembrar depois</button>
+      </span>
+    </div>
+  `;
+  document.getElementById('backupReminderExportBtn').addEventListener('click', ()=>{
+    document.getElementById('exportBtn').click();
+  });
+  document.getElementById('backupReminderDismissBtn').addEventListener('click', ()=>{
+    state.backupReminderDismissedFor = today;
+    saveState(state);
+    renderBackupReminder();
+  });
+}
+
+function renderWeeklyReview(){
+  const el = document.getElementById('weeklyReviewSection');
+  if(!el) return;
+
+  const days = [];
+  for(let i=6; i>=0; i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    days.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'));
+  }
+
+  let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0, daysWithData = 0;
+  days.forEach(iso=>{
+    const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
+    if(!entry) return;
+    if(iso !== todayISO()){
+      // dias fechados já têm pointsEarnedThatDay e screenMinutes calculados
+      const full = state.history[iso];
+      if(full){
+        totalPointsWeek += full.pointsEarnedThatDay || 0;
+        totalScreenMin += full.screenMinutes || 0;
+      }
+    }
+    if(entry.total > 0){ daysWithData++; if(entry.perfect) perfectDays++; }
+  });
+
+  const rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
+
+  let msg;
+  if(daysWithData === 0){
+    msg = `Ainda sem dados essa semana — bora começar hoje!`;
+  } else if(perfectDays === 0){
+    msg = `Nenhum dia 100% ainda essa semana. Sem problema — todo período completo já conta pro crescimento do Pacus. Que tal revisar juntos o que travou?`;
+  } else if(perfectDays >= 6){
+    msg = `Semana incrível! <b>${perfectDays} de 7 dias perfeitos</b>. Um ótimo momento pra comemorar juntos. 🎉`;
+  } else {
+    msg = `<b>${perfectDays} de 7 dias</b> com tudo certinho essa semana. Bom momento pra conversar sobre o que ajudou nos dias que foram bem.`;
+  }
+
+  el.innerHTML = `
+    <div class="weekly-review">
+      <div class="wr-head">
+        <h3 class="block-title" style="margin:0; color:var(--green);">🗓️ Resumo semanal em família</h3>
+        <span class="wr-range">${rangeLabel}</span>
+      </div>
+      <div class="wr-stats">
+        <div class="wr-stat"><span class="wr-num">${perfectDays}/7</span><span class="wr-label">dias completos</span></div>
+        <div class="wr-stat"><span class="wr-num">${totalPointsWeek}</span><span class="wr-label">Pacus Points ganhos</span></div>
+        <div class="wr-stat"><span class="wr-num">${totalScreenMin}</span><span class="wr-label">min de tela ganhos</span></div>
+      </div>
+      <div class="wr-msg">${msg}</div>
+    </div>
+  `;
+}
+
+function hairLabel(status){
+  if(status === 'washed') return '<span class="hair-history-washed">💧 Lavou</span>';
+  if(status === 'not-washed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
+  return '<span class="hair-history-unknown">· Não registrado</span>';
+}
+
+function renderHistory(){
+  const body = document.getElementById('historyBody');
+  const start = CONFIG.historyStartDate || todayISO();
+  const startDate = new Date(start+"T00:00:00");
+  const today = new Date(todayISO()+"T00:00:00");
+
+  const rows = [];
+  for(let d = new Date(startDate); d <= today; d.setDate(d.getDate()+1)){
+    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+    rows.push(iso);
+  }
+
+  body.innerHTML = rows.map(iso=>{
+    const isToday = iso === todayISO();
+    let entry;
+    if(isToday){
+      const tasks = allTasks();
+      const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+      const total = applicable.length;
+      const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+      const pointsEarnedThatDay = tasks.filter(t=>state.checkedToday[t.id]==='done').reduce((s,t)=>s+t.pts,0);
+      const perfect = total>0 && done===total;
+      entry = { done, total, pointsEarnedThatDay, perfect, hair:getHairStatus(iso) };
+    } else {
+      entry = state.history[iso];
+    }
+    const hair = getHairStatus(iso) || (entry && entry.hair) || null;
+    if(!entry){
+      return `<tr${isToday?' class="today-row"':''}>
+        <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
+        <td>—</td>
+        <td class="pts-cell">—</td>
+        <td>${hairLabel(hair)}</td>
+        <td>${isToday?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
+      </tr>`;
+    }
+    const perfectBadge = entry.perfect ? '<span class="badge-perfect">dia perfeito</span>' : '';
+    const editCell = isToday ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
+    return `<tr${isToday?' class="today-row"':''}>
+      <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
+      <td>${entry.done}/${entry.total}${perfectBadge}</td>
+      <td class="pts-cell">${entry.pointsEarnedThatDay}</td>
+      <td>${hairLabel(hair)}</td>
+      <td>${editCell}</td>
+    </tr>`;
+  }).join('');
+
+  body.querySelectorAll('.edit-day-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> openDayEditor(btn.getAttribute('data-date')));
+  });
+}
+
+function renderRewards(){
+  const rEl = document.getElementById('rewards');
+  rEl.innerHTML = '';
+  CONFIG.rewards.forEach(r=>{
+    const canAfford = state.totalPoints >= r.cost;
+    const div = document.createElement('div');
+    div.className = 'reward';
+    div.innerHTML = `
+      <div class="name">${r.txt}</div>
+      <span class="cost">${r.cost} PP</span>
+      <button ${canAfford ? '' : 'disabled'}>Resgatar</button>
+    `;
+    div.querySelector('button').addEventListener('click', ()=>{
+      if(state.totalPoints < r.cost) return;
+      state.totalPoints -= r.cost;
+      addLog(`🎁 Resgatou: ${r.txt} (−${r.cost})`);
+      saveState(state);
+      bumpTotal();
+      renderRewards();
+      renderLog();
+    });
+    rEl.appendChild(div);
+  });
+}
+
+function renderLog(){
+  const logEl = document.getElementById('logList');
+  logEl.innerHTML = state.log.length
+    ? state.log.map(l=>`<div>${l}</div>`).join('')
+    : '<div>Nada ainda hoje — bora começar!</div>';
+}
+
+function fireConfetti(originEl, count){
+  count = count || 14;
+  const colors = ['#f5d878','#eeb0cb','#9ad2ee','#f3ad6c','#b7ddba'];
+  const rect = originEl && originEl.getBoundingClientRect
+    ? originEl.getBoundingClientRect()
+    : { left: window.innerWidth/2, top: window.innerHeight/2, width:0, height:0 };
+  const originX = rect.left + rect.width/2;
+  const originY = rect.top + rect.height/2;
+
+  for(let i=0;i<count;i++){
+    const piece = document.createElement('span');
+    piece.className = 'confetti-piece';
+    const angle = Math.random()*Math.PI*2;
+    const dist = 60 + Math.random()*90;
+    piece.style.setProperty('--dx', (Math.cos(angle)*dist)+'px');
+    piece.style.setProperty('--dy', (Math.sin(angle)*dist - 40)+'px');
+    piece.style.setProperty('--rot', (Math.random()*360)+'deg');
+    piece.style.left = originX+'px';
+    piece.style.top = originY+'px';
+    piece.style.background = colors[i % colors.length];
+    document.body.appendChild(piece);
+    setTimeout(()=>piece.remove(), 950);
+  }
+}
+
+function onMarkClick(e){
+  const btn = e.currentTarget;
+  const id = btn.closest('.mark-group').getAttribute('data-id');
+  const clickedStatus = btn.getAttribute('data-status'); // 'done', 'na', or 'x'
+  const task = allTasks().find(t=>t.id===id);
+  if(!task) return;
+
+  const current = state.checkedToday[id]; // undefined | 'done' | 'na' | 'x'
+
+  // desfazer pontos do estado anterior, se era 'done'
+  if(current === 'done'){
+    state.totalPoints = Math.max(0, state.totalPoints - task.pts);
+  }
+
+  if(current === clickedStatus){
+    // clicou de novo no mesmo estado: volta pra pendente
+    delete state.checkedToday[id];
+    addLog(`(desmarcado) ${task.txt}`);
+  } else {
+    state.checkedToday[id] = clickedStatus;
+    if(clickedStatus === 'done'){
+      state.totalPoints += task.pts;
+      addLog(`+${task.pts} · ${task.txt}`);
+      fireConfetti(btn);
+    } else if(clickedStatus === 'na'){
+      addLog(`n/a · ${task.txt}`);
+    } else {
+      addLog(`✕ não realizado · ${task.txt}`);
+    }
+  }
+
+  const completedNow = syncPetCompletionFromDay(todayISO());
+  if(completedNow){
+    addLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
+  }
+  saveState(state);
+  bumpTotal();
+  render();
+}
+
+document.getElementById('hairWashedBtn').addEventListener('click', ()=> setHairStatus('washed'));
+document.getElementById('hairNotWashedBtn').addEventListener('click', ()=> setHairStatus('not-washed'));
+
+document.getElementById('addPointsBtn').addEventListener('click', ()=>{
+  const raw = prompt('Quantos Pacus Points adicionar?', '5');
+  if(raw === null) return;
+  const amount = parseInt(raw, 10);
+  if(!amount || amount === 0) return;
+  state.totalPoints = Math.max(0, state.totalPoints + amount);
+  addLog(`${amount>0?'+':''}${amount} · ajuste manual`);
+  saveState(state);
+  bumpTotal();
+  render();
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(!confirm('Isso apaga os Pacus Points, o histórico de hoje e o histórico de dias. Tem certeza?')) return;
+  state = { totalPoints:0, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, driveLastSyncISO:null, hairByDate:{} };
+  saveState(state);
+  render();
+});
+
+/* ===================== EDITOR ===================== */
+let draft = null; // cópia de trabalho do CONFIG enquanto o modal está aberto
+
+function openEditor(){
+  draft = JSON.parse(JSON.stringify(CONFIG));
+  renderEditorPeriod('manha', 'editManha');
+  renderEditorPeriod('tarde', 'editTarde');
+  renderEditorPeriod('noite', 'editNoite');
+  renderEditorBad();
+  renderEditorRewards();
+
+  const weekendToggle = document.getElementById('weekendToggle');
+  const weekendBody = document.getElementById('weekendEditorBody');
+  weekendToggle.checked = !!draft.periodsWeekend;
+  weekendBody.style.display = draft.periodsWeekend ? 'block' : 'none';
+  if(draft.periodsWeekend){
+    renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
+    renderEditorPeriod('tarde', 'editTardeWeekend', draft.periodsWeekend);
+    renderEditorPeriod('noite', 'editNoiteWeekend', draft.periodsWeekend);
+  }
+  weekendToggle.onchange = ()=>{
+    if(weekendToggle.checked && !draft.periodsWeekend){
+      // clona a rotina de dia de escola como ponto de partida
+      draft.periodsWeekend = JSON.parse(JSON.stringify(draft.periods));
+      // gera ids novos pra não colidir com os da rotina de semana
+      Object.values(draft.periodsWeekend).forEach(period=>{
+        period.tasks.forEach(t=>{ t.id = uid('we'); });
+      });
+      renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
+      renderEditorPeriod('tarde', 'editTardeWeekend', draft.periodsWeekend);
+      renderEditorPeriod('noite', 'editNoiteWeekend', draft.periodsWeekend);
+    }
+    weekendBody.style.display = weekendToggle.checked ? 'block' : 'none';
+    if(!weekendToggle.checked) draft.periodsWeekend = null;
+  };
+
+  document.getElementById('editorPinInput').value = draft.editorPin || '';
+
+  document.getElementById('overlay').classList.add('open');
+}
+function closeEditor(){
+  document.getElementById('overlay').classList.remove('open');
+  draft = null;
+}
+
+function renderEditorPeriod(key, elId, periodsObj){
+  periodsObj = periodsObj || draft.periods;
+  const el = document.getElementById(elId);
+  el.innerHTML = '';
+  const list = periodsObj[key].tasks;
+  list.forEach((task, idx)=>{
+    const row = document.createElement('div');
+    row.className = 'edit-row edit-row-task';
+    row.innerHTML = `
+      <div class="edit-row-main">
+        <span class="reorder-group">
+          <button type="button" class="reorder-btn" data-dir="up" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
+          <button type="button" class="reorder-btn" data-dir="down" ${idx===list.length-1?'disabled':''} title="Mover pra baixo">▼</button>
+        </span>
+        <input type="text" value="${escapeAttr(task.txt)}" data-field="txt" placeholder="nome da tarefa">
+        ${stepperHTML('pts', task.pts)}
+        <button class="del" title="remover">🗑</button>
+      </div>
+      <input type="text" class="sub-input" value="${escapeAttr(task.sub||'')}" data-field="sub" placeholder="descrição (opcional)">
+    `;
+    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ task.txt = e.target.value; });
+    wireStepper(row, task, 'pts');
+    row.querySelector('[data-field=sub]').addEventListener('input', e=>{ task.sub = e.target.value; });
+    row.querySelector('.del').addEventListener('click', ()=>{
+      periodsObj[key].tasks = periodsObj[key].tasks.filter(t=>t!==task);
+      renderEditorPeriod(key, elId, periodsObj);
+    });
+    row.querySelectorAll('.reorder-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const dir = btn.getAttribute('data-dir');
+        const i = list.indexOf(task);
+        const swapWith = dir === 'up' ? i-1 : i+1;
+        if(swapWith < 0 || swapWith >= list.length) return;
+        [list[i], list[swapWith]] = [list[swapWith], list[i]];
+        renderEditorPeriod(key, elId, periodsObj);
+      });
+    });
+    el.appendChild(row);
+  });
+}
+
+function stepperHTML(field, value){
+  return `<span class="stepper">
+    <button type="button" class="step-btn" data-step="-1" title="menos">−</button>
+    <input type="number" min="0" value="${value}" data-field="${field}">
+    <button type="button" class="step-btn" data-step="1" title="mais">+</button>
+  </span>`;
+}
+function wireStepper(row, obj, field){
+  const input = row.querySelector(`[data-field=${field}]`);
+  input.addEventListener('input', e=>{ obj[field] = parseInt(e.target.value)||0; });
+  row.querySelectorAll('.step-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const delta = parseInt(btn.getAttribute('data-step'));
+      obj[field] = Math.max(0, (obj[field]||0) + delta);
+      input.value = obj[field];
+    });
+  });
+}
+
+function renderEditorBad(){
+  const el = document.getElementById('editBad');
+  el.innerHTML = '';
+  draft.badHabits.forEach(h=>{
+    const row = document.createElement('div');
+    row.className = 'edit-row';
+    row.innerHTML = `
+      <input type="text" value="${escapeAttr(h.txt)}" data-field="txt" placeholder="hábito ruim">
+      ${stepperHTML('pts', h.pts)}
+      <button class="del" title="remover">🗑</button>
+    `;
+    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ h.txt = e.target.value; });
+    wireStepper(row, h, 'pts');
+    row.querySelector('.del').addEventListener('click', ()=>{
+      draft.badHabits = draft.badHabits.filter(x=>x!==h);
+      renderEditorBad();
+    });
+    el.appendChild(row);
+  });
+}
+
+function renderEditorRewards(){
+  const el = document.getElementById('editRewards');
+  el.innerHTML = '';
+  draft.rewards.forEach(r=>{
+    const row = document.createElement('div');
+    row.className = 'edit-row';
+    row.innerHTML = `
+      <input type="text" value="${escapeAttr(r.txt)}" data-field="txt" placeholder="recompensa">
+      ${stepperHTML('cost', r.cost)}
+      <button class="del" title="remover">🗑</button>
+    `;
+    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ r.txt = e.target.value; });
+    wireStepper(row, r, 'cost');
+    row.querySelector('.del').addEventListener('click', ()=>{
+      draft.rewards = draft.rewards.filter(x=>x!==r);
+      renderEditorRewards();
+    });
+    el.appendChild(row);
+  });
+}
+
+function escapeAttr(s){
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+document.querySelectorAll('.add-row-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const kind = btn.getAttribute('data-add');
+    const weekendMap = {manhaWeekend:'manha', tardeWeekend:'tarde', noiteWeekend:'noite'};
+    const weekendElMap = {manhaWeekend:'editManhaWeekend', tardeWeekend:'editTardeWeekend', noiteWeekend:'editNoiteWeekend'};
+    if(kind === 'manha' || kind === 'tarde' || kind === 'noite'){
+      draft.periods[kind].tasks.push({ id: uid('t'), txt:'', pts:1, sub:'' });
+      renderEditorPeriod(kind, {manha:'editManha', tarde:'editTarde', noite:'editNoite'}[kind]);
+    } else if(weekendMap[kind]){
+      const periodKey = weekendMap[kind];
+      if(!draft.periodsWeekend) return;
+      draft.periodsWeekend[periodKey].tasks.push({ id: uid('we'), txt:'', pts:1, sub:'' });
+      renderEditorPeriod(periodKey, weekendElMap[kind], draft.periodsWeekend);
+    } else if(kind === 'bad'){
+      draft.badHabits.push({ id: uid('b'), txt:'', pts:1 });
+      renderEditorBad();
+    } else if(kind === 'reward'){
+      draft.rewards.push({ id: uid('r'), txt:'', cost:10 });
+      renderEditorRewards();
+    }
+  });
+});
+
+document.getElementById('editBtn').addEventListener('click', ()=>{
+  if(CONFIG.editorPin){
+    const entered = prompt('Digite o PIN pra editar:');
+    if(entered === null) return; // cancelou
+    if(entered !== CONFIG.editorPin){
+      alert('PIN incorreto.');
+      return;
+    }
+  }
+  openEditor();
+});
+document.getElementById('adultTestBtn').addEventListener('click', ()=>{
+  closeEditor();
+  testPanelOpen = !testPanelOpen;
+  renderTestPanel();
+});
+document.getElementById('closeBtn').addEventListener('click', closeEditor);
+document.getElementById('cancelBtn').addEventListener('click', closeEditor);
+document.getElementById('overlay').addEventListener('click', e=>{
+  if(e.target.id === 'overlay') closeEditor();
+});
+
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  // limpa linhas vazias (sem nome) antes de salvar
+  ['manha','tarde','noite'].forEach(k=>{
+    draft.periods[k].tasks = draft.periods[k].tasks.filter(t=>t.txt.trim() !== '');
+  });
+  if(draft.periodsWeekend){
+    ['manha','tarde','noite'].forEach(k=>{
+      draft.periodsWeekend[k].tasks = draft.periodsWeekend[k].tasks.filter(t=>t.txt.trim() !== '');
+    });
+  }
+  draft.badHabits = draft.badHabits.filter(h=>h.txt.trim() !== '');
+  draft.rewards = draft.rewards.filter(r=>r.txt.trim() !== '');
+
+  const pinVal = document.getElementById('editorPinInput').value.trim();
+  draft.editorPin = pinVal;
+
+  CONFIG = draft;
+  saveConfig(CONFIG);
+
+  // remove do estado marcado de hoje qualquer tarefa que não existe mais
+  // na rotina ativa de hoje (dia de escola ou fim de semana)
+  const validIds = new Set(allTasks().map(t=>t.id));
+  Object.keys(state.checkedToday).forEach(id=>{
+    if(!validIds.has(id)) delete state.checkedToday[id];
+  });
+  saveState(state);
+
+  closeEditor();
+  render();
+});
+
+/* ===================== EDITOR DE DIA ANTERIOR ===================== */
+let editingDate = null;
+
+function openDayEditor(dateISO){
+  editingDate = dateISO;
+  const entry = state.history[dateISO] || { done:0, total:0, pointsEarnedThatDay:0, perfect:false, screenMinutes:0 };
+  document.getElementById('dayEditorTitle').textContent = 'Editar ' + formatDateBR(dateISO);
+  document.getElementById('dayDone').value = entry.done;
+  document.getElementById('dayTotal').value = entry.total;
+  document.getElementById('dayPoints').value = entry.pointsEarnedThatDay;
+  document.getElementById('dayHair').value = getHairStatus(dateISO) || entry.hair || '';
+  document.getElementById('dayOverlay').classList.add('open');
+}
+function closeDayEditor(){
+  document.getElementById('dayOverlay').classList.remove('open');
+  editingDate = null;
+}
+document.getElementById('dayCloseBtn').addEventListener('click', closeDayEditor);
+document.getElementById('dayCancelBtn').addEventListener('click', closeDayEditor);
+document.getElementById('dayOverlay').addEventListener('click', e=>{
+  if(e.target.id === 'dayOverlay') closeDayEditor();
+});
+
+document.getElementById('daySaveBtn').addEventListener('click', ()=>{
+  if(!editingDate) return;
+  const oldEntry = state.history[editingDate];
+  const oldPoints = oldEntry ? oldEntry.pointsEarnedThatDay : 0;
+
+  const done = Math.max(0, parseInt(document.getElementById('dayDone').value,10) || 0);
+  const total = Math.max(0, parseInt(document.getElementById('dayTotal').value,10) || 0);
+  const pointsEarnedThatDay = Math.max(0, parseInt(document.getElementById('dayPoints').value,10) || 0);
+  const hair = document.getElementById('dayHair').value || null;
+  const perfect = total > 0 && done >= total;
+
+  if(!state.hairByDate) state.hairByDate = {};
+  if(hair) state.hairByDate[editingDate] = hair; else delete state.hairByDate[editingDate];
+  state.history[editingDate] = { done, total, pointsEarnedThatDay, perfect, screenMinutes: perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0, hair };
+  if(perfect) registerPetDayCompletion(editingDate);
+
+  // ajusta o saldo total pela diferença de pontos daquele dia
+  const delta = pointsEarnedThatDay - oldPoints;
+  if(delta !== 0){
+    state.totalPoints = Math.max(0, state.totalPoints + delta);
+    addLog(`✏️ ajuste em ${formatDateBR(editingDate)}: ${delta>0?'+':''}${delta}`);
+  }
+
+  saveState(state);
+  closeDayEditor();
+  bumpTotal();
+  render();
+});
+
+/* ===================== SINCRONIZAÇÃO COM GOOGLE DRIVE (via Apps Script) ===================== */
+
+const APPS_SCRIPT_CODE = `function doGet(e) {
+  if (e.parameter.data === '1') {
+    var files = DriveApp.getFilesByName('rotina-hector-backup.json');
+    if (files.hasNext()) {
+      var file = files.next();
+      var raw = file.getBlob().getDataAsString();
+      try {
+        var data = JSON.parse(raw);
+        return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+      } catch(err) {}
+    }
+    return ContentService.createTextOutput(JSON.stringify({error:'not_found'})).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  var appFiles = DriveApp.getFilesByName('rotina-hector.html');
+  if (!appFiles.hasNext()) appFiles = DriveApp.getFilesByName('rotina-hector-app.html');
+  if (appFiles.hasNext()) {
+    return HtmlService.createHtmlOutput(appFiles.next().getBlob().getDataAsString())
+      .setTitle('Rotina do Hector')
+      .addMetaTag('viewport','width=device-width, initial-scale=1');
+  }
+  return HtmlService.createHtmlOutput('Ainda não encontrei o arquivo rotina-hector.html (nem o arquivo legado rotina-hector-app.html) no seu Drive.');
+}
+
+function doPost(e) {
+  var incoming = JSON.parse(e.postData.contents || '{}');
+  var files = DriveApp.getFilesByName('rotina-hector-backup.json');
+  var file = files.hasNext() ? files.next() : DriveApp.createFile('rotina-hector-backup.json','{}',MimeType.PLAIN_TEXT);
+  var current = {};
+  try { current = JSON.parse(file.getBlob().getDataAsString() || '{}'); } catch(err) {}
+  var currentRevision = Number(current.revision || (current.state && current.state.driveRevision) || 0);
+  var baseRevision = Number(incoming.baseRevision || 0);
+
+  if (currentRevision > 0 && baseRevision !== currentRevision) {
+    return ContentService.createTextOutput(JSON.stringify({conflict:true, revision:currentRevision, data:current})).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  var nextRevision = currentRevision + 1;
+  incoming.revision = nextRevision;
+  incoming.serverUpdatedAt = new Date().toISOString();
+  if (incoming.state) incoming.state.driveRevision = nextRevision;
+  file.setContent(JSON.stringify(incoming, null, 2));
+
+  var backupDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'America/Sao_Paulo', 'yyyy-MM-dd');
+  var backupName = 'rotina-hector-backup-' + backupDate + '.json';
+  var backups = DriveApp.getFilesByName(backupName);
+  if (!backups.hasNext()) {
+    DriveApp.createFile(backupName, JSON.stringify(incoming, null, 2), MimeType.PLAIN_TEXT);
+  }
+
+  var allBackups = [];
+  var it = DriveApp.getFiles();
+  while(it.hasNext()) {
+    var f = it.next();
+    if (/^rotina-hector-backup-\d{4}-\d{2}-\d{2}[.]json$/.test(f.getName())) allBackups.push(f);
+  }
+  allBackups.sort(function(a,b){ return b.getDateCreated().getTime() - a.getDateCreated().getTime(); });
+  for (var i=30; i<allBackups.length; i++) allBackups[i].setTrashed(true);
+
+  return ContentService.createTextOutput(JSON.stringify({ok:true, revision:nextRevision})).setMimeType(ContentService.MimeType.JSON);
+}`;
+
+function renderDriveSync(){
+  const el = document.getElementById('driveSyncSection');
+  if(!el) return;
+
+  const configured = !!APPS_SCRIPT_URL;
+
+  let statusHtml, actionsHtml;
+
+  if(!configured){
+    statusHtml = `Ainda não configurado neste arquivo.`;
+    actionsHtml = `
+      <button class="icon-btn" id="driveSetupInfoBtn">como configurar</button>
+      <button class="icon-btn" id="driveCopyCodeBtn">📋 ver código do Apps Script</button>
+    `;
+  } else {
+    statusHtml = state.driveLastSyncISO
+      ? `Sincronizado ✓ — ${formatDateBR(state.driveLastSyncISO)}${state.driveConflictCount ? ` · ${state.driveConflictCount} conflito(s) resolvido(s)` : ''}.`
+      : `Sincronização automática ativa — aguardando primeira sincronização.`;
+    actionsHtml = `
+      <button class="icon-btn primary" id="driveSaveBtn">☁️⬆️ forçar salvar agora</button>
+      <button class="icon-btn primary" id="driveLoadBtn">☁️⬇️ forçar carregar agora</button>
+    `;
+  }
+
+  el.innerHTML = `
+    <div class="drive-sync">
+      <h3>☁️ Sincronizado com Google Drive</h3>
+      <div class="hint">O Drive guarda os dados, o histórico e uma cópia diária. O app continua funcionando offline e sincroniza quando a conexão volta.</div>
+      <div class="status">${statusHtml}</div>
+      <div class="drive-sync-row">${actionsHtml}</div>
+      <div id="driveSetupInfo" style="display:none;" class="drive-setup">
+        <b>Passo a passo:</b>
+        <ol>
+          <li>Acesse <code>script.google.com</code> → "Novo projeto".</li>
+          <li>Apague o código de exemplo e cole o código do Apps Script (botão "ver código" ao lado).</li>
+          <li>Clique em "Implantar" → "Nova implantação".</li>
+          <li>Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer pessoa".</li>
+          <li>Implante, autorize (é a sua própria conta), e copie a URL gerada (termina em <code>/exec</code>).</li>
+          <li>Cole essa URL na constante <code>APPS_SCRIPT_URL</code> no início do arquivo HTML.</li>
+          <li>No seu Google Drive, salve o arquivo do app com o nome exato <code>rotina-hector.html</code>.</li>
+          <li>Em todos os aparelhos, abra e salve como favorito essa <b>mesma URL do Apps Script</b> (a que termina em <code>/exec</code>) — não o arquivo local. A partir daí, atualizar é só substituir o conteúdo do <code>rotina-hector-app.html</code> no Drive; todo aparelho já abre a versão nova sozinho.</li>
+        </ol>
+      </div>
+      <textarea id="driveCodeBox" readonly style="display:none; width:100%; height:180px; margin-top:10px; background:rgba(0,0,0,.3); color:var(--chalk); border:1px solid var(--line); border-radius:8px; padding:10px; font-family:monospace; font-size:.72rem;"></textarea>
+    </div>
+  `;
+
+  if(!configured){
+    document.getElementById('driveSetupInfoBtn').addEventListener('click', ()=>{
+      const info = document.getElementById('driveSetupInfo');
+      info.style.display = info.style.display === 'none' ? 'block' : 'none';
+    });
+    document.getElementById('driveCopyCodeBtn').addEventListener('click', ()=>{
+      const box = document.getElementById('driveCodeBox');
+      box.value = APPS_SCRIPT_CODE;
+      box.style.display = box.style.display === 'none' ? 'block' : 'none';
+      if(box.style.display === 'block'){ box.focus(); box.select(); }
+    });
+    return;
+  }
+
+  document.getElementById('driveSaveBtn').addEventListener('click', driveSave);
+  document.getElementById('driveLoadBtn').addEventListener('click', driveLoad);
+}
+
+async function driveSave(){
+  try{
+    const backup = { config: CONFIG, state: state, exportedAt: new Date().toISOString() };
+    const res = await fetch(DATA_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita pré-checagem CORS
+      body: JSON.stringify(backup),
+    });
+    if(!res.ok) throw new Error('Falha ao salvar');
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Falha ao salvar');
+
+    state.driveLastSyncISO = todayISO();
+    saveState(state);
+    renderDriveSync();
+    alert('Salvo no Google Drive!');
+  }catch(err){
+    alert('Não consegui salvar no Google Drive. Confira se a URL do Apps Script está certa e se a implantação está ativa.');
+  }
+}
+
+async function driveLoad(){
+  try{
+    const res = await fetch(DATA_ENDPOINT, { method: 'GET' });
+    if(!res.ok) throw new Error('Falha ao carregar');
+    const backup = await res.json();
+    if(backup.error === 'not_found'){ alert('Nenhum backup encontrado no Google Drive ainda.'); return; }
+
+    if(!confirm('Isso vai substituir os dados atuais pelos que estão salvos no Google Drive. Continuar?')) return;
+
+    if(backup.config){ CONFIG = backup.config; saveConfig(CONFIG); }
+    if(backup.state){ state = backup.state; saveState(state); }
+
+    render();
+    alert('Dados carregados do Google Drive!');
+  }catch(err){
+    alert('Não consegui carregar do Google Drive. Confira se a URL do Apps Script está certa e se a implantação está ativa.');
+  }
+}
+
+/* ===================== BACKUP LOCAL (exportar / importar) ===================== */
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const backup = { config: CONFIG, state: state, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'rotina-hector-backup-' + todayISO() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  state.lastBackupISO = todayISO();
+  state.backupReminderDismissedFor = null;
+  saveState(state);
+  renderBackupReminder();
+});
+
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const backup = JSON.parse(reader.result);
+      if(!confirm('Isso vai substituir os dados atuais pelos do arquivo importado. Continuar?')) return;
+      if(backup.config) { CONFIG = backup.config; saveConfig(CONFIG); }
+      if(backup.state) { state = backup.state; saveState(state); }
+      render();
+    }catch(err){
+      alert('Não consegui ler esse arquivo de backup.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+render();
+autoPullOnStartup();
+</script>
+</body>
+</html>
