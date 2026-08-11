@@ -33,28 +33,39 @@ jobs:
           from pathlib import Path
 
           path = Path("index.html")
+
+          if not path.exists():
+              raise SystemExit("ERRO: index.html não encontrado.")
+
           text = path.read_text(encoding="utf-8")
 
           old = os.environ["PATCH_OLD"]
           new = os.environ["PATCH_NEW"]
 
+          if not old:
+              raise SystemExit("ERRO: PATCH_OLD está vazio.")
+
           count = text.count(old)
 
           if count != 1:
               raise SystemExit(
-                  f"PATCH_OLD deve aparecer exatamente 1 vez; encontrado: {count}"
+                  f"ERRO: PATCH_OLD deve aparecer exatamente 1 vez; "
+                  f"encontrado: {count}"
               )
 
-          path.write_text(text.replace(old, new, 1), encoding="utf-8")
-          print("Patch aplicado com sucesso.")
+          updated = text.replace(old, new, 1)
+
+          path.write_text(updated, encoding="utf-8")
+
+          print("OK: patch aplicado com sucesso.")
           PY
 
-      - name: Validate HTML
+      - name: Validate index.html
         run: |
           test -s index.html
-          echo "index.html válido."
+          echo "OK: index.html existe e não está vazio."
 
-      - name: Commit
+      - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -62,7 +73,7 @@ jobs:
           git add index.html
 
           if git diff --cached --quiet; then
-            echo "Nenhuma alteração para commit."
+            echo "Nenhuma alteração detectada."
             exit 0
           fi
 
