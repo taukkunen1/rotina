@@ -1,0 +1,212 @@
+name: Preparar HTML para o GPT
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - index.html
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: preparar-html
+  cancel-in-progress: true
+
+jobs:
+
+  split-html:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Baixar repositório
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Dividir index.html
+        shell: python
+        run: |
+
+          from pathlib import Path
+          import json
+          import hashlib
+          import shutil
+
+          SOURCE = Path("index.html")
+          OUTPUT = Path("ai-chunks")
+
+          CHUNK_SIZE = 8000
+
+          if not SOURCE.exists():
+              raise SystemExit(
+                  "index.html não encontrado."
+              )
+
+          content = SOURCE.read_text(
+              encoding="utf-8"
+          )
+
+          OUTPUT.mkdir(
+              exist_ok=True
+          )
+
+          for file in OUTPUT.glob("*.txt"):
+              file.unlink()
+
+          for file in OUTPUT.glob("*.json"):
+              file.unlink()
+
+          total_size = len(content)
+
+          total_chunks = (
+              (total_size + CHUNK_SIZE - 1)
+              // CHUNK_SIZE
+          )
+
+          chunks = []
+
+          for i in range(total_chunks):
+
+              start = (
+                  i * CHUNK_SIZE
+              )
+
+              end = min(
+                  start + CHUNK_SIZE,
+                  total_size
+              )
+
+              chunk = content[
+                  start:end
+              ]
+
+              filename = (
+                  f"{i:04d}.txt"
+              )
+
+              path = (
+                  OUTPUT / filename
+              )
+
+              path.write_text(
+                  chunk,
+                  encoding="utf-8"
+              )
+
+              chunks.append({
+                  "chunk": i,
+                  "file": filename,
+                  "start": start,
+                  "end": end,
+                  "size": len(chunk)
+              })
+
+          sha256 = hashlib.sha256(
+              content.encode("utf-8")
+          ).hexdigest()
+
+          manifest = {
+
+              "source": "index.html",
+
+              "encoding": "utf-8",
+
+              "chunkSize": CHUNK_SIZE,
+
+              "totalChunks":
+                  total_chunks,
+
+              "totalSize":
+                  total_size,
+
+              "sha256":
+                  sha256,
+
+              "chunks":
+                  chunks
+          }
+
+          (
+              OUTPUT / "manifest.json"
+          ).write_text(
+              json.dumps(
+                  manifest,
+                  ensure_ascii=False,
+                  indent=2
+              ),
+              encoding="utf-8"
+          )
+
+      - name: Verificar blocos
+        shell: python
+        run: |
+
+          from pathlib import Path
+          import json
+
+          manifest_path = (
+              Path("ai-chunks")
+              / "manifest.json"
+          )
+
+          if not manifest_path.exists():
+              raise SystemExit(
+                  "manifest.json não foi criado."
+              )
+
+          manifest = json.loads(
+              manifest_path.read_text(
+                  encoding="utf-8"
+              )
+          )
+
+          expected = (
+              manifest["totalChunks"]
+          )
+
+          files = list(
+              Path("ai-chunks")
+              .glob("*.txt")
+          )
+
+          if len(files) != expected:
+              raise SystemExit(
+                  f"Quantidade incorreta de chunks: "
+                  f"{len(files)} / {expected}"
+              )
+
+          print(
+              f"OK: {expected} chunks criados."
+          )
+
+          print(
+              f"Tamanho: "
+              f"{manifest['totalSize']} bytes"
+          )
+
+      - name: Commitar blocos
+        run: |
+
+          git config user.name \
+            "github-actions[bot]"
+
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add ai-chunks/
+
+          if git diff --cached --quiet; then
+            echo "Nenhuma alteração nos chunks."
+            exit 0
+          fi
+
+          git commit \
+            -m "Atualizar chunks do index.html"
+
+          git push
