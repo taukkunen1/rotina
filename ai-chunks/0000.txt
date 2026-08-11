@@ -1,0 +1,319 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rotina do Hector — Pacus</title>
+<style>
+  /* =====================================================================
+     Arquivo local, sem internet, sem instalação. Abra num navegador.
+     Todo o conteúdo (tarefas, hábitos ruins, recompensas) agora é editado
+     pelo botão "Editar tudo" na tela — não precisa mexer no código.
+     Os dados ficam salvos no navegador (localStorage). O DEFAULT_CONFIG
+     lá embaixo no <script> só é usado na primeira vez que o arquivo abre.
+     ===================================================================== */
+
+  :root{
+    --board:#16241f;
+    --board-edge:#0e1712;
+    --chalk:#f7f4ec;
+    --chalk-dim:#c7c0b0;
+    --yellow:#f5d878;
+    --pink:#eeb0cb;
+    --blue:#9ad2ee;
+    --orange:#f3ad6c;
+    --green:#b7ddba;
+    --red:#ef9a9a;
+    --wood:#8a5a34;
+    --wood-dark:#6b4324;
+    --line:rgba(247,244,236,.18);
+    --focus:#ffe08a;
+  }
+
+  *{box-sizing:border-box;}
+  ::selection{ background:var(--yellow); color:#1b2e28; }
+
+  :focus-visible{
+    outline:2px solid var(--focus);
+    outline-offset:2px;
+    border-radius:4px;
+  }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:Verdana, Geneva, sans-serif;
+    color:var(--chalk);
+    background:
+      radial-gradient(ellipse at 15% 0%, rgba(255,255,255,.05), transparent 55%),
+      radial-gradient(ellipse at 85% 100%, rgba(255,255,255,.04), transparent 55%),
+      var(--board);
+    padding:20px 14px 50px;
+  }
+
+  body::before{
+    content:"";
+    position:fixed; inset:0; pointer-events:none; opacity:.04;
+    background-image:
+      repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, #fff 0 1px, transparent 1px 3px);
+    mix-blend-mode:overlay;
+  }
+
+  .board-frame{
+    max-width:1040px;
+    margin:0 auto;
+    background:var(--board-edge);
+    border-radius:12px;
+    padding:8px;
+    box-shadow:0 20px 50px rgba(0,0,0,.5), inset 0 0 0 6px var(--wood-dark);
+  }
+
+  .board-inner{
+    border:3px solid var(--wood);
+    border-radius:8px;
+    padding:0 0 24px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  /* ---------- topbar: fica visível ao rolar ---------- */
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:20;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:14px 18px;
+    background:linear-gradient(180deg, rgba(19,32,25,.97), rgba(19,32,25,.9));
+    border-bottom:2px dashed var(--line);
+    backdrop-filter:blur(2px);
+  }
+
+  .topbar h1{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    font-size:1.5rem;
+    margin:0;
+    color:var(--yellow);
+    text-shadow:0 0 12px rgba(242,214,117,.2);
+    white-space:nowrap;
+  }
+
+  .topbar-right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .pacus-total{
+    display:flex;
+    align-items:baseline;
+    gap:7px;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:6px 16px;
+  }
+  .pacus-total .label{
+    font-size:.68rem;
+    color:var(--chalk-dim);
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+  .pacus-total .num{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:1.5rem;
+    color:var(--green);
+    transition:transform .15s ease;
+    min-width:1.4ch;
+    text-align:right;
+  }
+  .pacus-total .num.bump{ transform:scale(1.3); }
+
+  .icon-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:none;
+    border:1px solid var(--line);
+    color:var(--chalk-dim);
+    font-size:.78rem;
+    padding:7px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    font-family:inherit;
+    transition:border-color .15s, color .15s, background .15s;
+  }
+  .icon-btn:hover{ color:var(--chalk); border-color:rgba(242,237,225,.4); background:rgba(255,255,255,.04); }
+  .icon-btn.danger:hover{ color:var(--red); border-color:var(--red); }
+  .icon-btn.primary{ color:var(--yellow); border-color:rgba(242,214,117,.4); }
+  .icon-btn.primary:hover{ background:rgba(242,214,117,.1); }
+
+  .content{ padding:18px 18px 0; }
+
+  .subtitle{
+    color:var(--chalk-dim);
+    font-size:.82rem;
+    text-align:center;
+    margin:2px 0 20px;
+  }
+
+  .weekend-indicator{
+    text-align:center;
+    font-size:.75rem;
+    color:var(--orange);
+    background:rgba(240,168,108,.1);
+    border:1px solid rgba(240,168,108,.35);
+    border-radius:8px;
+    padding:6px 10px;
+    margin-bottom:14px;
+  }
+
+  /* ---------- Pacus, o axolote de estimação ---------- */
+  .pet-section{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    background:linear-gradient(180deg, rgba(143,201,230,.06), rgba(255,255,255,.015));
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px 16px 16px;
+    margin-bottom:22px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .pet-mascot{
+    width:150px;
+    height:150px;
+    display:block;
+  }
+
+  .pet-name{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:1.35rem;
+    color:var(--pink);
+    margin:2px 0 0;
+  }
+
+  .pet-stage-label{
+    font-size:.78rem;
+    color:var(--chalk-dim);
+    margin-bottom:8px;
+  }
+
+  .pet-milestones{
+    width:min(560px,100%);
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:6px;
+    margin:4px 0 8px;
+  }
+  .pet-milestone{
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:5px 4px;
+    text-align:center;
+    font-size:.58rem;
+    color:var(--chalk-dim);
+    background:rgba(255,255,255,.025);
+  }
+  .pet-milestone.active{
+    color:#16241f;
+    background:var(--green);
+    border-color:var(--green);
+    font-weight:bold;
+  }
+  .pet-milestone.current{
+    outline:2px solid var(--yellow);
+    outline-offset:1px;
+  }
+  @media(max-width:520px){
+    .pet-milestones{ grid-template-columns:repeat(3,1fr); }
+  }
+
+  .pet-caption{
+    font-size:.8rem;
+    color:var(--chalk-dim);
+    text-align:center;
+    max-width:420px;
+    line-height:1.4;
+  }
+  .pet-caption b{ color:var(--green); }
+
+  .pet-evolved-banner{
+    background:rgba(242,214,117,.12);
+    border:1px solid rgba(242,214,117,.4);
+    color:var(--yellow);
+    font-size:.82rem;
+    padding:8px 14px;
+    border-radius:8px;
+    margin-top:10px;
+    text-align:center;
+    animation: popIn .3s ease;
+  }
+  @keyframes popIn{
+    from{ transform:scale(.85); opacity:0; }
+    to{ transform:scale(1); opacity:1; }
+  }
+
+  /* ---------- crescimento diário do Pacus ---------- */
+  .pet-day-progress{
+    width:min(520px, 100%);
+    margin:6px 0 2px;
+  }
+  .pet-day-progress-head{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-size:.68rem;
+    color:var(--chalk-dim);
+    margin-bottom:5px;
+  }
+  .pet-day-progress-head b{ color:var(--green); }
+  .pet-day-track{
+    height:7px;
+    border-radius:999px;
+    overflow:hidden;
+    background:rgba(255,255,255,.08);
+    border:1px solid var(--line);
+  }
+  .pet-day-fill{
+    height:100%;
+    width:0;
+    background:var(--blue);
+    border-radius:999px;
+    transition:width .7s cubic-bezier(.2,.8,.2,1);
+  }
+  .pet-mascot.pet-egg{
+    transform-origin:50% 70%;
+    animation:eggLife 2.8s ease-in-out infinite;
+  }
+  .pet-mascot.pet-growth-burst{
+    animation:petGrowthBurst .75s cubic-bezier(.2,.8,.2,1);
+  }
+  .pet-egg .egg-shell{
+    transform-box:fill-box;
+    transform-origin:center;
+  }
+  .pet-egg .egg-crack{
+    transition:opacity .5s ease, stroke-width .5s ease;
+  }
+  @keyframes eggLife{
+    0%,100%{ transform:translateY(0) rotate(0deg); }
+    50%{ transform:translateY(-2px) rotate(.7deg); }
+  }
+  @keyframes petGrowthBurst{
+    0%{ transform:scale(1) rotate(0deg); }
+    25%{ transform:scale(1.08) rotate(-3deg); }
+    50%{ transform:scale(.96) rotate(3deg); }
+    75%{ transform:scale(1.035) rotate(-1deg); }
+    100%{ transform:scale(1) rotate(0deg); }
+  }
+  .pet-hatch-crack{ animation:crackFlash .55s ease-out; }
+  @key

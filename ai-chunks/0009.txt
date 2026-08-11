@@ -1,0 +1,190 @@
+).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+  })();
+  const usingOverride = !!TEST_DATE_OVERRIDE;
+
+  el.innerHTML = `
+    <div class="test-panel">
+      <h3>🧪 Modo de teste</h3>
+      <div class="hint">Ferramentas só pra conferir se o crescimento do Pacus e o histórico estão funcionando. Não mexe nas tarefas de verdade — só simula dias.</div>
+      <div class="test-date">Data simulada agora: <b>${formatDateBR(todayISO())}/${todayISO().split('-')[0]}</b>${usingOverride ? ' (modo teste ativo)' : ' (data real do sistema)'}</div>
+      <div class="test-row">
+        <button class="icon-btn" id="testCompleteDayBtn">✅ completar tudo hoje</button>
+        <button class="icon-btn" id="testPrevDayBtn">◀ dia anterior</button>
+        <button class="icon-btn" id="testNextDayBtn">dia seguinte ▶</button>
+        <input type="date" id="testDatePicker" value="${todayISO()}">
+        <button class="icon-btn" id="testGoDateBtn">ir pra essa data</button>
+        <button class="icon-btn danger" id="testResetDateBtn">voltar pra data real</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('testCompleteDayBtn').addEventListener('click', ()=>{
+    allTasks().forEach(t=>{
+      if(state.checkedToday[t.id] !== 'done'){
+        state.totalPoints += t.pts;
+      }
+      state.checkedToday[t.id] = 'done';
+    });
+    syncPetCompletionFromDay(todayISO());
+    addLog('🧪 (teste) todas as tarefas de hoje marcadas como feitas');
+    saveState(state);
+    render();
+  });
+
+  document.getElementById('testPrevDayBtn').addEventListener('click', ()=>{
+    goToTestDate(shiftISODate(todayISO(), -1));
+  });
+  document.getElementById('testNextDayBtn').addEventListener('click', ()=>{
+    goToTestDate(shiftISODate(todayISO(), 1));
+  });
+  document.getElementById('testGoDateBtn').addEventListener('click', ()=>{
+    const val = document.getElementById('testDatePicker').value;
+    if(val) goToTestDate(val);
+  });
+  document.getElementById('testResetDateBtn').addEventListener('click', ()=>{
+    goToTestDate(realToday);
+    setTestDate(null);
+    state = loadState();
+    render();
+  });
+}
+
+function renderBackupReminder(){
+  const el = document.getElementById('backupReminder');
+  if(!el) return;
+
+  const today = todayISO();
+  const daysSinceBackup = state.lastBackupISO ? daysBetween(state.lastBackupISO, today) : Infinity;
+  const daysSinceStart = state.history && Object.keys(state.history).length
+    ? Infinity // se já há histórico, não depende do início — usamos direto o critério de 7 dias
+    : 0;
+  const dismissed = state.backupReminderDismissedFor === today;
+
+  const shouldShow = daysSinceBackup >= 7 && !dismissed;
+
+  if(!shouldShow){ el.innerHTML=''; return; }
+
+  const msg = state.lastBackupISO
+    ? `Já faz ${daysSinceBackup} dias desde o último backup. Que tal exportar de novo?`
+    : `Vocês ainda não fizeram nenhum backup. Vale exportar um agora pra não perder o progresso.`;
+
+  el.innerHTML = `
+    <div class="backup-reminder">
+      <span>💾 ${msg}</span>
+      <span>
+        <button id="backupReminderExportBtn">exportar agora</button>
+        <button class="dismiss" id="backupReminderDismissBtn">lembrar depois</button>
+      </span>
+    </div>
+  `;
+  document.getElementById('backupReminderExportBtn').addEventListener('click', ()=>{
+    document.getElementById('exportBtn').click();
+  });
+  document.getElementById('backupReminderDismissBtn').addEventListener('click', ()=>{
+    state.backupReminderDismissedFor = today;
+    saveState(state);
+    renderBackupReminder();
+  });
+}
+
+function renderWeeklyReview(){
+  const el = document.getElementById('weeklyReviewSection');
+  if(!el) return;
+
+  const days = [];
+  for(let i=6; i>=0; i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    days.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'));
+  }
+
+  let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0, daysWithData = 0;
+  days.forEach(iso=>{
+    const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
+    if(!entry) return;
+    if(iso !== todayISO()){
+      // dias fechados já têm pointsEarnedThatDay e screenMinutes calculados
+      const full = state.history[iso];
+      if(full){
+        totalPointsWeek += full.pointsEarnedThatDay || 0;
+        totalScreenMin += full.screenMinutes || 0;
+      }
+    }
+    if(entry.total > 0){ daysWithData++; if(entry.perfect) perfectDays++; }
+  });
+
+  const rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
+
+  let msg;
+  if(daysWithData === 0){
+    msg = `Ainda sem dados essa semana — bora começar hoje!`;
+  } else if(perfectDays === 0){
+    msg = `Nenhum dia 100% ainda essa semana. Sem problema — todo período completo já conta pro crescimento do Pacus. Que tal revisar juntos o que travou?`;
+  } else if(perfectDays >= 6){
+    msg = `Semana incrível! <b>${perfectDays} de 7 dias perfeitos</b>. Um ótimo momento pra comemorar juntos. 🎉`;
+  } else {
+    msg = `<b>${perfectDays} de 7 dias</b> com tudo certinho essa semana. Bom momento pra conversar sobre o que ajudou nos dias que foram bem.`;
+  }
+
+  el.innerHTML = `
+    <div class="weekly-review">
+      <div class="wr-head">
+        <h3 class="block-title" style="margin:0; color:var(--green);">🗓️ Resumo semanal em família</h3>
+        <span class="wr-range">${rangeLabel}</span>
+      </div>
+      <div class="wr-stats">
+        <div class="wr-stat"><span class="wr-num">${perfectDays}/7</span><span class="wr-label">dias completos</span></div>
+        <div class="wr-stat"><span class="wr-num">${totalPointsWeek}</span><span class="wr-label">Pacus Points ganhos</span></div>
+        <div class="wr-stat"><span class="wr-num">${totalScreenMin}</span><span class="wr-label">min de tela ganhos</span></div>
+      </div>
+      <div class="wr-msg">${msg}</div>
+    </div>
+  `;
+}
+
+function hairLabel(status){
+  if(status === 'washed') return '<span class="hair-history-washed">💧 Lavou</span>';
+  if(status === 'not-washed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
+  return '<span class="hair-history-unknown">· Não registrado</span>';
+}
+
+function renderHistory(){
+  const body = document.getElementById('historyBody');
+  const start = CONFIG.historyStartDate || todayISO();
+  const startDate = new Date(start+"T00:00:00");
+  const today = new Date(todayISO()+"T00:00:00");
+
+  const rows = [];
+  for(let d = new Date(startDate); d <= today; d.setDate(d.getDate()+1)){
+    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+    rows.push(iso);
+  }
+
+  body.innerHTML = rows.map(iso=>{
+    const isToday = iso === todayISO();
+    let entry;
+    if(isToday){
+      const tasks = allTasks();
+      const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+      const total = applicable.length;
+      const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+      const pointsEarnedThatDay = tasks.filter(t=>state.checkedToday[t.id]==='done').reduce((s,t)=>s+t.pts,0);
+      const perfect = total>0 && done===total;
+      entry = { done, total, pointsEarnedThatDay, perfect, hair:getHairStatus(iso) };
+    } else {
+      entry = state.history[iso];
+    }
+    const hair = getHairStatus(iso) || (entry && entry.hair) || null;
+    if(!entry){
+      return `<tr${isToday?' class="today-row"':''}>
+        <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
+        <td>—</td>
+        <td class="pts-cell">—</td>
+        <td>${hairLabel(hair)}</td>
+        <td>${isToday?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
+      </tr>`;
+    }
+    const perfectBadge = entry.perfect ? '<span class="badge-perfect">dia perfeito</span>' : '';
+    const editCell = isToday ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
+    return `<tr${isToday?' class="today-row"':''}>
+      <td>${formatDateBR(iso)}${isToday?' (hoje)':''
