@@ -23,7 +23,7 @@
     --pink:#eeb0cb;
     --blue:#9ad2ee;
     --orange:#f3ad6c;
-    --green:#b7ddba;
+    --green:#48d7a0;
     --red:#ef9a9a;
     --wood:#8a5a34;
     --wood-dark:#6b4324;
