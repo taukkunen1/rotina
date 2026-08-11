@@ -1,0 +1,108 @@
+{
+  "source": "index.html",
+  "encoding": "utf-8",
+  "chunkSize": 8000,
+  "totalChunks": 14,
+  "totalSize": 105964,
+  "sha256": "12354b6960eb898617ddaefd8924c87f617cc78f0b5a0eeffc31a6b611c2c5a6",
+  "chunks": [
+    {
+      "chunk": 0,
+      "file": "0000.txt",
+      "start": 0,
+      "end": 8000,
+      "size": 8000
+    },
+    {
+      "chunk": 1,
+      "file": "0001.txt",
+      "start": 8000,
+      "end": 16000,
+      "size": 8000
+    },
+    {
+      "chunk": 2,
+      "file": "0002.txt",
+      "start": 16000,
+      "end": 24000,
+      "size": 8000
+    },
+    {
+      "chunk": 3,
+      "file": "0003.txt",
+      "start": 24000,
+      "end": 32000,
+      "size": 8000
+    },
+    {
+      "chunk": 4,
+      "file": "0004.txt",
+      "start": 32000,
+      "end": 40000,
+      "size": 8000
+    },
+    {
+      "chunk": 5,
+      "file": "0005.txt",
+      "start": 40000,
+      "end": 48000,
+      "size": 8000
+    },
+    {
+      "chunk": 6,
+      "file": "0006.txt",
+      "start": 48000,
+      "end": 56000,
+      "size": 8000
+    },
+    {
+      "chunk": 7,
+      "file": "0007.txt",
+      "start": 56000,
+      "end": 64000,
+      "size": 8000
+    },
+    {
+      "chunk": 8,
+      "file": "0008.txt",
+      "start": 64000,
+      "end": 72000,
+      "size": 8000
+    },
+    {
+      "chunk": 9,
+      "file": "0009.txt",
+      "start": 72000,
+      "end": 80000,
+      "size": 8000
+    },
+    {
+      "chunk": 10,
+      "file": "0010.txt",
+      "start": 80000,
+      "end": 88000,
+      "size": 8000
+    },
+    {
+      "chunk": 11,
+      "file": "0011.txt",
+      "start": 88000,
+      "end": 96000,
+      "size": 8000
+    },
+    {
+      "chunk": 12,
+      "file": "0012.txt",
+      "start": 96000,
+      "end": 104000,
+      "size": 8000
+    },
+    {
+      "chunk": 13,
+      "file": "0013.txt",
+      "start": 104000,
+      "end": 105964,
+      "size": 1964
+    }
+  ]
+}
