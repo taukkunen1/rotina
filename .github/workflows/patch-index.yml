@@ -1,69 +1,94 @@
-name: Patch index.html
+const fs = require("fs");
+const path = require("path");
 
-on:
-  workflow_dispatch:
-    inputs:
-      old_text:
-        description: "Trecho exato que será substituído"
-        required: true
-        type: string
-      new_text:
-        description: "Novo trecho"
-        required: true
-        type: string
-      commit_message:
-        description: "Mensagem do commit"
-        required: true
-        default: "Aplicar patch no index.html"
-        type: string
+const file = path.join(__dirname, "..", "index.html");
 
-permissions:
-  contents: write
+function fail(message) {
+  console.error(`ERRO: ${message}`);
+  process.exit(1);
+}
 
-jobs:
-  patch:
-    runs-on: ubuntu-latest
+function getEnv(name) {
+  return process.env[name] ?? "";
+}
 
-    steps:
-      - name: Baixar repositório
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
+function applyPatch() {
+  const oldText = getEnv("PATCH_OLD");
+  const newText = getEnv("PATCH_NEW");
 
-      - name: Verificar arquivos
-        run: |
-          test -f index.html
-          test -f tools/patch-index.js
+  if (!oldText) {
+    fail("PATCH_OLD não foi informado.");
+  }
 
-      - name: Aplicar patch
-        env:
-          PATCH_OLD: ${{ inputs.old_text }}
-          PATCH_NEW: ${{ inputs.new_text }}
-        run: |
-          node tools/patch-index.js
+  if (!newText) {
+    fail("PATCH_NEW não foi informado.");
+  }
 
-      - name: Verificar resultado
-        run: |
-          test -s index.html
-          grep -q '<!DOCTYPE html>' index.html
-          echo "index.html validado."
+  if (!fs.existsSync(file)) {
+    fail("index.html não foi encontrado.");
+  }
 
-      - name: Mostrar alteração
-        run: |
-          git diff --stat
-          git diff --check
+  const source = fs.readFileSync(file, "utf8");
 
-      - name: Commit e envio
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+  if (!source.trim()) {
+    fail("index.html está vazio.");
+  }
 
-          git add index.html
+  if (!source.startsWith("<!DOCTYPE html>")) {
+    fail("index.html não começa com <!DOCTYPE html>.");
+  }
 
-          if git diff --cached --quiet; then
-            echo "Nenhuma alteração para enviar."
-            exit 0
-          fi
+  const occurrences = source.split(oldText).length - 1;
 
-          git commit -m "${{ inputs.commit_message }}"
-          git push
+  if (occurrences === 0) {
+    fail(
+      "O trecho antigo não foi encontrado. " +
+      "Nenhuma alteração foi feita."
+    );
+  }
+
+  if (occurrences > 1) {
+    fail(
+      `O trecho antigo aparece ${occurrences} vezes. ` +
+      "Patch cancelado para evitar alterar o local errado."
+    );
+  }
+
+  const updated = source.replace(oldText, newText);
+
+  if (updated === source) {
+    fail("O arquivo não sofreu nenhuma alteração.");
+  }
+
+  if (!updated.startsWith("<!DOCTYPE html>")) {
+    fail("O resultado deixou de ser um HTML válido.");
+  }
+
+  if (!updated.includes("</html>")) {
+    fail("O resultado não contém </html>.");
+  }
+
+  /*
+   * Backup local da versão anterior.
+   * O backup não é adicionado ao commit pelo workflow.
+   */
+  const backup = `${file}.backup`;
+
+  fs.writeFileSync(backup, source, "utf8");
+  fs.writeFileSync(file, updated, "utf8");
+
+  console.log("========================================");
+  console.log("PATCH APLICADO COM SUCESSO");
+  console.log("========================================");
+  console.log(`Arquivo: ${file}`);
+  console.log(`Tamanho anterior: ${source.length} caracteres`);
+  console.log(`Tamanho novo:     ${updated.length} caracteres`);
+  console.log(`Backup: ${backup}`);
+  console.log("========================================");
+}
+
+try {
+  applyPatch();
+} catch (error) {
+  fail(error?.message || String(error));
+}
