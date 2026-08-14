@@ -1,4 +1,4 @@
-bonusSeconds || 0));
+.round((state.gameTimer.bonusSeconds || 0));
   return base + bonus;
 }
 
@@ -241,4 +241,4 @@ function renderCustomTimers(){
     return `
       <div class="custom-timer ${t.finished?'finished':''}">
         <input type="text" class="custom-timer-label" id="customTimerLabel_${t.id}" value="${escapeAttr(t.label)}" maxlength="20">
-        <div class="custom-timer-display" id="customTimerDisp
+        <div class="custom-timer-disp

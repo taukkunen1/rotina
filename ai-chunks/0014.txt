@@ -1,4 +1,4 @@
-ReminderDismissedFor:null, driveFileId:null, driveLastSyncISO:null, hairByDate:{} };
+sion:0, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, driveLastSyncISO:null, hairByDate:{} };
   saveState(state);
   render();
 });
@@ -172,4 +172,3 @@ function renderEditorSchedule(){
     `;
     row.querySelector('[data-field=label]').addEventListener('input', e=>{ item.label = e.target.value; });
     row.querySelector('[data-field=start]').addEventListener('input', e=>{ item.start = e.target.value; });
-    row.querySelector('[data-field=end]').addEventListen

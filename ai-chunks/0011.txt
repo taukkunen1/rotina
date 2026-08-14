@@ -1,4 +1,4 @@
-estones.map(([day,label])=>{
+onst milestoneHtml = milestones.map(([day,label])=>{
     const active = daysEquivalent >= day;
     const current = stage >= day && (stage === day || (stage > day && day === 23));
     return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label} <small>dia ${day}</small></span>`;
@@ -186,4 +186,4 @@ function render(){
   });
 
   periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
-    btn.addEventListener('click
+    btn

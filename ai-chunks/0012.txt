@@ -1,4 +1,4 @@
-', onMarkClick);
+.addEventListener('click', onMarkClick);
   });
 
   const badEl = document.getElementById('badHabits');
@@ -12,7 +12,7 @@
       const delta = addPoints(h.pts);
       addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
       saveState(state);
-      bumpTotal(delta);
+      bumpTotal(delta, btn);
       renderLog();
     });
     badEl.appendChild(btn);
@@ -222,4 +222,3 @@ function renderHistory(){
   const today = new Date(todayISO()+"T00:00:00");
 
   const rows = [];
-  for(let d = new Date(startD

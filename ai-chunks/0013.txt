@@ -1,4 +1,4 @@
-ate); d <= today; d.setDate(d.getDate()+1)){
+  for(let d = new Date(startDate); d <= today; d.setDate(d.getDate()+1)){
     const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
     rows.push(iso);
   }
@@ -78,7 +78,7 @@ function renderRewards(){
       ${capNote}
       <button ${(canAfford && !atDailyLimit) ? '' : 'disabled'}>${atDailyLimit ? 'Limite hoje' : 'Resgatar'}</button>
     `;
-    div.querySelector('button').addEventListener('click', ()=>{
+    div.querySelector('button').addEventListener('click', (evt)=>{
       if(state.totalPoints < r.cost) return;
       const redeemed = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
       if(r.maxPerDay != null && redeemed >= r.maxPerDay) return;
@@ -93,7 +93,7 @@ function renderRewards(){
       state.gameTimer.redemptions[r.id] = redeemed + 1;
 
       saveState(state);
-      bumpTotal(delta);
+      bumpTotal(delta, evt.currentTarget);
       renderRewards();
       renderLog();
       renderGameTimer();
@@ -172,7 +172,7 @@ function onMarkClick(e){
     addLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
   }
   saveState(state);
-  bumpTotal(totalDelta);
+  bumpTotal(totalDelta, btn);
   render();
 }
 
@@ -193,4 +193,4 @@ document.getElementById('addPointsBtn').addEventListener('click', ()=>{
 
 document.getElementById('resetBtn').addEventListener('click', ()=>{
   if(!confirm('Isso apaga os Pacus Points, o histórico de hoje e o histórico de dias. Tem certeza?')) return;
-  state = { totalPoints:0, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveConflictCount:0, lastBackupISO:null, backup
+  state = { totalPoints:0, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevi

@@ -150,7 +150,7 @@ function addLog(text){
   state.log.unshift(time+" — "+text);
   state.log = state.log.slice(0, 30);
 }
-function bumpTotal(delta){
+function bumpTotal(delta, anchorEl){
   const el = document.getElementById('totalPoints');
   el.textContent = state.totalPoints;
   el.classList.remove('bump');
@@ -160,7 +160,7 @@ function bumpTotal(delta){
   if(delta){
     const deltaEl = document.getElementById('pointsDelta');
     if(deltaEl){
-      const rect = el.getBoundingClientRect();
+      const rect = (anchorEl || el).getBoundingClientRect();
       deltaEl.style.left = (rect.left + rect.width/2) + 'px';
       deltaEl.style.top = (rect.top - 6) + 'px';
       deltaEl.classList.remove('show-up','show-down');
@@ -202,4 +202,4 @@ let gameTimerTickHandle = null;
 
 function gameTimerDailyLimitSeconds(){
   const base = Math.round((CONFIG.screenDailyLimitHours || 2) * 3600);
-  const bonus = Math.round((state.gameTimer.
+  const bonus = Math
