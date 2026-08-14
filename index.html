@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -15,20 +14,20 @@
      ===================================================================== */
 
   :root{
-    --board:#0b1220;
-    --board-edge:#07101d;
-    --chalk:#f5f7fb;
-    --chalk-dim:#aeb9c9;
-    --yellow:#ffc857;
-    --pink:#ff718c;
-    --blue:#54c7e8;
-    --orange:#ff9566;
-    --green:#48d7a0;
-    --red:#ff6472;
-    --wood:#34445f;
-    --wood-dark:#202c42;
-    --line:rgba(226,235,248,.16);
-    --focus:#7de3ff;
+    --board:#16241f;
+    --board-edge:#0e1712;
+    --chalk:#f7f4ec;
+    --chalk-dim:#c7c0b0;
+    --yellow:#ffd93d;
+    --pink:#ff7eb9;
+    --blue:#4fc3f7;
+    --orange:#ff9f43;
+    --green:#5fd875;
+    --red:#ff6b6b;
+    --wood:#8a5a34;
+    --wood-dark:#6b4324;
+    --line:rgba(247,244,236,.18);
+    --focus:#ffe08a;
   }
 
   *{box-sizing:border-box;}
@@ -99,7 +98,7 @@
     font-size:1.5rem;
     margin:0;
     color:var(--yellow);
-    text-shadow:0 0 12px rgba(242,214,117,.2);
+    text-shadow:0 0 12px rgba(255,217,61,.2);
     white-space:nowrap;
   }
 
@@ -150,27 +149,174 @@
   }
   .icon-btn:hover{ color:var(--chalk); border-color:rgba(242,237,225,.4); background:rgba(255,255,255,.04); }
   .icon-btn.danger:hover{ color:var(--red); border-color:var(--red); }
-  .icon-btn.primary{ color:var(--yellow); border-color:rgba(242,214,117,.4); }
-  .icon-btn.primary:hover{ background:rgba(242,214,117,.1); }
+  .icon-btn.primary{ color:var(--yellow); border-color:rgba(255,217,61,.4); }
+  .icon-btn.primary:hover{ background:rgba(255,217,61,.1); }
 
   .content{ padding:18px 18px 0; }
-
-  .subtitle{
-    color:var(--chalk-dim);
-    font-size:.82rem;
-    text-align:center;
-    margin:2px 0 20px;
-  }
 
   .weekend-indicator{
     text-align:center;
     font-size:.75rem;
     color:var(--orange);
-    background:rgba(240,168,108,.1);
-    border:1px solid rgba(240,168,108,.35);
+    background:rgba(255,159,67,.1);
+    border:1px solid rgba(255,159,67,.35);
     border-radius:8px;
     padding:6px 10px;
     margin-bottom:14px;
+  }
+
+  /* ---------- timer de tempo de jogo ---------- */
+  .game-timer{
+    background:rgba(255,126,185,.07);
+    border:1px solid rgba(255,126,185,.3);
+    border-radius:12px;
+    padding:14px 16px;
+    margin-bottom:16px;
+    text-align:center;
+  }
+  .game-timer h3{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    color:var(--pink);
+    margin:0 0 4px;
+    font-size:1.05rem;
+  }
+  .game-timer .hint{ font-size:.7rem; color:var(--chalk-dim); margin-bottom:10px; }
+  .game-timer-used{ font-size:.95rem; margin-bottom:8px; }
+  .game-timer-used b{ color:var(--pink); }
+  .game-timer-track{
+    height:8px;
+    border-radius:999px;
+    background:rgba(255,255,255,.08);
+    border:1px solid var(--line);
+    overflow:hidden;
+    margin-bottom:12px;
+  }
+  .game-timer-fill{
+    height:100%;
+    width:0;
+    background:var(--pink);
+    border-radius:999px;
+    transition:width .5s ease;
+  }
+  .game-timer-fill.over-limit{ background:var(--red); }
+  .game-timer-btn{
+    background:var(--pink);
+    color:#2a1420;
+    border:none;
+    padding:10px 22px;
+    border-radius:8px;
+    font-size:.9rem;
+    font-weight:bold;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .game-timer-btn.running{
+    background:rgba(255,255,255,.08);
+    color:var(--chalk);
+    border:1px solid var(--line);
+  }
+
+  /* ---------- timers avulsos (tempo livre pra qualquer coisa) ---------- */
+  .custom-timers-wrap h3{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    color:var(--blue);
+    margin:0 0 10px;
+    font-size:1.05rem;
+    text-align:center;
+  }
+  .custom-timers{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  @media (max-width:520px){
+    .custom-timers{ grid-template-columns:1fr; }
+  }
+  .custom-timer{
+    background:rgba(79,195,247,.07);
+    border:1px solid rgba(79,195,247,.3);
+    border-radius:12px;
+    padding:14px 14px;
+    text-align:center;
+  }
+  .custom-timer.finished{
+    background:rgba(255,107,107,.12);
+    border-color:rgba(255,107,107,.5);
+    animation:timerFlash 1s ease-in-out infinite;
+  }
+  @keyframes timerFlash{
+    0%,100%{ box-shadow:0 0 0 0 rgba(255,107,107,.4); }
+    50%{ box-shadow:0 0 0 8px rgba(255,107,107,0); }
+  }
+  .custom-timer-label{
+    background:none;
+    border:none;
+    color:var(--chalk);
+    font-size:.85rem;
+    font-weight:bold;
+    text-align:center;
+    width:100%;
+    margin-bottom:8px;
+    font-family:inherit;
+    padding:3px;
+    border-radius:6px;
+  }
+  .custom-timer-label:focus{ outline:1px solid var(--blue); background:rgba(255,255,255,.05); }
+  .custom-timer-display{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:2.1rem;
+    color:var(--blue);
+    margin-bottom:10px;
+    letter-spacing:1px;
+  }
+  .custom-timer.finished .custom-timer-display{ color:var(--red); }
+  .custom-timer-setrow{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    margin-bottom:10px;
+  }
+  .custom-timer-setrow input[type=number]{
+    width:56px;
+    text-align:center;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    border-radius:6px;
+    padding:6px 4px;
+    font-size:.82rem;
+    font-family:inherit;
+  }
+  .custom-timer-setrow span{ font-size:.72rem; color:var(--chalk-dim); }
+  .custom-timer-btns{
+    display:flex;
+    gap:6px;
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+  .custom-timer-btn{
+    background:var(--blue);
+    color:#16241f;
+    border:none;
+    padding:7px 14px;
+    border-radius:7px;
+    font-size:.78rem;
+    font-weight:bold;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .custom-timer-btn.secondary{
+    background:rgba(255,255,255,.08);
+    color:var(--chalk);
+    border:1px solid var(--line);
+  }
+  .custom-timer-btn:disabled{
+    background:rgba(255,255,255,.06);
+    color:var(--chalk-dim);
+    cursor:not-allowed;
   }
 
   /* ---------- Pacus, o axolote de estimação ---------- */
@@ -179,7 +325,7 @@
     flex-direction:column;
     align-items:center;
     gap:6px;
-    background:linear-gradient(180deg, rgba(143,201,230,.06), rgba(255,255,255,.015));
+    background:linear-gradient(180deg, rgba(79,195,247,.06), rgba(255,255,255,.015));
     border:1px solid var(--line);
     border-radius:12px;
     padding:18px 16px 16px;
@@ -233,6 +379,12 @@
     outline:2px solid var(--yellow);
     outline-offset:1px;
   }
+  .pet-milestone small{
+    display:block;
+    margin-top:2px;
+    opacity:.75;
+    font-size:.92em;
+  }
   @media(max-width:520px){
     .pet-milestones{ grid-template-columns:repeat(3,1fr); }
   }
@@ -247,8 +399,8 @@
   .pet-caption b{ color:var(--green); }
 
   .pet-evolved-banner{
-    background:rgba(242,214,117,.12);
-    border:1px solid rgba(242,214,117,.4);
+    background:rgba(255,217,61,.12);
+    border:1px solid rgba(255,217,61,.4);
     color:var(--yellow);
     font-size:.82rem;
     padding:8px 14px;
@@ -297,10 +449,6 @@
   .pet-mascot.pet-growth-burst{
     animation:petGrowthBurst .75s cubic-bezier(.2,.8,.2,1);
   }
-  .pet-egg .egg-shell{
-    transform-box:fill-box;
-    transform-origin:center;
-  }
   .pet-egg .egg-crack{
     transition:opacity .5s ease, stroke-width .5s ease;
   }
@@ -321,14 +469,6 @@
     35%{ filter:brightness(1.28); }
     100%{ filter:brightness(1); }
   }
-  .pet-status-line{
-    font-size:.68rem;
-    color:var(--chalk-dim);
-    text-align:center;
-    margin-top:2px;
-  }
-  .pet-status-line b{ color:var(--yellow); }
-
   .streak-strip{ margin-top:14px; text-align:center; }
   .streak-title{
     font-size:.65rem;
@@ -350,9 +490,9 @@
   .streak-letter{ font-size:.62rem; color:var(--chalk-dim); }
   .streak-cell.perfect{ background:var(--green); border-color:var(--green); }
   .streak-cell.perfect .streak-letter{ color:#132015; font-weight:bold; }
-  .streak-cell.partial{ background:rgba(242,214,117,.35); border-color:var(--yellow); }
+  .streak-cell.partial{ background:rgba(255,217,61,.35); border-color:var(--yellow); }
   .streak-cell.partial .streak-letter{ color:#2a2410; font-weight:bold; }
-  .streak-cell.none{ background:rgba(224,138,138,.18); border-color:rgba(224,138,138,.4); }
+  .streak-cell.none{ background:rgba(255,107,107,.18); border-color:rgba(255,107,107,.4); }
   .streak-cell.today{ box-shadow:0 0 0 2px var(--yellow); }
 
   /* ---------- períodos ---------- */
@@ -468,13 +608,13 @@
   .task.na .txt{ color:var(--chalk-dim); font-style:italic; }
   .task.na .pts{ color:var(--chalk-dim); border-color:var(--line); }
   .task.notdone .txt{ color:var(--red); }
-  .task.notdone .pts{ color:var(--red); border-color:rgba(224,138,138,.4); }
+  .task.notdone .pts{ color:var(--red); border-color:rgba(255,107,107,.4); }
   .task-icon{ font-size:1.05rem; margin-right:6px; flex-shrink:0; }
 
   .pts{
     font-size:.68rem;
     color:var(--green);
-    border:1px solid rgba(169,211,173,.4);
+    border:1px solid rgba(95,216,117,.4);
     border-radius:10px;
     padding:1px 7px;
     white-space:nowrap;
@@ -501,8 +641,8 @@
   .bad-habits{ display:flex; flex-wrap:wrap; gap:9px; justify-content:center; }
 
   .bad-btn{
-    background:rgba(224,138,138,.08);
-    border:1px solid rgba(224,138,138,.4);
+    background:rgba(255,107,107,.08);
+    border:1px solid rgba(255,107,107,.4);
     color:var(--chalk);
     padding:7px 13px;
     border-radius:8px;
@@ -511,8 +651,14 @@
     font-family:inherit;
     transition:background .15s;
   }
-  .bad-btn:hover{ background:rgba(224,138,138,.2); }
+  .bad-btn:hover{ background:rgba(255,107,107,.2); }
   .bad-btn .minus{ color:var(--red); font-weight:bold; margin-left:6px; }
+  .bad-btn.positive{
+    background:rgba(95,216,117,.08);
+    border-color:rgba(95,216,117,.4);
+  }
+  .bad-btn.positive:hover{ background:rgba(95,216,117,.2); }
+  .bad-btn.positive .minus{ color:var(--green); }
 
   .rewards{
     display:grid;
@@ -522,13 +668,14 @@
 
   .reward{
     background:rgba(255,255,255,.03);
-    border:1px solid rgba(232,163,192,.3);
+    border:1px solid rgba(255,126,185,.3);
     border-radius:10px;
     padding:12px;
     text-align:center;
   }
   .reward .name{ font-size:.88rem; margin-bottom:2px; }
   .reward .cost{ font-size:.7rem; color:var(--green); margin-bottom:8px; display:block; }
+  .reward .cap-note{ font-size:.65rem; color:var(--chalk-dim); display:block; margin-bottom:6px; }
   .reward button{
     background:var(--pink);
     color:#2a1420;
@@ -546,14 +693,6 @@
     cursor:not-allowed;
   }
 
-  .screen-note{
-    text-align:center;
-    font-size:.74rem;
-    color:var(--chalk-dim);
-    margin-top:12px;
-  }
-  .screen-note b{ color:var(--blue); }
-
   .log{
     margin-top:20px;
     padding-top:12px;
@@ -566,19 +705,11 @@
   .log-title{ text-transform:uppercase; letter-spacing:1px; font-size:.62rem; margin-bottom:5px; }
   .log div{ padding:2px 0; }
 
-  .perfect-note{
-    text-align:center;
-    font-size:.74rem;
-    color:var(--chalk-dim);
-    margin-top:10px;
-  }
-  .perfect-note b{ color:var(--yellow); }
-
 
   .hair-section{
     margin-top:18px;
     padding:14px 16px;
-    border:1px solid rgba(169,211,173,.3);
+    border:1px solid rgba(95,216,117,.3);
     border-radius:12px;
     background:rgba(255,255,255,.025);
   }
@@ -587,8 +718,8 @@
   .hair-note{font-size:.7rem;color:var(--chalk-dim);}
   .hair-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   .hair-btn{border:1px solid var(--line);background:rgba(255,255,255,.035);color:var(--chalk);border-radius:9px;padding:9px 10px;font:inherit;font-size:.78rem;cursor:pointer;}
-  .hair-btn.active-washed{background:rgba(169,211,173,.22);border-color:var(--green);color:var(--green);font-weight:bold;}
-  .hair-btn.active-notwashed{background:rgba(242,214,117,.12);border-color:rgba(242,214,117,.45);color:var(--yellow);font-weight:bold;}
+  .hair-btn.active-washed{background:rgba(95,216,117,.22);border-color:var(--green);color:var(--green);font-weight:bold;}
+  .hair-btn.active-notwashed{background:rgba(255,217,61,.12);border-color:rgba(255,217,61,.45);color:var(--yellow);font-weight:bold;}
   .hair-status{text-align:center;margin-top:8px;font-size:.72rem;color:var(--chalk-dim);}
   .hair-history-washed{color:var(--green);font-weight:bold;}
   .hair-history-notwashed{color:var(--yellow);font-weight:bold;}
@@ -614,12 +745,11 @@
     letter-spacing:.5px;
   }
   table.history-table td.pts-cell{ color:var(--green); }
-  table.history-table td.screen-cell{ color:var(--blue); }
   .badge-perfect{
     display:inline-block;
-    background:rgba(242,214,117,.15);
+    background:rgba(255,217,61,.15);
     color:var(--yellow);
-    border:1px solid rgba(242,214,117,.4);
+    border:1px solid rgba(255,217,61,.4);
     border-radius:999px;
     padding:1px 8px;
     font-size:.68rem;
@@ -635,7 +765,7 @@
 
   .weekly-review{
     background:rgba(255,255,255,.03);
-    border:1px solid rgba(169,211,173,.3);
+    border:1px solid rgba(95,216,117,.3);
     border-radius:12px;
     padding:16px 18px;
   }
@@ -662,12 +792,10 @@
     display:block;
   }
   .wr-stat .wr-label{ font-size:.68rem; color:var(--chalk-dim); }
-  .weekly-review .wr-msg{ font-size:.82rem; color:var(--chalk); text-align:center; }
-  .weekly-review .wr-msg b{ color:var(--yellow); }
 
   .drive-sync{
-    background:rgba(143,201,230,.08);
-    border:1px solid rgba(143,201,230,.35);
+    background:rgba(79,195,247,.08);
+    border:1px solid rgba(79,195,247,.35);
     border-radius:12px;
     padding:14px 16px;
   }
@@ -699,8 +827,8 @@
   }
 
   .backup-reminder{
-    background:rgba(242,214,120,.1);
-    border:1px solid rgba(242,214,120,.4);
+    background:rgba(255,217,61,.1);
+    border:1px solid rgba(255,217,61,.4);
     border-radius:8px;
     padding:8px 12px;
     font-size:.75rem;
@@ -756,8 +884,8 @@
 
   .test-panel{
     margin:14px 18px 0;
-    background:rgba(224,138,138,.06);
-    border:1px dashed rgba(224,138,138,.5);
+    background:rgba(255,107,107,.06);
+    border:1px dashed rgba(255,107,107,.5);
     border-radius:10px;
     padding:14px 16px;
   }
@@ -896,6 +1024,24 @@
   }
   .reorder-btn:hover:not(:disabled){ color:var(--chalk); border-color:rgba(242,237,225,.4); }
   .reorder-btn:disabled{ opacity:.25; cursor:not-allowed; }
+
+  .day-chip-row{ display:flex; gap:4px; margin:6px 0; }
+  .day-chip{
+    width:26px; height:26px;
+    border-radius:6px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.04);
+    color:var(--chalk-dim);
+    font-size:.72rem;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .day-chip.active{
+    background:var(--blue);
+    border-color:var(--blue);
+    color:#16241f;
+    font-weight:bold;
+  }
 
   .stepper{
     display:flex;
@@ -1048,6 +1194,10 @@
 
       <section class="pet-section" id="petSection"></section>
 
+      <section class="block" id="gameTimerSection"></section>
+
+      <section class="block" id="customTimersSection"></section>
+
       <div id="weekendIndicator"></div>
       <div class="periods" id="periods"></div>
 
@@ -1071,7 +1221,6 @@
       <section class="block">
         <h3 class="block-title reward-title">🎁 Loja de Recompensas</h3>
         <div class="rewards" id="rewards"></div>
-        <div class="perfect-note" id="perfectNote"></div>
       </section>
 
       <div class="log">
@@ -1211,6 +1360,22 @@
     </div>
 
     <div class="editor-section">
+      <h3>📅 Compromissos Fixos</h3>
+      <div class="hint">Aparecem direto na lista de tarefas do dia certo, no período escolhido (Manhã/Tarde/Noite) — valem pontos como qualquer tarefa.</div>
+      <div id="editSchedule"></div>
+      <button class="add-row-btn" data-add="schedule">+ adicionar compromisso</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>🎮 Tempo de Jogo</h3>
+      <div class="hint">Cota diária de tempo de jogo, controlada pelo botão "começar/parar de jogar" na tela.</div>
+      <div class="edit-row">
+        <label style="flex:1; font-size:.85rem;">Horas de jogo por dia</label>
+        <input type="number" min="0" step="0.5" id="gameLimitInput" style="width:70px;">
+      </div>
+    </div>
+
+    <div class="editor-section">
       <h3>🔒 Segurança</h3>
       <div class="hint">Define um PIN pra pedir antes de abrir "Editar tudo" — protege de mudanças acidentais.</div>
       <div class="edit-row">
@@ -1237,34 +1402,36 @@ const DEFAULT_CONFIG = {
     manha: {
       label: "Manhã", time: "8:20 – 12:00",
       tasks: [
-        { id:"m1", txt:"Arrumar a cama", pts:1 },
-        { id:"m2", txt:"Beber 1 copo de água", pts:1 },
-        { id:"m3", txt:"Escovar os dentes", pts:1 },
-        { id:"m4", txt:"Lavar o rosto", pts:1 },
+        { id:"m1", txt:"Arrumar a cama", pts:1, sub:"até às 12h" },
+        { id:"m2", txt:"Beber 1 copo de água", pts:1, sub:"até às 12h" },
+        { id:"m3", txt:"Escovar os dentes", pts:1, sub:"até às 12h" },
+        { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h" },
         { id:"m5", txt:"Duolingo", sub:"5 lições", pts:4 },
-        { id:"m6", txt:"Ler", sub:"1 capítulo do livro de casa", pts:4 },
-        { id:"m7", txt:"Vestir o uniforme", pts:1 },
-        { id:"m8", txt:"Arrumar a mochila", pts:1 },
+        { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 12h" },
+        { id:"m8", txt:"Arrumar a mochila", pts:1, sub:"até às 12h" },
+        { id:"t_djf7hbb", txt:"Levar Lixo", pts:3, sub:"até às 12h" },
       ]
     },
     tarde: {
       label: "Tarde", time: "12:00 – 18:00",
       tasks: [
-        { id:"t1", txt:"Beber 1 copo de água", pts:1 },
-        { id:"t2", txt:"Almoçar", pts:1 },
-        { id:"t3", txt:"Escovar os dentes", pts:1 },
-        { id:"t4", txt:"Ir para a escola", pts:5 },
-        { id:"t5", txt:"Arrumar a mochila", pts:1 },
+        { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h" },
+        { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h" },
+        { id:"t3", txt:"Escovar os dentes", pts:1, sub:"até às 18h" },
+        { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h" },
+        { id:"t5", txt:"Arrumar a mochila", pts:1, sub:"até às 18h" },
       ]
     },
     noite: {
       label: "Noite", time: "18:00 – 22:00",
       tasks: [
-        { id:"n1", txt:"Jantar", pts:1 },
-        { id:"n2", txt:"Beber 1 copo de água", pts:1 },
-        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha", pts:3 },
-        { id:"n5", txt:"Arrumar a bagunça", pts:2 },
-        { id:"n6", txt:"Escovar os dentes", pts:1 },
+        { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h" },
+        { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h" },
+        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:3 },
+        { id:"n5", txt:"Arrumar a bagunça", pts:2, sub:"até às 22h" },
+        { id:"n6", txt:"Escovar os dentes", pts:1, sub:"até às 22h" },
+        { id:"t_gzba4xs", txt:"Cabelo Lavado", pts:1, sub:"" },
+        { id:"t_ci3brlt", txt:"Ler Livro", pts:3, sub:"3 capítulo do livro de casa (até às 22h)" },
       ]
     },
   },
@@ -1275,14 +1442,27 @@ const DEFAULT_CONFIG = {
   editorPin: "",
   badHabits: [],
   rewards: [
-    { id:"r1", txt:"1 hora de tela", cost:90 },
+    { id:"r1", txt:"1 hora de tela", cost:90, grantsHours:1, maxPerDay:2 },
     { id:"r2", txt:"Hot Wheels (brinquedo)", cost:300 },
   ],
-  screenNote: "10 Pacus Points = 1 hora de tela. Limite sugerido: 2 horas de tela por dia.",
-  screenPointsPerHour: 10,
-  screenDailyLimitHours: 2,
+  screenDailyLimitHours: 2, // usado pelo timer de jogo diário abaixo
   perfectDayBonusMinutes: 30,
   historyStartDate: "2026-08-09",
+
+  // compromissos fixos da semana — aparecem direto como tarefas do dia
+  // (no período certo), não como uma lista separada. "period" é onde a
+  // tarefa aparece: manha, tarde ou noite. "Escola" já existe como tarefa
+  // fixa lá em cima, então não repetimos ela aqui.
+  schedule: [
+    { id:"sc1", label:"Inglês", days:["ter","qui"], start:"09:00", end:"10:00", period:"manha", pts:5 },
+    { id:"sc3", label:"Escoteiros", days:["sab"], start:"13:00", end:"17:30", period:"tarde", pts:5 },
+  ],
+
+  // exceções pontuais: um compromisso só naquele dia específico, sem mexer
+  // na regra recorrente (ex: Inglês de reposição numa sexta).
+  scheduleExceptions: [
+    { id:"exc1", date:"2026-08-14", label:"Inglês (exceção)", period:"manha", pts:5, start:"09:00", end:"10:00" },
+  ],
 
   // Pacus, o axolote: começa em 09/08 e cresce um passo a cada dia
   // em que todas as tarefas aplicáveis são concluídas. O ciclo termina
@@ -1350,7 +1530,6 @@ const APP_VERSION = "2026.08.11-pacus-v4";
       Script (não o arquivo local) em todos os aparelhos.
    ========================================================================= */
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec";
-const DRIVE_SYNC_TOKEN = 'HectorAPI-2026-8fK3mQ7vX2pL9zR4';
 // A mesma URL agora também serve o próprio app (HTML) quando aberta sem
 // parâmetro — pra pedir só os dados (backup), usamos ?data=1.
 const DATA_ENDPOINT = APPS_SCRIPT_URL + "?data=1";
@@ -1377,9 +1556,42 @@ function isWeekendISO(dateISO){
   return day === 0 || day === 6;
 }
 
+const WEEKDAY_KEYS = ['dom','seg','ter','qua','qui','sex','sab'];
+const WEEKDAY_LABELS = {dom:'Domingo', seg:'Segunda', ter:'Terça', qua:'Quarta', qui:'Quinta', sex:'Sexta', sab:'Sábado'};
+
+function weekdayKeyFor(dateISO){
+  return WEEKDAY_KEYS[new Date(dateISO+"T00:00:00").getDay()];
+}
+
 function getPeriodsFor(dateISO){
-  if(CONFIG.periodsWeekend && isWeekendISO(dateISO)) return CONFIG.periodsWeekend;
-  return CONFIG.periods;
+  const base = (CONFIG.periodsWeekend && isWeekendISO(dateISO)) ? CONFIG.periodsWeekend : CONFIG.periods;
+  const weekday = weekdayKeyFor(dateISO);
+  const todaysSchedule = (CONFIG.schedule || []).filter(s => s.days && s.days.includes(weekday));
+  const todaysExceptions = (CONFIG.scheduleExceptions || []).filter(s => s.date === dateISO);
+  if(todaysSchedule.length === 0 && todaysExceptions.length === 0) return base;
+
+  // clona pra não mexer no CONFIG original, e injeta os compromissos fixos
+  // (e exceções pontuais) de hoje como tarefas de verdade no período certo
+  const merged = JSON.parse(JSON.stringify(base));
+  todaysSchedule.forEach(s=>{
+    const periodKey = s.period && merged[s.period] ? s.period : 'tarde';
+    merged[periodKey].tasks.push({
+      id: 'sched_' + s.id,
+      txt: s.label,
+      sub: `${s.start}–${s.end}`,
+      pts: s.pts != null ? s.pts : 3,
+    });
+  });
+  todaysExceptions.forEach(s=>{
+    const periodKey = s.period && merged[s.period] ? s.period : 'tarde';
+    merged[periodKey].tasks.push({
+      id: 'exc_' + s.id,
+      txt: s.label,
+      sub: `${s.start}–${s.end}`,
+      pts: s.pts != null ? s.pts : 3,
+    });
+  });
+  return merged;
 }
 
 function allTasks(dateISO){
@@ -1419,7 +1631,7 @@ function setTestDate(iso){
   TEST_DATE_OVERRIDE = iso; // só em memória — some sozinho ao recarregar a página
 }
 function formatDateBR(iso){
-  const [y,m,d] = iso.split("-");
+  const [,m,d] = iso.split("-");
   return d+"/"+m;
 }
 
@@ -1431,36 +1643,62 @@ function loadState(){
   return reconcileState(state);
 }
 
-function seedKnownPerfectDays(state){
-  // Dias já realizados antes do início do uso do histórico no app.
-  // 09/08 e 10/08 foram dias perfeitos confirmados pelo usuário.
-  const knownPerfectDates = ["2026-08-09", "2026-08-10"];
-  const tasks = allTasks("2026-08-09");
-  const total = tasks.length;
-  const points = tasks.reduce((sum, task) => sum + (Number(task.pts) || 0), 0);
+function applyHistoryCorrection_v2(state){
+  // Correção pontual, aplicada só UMA VEZ (por causa da flag abaixo) —
+  // depois disso nunca mais mexe sozinha nesses dias, pra não apagar
+  // edições feitas manualmente depois. Cobre 09/08 a 12/08: todos os
+  // dias foram completos; dia 12 teve -10 Pacus Points por causa de uma
+  // briga na escola; saldo final confirmado até 12/08: 170 Pacus Points.
+  if(state.historyCorrectionV2Applied) return;
+
+  const hairByDay = {
+    "2026-08-09": "not-washed",
+    "2026-08-10": "washed",
+    "2026-08-11": "not-washed",
+    "2026-08-12": "washed",
+  };
+  const pointsPenaltyByDay = {
+    "2026-08-12": 10, // brigou na escola
+  };
 
   if(!state.history) state.history = {};
+  if(!state.hairByDate) state.hairByDate = {};
   if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
 
-  knownPerfectDates.forEach(iso => {
+  Object.keys(hairByDay).forEach(iso => {
+    const tasks = allTasks(iso);
+    const total = tasks.length;
+    const rawPoints = tasks.reduce((sum, task) => sum + (Number(task.pts) || 0), 0);
+    const penalty = pointsPenaltyByDay[iso] || 0;
+    const netPoints = Math.max(0, rawPoints - penalty);
+
     state.history[iso] = {
       done: total,
       total: total,
-      pointsEarnedThatDay: points,
+      pointsEarnedThatDay: netPoints,
       perfect: true,
       screenMinutes: CONFIG.perfectDayBonusMinutes || 30,
-      periodsCompleted: 3
+      periodsCompleted: 3,
+      hair: hairByDay[iso],
     };
+    state.hairByDate[iso] = hairByDay[iso];
 
-    if(!state.petCompletedDays.includes(iso)){
-      state.petCompletedDays.push(iso);
-    }
+    if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
   });
 
   state.petCompletedDays.sort();
   state.petLastCompletionISO = state.petCompletedDays.length
     ? state.petCompletedDays[state.petCompletedDays.length - 1]
     : null;
+
+  // saldo confirmado até 12/08 — hoje (13/08) ainda não foi jogado
+  state.totalPoints = 170;
+
+  state.historyCorrectionV2Applied = true;
+}
+
+function seedKnownPerfectDays(state){
+  applyHistoryCorrection_v2(state);
 }
 
 function reconcileState(state){
@@ -1478,6 +1716,24 @@ function reconcileState(state){
   if(!state.log) state.log = [];
   if(!state.history) state.history = {};
   if(!state.hairByDate || typeof state.hairByDate !== "object") state.hairByDate = {};
+  if(!state.gameTimer || typeof state.gameTimer !== "object"){
+    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
+  }
+  if(state.gameTimer.bonusSeconds === undefined) state.gameTimer.bonusSeconds = 0;
+  if(!state.gameTimer.redemptions || typeof state.gameTimer.redemptions !== "object") state.gameTimer.redemptions = {};
+  if(!Array.isArray(state.customTimers) || state.customTimers.length !== 2){
+    state.customTimers = [
+      { id:"ct1", label:"Timer 1", totalSeconds:300, remainingSeconds:300, runningSince:null, finished:false },
+      { id:"ct2", label:"Timer 2", totalSeconds:300, remainingSeconds:300, runningSince:null, finished:false },
+    ];
+  }
+  state.customTimers.forEach(t=>{
+    if(t.totalSeconds === undefined) t.totalSeconds = 300;
+    if(t.remainingSeconds === undefined) t.remainingSeconds = t.totalSeconds;
+    if(t.runningSince === undefined) t.runningSince = null;
+    if(t.finished === undefined) t.finished = false;
+  });
+  if(state.historyCorrectionV2Applied === undefined) state.historyCorrectionV2Applied = false;
 
   seedKnownPerfectDays(state);
 
@@ -1499,6 +1755,8 @@ function reconcileState(state){
     state.checkedToday = {};
     state.log = [];
     state.lastDate = todayISO();
+    // zera o tempo de jogo usado — é uma cota que renova todo dia
+    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
     saveState(state);
   } else if(cleaned){
     saveState(state);
@@ -1648,6 +1906,8 @@ function sanitizeRemoteConfig(remoteConfig){
   if(!safe.periodsWeekend) safe.periodsWeekend = null;
   if(!Array.isArray(safe.badHabits)) safe.badHabits = [];
   if(!Array.isArray(safe.rewards)) safe.rewards = [];
+  if(!Array.isArray(safe.schedule)) safe.schedule = [];
+  if(!Array.isArray(safe.scheduleExceptions)) safe.scheduleExceptions = [];
   if(!safe.pet || !Array.isArray(safe.pet.stages) || safe.pet.stages.length < 2) {
     safe.pet = JSON.parse(JSON.stringify(DEFAULT_CONFIG.pet));
   }
@@ -1668,6 +1928,7 @@ function mergeRemoteData(remote){
     }
   });
   merged.petCompletedDays = [...new Set([...(remoteState.petCompletedDays||[]), ...(localState.petCompletedDays||[])])].sort();
+  merged.historyCorrectionV2Applied = !!(remoteState.historyCorrectionV2Applied || localState.historyCorrectionV2Applied);
   merged.hairByDate = {...(remoteState.hairByDate||{}), ...(localState.hairByDate||{})};
   merged.totalPoints = Math.max(Number(remoteState.totalPoints)||0, Number(localState.totalPoints)||0);
   merged.lastSeenPetStage = Math.max(Number(remoteState.lastSeenPetStage)||0, Number(localState.lastSeenPetStage)||0);
@@ -1739,26 +2000,295 @@ function bumpTotal(){
   el.classList.add('bump');
 }
 
+/* ===================== TIMER DE TEMPO DE JOGO (diário) ===================== */
+let gameTimerTickHandle = null;
+
+function gameTimerDailyLimitSeconds(){
+  const base = Math.round((CONFIG.screenDailyLimitHours || 2) * 3600);
+  const bonus = Math.round((state.gameTimer.bonusSeconds || 0));
+  return base + bonus;
+}
+
+function addGameTimerBonusHours(hours){
+  if(!state.gameTimer.bonusSeconds) state.gameTimer.bonusSeconds = 0;
+  state.gameTimer.bonusSeconds += Math.round(hours * 3600);
+}
+
+function gameTimerSecondsUsedNow(){
+  const gt = state.gameTimer;
+  const running = gt.runningSince ? (Date.now() - gt.runningSince)/1000 : 0;
+  return gt.usedSeconds + running;
+}
+
+function gameTimerIsRunning(){
+  return !!state.gameTimer.runningSince;
+}
+
+function startGameTimer(){
+  if(gameTimerIsRunning()) return;
+  state.gameTimer.runningSince = Date.now();
+  addLog('🎮 começou a jogar');
+  saveState(state);
+  renderGameTimer();
+  startGameTimerTicking();
+}
+
+function stopGameTimer(){
+  if(!gameTimerIsRunning()) return;
+  const elapsed = (Date.now() - state.gameTimer.runningSince)/1000;
+  state.gameTimer.usedSeconds += elapsed;
+  state.gameTimer.runningSince = null;
+  addLog('⏸️ parou de jogar');
+  saveState(state);
+  renderGameTimer();
+  stopGameTimerTicking();
+}
+
+// enquanto está rodando, "descarrega" o tempo periodicamente pro estado
+// salvo — assim não perde o progresso se a página fechar sem clicar em parar
+function flushGameTimer(){
+  if(!gameTimerIsRunning()) return;
+  const elapsed = (Date.now() - state.gameTimer.runningSince)/1000;
+  state.gameTimer.usedSeconds += elapsed;
+  state.gameTimer.runningSince = Date.now();
+  saveState(state);
+}
+
+function formatMinSec(totalSeconds){
+  const s = Math.max(0, Math.round(totalSeconds));
+  const h = Math.floor(s/3600);
+  const m = Math.floor((s%3600)/60);
+  if(h > 0) return `${h}h ${String(m).padStart(2,'0')}min`;
+  return `${m} min`;
+}
+
+function startGameTimerTicking(){
+  if(gameTimerTickHandle) return;
+  let flushCounter = 0;
+  gameTimerTickHandle = setInterval(()=>{
+    updateGameTimerDisplay();
+    flushCounter++;
+    if(flushCounter >= 20){ // ~20s, descarrega pro estado salvo
+      flushCounter = 0;
+      flushGameTimer();
+    }
+  }, 1000);
+}
+function stopGameTimerTicking(){
+  if(gameTimerTickHandle){ clearInterval(gameTimerTickHandle); gameTimerTickHandle = null; }
+}
+
+function updateGameTimerDisplay(){
+  const usedEl = document.getElementById('gameTimerUsed');
+  const barEl = document.getElementById('gameTimerBarFill');
+  if(!usedEl || !barEl) return;
+  const limit = gameTimerDailyLimitSeconds();
+  const used = gameTimerSecondsUsedNow();
+  const remaining = limit - used;
+  const pct = Math.min(100, Math.round((used/limit)*100));
+  usedEl.innerHTML = remaining > 0
+    ? `<b>${formatMinSec(remaining)}</b> restantes hoje`
+    : `<b>tempo de hoje acabou</b>`;
+  barEl.style.width = pct + '%';
+  barEl.classList.toggle('over-limit', used >= limit);
+}
+
+function renderGameTimer(){
+  const el = document.getElementById('gameTimerSection');
+  if(!el) return;
+  const running = gameTimerIsRunning();
+  const limit = gameTimerDailyLimitSeconds();
+  const used = gameTimerSecondsUsedNow();
+  const remaining = limit - used;
+  const pct = Math.min(100, Math.round((used/limit)*100));
+
+  el.innerHTML = `
+    <div class="game-timer">
+      <h3>🎮 Tempo de Jogo</h3>
+      <div class="hint">Cota de ${CONFIG.screenDailyLimitHours || 2}h por dia (resgatar "1 hora de tela" na loja soma mais tempo hoje). É só apertar quando começar e quando parar de jogar.</div>
+      <div class="game-timer-used" id="gameTimerUsed">${remaining > 0 ? `<b>${formatMinSec(remaining)}</b> restantes hoje` : `<b>tempo de hoje acabou</b>`}</div>
+      <div class="game-timer-track"><div class="game-timer-fill ${used>=limit?'over-limit':''}" id="gameTimerBarFill" style="width:${pct}%"></div></div>
+      <button class="game-timer-btn ${running?'running':''}" id="gameTimerToggleBtn">
+        ${running ? '⏸️ Parar de jogar' : '▶️ Começar a jogar'}
+      </button>
+    </div>
+  `;
+  document.getElementById('gameTimerToggleBtn').addEventListener('click', ()=>{
+    if(gameTimerIsRunning()) stopGameTimer(); else startGameTimer();
+  });
+
+  if(running) startGameTimerTicking(); else stopGameTimerTicking();
+}
+
+/* ===================== TIMERS AVULSOS (tempo livre pra qualquer coisa) ===================== */
+let customTimerTickHandle = null;
+
+function findCustomTimer(id){
+  return state.customTimers.find(t=>t.id===id);
+}
+
+function customTimerRemainingNow(t){
+  if(!t.runningSince) return t.remainingSeconds;
+  const elapsed = (Date.now() - t.runningSince)/1000;
+  return Math.max(0, t.remainingSeconds - elapsed);
+}
+
+function setCustomTimerMinutes(id, minutes){
+  const t = findCustomTimer(id);
+  if(!t || t.runningSince) return; // não dá pra mudar enquanto está rodando
+  const secs = Math.max(0, Math.round(minutes*60));
+  t.totalSeconds = secs;
+  t.remainingSeconds = secs;
+  t.finished = false;
+  saveState(state);
+  renderCustomTimers();
+}
+
+function startCustomTimer(id){
+  const t = findCustomTimer(id);
+  if(!t || t.runningSince || t.remainingSeconds <= 0) return;
+  t.runningSince = Date.now();
+  t.finished = false;
+  saveState(state);
+  renderCustomTimers();
+  startCustomTimerTicking();
+}
+
+function pauseCustomTimer(id){
+  const t = findCustomTimer(id);
+  if(!t || !t.runningSince) return;
+  t.remainingSeconds = customTimerRemainingNow(t);
+  t.runningSince = null;
+  saveState(state);
+  renderCustomTimers();
+}
+
+function resetCustomTimer(id){
+  const t = findCustomTimer(id);
+  if(!t) return;
+  t.remainingSeconds = t.totalSeconds;
+  t.runningSince = null;
+  t.finished = false;
+  saveState(state);
+  renderCustomTimers();
+}
+
+function playBeep(){
+  try{
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(!Ctx) return;
+    const ctx = new Ctx();
+    [0, 220, 440].forEach(delay=>{
+      setTimeout(()=>{
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = 880;
+        gain.gain.value = 0.15;
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.18);
+      }, delay);
+    });
+  }catch(e){ /* som é só um extra, sem problema se falhar */ }
+}
+
+function anyCustomTimerRunning(){
+  return state.customTimers.some(t=>t.runningSince);
+}
+
+function startCustomTimerTicking(){
+  if(customTimerTickHandle) return;
+  customTimerTickHandle = setInterval(()=>{
+    let needsFullRender = false;
+    state.customTimers.forEach(t=>{
+      if(!t.runningSince) return;
+      const remaining = customTimerRemainingNow(t);
+      if(remaining <= 0 && !t.finished){
+        t.remainingSeconds = 0;
+        t.runningSince = null;
+        t.finished = true;
+        playBeep();
+        needsFullRender = true;
+      }
+    });
+    if(needsFullRender){ saveState(state); renderCustomTimers(); }
+    else updateCustomTimerDisplays();
+    if(!anyCustomTimerRunning()) stopCustomTimerTicking();
+  }, 1000);
+}
+function stopCustomTimerTicking(){
+  if(customTimerTickHandle){ clearInterval(customTimerTickHandle); customTimerTickHandle = null; }
+}
+
+function updateCustomTimerDisplays(){
+  state.customTimers.forEach(t=>{
+    const el = document.getElementById('customTimerDisplay_'+t.id);
+    if(el) el.textContent = formatHMS(customTimerRemainingNow(t));
+  });
+}
+
+function formatHMS(totalSeconds){
+  const s = Math.max(0, Math.round(totalSeconds));
+  const h = Math.floor(s/3600);
+  const m = Math.floor((s%3600)/60);
+  const sec = s%60;
+  if(h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
+function renderCustomTimers(){
+  const el = document.getElementById('customTimersSection');
+  if(!el) return;
+
+  const cardsHtml = state.customTimers.map(t=>{
+    const running = !!t.runningSince;
+    const remaining = customTimerRemainingNow(t);
+    const totalMin = Math.round(t.totalSeconds/60);
+    return `
+      <div class="custom-timer ${t.finished?'finished':''}">
+        <input type="text" class="custom-timer-label" id="customTimerLabel_${t.id}" value="${escapeAttr(t.label)}" maxlength="20">
+        <div class="custom-timer-display" id="customTimerDisplay_${t.id}">${formatHMS(remaining)}</div>
+        <div class="custom-timer-setrow">
+          <input type="number" min="0" step="1" id="customTimerMin_${t.id}" value="${totalMin}" ${running?'disabled':''}>
+          <span>min</span>
+          <button class="custom-timer-btn secondary" id="customTimerSetBtn_${t.id}" ${running?'disabled':''}>definir</button>
+        </div>
+        <div class="custom-timer-btns">
+          <button class="custom-timer-btn" id="customTimerStartBtn_${t.id}" ${(running||remaining<=0)?'disabled':''}>▶️ Iniciar</button>
+          <button class="custom-timer-btn secondary" id="customTimerPauseBtn_${t.id}" ${running?'':'disabled'}>⏸️ Pausar</button>
+          <button class="custom-timer-btn secondary" id="customTimerResetBtn_${t.id}">↺ Reiniciar</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="custom-timers-wrap">
+      <h3>⏱️ Timers</h3>
+      <div class="custom-timers">${cardsHtml}</div>
+    </div>
+  `;
+
+  state.customTimers.forEach(t=>{
+    document.getElementById('customTimerLabel_'+t.id).addEventListener('change', e=>{
+      t.label = e.target.value.trim() || t.label;
+      saveState(state);
+    });
+    document.getElementById('customTimerSetBtn_'+t.id).addEventListener('click', ()=>{
+      const val = parseFloat(document.getElementById('customTimerMin_'+t.id).value);
+      setCustomTimerMinutes(t.id, isNaN(val) ? 0 : val);
+    });
+    document.getElementById('customTimerStartBtn_'+t.id).addEventListener('click', ()=> startCustomTimer(t.id));
+    document.getElementById('customTimerPauseBtn_'+t.id).addEventListener('click', ()=> pauseCustomTimer(t.id));
+    document.getElementById('customTimerResetBtn_'+t.id).addEventListener('click', ()=> resetCustomTimer(t.id));
+  });
+
+  if(anyCustomTimerRunning()) startCustomTimerTicking(); else stopCustomTimerTicking();
+}
+
 /* ---------------- render principal ---------------- */
 /* ===================== PACUS, O AXOLOTE ===================== */
-function getDayEntry(iso){
-  if(iso === todayISO()){
-    const tasks = allTasks();
-    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    const total = applicable.length;
-    const done = applicable.filter(t=>state.checkedToday[t.id]==='done').length;
-    const perfect = total>0 && done===total;
-    return { exists:true, perfect };
-  }
-  const e = state.history[iso];
-  if(!e) return { exists:false, perfect:false };
-  return { exists:true, perfect: !!e.perfect };
-}
-
-function todayPeriodsCompleted(){
-  return periodsCompletedFrom(state.checkedToday);
-}
-
 function getPetCycle(){
   const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
   const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
@@ -1798,7 +2328,6 @@ function svgAttrs(){
 function buildEggSVG(progress){
   const p = Math.max(0, Math.min(1, progress));
   const wobble = Math.sin(p*Math.PI*3)*1.4;
-  const crackOpacity = Math.min(1, p*1.5);
   const cracks = [
     ["M94 80 L106 96 L98 109 L112 125 L103 142", 0.12],
     ["M80 96 L92 108 L84 122 L96 136", 0.32],
@@ -1813,7 +2342,7 @@ function buildEggSVG(progress){
   const shellBreak = p > .78 ? `<path d="M62 118 Q100 ${142+p*10} 158 118" stroke="var(--pink)" stroke-width="2.4" fill="none" opacity="${(p-.78)/.22}"/>` : '';
   return `<svg class="pet-mascot pet-egg" ${svgAttrs()}>
     <g transform="rotate(${wobble} 110 130)">
-      <ellipse cx="110" cy="130" rx="48" ry="60" fill="#f6ecd9" stroke="#e8a3c0" stroke-width="3"/>
+      <ellipse cx="110" cy="130" rx="48" ry="60" fill="#f6ecd9" stroke="#ff7eb9" stroke-width="3"/>
       <ellipse cx="93" cy="106" rx="12" ry="18" fill="#fff" opacity=".48"/>
       ${crackSvg}${shellBreak}
     </g>
@@ -1834,8 +2363,8 @@ function buildPacusSVG(stageFloat){
   const faceY = 92 - hatch*7;
   const bodyY = 128 - hatch*5;
   const shell = hatch < 1 ? `
-    <path d="M62 151 Q45 158 54 174 Q70 184 85 170" fill="#f6ecd9" stroke="#e8a3c0" stroke-width="2.5" opacity="${1-hatch*.75}"/>
-    <path d="M158 151 Q175 158 166 174 Q150 184 135 170" fill="#f6ecd9" stroke="#e8a3c0" stroke-width="2.5" opacity="${1-hatch*.75}"/>` : '';
+    <path d="M62 151 Q45 158 54 174 Q70 184 85 170" fill="#f6ecd9" stroke="#ff7eb9" stroke-width="2.5" opacity="${1-hatch*.75}"/>
+    <path d="M158 151 Q175 158 166 174 Q150 184 135 170" fill="#f6ecd9" stroke="#ff7eb9" stroke-width="2.5" opacity="${1-hatch*.75}"/>` : '';
   const gills = [];
   const gillCount = 2 + Math.floor(Math.min(2,growth*2));
   for(let i=0;i<gillCount;i++){
@@ -1870,7 +2399,7 @@ function buildPetVisual(stageFloat){
 function renderPet(){
   const el = document.getElementById('petSection');
   const data = computePetStage();
-  const { stage, stageFloat, daysEquivalent, cycleDays, maxStage, todayPerfect, canGrowToday } = data;
+  const { stage, stageFloat, daysEquivalent, cycleDays, maxStage, canGrowToday } = data;
   const stageInfo = CONFIG.pet.stages[stage];
   const progressPct = Math.round((daysEquivalent/cycleDays)*100);
 
@@ -1880,20 +2409,24 @@ function renderPet(){
   const milestoneHtml = milestones.map(([day,label])=>{
     const active = daysEquivalent >= day;
     const current = stage >= day && (stage === day || (stage > day && day === 23));
-    return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label}<small>dia ${day}</small></span>`;
+    return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label} <small>dia ${day}</small></span>`;
   }).join('');
 
   let caption;
   if(stage === maxStage){
-    caption = `Pacus adulto. <b>O ciclo terminou em 31/08.</b>`;
+    caption = `Pacus adulto! <b>Ciclo concluído em 31/08.</b> 🎉`;
   } else if(canGrowToday){
-    caption = `<b>Dia completo!</b> O Pacus está pronto para avançar uma etapa.`;
-  } else if(todayPerfect){
-    caption = `Dia completo. <b>Essa evolução já foi registrada.</b>`;
+    caption = `<b>Dia completo!</b> O Pacus vai evoluir mais um pouco.`;
   } else if(daysEquivalent === 0){
-    caption = `O ovo está esperando. <b>Complete o dia para começar a rachadura.</b>`;
+    caption = `Complete um dia inteiro de tarefas pra começar a rachar o ovo.`;
   } else {
-    caption = `O Pacus está esperando você. <b>Ele não perde progresso.</b>`;
+    const nextMilestone = milestones.find(([day]) => day > daysEquivalent);
+    if(nextMilestone){
+      const diasFaltando = nextMilestone[0] - daysEquivalent;
+      caption = `Faltam <b>${diasFaltando} ${diasFaltando===1?'dia':'dias'}</b> para virar <b>${nextMilestone[1]}</b>.`;
+    } else {
+      caption = `Quase lá! O Pacus está quase adulto.`;
+    }
   }
 
   const previousProgress = Number(el.dataset.pacusProgress ?? daysEquivalent);
@@ -1909,7 +2442,6 @@ function renderPet(){
       <div class="pet-day-track" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
     </div>
     <div class="pet-milestones">${milestoneHtml}</div>
-    <div class="pet-status-line">${daysEquivalent === cycleDays ? 'Ciclo concluído' : `Próxima evolução após completar mais ${cycleDays-daysEquivalent} ${cycleDays-daysEquivalent===1?'dia':'dias'}.`}</div>
     <div class="pet-caption">${caption}</div>
     <div id="petEvolvedBanner"></div>
     <div class="streak-strip">${buildStreakStrip()}</div>
@@ -2004,6 +2536,8 @@ function render(){
 
   renderPet();
   renderHair();
+  renderGameTimer();
+  renderCustomTimers();
 
   const weekendEl = document.getElementById('weekendIndicator');
   if(weekendEl){
@@ -2066,12 +2600,13 @@ function render(){
   const badEl = document.getElementById('badHabits');
   badEl.innerHTML = '';
   CONFIG.badHabits.forEach(h=>{
+    const isPositive = h.pts >= 0;
     const btn = document.createElement('button');
-    btn.className = 'bad-btn';
-    btn.innerHTML = `${h.txt}<span class="minus">−${h.pts}</span>`;
+    btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
+    btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
     btn.addEventListener('click', ()=>{
-      state.totalPoints = Math.max(0, state.totalPoints - h.pts);
-      addLog(`−${h.pts} · ${h.txt}`);
+      state.totalPoints = Math.max(0, state.totalPoints + h.pts);
+      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
       saveState(state);
       bumpTotal();
       renderLog();
@@ -2080,8 +2615,6 @@ function render(){
   });
 
   renderRewards();
-  document.getElementById('perfectNote').innerHTML =
-    `Dia com <b>todas as tarefas certinhas</b> = bônus de <b>${CONFIG.perfectDayBonusMinutes||30} minutos de tela</b>, direto — sem precisar trocar Pacus Points.`;
   renderLog();
   renderHistory();
   renderWeeklyReview();
@@ -2193,9 +2726,6 @@ function renderBackupReminder(){
 
   const today = todayISO();
   const daysSinceBackup = state.lastBackupISO ? daysBetween(state.lastBackupISO, today) : Infinity;
-  const daysSinceStart = state.history && Object.keys(state.history).length
-    ? Infinity // se já há histórico, não depende do início — usamos direto o critério de 7 dias
-    : 0;
   const dismissed = state.backupReminderDismissedFor === today;
 
   const shouldShow = daysSinceBackup >= 7 && !dismissed;
@@ -2236,7 +2766,7 @@ function renderWeeklyReview(){
     days.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'));
   }
 
-  let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0, daysWithData = 0;
+  let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0;
   days.forEach(iso=>{
     const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
     if(!entry) return;
@@ -2248,21 +2778,10 @@ function renderWeeklyReview(){
         totalScreenMin += full.screenMinutes || 0;
       }
     }
-    if(entry.total > 0){ daysWithData++; if(entry.perfect) perfectDays++; }
+    if(entry.total > 0 && entry.perfect) perfectDays++;
   });
 
   const rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
-
-  let msg;
-  if(daysWithData === 0){
-    msg = `Ainda sem dados essa semana — bora começar hoje!`;
-  } else if(perfectDays === 0){
-    msg = `Nenhum dia 100% ainda essa semana. Sem problema — todo período completo já conta pro crescimento do Pacus. Que tal revisar juntos o que travou?`;
-  } else if(perfectDays >= 6){
-    msg = `Semana incrível! <b>${perfectDays} de 7 dias perfeitos</b>. Um ótimo momento pra comemorar juntos. 🎉`;
-  } else {
-    msg = `<b>${perfectDays} de 7 dias</b> com tudo certinho essa semana. Bom momento pra conversar sobre o que ajudou nos dias que foram bem.`;
-  }
 
   el.innerHTML = `
     <div class="weekly-review">
@@ -2275,7 +2794,6 @@ function renderWeeklyReview(){
         <div class="wr-stat"><span class="wr-num">${totalPointsWeek}</span><span class="wr-label">Pacus Points ganhos</span></div>
         <div class="wr-stat"><span class="wr-num">${totalScreenMin}</span><span class="wr-label">min de tela ganhos</span></div>
       </div>
-      <div class="wr-msg">${msg}</div>
     </div>
   `;
 }
@@ -2283,7 +2801,7 @@ function renderWeeklyReview(){
 function hairLabel(status){
   if(status === 'washed') return '<span class="hair-history-washed">💧 Lavou</span>';
   if(status === 'not-washed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
-  return '<span class="hair-history-unknown">· Não registrado</span>';
+  return '<span class="hair-history-unknown">— Não registrado</span>';
 }
 
 function renderHistory(){
@@ -2343,21 +2861,36 @@ function renderRewards(){
   rEl.innerHTML = '';
   CONFIG.rewards.forEach(r=>{
     const canAfford = state.totalPoints >= r.cost;
+    const redeemedToday = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
+    const atDailyLimit = r.maxPerDay != null && redeemedToday >= r.maxPerDay;
+    const capNote = r.maxPerDay != null ? `<span class="cap-note">${redeemedToday}/${r.maxPerDay} hoje</span>` : '';
     const div = document.createElement('div');
     div.className = 'reward';
     div.innerHTML = `
       <div class="name">${r.txt}</div>
       <span class="cost">${r.cost} PP</span>
-      <button ${canAfford ? '' : 'disabled'}>Resgatar</button>
+      ${capNote}
+      <button ${(canAfford && !atDailyLimit) ? '' : 'disabled'}>${atDailyLimit ? 'Limite hoje' : 'Resgatar'}</button>
     `;
     div.querySelector('button').addEventListener('click', ()=>{
       if(state.totalPoints < r.cost) return;
+      const redeemed = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
+      if(r.maxPerDay != null && redeemed >= r.maxPerDay) return;
+
       state.totalPoints -= r.cost;
       addLog(`🎁 Resgatou: ${r.txt} (−${r.cost})`);
+      if(r.grantsHours){
+        addGameTimerBonusHours(r.grantsHours);
+        addLog(`🎮 +${r.grantsHours}h de jogo hoje (bônus da recompensa)`);
+      }
+      if(!state.gameTimer.redemptions) state.gameTimer.redemptions = {};
+      state.gameTimer.redemptions[r.id] = redeemed + 1;
+
       saveState(state);
       bumpTotal();
       renderRewards();
       renderLog();
+      renderGameTimer();
     });
     rEl.appendChild(div);
   });
@@ -2372,7 +2905,7 @@ function renderLog(){
 
 function fireConfetti(originEl, count){
   count = count || 14;
-  const colors = ['#f5d878','#eeb0cb','#9ad2ee','#f3ad6c','#b7ddba'];
+  const colors = ['#ffd93d','#ff7eb9','#4fc3f7','#ff9f43','#5fd875'];
   const rect = originEl && originEl.getBoundingClientRect
     ? originEl.getBoundingClientRect()
     : { left: window.innerWidth/2, top: window.innerHeight/2, width:0, height:0 };
@@ -2494,6 +3027,9 @@ function openEditor(){
   };
 
   document.getElementById('editorPinInput').value = draft.editorPin || '';
+  document.getElementById('gameLimitInput').value = draft.screenDailyLimitHours ?? 2;
+  if(!Array.isArray(draft.schedule)) draft.schedule = [];
+  renderEditorSchedule();
 
   document.getElementById('overlay').classList.add('open');
 }
@@ -2543,20 +3079,24 @@ function renderEditorPeriod(key, elId, periodsObj){
   });
 }
 
-function stepperHTML(field, value){
+function stepperHTML(field, value, allowNegative){
   return `<span class="stepper">
     <button type="button" class="step-btn" data-step="-1" title="menos">−</button>
-    <input type="number" min="0" value="${value}" data-field="${field}">
+    <input type="number" ${allowNegative?'':'min="0"'} value="${value}" data-field="${field}">
     <button type="button" class="step-btn" data-step="1" title="mais">+</button>
   </span>`;
 }
-function wireStepper(row, obj, field){
+function wireStepper(row, obj, field, allowNegative){
   const input = row.querySelector(`[data-field=${field}]`);
-  input.addEventListener('input', e=>{ obj[field] = parseInt(e.target.value)||0; });
+  input.addEventListener('input', e=>{
+    const v = parseInt(e.target.value)||0;
+    obj[field] = allowNegative ? v : Math.max(0, v);
+  });
   row.querySelectorAll('.step-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const delta = parseInt(btn.getAttribute('data-step'));
-      obj[field] = Math.max(0, (obj[field]||0) + delta);
+      const next = (obj[field]||0) + delta;
+      obj[field] = allowNegative ? next : Math.max(0, next);
       input.value = obj[field];
     });
   });
@@ -2569,15 +3109,69 @@ function renderEditorBad(){
     const row = document.createElement('div');
     row.className = 'edit-row';
     row.innerHTML = `
-      <input type="text" value="${escapeAttr(h.txt)}" data-field="txt" placeholder="hábito ruim">
-      ${stepperHTML('pts', h.pts)}
+      <input type="text" value="${escapeAttr(h.txt)}" data-field="txt" placeholder="hábito (ex: brigou -10, ajudou +5)">
+      ${stepperHTML('pts', h.pts, true)}
       <button class="del" title="remover">🗑</button>
     `;
     row.querySelector('[data-field=txt]').addEventListener('input', e=>{ h.txt = e.target.value; });
-    wireStepper(row, h, 'pts');
+    wireStepper(row, h, 'pts', true);
     row.querySelector('.del').addEventListener('click', ()=>{
       draft.badHabits = draft.badHabits.filter(x=>x!==h);
       renderEditorBad();
+    });
+    el.appendChild(row);
+  });
+}
+
+function renderEditorSchedule(){
+  const el = document.getElementById('editSchedule');
+  el.innerHTML = '';
+  const dayOrder = ['seg','ter','qua','qui','sex','sab','dom'];
+  const dayShort = {seg:'S',ter:'T',qua:'Q',qui:'Q',sex:'S',sab:'S',dom:'D'};
+  const periodLabels = {manha:'Manhã', tarde:'Tarde', noite:'Noite'};
+  draft.schedule.forEach(item=>{
+    if(item.pts == null) item.pts = 3;
+    if(!item.period) item.period = 'tarde';
+    const row = document.createElement('div');
+    row.className = 'edit-row-task';
+    const dayChips = dayOrder.map(d=>
+      `<button type="button" class="day-chip ${item.days.includes(d)?'active':''}" data-day="${d}" title="${WEEKDAY_LABELS[d]}">${dayShort[d]}</button>`
+    ).join('');
+    const periodOptions = Object.entries(periodLabels).map(([k,l])=>
+      `<option value="${k}" ${item.period===k?'selected':''}>${l}</option>`
+    ).join('');
+    row.innerHTML = `
+      <div class="edit-row-main">
+        <input type="text" value="${escapeAttr(item.label)}" data-field="label" placeholder="nome (ex: Inglês)">
+        <button class="del" title="remover">🗑</button>
+      </div>
+      <div class="day-chip-row">${dayChips}</div>
+      <div class="edit-row-main">
+        <input type="time" value="${item.start}" data-field="start" style="flex:1;">
+        <span style="color:var(--chalk-dim); font-size:.8rem;">até</span>
+        <input type="time" value="${item.end}" data-field="end" style="flex:1;">
+      </div>
+      <div class="edit-row-main">
+        <select data-field="period" style="flex:1; background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--chalk); border-radius:6px; padding:6px; font-family:inherit; font-size:.8rem;">${periodOptions}</select>
+        ${stepperHTML('pts', item.pts)}
+      </div>
+    `;
+    row.querySelector('[data-field=label]').addEventListener('input', e=>{ item.label = e.target.value; });
+    row.querySelector('[data-field=start]').addEventListener('input', e=>{ item.start = e.target.value; });
+    row.querySelector('[data-field=end]').addEventListener('input', e=>{ item.end = e.target.value; });
+    row.querySelector('[data-field=period]').addEventListener('change', e=>{ item.period = e.target.value; });
+    wireStepper(row, item, 'pts');
+    row.querySelectorAll('.day-chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        const d = chip.getAttribute('data-day');
+        if(item.days.includes(d)) item.days = item.days.filter(x=>x!==d);
+        else item.days.push(d);
+        chip.classList.toggle('active');
+      });
+    });
+    row.querySelector('.del').addEventListener('click', ()=>{
+      draft.schedule = draft.schedule.filter(x=>x!==item);
+      renderEditorSchedule();
     });
     el.appendChild(row);
   });
@@ -2627,6 +3221,9 @@ document.querySelectorAll('.add-row-btn').forEach(btn=>{
     } else if(kind === 'reward'){
       draft.rewards.push({ id: uid('r'), txt:'', cost:10 });
       renderEditorRewards();
+    } else if(kind === 'schedule'){
+      draft.schedule.push({ id: uid('sc'), label:'', days:[], start:'09:00', end:'10:00', period:'tarde', pts:3 });
+      renderEditorSchedule();
     }
   });
 });
@@ -2665,9 +3262,13 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   }
   draft.badHabits = draft.badHabits.filter(h=>h.txt.trim() !== '');
   draft.rewards = draft.rewards.filter(r=>r.txt.trim() !== '');
+  draft.schedule = (draft.schedule || []).filter(s=>s.label.trim() !== '' && s.days.length > 0);
 
   const pinVal = document.getElementById('editorPinInput').value.trim();
   draft.editorPin = pinVal;
+
+  const gameLimitVal = parseFloat(document.getElementById('gameLimitInput').value);
+  draft.screenDailyLimitHours = isNaN(gameLimitVal) || gameLimitVal < 0 ? 2 : gameLimitVal;
 
   CONFIG = draft;
   saveConfig(CONFIG);
@@ -2840,7 +3441,7 @@ function renderDriveSync(){
           <li>Implante, autorize (é a sua própria conta), e copie a URL gerada (termina em <code>/exec</code>).</li>
           <li>Cole essa URL na constante <code>APPS_SCRIPT_URL</code> no início do arquivo HTML.</li>
           <li>No seu Google Drive, salve o arquivo do app com o nome exato <code>rotina-hector.html</code>.</li>
-          <li>Em todos os aparelhos, abra e salve como favorito essa <b>mesma URL do Apps Script</b> (a que termina em <code>/exec</code>) — não o arquivo local. A partir daí, atualizar é só substituir o conteúdo do <code>rotina-hector-app.html</code> no Drive; todo aparelho já abre a versão nova sozinho.</li>
+          <li>Em todos os aparelhos, abra e salve como favorito essa <b>mesma URL do Apps Script</b> (a que termina em <code>/exec</code>) — não o arquivo local. A partir daí, atualizar é só substituir o conteúdo do <code>rotina-hector.html</code> no Drive; todo aparelho já abre a versão nova sozinho.</li>
         </ol>
       </div>
       <textarea id="driveCodeBox" readonly style="display:none; width:100%; height:180px; margin-top:10px; background:rgba(0,0,0,.3); color:var(--chalk); border:1px solid var(--line); border-radius:8px; padding:10px; font-family:monospace; font-size:.72rem;"></textarea>
