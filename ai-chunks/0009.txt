@@ -1,4 +1,30 @@
-'text/plain;charset=utf-8'},
+guns
+   segundos depois (sem precisar clicar em nada). Se estiver offline, o
+   arquivo continua funcionando normal com os dados salvos localmente. */
+let suppressAutoPush = false;
+let autoPushTimer = null;
+
+function scheduleAutoPush(){
+  if(!APPS_SCRIPT_URL || suppressAutoPush) return;
+  clearTimeout(autoPushTimer);
+  autoPushTimer = setTimeout(doAutoPush, 2000);
+}
+
+async function doAutoPush(){
+  if(!APPS_SCRIPT_URL) return;
+  try{
+    const payload = {
+      appVersion: APP_VERSION,
+      config: CONFIG,
+      state: state,
+      baseRevision: Number(state.driveRevision)||0,
+      clientRevision: Number(state.revision)||0,
+      clientUpdatedAt: state.updatedAt || new Date().toISOString(),
+      exportedAt: new Date().toISOString()
+    };
+    const res = await fetch(DATA_ENDPOINT, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
       body:JSON.stringify(payload)
     });
     const result = await res.json();
@@ -175,30 +201,4 @@ function notDonePenalty(pts){
 }
 
 // Algumas tarefas (marcadas com fullPenalty:true) perdem o valor CHEIO em
-// vez de metade — reforço maior pras tarefas mais chatas/resistidas.
-function taskNotDonePenalty(task){
-  return task.fullPenalty ? task.pts : notDonePenalty(task.pts);
-}
-
-/* ===================== TIMER DE TEMPO DE JOGO (diário) ===================== */
-let gameTimerTickHandle = null;
-
-function gameTimerDailyLimitSeconds(){
-  const base = Math.round((CONFIG.screenDailyLimitHours || 2) * 3600);
-  const bonus = Math.round((state.gameTimer.bonusSeconds || 0));
-  return base + bonus;
-}
-
-function addGameTimerBonusHours(hours){
-  if(!state.gameTimer.bonusSeconds) state.gameTimer.bonusSeconds = 0;
-  state.gameTimer.bonusSeconds += Math.round(hours * 3600);
-}
-
-function gameTimerSecondsUsedNow(){
-  const gt = state.gameTimer;
-  const running = gt.runningSince ? (Date.now() - gt.runningSince)/1000 : 0;
-  return gt.usedSeconds + running;
-}
-
-function gameTimerIsRunning(){
-  return !!state.gameTimer.runningSin
+// vez de metade — reforço maior pras tarefas mais chatas/resist

@@ -1,4 +1,75 @@
-.reached ? formatDateBR(m.date) : '—'}</div>
+{172+len/2} ${y+len*0.35}" stroke="#f3a7c6" stroke-width="2.3" fill="none" stroke-linecap="round"/>
+    </g>`;
+  }
+
+  // pernocas curtinhas, aparecem gradualmente a partir da eclosão
+  const legOpacity = Math.min(1, hatch*1.6).toFixed(2);
+  const legs = `
+    <ellipse cx="${110-bodyW*0.72}" cy="${bodyY+bodyH*0.55}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity}" transform="rotate(-20 ${110-bodyW*0.72} ${bodyY+bodyH*0.55})"/>
+    <ellipse cx="${110+bodyW*0.72}" cy="${bodyY+bodyH*0.55}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity}" transform="rotate(20 ${110+bodyW*0.72} ${bodyY+bodyH*0.55})"/>
+    <ellipse cx="${110-bodyW*0.5}" cy="${bodyY+bodyH*0.92}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity}" transform="rotate(-15 ${110-bodyW*0.5} ${bodyY+bodyH*0.92})"/>
+    <ellipse cx="${110+bodyW*0.5}" cy="${bodyY+bodyH*0.92}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity}" transform="rotate(15 ${110+bodyW*0.5} ${bodyY+bodyH*0.92})"/>
+  `;
+
+  const sparkle = adult > .8 ? `<text x="35" y="64" font-size="18">✨</text><text x="166" y="75" font-size="16">✨</text>` : '';
+
+  return `<svg class="pet-mascot pet-hatch-crack" ${svgAttrs()}>
+    <defs>
+      <radialGradient id="${gid}-body" cx="42%" cy="34%" r="72%">
+        <stop offset="0%" stop-color="#ffe3ef"/>
+        <stop offset="60%" stop-color="#f6c7dc"/>
+        <stop offset="100%" stop-color="#eeaecb"/>
+      </radialGradient>
+    </defs>
+    ${shell}
+    <g transform="translate(110 115) scale(${scale.toFixed(3)}) translate(-110 -115)">
+      <g class="pacus-idle">
+        ${sparkle}
+        ${legs}
+        <ellipse cx="110" cy="${bodyY+bodyH+4}" rx="${18+growth*9}" ry="${7+growth*3}" fill="url(#${gid}-body)"/>
+        <ellipse cx="110" cy="${bodyY}" rx="${bodyW}" ry="${bodyH}" fill="url(#${gid}-body)"/>
+        <ellipse cx="110" cy="${bodyY+8}" rx="${bodyW*.68}" ry="${bodyH*.52}" fill="#fff" opacity=".3"/>
+        ${gills}
+        <circle cx="110" cy="${faceY}" r="32" fill="url(#${gid}-body)"/>
+        <g class="pacus-eye" style="transform-origin:97px ${faceY-4}px;"><circle cx="97" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="98" cy="${faceY-5.5}" r="1.4" fill="#fff"/></g>
+        <g class="pacus-eye" style="transform-origin:123px ${faceY-4}px; animation-delay:.08s;"><circle cx="123" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="124" cy="${faceY-5.5}" r="1.4" fill="#fff"/></g>
+        <path d="M96 ${faceY+12} Q110 ${faceY+18+growth*2} 124 ${faceY+12}" stroke="#b9607f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <circle cx="89" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/><circle cx="131" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/>
+      </g>
+    </g>
+  </svg>`;
+}
+
+function buildPetVisual(stageFloat){
+  if(stageFloat < 9) return buildEggSVG(stageFloat/8);
+  return buildPacusSVG(stageFloat);
+}
+
+// Pra cada marco de evolução, descobre em que dia ele foi alcançado (com
+// base na lista de dias completos, em ordem) — usado no mural de conquistas.
+function getMilestoneDates(){
+  const cycle = getPetCycle();
+  const sorted = [...(state.petCompletedDays||[])]
+    .filter(d => d >= cycle.startISO && d <= cycle.endISO)
+    .sort();
+  const milestones = [
+    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
+  ];
+  return milestones.map(([day,label])=>{
+    if(day === 0) return { label, day, date: cycle.startISO, reached: true };
+    const reached = sorted.length >= day;
+    return { label, day, date: reached ? sorted[day-1] : null, reached };
+  });
+}
+
+function renderAchievementMural(){
+  const el = document.getElementById('achievementMuralSection');
+  if(!el) return;
+  const milestones = getMilestoneDates();
+  const cardsHtml = milestones.map(m=>`
+    <div class="mural-card ${m.reached?'reached':''}">
+      <div class="mural-stage">${m.label}</div>
+      <div class="mural-date">${m.reached ? formatDateBR(m.date) : '—'}</div>
     </div>
   `).join('');
   el.innerHTML = `
@@ -91,105 +162,4 @@ function showEvolutionCelebration(stageInfo, stage, maxStage){
   // confete espalhado pela tela toda, não só perto do Pacus
   fireConfetti(null, 40);
   setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.2, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 200);
-  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.8, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 350);
-
-  const autoClose = setTimeout(closeEvolutionCelebration, 4500);
-  overlay.dataset.autoCloseId = autoClose;
-}
-function closeEvolutionCelebration(){
-  const overlay = document.getElementById('evolutionCelebration');
-  if(overlay.dataset.autoCloseId) clearTimeout(Number(overlay.dataset.autoCloseId));
-  overlay.classList.remove('open');
-}
-
-function buildStreakStrip(){
-  const days = [];
-  for(let i=6; i>=0; i--){
-    const d = new Date();
-    d.setDate(d.getDate()-i);
-    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-    days.push(iso);
-  }
-  const weekdayLetters = ['D','S','T','Q','Q','S','S'];
-  const cells = days.map(iso=>{
-    const isToday = iso === todayISO();
-    const d = new Date(iso+"T00:00:00");
-    const letter = weekdayLetters[d.getDay()];
-    let entry = isToday ? liveTodayEntry() : state.history[iso];
-    let cls = 'streak-cell empty';
-    if(entry && entry.total > 0){
-      if(entry.perfect) cls = 'streak-cell perfect';
-      else if(entry.done > 0) cls = 'streak-cell partial';
-      else cls = 'streak-cell none';
-    }
-    if(isToday) cls += ' today';
-    return `<span class="${cls}" title="${formatDateBR(iso)}"><span class="streak-letter">${letter}</span></span>`;
-  }).join('');
-  return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${cells}</div>`;
-}
-
-function liveTodayEntry(){
-  const tasks = allTasks();
-  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  const total = applicable.length;
-  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-  const perfect = total>0 && done===total;
-  return { total, done, perfect };
-}
-
-function getHairStatus(dateISO){
-  return state.hairByDate && state.hairByDate[dateISO] ? state.hairByDate[dateISO] : null;
-}
-
-function setHairStatus(status){
-  const iso = todayISO();
-  if(!state.hairByDate) state.hairByDate = {};
-  state.hairByDate[iso] = status;
-  if(!state.history) state.history = {};
-  if(state.history[iso]) state.history[iso].hair = status;
-  saveState(state);
-  renderHair();
-  renderHistory();
-}
-
-function renderHair(){
-  const section = document.getElementById('hairSection');
-  if(!section) return;
-  const status = getHairStatus(todayISO());
-  const washedBtn = document.getElementById('hairWashedBtn');
-  const notWashedBtn = document.getElementById('hairNotWashedBtn');
-  const statusEl = document.getElementById('hairStatus');
-  washedBtn.classList.toggle('active-washed', status === 'washed');
-  notWashedBtn.classList.toggle('active-notwashed', status === 'not-washed');
-  statusEl.innerHTML = status === 'washed'
-    ? 'Hoje: <b class="hair-history-washed">💧 cabelo lavado</b>'
-    : status === 'not-washed'
-      ? 'Hoje: <b class="hair-history-notwashed">○ não lavou</b>'
-      : 'Hoje: ainda não registrado';
-}
-
-function render(){
-  document.getElementById('totalPoints').textContent = state.totalPoints;
-
-  renderPet();
-  renderHair();
-  renderGameTimer();
-  renderCustomTimers();
-
-  const weekendEl = document.getElementById('weekendIndicator');
-  if(weekendEl){
-    weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
-      ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
-      : '';
-  }
-
-  const periodsEl = document.getElementById('periods');
-  periodsEl.innerHTML = '';
-  Object.entries(getPeriodsFor(todayISO())).forEach(([key, period])=>{
-    const div = document.createElement('div');
-    div.className = 'period ' + key;
-
-    const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    const doneCount = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-    const remaining = applicable.length - doneCount;
-    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 
+  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.8, top:wi

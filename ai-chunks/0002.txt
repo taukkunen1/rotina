@@ -1,3 +1,33 @@
+isplay:block;
+  }
+
+  .time-remaining{
+    font-size:.66rem;
+    display:block;
+    margin-bottom:4px;
+    font-weight:bold;
+  }
+  .time-remaining.urgency-none{ color:var(--chalk-dim); font-weight:normal; }
+  .time-remaining.urgency-low{ color:var(--chalk-dim); }
+  .time-remaining.urgency-medium{ color:var(--orange); }
+  .time-remaining.urgency-high{ color:var(--red); animation:urgentPulse 1.6s ease-in-out infinite; }
+  .time-remaining.urgency-over{ color:var(--chalk-dim); font-style:italic; font-weight:normal; }
+  @keyframes urgentPulse{
+    0%,100%{ opacity:1; }
+    50%{ opacity:.5; }
+  }
+
+  .manha h2{ color:var(--yellow); }
+  .tarde h2{ color:var(--orange); }
+  .noite h2{ color:var(--blue); }
+
+  .progress-bar{
+    height:4px;
+    border-radius:2px;
+    background:rgba(255,255,255,.08);
+    margin:6px 0 12px;
+    overflow:hidden;
+  }
   .progress-bar > div{
     height:100%;
     background:var(--green);
@@ -232,39 +262,4 @@
   tr.today-row td{ color:var(--chalk); font-weight:bold; }
   .edit-day-btn{
     padding:3px 7px;
-    font-size:.75rem;
-    border:1px solid var(--line);
-  }
-  .edit-row label{ color:var(--chalk-dim); }
-
-  .achievement-mural{
-    background:rgba(255,126,185,.06);
-    border:1px solid rgba(255,126,185,.3);
-    border-radius:12px;
-    padding:16px 18px;
-  }
-  .mural-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(90px,1fr));
-    gap:10px;
-  }
-  .mural-card{
-    text-align:center;
-    background:rgba(255,255,255,.03);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:10px 6px;
-    opacity:.55;
-  }
-  .mural-card.reached{
-    opacity:1;
-    background:rgba(255,126,185,.1);
-    border-color:rgba(255,126,185,.5);
-  }
-  .mural-stage{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-size:.95rem;
-    color:var(--pink);
-    margin-bottom:4px;
-  }
-  .mural-date{ font-size:.7rem; color:var(--ch
+    font-

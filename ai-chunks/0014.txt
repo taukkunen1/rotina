@@ -1,4 +1,105 @@
+/ Reseta sozinho ao recarregar a página.
+let adultUnlocked = false;
 
+function renderTestModeBanner(){
+  const el = document.getElementById('testModeBanner');
+  if(!el) return;
+  if(!TEST_DATE_OVERRIDE){ el.innerHTML=''; return; }
+  el.innerHTML = `
+    <div class="test-mode-banner">
+      🧪 MODO TESTE ATIVO — data simulada: ${formatDateBR(TEST_DATE_OVERRIDE)}
+      <button id="bannerRealDateBtn">voltar pra data real</button>
+    </div>
+  `;
+  document.getElementById('bannerRealDateBtn').addEventListener('click', ()=>{
+    setTestDate(null);
+    state = loadState();
+    render();
+  });
+}
+
+function renderTestPanel(){
+  const el = document.getElementById('testPanel');
+  if(!el) return;
+  if(!testPanelOpen){ el.style.display='none'; el.innerHTML=''; return; }
+  el.style.display='block';
+
+  const realToday = (()=>{
+    const d = new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+  })();
+  const usingOverride = !!TEST_DATE_OVERRIDE;
+
+  el.innerHTML = `
+    <div class="test-panel">
+      <h3>🧪 Modo de teste</h3>
+      <div class="hint">Ferramentas só pra conferir se o crescimento do Pacus e o histórico estão funcionando. Não mexe nas tarefas de verdade — só simula dias.</div>
+      <div class="test-date">Data simulada agora: <b>${formatDateBR(todayISO())}/${todayISO().split('-')[0]}</b>${usingOverride ? ' (modo teste ativo)' : ' (data real do sistema)'}</div>
+      <div class="test-row">
+        <button class="icon-btn" id="testCompleteDayBtn">✅ completar tudo hoje</button>
+        <button class="icon-btn" id="testPrevDayBtn">◀ dia anterior</button>
+        <button class="icon-btn" id="testNextDayBtn">dia seguinte ▶</button>
+        <input type="date" id="testDatePicker" value="${todayISO()}">
+        <button class="icon-btn" id="testGoDateBtn">ir pra essa data</button>
+        <button class="icon-btn danger" id="testResetDateBtn">voltar pra data real</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('testCompleteDayBtn').addEventListener('click', ()=>{
+    allTasks().forEach(t=>{
+      if(state.checkedToday[t.id] !== 'done'){
+        addPoints(t.pts);
+      }
+      state.checkedToday[t.id] = 'done';
+    });
+    syncPetCompletionFromDay(todayISO());
+    addLog('🧪 (teste) todas as tarefas de hoje marcadas como feitas');
+    saveState(state);
+    render();
+  });
+
+  document.getElementById('testPrevDayBtn').addEventListener('click', ()=>{
+    goToTestDate(shiftISODate(todayISO(), -1));
+  });
+  document.getElementById('testNextDayBtn').addEventListener('click', ()=>{
+    goToTestDate(shiftISODate(todayISO(), 1));
+  });
+  document.getElementById('testGoDateBtn').addEventListener('click', ()=>{
+    const val = document.getElementById('testDatePicker').value;
+    if(val) goToTestDate(val);
+  });
+  document.getElementById('testResetDateBtn').addEventListener('click', ()=>{
+    goToTestDate(realToday);
+    setTestDate(null);
+    state = loadState();
+    render();
+  });
+}
+
+function renderBackupReminder(){
+  const el = document.getElementById('backupReminder');
+  if(!el) return;
+
+  const today = todayISO();
+  const daysSinceBackup = state.lastBackupISO ? daysBetween(state.lastBackupISO, today) : Infinity;
+  const dismissed = state.backupReminderDismissedFor === today;
+
+  const shouldShow = daysSinceBackup >= 7 && !dismissed;
+
+  if(!shouldShow){ el.innerHTML=''; return; }
+
+  const msg = state.lastBackupISO
+    ? `Já faz ${daysSinceBackup} dias desde o último backup. Que tal exportar de novo?`
+    : `Vocês ainda não fizeram nenhum backup. Vale exportar um agora pra não perder o progresso.`;
+
+  el.innerHTML = `
+    <div class="backup-reminder">
+      <span>💾 ${msg}</span>
+      <span>
+        <button id="backupReminderExportBtn">exportar agora</button>
+        <button class="dismiss" id="backupReminderDismissBtn">lembrar depois</button>
+      </span>
     </div>
   `;
   document.getElementById('backupReminderExportBtn').addEventListener('click', ()=>{
@@ -102,98 +203,4 @@ function renderHistory(){
         <td>${(isToday||!adultUnlocked)?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
       </tr>`;
     }
-    const perfectBadge = entry.perfect ? '<span class="badge-perfect">dia perfeito</span>' : '';
-    const editCell = (isToday||!adultUnlocked) ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
-    return `<tr${isToday?' class="today-row"':''}>
-      <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
-      <td>${entry.done}/${entry.total}${perfectBadge}</td>
-      <td class="pts-cell">${entry.pointsEarnedThatDay}</td>
-      <td>${hairLabel(hair)}</td>
-      <td>${editCell}</td>
-    </tr>`;
-  }).join('');
-
-  body.querySelectorAll('.edit-day-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=> openDayEditor(btn.getAttribute('data-date')));
-  });
-
-  const toggleEl = document.getElementById('historyToggle');
-  if(toggleEl){
-    if(hiddenCount > 0){
-      toggleEl.innerHTML = historyShowAll
-        ? `<button class="icon-btn" id="historyToggleBtn">mostrar só os últimos ${HISTORY_VISIBLE_DAYS} dias</button>`
-        : `<button class="icon-btn" id="historyToggleBtn">mostrar histórico completo (+${hiddenCount} dias)</button>`;
-      document.getElementById('historyToggleBtn').addEventListener('click', ()=>{
-        historyShowAll = !historyShowAll;
-        renderHistory();
-      });
-    } else {
-      toggleEl.innerHTML = '';
-    }
-  }
-}
-
-function renderRewards(){
-  const rEl = document.getElementById('rewards');
-  rEl.innerHTML = '';
-  CONFIG.rewards.forEach(r=>{
-    const canAfford = state.totalPoints >= r.cost;
-    const redeemedToday = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
-    const atDailyLimit = r.maxPerDay != null && redeemedToday >= r.maxPerDay;
-    const capNote = r.maxPerDay != null ? `<span class="cap-note">${redeemedToday}/${r.maxPerDay} hoje</span>` : '';
-    const div = document.createElement('div');
-    div.className = 'reward';
-    div.innerHTML = `
-      <div class="name">${r.txt}</div>
-      <span class="cost">${r.cost} PP</span>
-      ${capNote}
-      <button ${(canAfford && !atDailyLimit) ? '' : 'disabled'}>${atDailyLimit ? 'Limite hoje' : 'Resgatar'}</button>
-    `;
-    div.querySelector('button').addEventListener('click', (evt)=>{
-      if(state.totalPoints < r.cost) return;
-      const redeemed = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
-      if(r.maxPerDay != null && redeemed >= r.maxPerDay) return;
-
-      const delta = addPoints(-r.cost);
-      addLog(`🎁 Resgatou: ${r.txt} (−${r.cost})`);
-      if(r.grantsHours){
-        addGameTimerBonusHours(r.grantsHours);
-        addLog(`🎮 +${r.grantsHours}h de jogo hoje (bônus da recompensa)`);
-      }
-      if(!state.gameTimer.redemptions) state.gameTimer.redemptions = {};
-      state.gameTimer.redemptions[r.id] = redeemed + 1;
-
-      saveState(state);
-      bumpTotal(delta, evt.currentTarget);
-      renderRewards();
-      renderLog();
-      renderGameTimer();
-    });
-    rEl.appendChild(div);
-  });
-}
-
-function renderLog(){
-  const logEl = document.getElementById('logList');
-  logEl.innerHTML = state.log.length
-    ? state.log.map(l=>`<div>${l}</div>`).join('')
-    : '<div>Nada ainda hoje — bora começar!</div>';
-}
-
-function fireConfetti(originEl, count){
-  count = count || 14;
-  const colors = ['#ffd93d','#ff7eb9','#4fc3f7','#ff9f43','#5fd875'];
-  const rect = originEl && originEl.getBoundingClientRect
-    ? originEl.getBoundingClientRect()
-    : { left: window.innerWidth/2, top: window.innerHeight/2, width:0, height:0 };
-  const originX = rect.left + rect.width/2;
-  const originY = rect.top + rect.height/2;
-
-  for(let i=0;i<count;i++){
-    const piece = document.createElement('span');
-    piece.className = 'confetti-piece';
-    const angle = Math.random()*Math.PI*2;
-    const dist = 60 + Math.random()*90;
-    piece.style.setProperty('--dx', (Math.cos(angle)*dist)+'px');
-    piece.style.setProperty('--dy', (Math.sin(angle)*dist - 40)+'px');
-    piece.style.setProperty('--rot', (Math.r
+    const perfectBadge = entry.perfect ? '<span class

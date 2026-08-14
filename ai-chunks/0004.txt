@@ -1,4 +1,39 @@
+r;
+    border-radius:3px;
+    padding:0;
+  }
+  .reorder-btn:hover:not(:disabled){ color:var(--chalk); border-color:rgba(242,237,225,.4); }
+  .reorder-btn:disabled{ opacity:.25; cursor:not-allowed; }
 
+  .day-chip-row{ display:flex; gap:4px; margin:6px 0; }
+  .day-chip{
+    width:26px; height:26px;
+    border-radius:6px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.04);
+    color:var(--chalk-dim);
+    font-size:.72rem;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .day-chip.active{
+    background:var(--blue);
+    border-color:var(--blue);
+    color:#16241f;
+    font-weight:bold;
+  }
+
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap:2px;
+    flex-shrink:0;
+  }
+  .stepper input[type=number]{
+    width:44px;
+    text-align:center;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
     color:var(--chalk);
     border-radius:6px;
     padding:6px 2px;
@@ -232,24 +267,4 @@
         <input type="number" min="0" id="dayDone" style="width:70px;">
       </div>
       <div class="edit-row">
-        <label style="flex:1; font-size:.82rem;">Tarefas aplicáveis no dia</label>
-        <input type="number" min="0" id="dayTotal" style="width:70px;">
-      </div>
-      <div class="edit-row">
-        <label style="flex:1; font-size:.82rem;">Pacus Points ganhos naquele dia</label>
-        <input type="number" min="0" id="dayPoints" style="width:70px;">
-      </div>
-      <div class="edit-row">
-        <label style="flex:1; font-size:.82rem;">Cabelo</label>
-        <select id="dayHair" style="width:150px;">
-          <option value="">Não registrado</option>
-          <option value="washed">💧 Lavou</option>
-          <option value="not-washed">○ Não lavou</option>
-        </select>
-      </div>
-      <div class="hint">Mudar os pontos ajusta o saldo total automaticamente.</div>
-    </div>
-
-    <div class="editor-footer">
-      <button class="btn" id="dayCancelBtn">cancelar</button>
-      <button class="
+        <label style="flex:1; font-size:.82rem;">Tarefas aplicáveis no

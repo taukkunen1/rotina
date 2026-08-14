@@ -214,6 +214,38 @@
     35%{ filter:brightness(1.28); }
     100%{ filter:brightness(1); }
   }
+
+  /* ---------- animações contínuas do Pacus (todo dia, o tempo todo) ---------- */
+  .pacus-idle{
+    animation:pacusBob 3.4s ease-in-out infinite;
+  }
+  @keyframes pacusBob{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-3px); }
+  }
+  .pacus-eye{
+    animation:pacusBlink 5.2s ease-in-out infinite;
+  }
+  @keyframes pacusBlink{
+    0%,90%,100%{ transform:scaleY(1); }
+    94%{ transform:scaleY(.12); }
+  }
+  .pacus-gill{
+    animation:pacusGillSway 2.4s ease-in-out infinite;
+  }
+  @keyframes pacusGillSway{
+    0%,100%{ transform:rotate(-5deg); }
+    50%{ transform:rotate(5deg); }
+  }
+  .pacus-bubble{
+    animation:pacusBubbleRise 3.2s ease-in infinite;
+  }
+  @keyframes pacusBubbleRise{
+    0%{ transform:translateY(0); opacity:.55; }
+    85%{ opacity:.25; }
+    100%{ transform:translateY(-42px); opacity:0; }
+  }
+
   .streak-strip{ margin-top:14px; text-align:center; }
   .streak-title{
     font-size:.65rem;
@@ -282,33 +314,4 @@
     font-size:.68rem;
     color:var(--chalk-dim);
     margin-bottom:10px;
-    display:block;
-  }
-
-  .time-remaining{
-    font-size:.66rem;
-    display:block;
-    margin-bottom:4px;
-    font-weight:bold;
-  }
-  .time-remaining.urgency-none{ color:var(--chalk-dim); font-weight:normal; }
-  .time-remaining.urgency-low{ color:var(--chalk-dim); }
-  .time-remaining.urgency-medium{ color:var(--orange); }
-  .time-remaining.urgency-high{ color:var(--red); animation:urgentPulse 1.6s ease-in-out infinite; }
-  .time-remaining.urgency-over{ color:var(--chalk-dim); font-style:italic; font-weight:normal; }
-  @keyframes urgentPulse{
-    0%,100%{ opacity:1; }
-    50%{ opacity:.5; }
-  }
-
-  .manha h2{ color:var(--yellow); }
-  .tarde h2{ color:var(--orange); }
-  .noite h2{ color:var(--blue); }
-
-  .progress-bar{
-    height:4px;
-    border-radius:2px;
-    background:rgba(255,255,255,.08);
-    margin:6px 0 12px;
-    overflow:hidden;
-  }
+    d

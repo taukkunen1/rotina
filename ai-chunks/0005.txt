@@ -1,4 +1,24 @@
-btn save" id="daySaveBtn">salvar dia</button>
+ dia</label>
+        <input type="number" min="0" id="dayTotal" style="width:70px;">
+      </div>
+      <div class="edit-row">
+        <label style="flex:1; font-size:.82rem;">Pacus Points ganhos naquele dia</label>
+        <input type="number" min="0" id="dayPoints" style="width:70px;">
+      </div>
+      <div class="edit-row">
+        <label style="flex:1; font-size:.82rem;">Cabelo</label>
+        <select id="dayHair" style="width:150px;">
+          <option value="">Não registrado</option>
+          <option value="washed">💧 Lavou</option>
+          <option value="not-washed">○ Não lavou</option>
+        </select>
+      </div>
+      <div class="hint">Mudar os pontos ajusta o saldo total automaticamente.</div>
+    </div>
+
+    <div class="editor-footer">
+      <button class="btn" id="dayCancelBtn">cancelar</button>
+      <button class="btn save" id="daySaveBtn">salvar dia</button>
     </div>
   </div>
 </div>
@@ -163,24 +183,4 @@ const DEFAULT_CONFIG = {
     { id:"sc3", label:"Escoteiros", days:["sab"], start:"13:00", end:"17:30", period:"tarde", pts:5 },
   ],
 
-  // exceções pontuais: um compromisso só naquele dia específico, sem mexer
-  // na regra recorrente (ex: Inglês de reposição numa sexta).
-  scheduleExceptions: [
-    { id:"exc1", date:"2026-08-14", label:"Inglês (exceção)", period:"manha", pts:5, start:"09:00", end:"10:00" },
-  ],
-
-  // Pacus, o axolote: começa em 09/08 e cresce um passo a cada dia
-  // em que todas as tarefas aplicáveis são concluídas. O ciclo termina
-  // em 31/08. São 23 dias de crescimento, contando 09/08 e 31/08.
-  // O Pacus nunca regride por dias já concluídos.
-  pet: {
-    name: "Pacus",
-    growthStartDate: "2026-08-09",
-    growthEndDate: "2026-08-31",
-    stages: [
-      { key:"ovo", label:"Ovo intacto" },
-      { key:"ovo1", label:"Primeira rachadura" },
-      { key:"ovo2", label:"Rachadura inicial" },
-      { key:"ovo3", label:"Rachando" },
-      { key:"ovo4", label:"Mais rachaduras" },
-      { key:"ovo5", la
+  // exceções pontuais: um compromisso só naquele dia e

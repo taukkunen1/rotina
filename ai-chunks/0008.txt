@@ -1,4 +1,27 @@
-etCompletedDays = [];
+turn reconcileState(state);
+}
+
+function applyHistoryCorrection_v2(state){
+  // Correção pontual, aplicada só UMA VEZ (por causa da flag abaixo) —
+  // depois disso nunca mais mexe sozinha nesses dias, pra não apagar
+  // edições feitas manualmente depois. Cobre 09/08 a 12/08: todos os
+  // dias foram completos; dia 12 teve -10 Pacus Points por causa de uma
+  // briga na escola; saldo final confirmado até 12/08: 170 Pacus Points.
+  if(state.historyCorrectionV2Applied) return;
+
+  const hairByDay = {
+    "2026-08-09": "not-washed",
+    "2026-08-10": "washed",
+    "2026-08-11": "not-washed",
+    "2026-08-12": "washed",
+  };
+  const pointsPenaltyByDay = {
+    "2026-08-12": 10, // brigou na escola
+  };
+
+  if(!state.history) state.history = {};
+  if(!state.hairByDate) state.hairByDate = {};
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
 
   Object.keys(hairByDay).forEach(iso => {
     const tasks = allTasks(iso);
@@ -168,30 +191,4 @@ let state = loadState();
    Sempre que o arquivo abre, ele tenta buscar a versão mais nova salva
    no Drive (via Apps Script) e usa ela — assim, não importa em qual
    aparelho vocês abrirem, todos mostram a mesma coisa. Sempre que algo
-   muda aqui, ele também manda a atualização pro Drive sozinho, alguns
-   segundos depois (sem precisar clicar em nada). Se estiver offline, o
-   arquivo continua funcionando normal com os dados salvos localmente. */
-let suppressAutoPush = false;
-let autoPushTimer = null;
-
-function scheduleAutoPush(){
-  if(!APPS_SCRIPT_URL || suppressAutoPush) return;
-  clearTimeout(autoPushTimer);
-  autoPushTimer = setTimeout(doAutoPush, 2000);
-}
-
-async function doAutoPush(){
-  if(!APPS_SCRIPT_URL) return;
-  try{
-    const payload = {
-      appVersion: APP_VERSION,
-      config: CONFIG,
-      state: state,
-      baseRevision: Number(state.driveRevision)||0,
-      clientRevision: Number(state.revision)||0,
-      clientUpdatedAt: state.updatedAt || new Date().toISOString(),
-      exportedAt: new Date().toISOString()
-    };
-    const res = await fetch(DATA_ENDPOINT, {
-      method:'POST',
-      headers:{'Content-Type':
+   muda aqui, ele também manda a atualização pro Drive sozinho, al

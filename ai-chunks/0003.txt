@@ -1,4 +1,39 @@
-alk-dim); }
+size:.75rem;
+    border:1px solid var(--line);
+  }
+  .edit-row label{ color:var(--chalk-dim); }
+
+  .achievement-mural{
+    background:rgba(255,126,185,.06);
+    border:1px solid rgba(255,126,185,.3);
+    border-radius:12px;
+    padding:16px 18px;
+  }
+  .mural-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(90px,1fr));
+    gap:10px;
+  }
+  .mural-card{
+    text-align:center;
+    background:rgba(255,255,255,.03);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:10px 6px;
+    opacity:.55;
+  }
+  .mural-card.reached{
+    opacity:1;
+    background:rgba(255,126,185,.1);
+    border-color:rgba(255,126,185,.5);
+  }
+  .mural-stage{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:.95rem;
+    color:var(--pink);
+    margin-bottom:4px;
+  }
+  .mural-date{ font-size:.7rem; color:var(--chalk-dim); }
   .mural-card.reached .mural-date{ color:var(--chalk); }
 
   .weekly-review{
@@ -291,39 +326,4 @@ alk-dim); }
     background:rgba(255,255,255,.05);
     border:1px solid var(--line);
     color:var(--chalk-dim);
-    cursor:pointer;
-    border-radius:3px;
-    padding:0;
-  }
-  .reorder-btn:hover:not(:disabled){ color:var(--chalk); border-color:rgba(242,237,225,.4); }
-  .reorder-btn:disabled{ opacity:.25; cursor:not-allowed; }
-
-  .day-chip-row{ display:flex; gap:4px; margin:6px 0; }
-  .day-chip{
-    width:26px; height:26px;
-    border-radius:6px;
-    border:1px solid var(--line);
-    background:rgba(255,255,255,.04);
-    color:var(--chalk-dim);
-    font-size:.72rem;
-    cursor:pointer;
-    font-family:inherit;
-  }
-  .day-chip.active{
-    background:var(--blue);
-    border-color:var(--blue);
-    color:#16241f;
-    font-weight:bold;
-  }
-
-  .stepper{
-    display:flex;
-    align-items:center;
-    gap:2px;
-    flex-shrink:0;
-  }
-  .stepper input[type=number]{
-    width:44px;
-    text-align:center;
-    background:rgba(255,255,255,.05);
-    border:1px solid var(--line);
+    cursor:pointe
