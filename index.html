@@ -754,7 +754,6 @@
   }
   .hair-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
   .hair-title{font-size:1rem;color:var(--chalk);font-weight:bold;}
-  .hair-note{font-size:.7rem;color:var(--chalk-dim);}
   .hair-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   .hair-btn{border:1px solid var(--line);background:rgba(255,255,255,.035);color:var(--chalk);border-radius:9px;padding:9px 10px;font:inherit;font-size:.78rem;cursor:pointer;}
   .hair-btn.active-washed{background:rgba(95,216,117,.22);border-color:var(--green);color:var(--green);font-weight:bold;}
@@ -1246,17 +1245,12 @@
 
       <section class="pet-section" id="petSection"></section>
 
-      <section class="block" id="gameTimerSection"></section>
-
-      <section class="block" id="customTimersSection"></section>
-
       <div id="weekendIndicator"></div>
       <div class="periods" id="periods"></div>
 
       <section class="hair-section" id="hairSection">
         <div class="hair-head">
           <div class="hair-title">🧴 Lavar o cabelo</div>
-          <div class="hair-note">Registro diário, sem interferir no dia perfeito</div>
         </div>
         <div class="hair-actions">
           <button type="button" class="hair-btn" id="hairWashedBtn">💧 Lavei o cabelo</button>
@@ -1264,6 +1258,10 @@
         </div>
         <div class="hair-status" id="hairStatus">Hoje: ainda não registrado</div>
       </section>
+
+      <section class="block" id="gameTimerSection"></section>
+
+      <section class="block" id="customTimersSection"></section>
 
       <section class="block">
         <h3 class="block-title bad-title">✨ Pacus Points Extra</h3>
@@ -1273,7 +1271,7 @@
       <section class="block">
         <h3 class="block-title reward-title">🎁 Loja de Recompensas</h3>
         <div class="rewards" id="rewards"></div>
-        <div style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;">1 Pacus Point ≈ R$0,06 · máximo acumulável: 1000 pontos (~R$60)</div>
+        <div style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;">1 Pacus Point ≈ R$0,06 · máximo: 1000 pontos (~R$60)</div>
       </section>
 
       <div class="log">
@@ -1342,7 +1340,7 @@
           <option value="not-washed">○ Não lavou</option>
         </select>
       </div>
-      <div class="hint">Mudar "Pacus Points ganhos" ajusta automaticamente o saldo total de Pacus Points. O registro de cabelo não interfere no dia perfeito.</div>
+      <div class="hint">Mudar os pontos ajusta o saldo total automaticamente.</div>
     </div>
 
     <div class="editor-footer">
@@ -1415,14 +1413,14 @@
 
     <div class="editor-section">
       <h3>📅 Compromissos Fixos</h3>
-      <div class="hint">Aparecem direto na lista de tarefas do dia certo, no período escolhido (Manhã/Tarde/Noite) — valem pontos como qualquer tarefa.</div>
+      <div class="hint">Aparecem na lista do dia certo e valem pontos como qualquer tarefa.</div>
       <div id="editSchedule"></div>
       <button class="add-row-btn" data-add="schedule">+ adicionar compromisso</button>
     </div>
 
     <div class="editor-section">
       <h3>🎮 Tempo de Jogo</h3>
-      <div class="hint">Cota diária de tempo de jogo, controlada pelo botão "começar/parar de jogar" na tela.</div>
+      <div class="hint">Cota diária de tempo de jogo.</div>
       <div class="edit-row">
         <label style="flex:1; font-size:.85rem;">Horas de jogo por dia</label>
         <input type="number" min="0" step="0.5" id="gameLimitInput" style="width:70px;">
@@ -2271,7 +2269,7 @@ function renderGameTimer(){
   el.innerHTML = `
     <div class="game-timer">
       <h3>🎮 Tempo de Jogo</h3>
-      <div class="hint">Cota de ${CONFIG.screenDailyLimitHours || 2}h por dia (resgatar "1 hora de tela" na loja soma mais tempo hoje). É só apertar quando começar e quando parar de jogar.</div>
+      <div class="hint">Cota de ${CONFIG.screenDailyLimitHours || 2}h por dia.</div>
       <div class="game-timer-used" id="gameTimerUsed">${remaining > 0 ? `<b>${formatMinSec(remaining)}</b> restantes hoje` : `<b>tempo de hoje acabou</b>`}</div>
       <div class="game-timer-track"><div class="game-timer-fill ${used>=limit?'over-limit':''}" id="gameTimerBarFill" style="width:${pct}%"></div></div>
       <button class="game-timer-btn ${running?'running':''}" id="gameTimerToggleBtn">
