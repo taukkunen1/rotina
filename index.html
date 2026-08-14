@@ -650,6 +650,26 @@
   .task.notdone .pts{ color:var(--red); border-color:rgba(255,107,107,.4); }
   .task-icon{ font-size:1.05rem; margin-right:6px; flex-shrink:0; }
 
+  .task.suggested{
+    background:rgba(255,217,61,.08);
+    border:1px dashed rgba(255,217,61,.5);
+    border-radius:8px;
+    animation:suggestedPulse 2.4s ease-in-out infinite;
+  }
+  .suggested-flag{
+    display:inline-block;
+    margin-right:4px;
+    animation:suggestedNudge 1.2s ease-in-out infinite;
+  }
+  @keyframes suggestedPulse{
+    0%,100%{ box-shadow:0 0 0 0 rgba(255,217,61,0); }
+    50%{ box-shadow:0 0 0 3px rgba(255,217,61,.12); }
+  }
+  @keyframes suggestedNudge{
+    0%,100%{ transform:translateX(0); }
+    50%{ transform:translateX(3px); }
+  }
+
   .pts{
     font-size:.68rem;
     color:var(--green);
@@ -2733,20 +2753,23 @@ function render(){
 
     const ul = document.createElement('ul');
     ul.className = 'tasks';
+    const nextSuggestedId = period.tasks.find(t => !state.checkedToday[t.id])?.id;
     period.tasks.forEach(task=>{
       const li = document.createElement('li');
       const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
+      const isSuggested = task.id === nextSuggestedId;
       li.className = 'task'
         + (status === 'done' ? ' done' : '')
         + (status === 'na' ? ' na' : '')
-        + (status === 'x' ? ' notdone' : '');
+        + (status === 'x' ? ' notdone' : '')
+        + (isSuggested ? ' suggested' : '');
       li.innerHTML = `
         <span class="mark-group" data-id="${task.id}">
           <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
           <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
           <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, perde metade dos pontos">✕</button>
         </span>
-        <span class="txt"><span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
+        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
         <span class="pts">${status==='na' ? 'n/a' : status==='x' ? '−'+taskNotDonePenalty(task) : '+'+task.pts}</span>
       `;
       ul.appendChild(li);
