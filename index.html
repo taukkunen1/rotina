@@ -172,6 +172,37 @@
     100%{ opacity:0; transform:translate(-50%,46px) scale(1); }
   }
 
+  .mini-pacus{
+    position:fixed;
+    right:14px;
+    bottom:14px;
+    z-index:80;
+    width:64px;
+    height:64px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.08), var(--board-edge) 70%);
+    border:2px solid var(--pink);
+    box-shadow:0 6px 20px rgba(0,0,0,.5);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    opacity:0;
+    transform:scale(.6) translateY(10px);
+    pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+    overflow:hidden;
+  }
+  .mini-pacus.visible{
+    opacity:1;
+    transform:scale(1) translateY(0);
+    pointer-events:auto;
+    cursor:pointer;
+  }
+  .mini-pacus .pet-mascot{ width:82%; height:82%; }
+  @media (max-width:500px){
+    .mini-pacus{ width:54px; height:54px; right:10px; bottom:10px; }
+  }
+
   .icon-btn{
     display:inline-flex;
     align-items:center;
@@ -1353,6 +1384,8 @@
 <body>
 
 <span class="points-delta" id="pointsDelta"></span>
+
+<div class="mini-pacus" id="miniPacus"></div>
 
 <div class="overlay" id="evolutionCelebration" style="z-index:700; align-items:center;">
   <div class="celebration-card" id="celebrationCard">
@@ -2883,6 +2916,33 @@ function buildPetVisual(stageFloat){
   return buildPacusSVG(stageFloat);
 }
 
+// Miniatura do Pacus fixa no canto — fica visível quando a seção principal
+// dele sai da tela (ex: rolando pra baixo pra marcar tarefas), assim ele
+// nunca some de vista de verdade. Um toque nela rola de volta pro topo.
+let miniPacusObserverStarted = false;
+function renderMiniPacus(stageFloat){
+  const el = document.getElementById('miniPacus');
+  if(!el) return;
+  el.innerHTML = buildPetVisual(stageFloat);
+  startMiniPacusObserver();
+}
+function startMiniPacusObserver(){
+  if(miniPacusObserverStarted) return;
+  const target = document.getElementById('petSection');
+  const mini = document.getElementById('miniPacus');
+  if(!target || !mini || !('IntersectionObserver' in window)) return;
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      mini.classList.toggle('visible', !entry.isIntersecting);
+    });
+  }, { threshold: 0 });
+  observer.observe(target);
+  mini.addEventListener('click', ()=>{
+    target.scrollIntoView({ behavior:'smooth', block:'center' });
+  });
+  miniPacusObserverStarted = true;
+}
+
 // Pra cada marco de evolução, descobre em que dia ele foi alcançado (com
 // base na lista de dias completos, em ordem) — usado no mural de conquistas.
 function getMilestoneDates(){
@@ -2924,6 +2984,8 @@ function renderPet(){
   const { stage, stageFloat, daysEquivalent, cycleDays, maxStage, canGrowToday } = data;
   const stageInfo = CONFIG.pet.stages[stage];
   const progressPct = Math.round((daysEquivalent/cycleDays)*100);
+
+  renderMiniPacus(stageFloat);
 
   const milestones = [
     [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
