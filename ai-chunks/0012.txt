@@ -1,4 +1,40 @@
-setDateBtn').addEventListener('click', ()=>{
+ tarefas de verdade — só simula dias.</div>
+      <div class="test-date">Data simulada agora: <b>${formatDateBR(todayISO())}/${todayISO().split('-')[0]}</b>${usingOverride ? ' (modo teste ativo)' : ' (data real do sistema)'}</div>
+      <div class="test-row">
+        <button class="icon-btn" id="testCompleteDayBtn">✅ completar tudo hoje</button>
+        <button class="icon-btn" id="testPrevDayBtn">◀ dia anterior</button>
+        <button class="icon-btn" id="testNextDayBtn">dia seguinte ▶</button>
+        <input type="date" id="testDatePicker" value="${todayISO()}">
+        <button class="icon-btn" id="testGoDateBtn">ir pra essa data</button>
+        <button class="icon-btn danger" id="testResetDateBtn">voltar pra data real</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('testCompleteDayBtn').addEventListener('click', ()=>{
+    allTasks().forEach(t=>{
+      if(state.checkedToday[t.id] !== 'done'){
+        addPoints(t.pts);
+      }
+      state.checkedToday[t.id] = 'done';
+    });
+    syncPetCompletionFromDay(todayISO());
+    addLog('🧪 (teste) todas as tarefas de hoje marcadas como feitas');
+    saveState(state);
+    render();
+  });
+
+  document.getElementById('testPrevDayBtn').addEventListener('click', ()=>{
+    goToTestDate(shiftISODate(todayISO(), -1));
+  });
+  document.getElementById('testNextDayBtn').addEventListener('click', ()=>{
+    goToTestDate(shiftISODate(todayISO(), 1));
+  });
+  document.getElementById('testGoDateBtn').addEventListener('click', ()=>{
+    const val = document.getElementById('testDatePicker').value;
+    if(val) goToTestDate(val);
+  });
+  document.getElementById('testResetDateBtn').addEventListener('click', ()=>{
     goToTestDate(realToday);
     setTestDate(null);
     state = loadState();
@@ -158,47 +194,3 @@ function renderHistory(){
         renderHistory();
       });
     } else {
-      toggleEl.innerHTML = '';
-    }
-  }
-}
-
-function renderRewards(){
-  const rEl = document.getElementById('rewards');
-  rEl.innerHTML = '';
-  CONFIG.rewards.forEach(r=>{
-    const canAfford = state.totalPoints >= r.cost;
-    const redeemedToday = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
-    const atDailyLimit = r.maxPerDay != null && redeemedToday >= r.maxPerDay;
-    const capNote = r.maxPerDay != null ? `<span class="cap-note">${redeemedToday}/${r.maxPerDay} hoje</span>` : '';
-    const div = document.createElement('div');
-    div.className = 'reward';
-    div.innerHTML = `
-      <div class="name">${r.txt}</div>
-      <span class="cost">${r.cost} PP</span>
-      ${capNote}
-      <button ${(canAfford && !atDailyLimit) ? '' : 'disabled'}>${atDailyLimit ? 'Limite hoje' : 'Resgatar'}</button>
-    `;
-    div.querySelector('button').addEventListener('click', ()=>{
-      if(state.totalPoints < r.cost) return;
-      const redeemed = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
-      if(r.maxPerDay != null && redeemed >= r.maxPerDay) return;
-
-      state.totalPoints -= r.cost;
-      addLog(`🎁 Resgatou: ${r.txt} (−${r.cost})`);
-      if(r.grantsHours){
-        addGameTimerBonusHours(r.grantsHours);
-        addLog(`🎮 +${r.grantsHours}h de jogo hoje (bônus da recompensa)`);
-      }
-      if(!state.gameTimer.redemptions) state.gameTimer.redemptions = {};
-      state.gameTimer.redemptions[r.id] = redeemed + 1;
-
-      saveState(state);
-      bumpTotal();
-      renderRewards();
-      renderLog();
-      renderGameTimer();
-    });
-    rEl.appendChild(div);
-  });
-}

@@ -1,4 +1,6 @@
-enha)" maxlength="12">
+ão do navegador.</div>
+      <div class="edit-row">
+        <input type="text" inputmode="numeric" id="sitePinInput" placeholder="ex: 150402 (deixe vazio pra não pedir senha)" maxlength="12">
       </div>
     </div>
 
@@ -30,14 +32,14 @@ const DEFAULT_CONFIG = {
     manha: {
       label: "Manhã", time: "8:20 – 12:00",
       tasks: [
-        { id:"m1", txt:"Arrumar a cama", pts:1, sub:"até às 12h" },
+        { id:"m1", txt:"Arrumar a cama", pts:2, sub:"até às 12h" },
         { id:"m2", txt:"Beber 1 copo de água", pts:1, sub:"até às 12h" },
-        { id:"m3", txt:"Escovar os dentes", pts:1, sub:"até às 12h" },
+        { id:"m3", txt:"Escovar os dentes", pts:2, sub:"até às 12h" },
         { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h" },
-        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:4 },
+        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:5 },
         { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 12h" },
-        { id:"m8", txt:"Arrumar a mochila", pts:1, sub:"até às 12h" },
-        { id:"t_djf7hbb", txt:"Levar Lixo", pts:3, sub:"até às 12h" },
+        { id:"m8", txt:"Arrumar a mochila", pts:2, sub:"até às 12h" },
+        { id:"t_djf7hbb", txt:"Levar Lixo", pts:4, sub:"até às 12h" },
       ]
     },
     tarde: {
@@ -45,9 +47,9 @@ const DEFAULT_CONFIG = {
       tasks: [
         { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h" },
         { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h" },
-        { id:"t3", txt:"Escovar os dentes", pts:1, sub:"até às 18h" },
+        { id:"t3", txt:"Escovar os dentes", pts:2, sub:"até às 18h" },
         { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h" },
-        { id:"t5", txt:"Arrumar a mochila", pts:1, sub:"até às 18h" },
+        { id:"t5", txt:"Arrumar a mochila", pts:2, sub:"até às 18h" },
       ]
     },
     noite: {
@@ -55,10 +57,10 @@ const DEFAULT_CONFIG = {
       tasks: [
         { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h" },
         { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h" },
-        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:3 },
-        { id:"n5", txt:"Arrumar a bagunça", pts:2, sub:"até às 22h" },
-        { id:"n6", txt:"Escovar os dentes", pts:1, sub:"até às 22h" },
-        { id:"t_ci3brlt", txt:"Ler Livro", pts:3, sub:"3 capítulo do livro de casa (até às 22h)" },
+        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4 },
+        { id:"n5", txt:"Arrumar a bagunça", pts:3, sub:"até às 22h" },
+        { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h" },
+        { id:"t_ci3brlt", txt:"Ler Livro", pts:4, sub:"3 capítulo do livro de casa (até às 22h)" },
       ]
     },
   },
@@ -164,7 +166,4 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwd
 // parâmetro — pra pedir só os dados (backup), usamos ?data=1.
 const DATA_ENDPOINT = APPS_SCRIPT_URL + "?data=1";
 
-function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9); }
-
-// mapeia palavras-chave do nome da tarefa pra um emoji — reforça o texto
-// com uma pista visual (útil pra leitura r
+function uid(prefix){ return prefi

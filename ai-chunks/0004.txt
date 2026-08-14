@@ -25,6 +25,7 @@ d="gameTimerSection"></section>
       <section class="block">
         <h3 class="block-title reward-title">🎁 Loja de Recompensas</h3>
         <div class="rewards" id="rewards"></div>
+        <div style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;">1 Pacus Point ≈ R$0,06 · máximo acumulável: 1000 pontos (~R$60)</div>
       </section>
 
       <div class="log">
@@ -186,6 +187,4 @@ d="gameTimerSection"></section>
       <div class="edit-row">
         <input type="text" inputmode="numeric" id="editorPinInput" placeholder="ex: 1234 (deixe vazio pra não pedir PIN)" maxlength="8">
       </div>
-      <div class="hint" style="margin-top:12px;">Senha pra abrir o site inteiro — pedida uma vez por sessão do navegador.</div>
-      <div class="edit-row">
-        <input type="text" inputmode="numeric" id="sitePinInput" placeholder="ex: 150402 (deixe vazio pra não pedir s
+      <div class="hint" style="margin-top:12px;">Senha pra abrir o site inteiro — pedida uma vez por sess

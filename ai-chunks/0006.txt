@@ -1,4 +1,7 @@
-ápida / crianças ainda alfabetizando)
+x + "_" + Math.random().toString(36).slice(2,9); }
+
+// mapeia palavras-chave do nome da tarefa pra um emoji — reforça o texto
+// com uma pista visual (útil pra leitura rápida / crianças ainda alfabetizando)
 const ICON_RULES = [
   [/cama/i, "🛏️"], [/água/i, "💧"], [/dente/i, "🦷"], [/rosto|banho/i, "🧼"],
   [/duolingo|inglês|idioma/i, "🗣️"], [/ler|livro|capítulo/i, "📖"],
@@ -77,6 +80,32 @@ function stripLegacyHairTask(cfg){
   // senha do site: se ainda não existe (configs de antes dessa função
   // existir), aplica a senha pedida uma vez.
   if(cfg && cfg.sitePin === undefined) cfg.sitePin = "150402";
+  return applyPointRebalanceV1(cfg);
+}
+
+// Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
+// crianças (arrumar cama, escovar dente, tomar banho, arrumar bagunça,
+// leitura, mochila, lixo) — só roda uma vez (flag), pra não desfazer ajuste
+// manual que os pais façam depois.
+const POINT_REBALANCE_V1 = {
+  m1:2, m3:2, m8:2, t_djf7hbb:4,
+  t3:2, t5:2,
+  n4:4, n5:3, n6:2, t_ci3brlt:4,
+};
+function applyPointRebalanceV1(cfg){
+  if(!cfg || cfg.pointRebalanceV1Applied) return cfg;
+  ['periods','periodsWeekend'].forEach(key=>{
+    const p = cfg[key];
+    if(!p) return;
+    ['manha','tarde','noite'].forEach(period=>{
+      if(p[period] && Array.isArray(p[period].tasks)){
+        p[period].tasks.forEach(t=>{
+          if(POINT_REBALANCE_V1[t.id] !== undefined) t.pts = POINT_REBALANCE_V1[t.id];
+        });
+      }
+    });
+  });
+  cfg.pointRebalanceV1Applied = true;
   return cfg;
 }
 
@@ -181,19 +210,4 @@ function seedKnownPerfectDays(state){
 function reconcileState(state){
   if(state.driveFileId === undefined) state.driveFileId = null;
   if(state.driveLastSyncISO === undefined) state.driveLastSyncISO = null;
-  if(state.lastSeenPetStage === undefined) state.lastSeenPetStage = 0;
-  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
-  if(state.petLastCompletionISO === undefined) state.petLastCompletionISO = null;
-  if(typeof state.revision !== 'number') state.revision = 0;
-  if(typeof state.driveRevision !== 'number') state.driveRevision = 0;
-  if(typeof state.driveConflictCount !== 'number') state.driveConflictCount = 0;
-  if(state.lastBackupISO === undefined) state.lastBackupISO = null;
-  if(state.backupReminderDismissedFor === undefined) state.backupReminderDismissedFor = null;
-  if(!state.checkedToday) state.checkedToday = {};
-  if(!state.log) state.log = [];
-  if(!state.history) state.history = {};
-  if(!state.hairByDate || typeof state.hairByDate !== "object") state.hairByDate = {};
-  if(!state.gameTimer || typeof state.gameTimer !== "object"){
-    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
-  }
-  if(state.gameTimer.bonusSeconds === undefined) state.gameTimer.bonusSe
+  if(s

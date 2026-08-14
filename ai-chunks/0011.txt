@@ -1,4 +1,50 @@
-derHair(){
+(d.getDate()-i);
+    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+    days.push(iso);
+  }
+  const weekdayLetters = ['D','S','T','Q','Q','S','S'];
+  const cells = days.map(iso=>{
+    const isToday = iso === todayISO();
+    const d = new Date(iso+"T00:00:00");
+    const letter = weekdayLetters[d.getDay()];
+    let entry = isToday ? liveTodayEntry() : state.history[iso];
+    let cls = 'streak-cell empty';
+    if(entry && entry.total > 0){
+      if(entry.perfect) cls = 'streak-cell perfect';
+      else if(entry.done > 0) cls = 'streak-cell partial';
+      else cls = 'streak-cell none';
+    }
+    if(isToday) cls += ' today';
+    return `<span class="${cls}" title="${formatDateBR(iso)}"><span class="streak-letter">${letter}</span></span>`;
+  }).join('');
+  return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${cells}</div>`;
+}
+
+function liveTodayEntry(){
+  const tasks = allTasks();
+  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+  const total = applicable.length;
+  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+  const perfect = total>0 && done===total;
+  return { total, done, perfect };
+}
+
+function getHairStatus(dateISO){
+  return state.hairByDate && state.hairByDate[dateISO] ? state.hairByDate[dateISO] : null;
+}
+
+function setHairStatus(status){
+  const iso = todayISO();
+  if(!state.hairByDate) state.hairByDate = {};
+  state.hairByDate[iso] = status;
+  if(!state.history) state.history = {};
+  if(state.history[iso]) state.history[iso].hair = status;
+  saveState(state);
+  renderHair();
+  renderHistory();
+}
+
+function renderHair(){
   const section = document.getElementById('hairSection');
   if(!section) return;
   const status = getHairStatus(todayISO());
@@ -88,7 +134,7 @@ function render(){
     btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
     btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
     btn.addEventListener('click', ()=>{
-      state.totalPoints = Math.max(0, state.totalPoints + h.pts);
+      addPoints(h.pts);
       addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
       saveState(state);
       bumpTotal();
@@ -164,40 +210,4 @@ function renderTestPanel(){
   el.innerHTML = `
     <div class="test-panel">
       <h3>🧪 Modo de teste</h3>
-      <div class="hint">Ferramentas só pra conferir se o crescimento do Pacus e o histórico estão funcionando. Não mexe nas tarefas de verdade — só simula dias.</div>
-      <div class="test-date">Data simulada agora: <b>${formatDateBR(todayISO())}/${todayISO().split('-')[0]}</b>${usingOverride ? ' (modo teste ativo)' : ' (data real do sistema)'}</div>
-      <div class="test-row">
-        <button class="icon-btn" id="testCompleteDayBtn">✅ completar tudo hoje</button>
-        <button class="icon-btn" id="testPrevDayBtn">◀ dia anterior</button>
-        <button class="icon-btn" id="testNextDayBtn">dia seguinte ▶</button>
-        <input type="date" id="testDatePicker" value="${todayISO()}">
-        <button class="icon-btn" id="testGoDateBtn">ir pra essa data</button>
-        <button class="icon-btn danger" id="testResetDateBtn">voltar pra data real</button>
-      </div>
-    </div>
-  `;
-
-  document.getElementById('testCompleteDayBtn').addEventListener('click', ()=>{
-    allTasks().forEach(t=>{
-      if(state.checkedToday[t.id] !== 'done'){
-        state.totalPoints += t.pts;
-      }
-      state.checkedToday[t.id] = 'done';
-    });
-    syncPetCompletionFromDay(todayISO());
-    addLog('🧪 (teste) todas as tarefas de hoje marcadas como feitas');
-    saveState(state);
-    render();
-  });
-
-  document.getElementById('testPrevDayBtn').addEventListener('click', ()=>{
-    goToTestDate(shiftISODate(todayISO(), -1));
-  });
-  document.getElementById('testNextDayBtn').addEventListener('click', ()=>{
-    goToTestDate(shiftISODate(todayISO(), 1));
-  });
-  document.getElementById('testGoDateBtn').addEventListener('click', ()=>{
-    const val = document.getElementById('testDatePicker').value;
-    if(val) goToTestDate(val);
-  });
-  document.getElementById('testRe
+      <div class="hint">Ferramentas só pra conferir se o crescimento do Pacus e o histórico estão funcionando. Não mexe nas

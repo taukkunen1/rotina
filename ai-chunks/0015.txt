@@ -1,4 +1,53 @@
-parseFloat(document.getElementById('gameLimitInput').value);
+();
+    }
+  });
+});
+
+document.getElementById('editBtn').addEventListener('click', ()=>{
+  if(CONFIG.editorPin){
+    const entered = prompt('Digite o PIN pra editar:');
+    if(entered === null) return; // cancelou
+    if(entered !== CONFIG.editorPin){
+      alert('PIN incorreto.');
+      return;
+    }
+  }
+  adultUnlocked = true;
+  openEditor();
+  render();
+});
+document.getElementById('adultTestBtn').addEventListener('click', ()=>{
+  closeEditor();
+  testPanelOpen = !testPanelOpen;
+  renderTestPanel();
+});
+document.getElementById('closeBtn').addEventListener('click', closeEditor);
+document.getElementById('cancelBtn').addEventListener('click', closeEditor);
+document.getElementById('overlay').addEventListener('click', e=>{
+  if(e.target.id === 'overlay') closeEditor();
+});
+
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  // limpa linhas vazias (sem nome) antes de salvar
+  ['manha','tarde','noite'].forEach(k=>{
+    draft.periods[k].tasks = draft.periods[k].tasks.filter(t=>t.txt.trim() !== '');
+  });
+  if(draft.periodsWeekend){
+    ['manha','tarde','noite'].forEach(k=>{
+      draft.periodsWeekend[k].tasks = draft.periodsWeekend[k].tasks.filter(t=>t.txt.trim() !== '');
+    });
+  }
+  draft.badHabits = draft.badHabits.filter(h=>h.txt.trim() !== '');
+  draft.rewards = draft.rewards.filter(r=>r.txt.trim() !== '');
+  draft.schedule = (draft.schedule || []).filter(s=>s.label.trim() !== '' && s.days.length > 0);
+
+  const pinVal = document.getElementById('editorPinInput').value.trim();
+  draft.editorPin = pinVal;
+
+  const sitePinVal = document.getElementById('sitePinInput').value.trim();
+  draft.sitePin = sitePinVal;
+
+  const gameLimitVal = parseFloat(document.getElementById('gameLimitInput').value);
   draft.screenDailyLimitHours = isNaN(gameLimitVal) || gameLimitVal < 0 ? 2 : gameLimitVal;
 
   CONFIG = draft;
@@ -58,7 +107,7 @@ document.getElementById('daySaveBtn').addEventListener('click', ()=>{
   // ajusta o saldo total pela diferença de pontos daquele dia
   const delta = pointsEarnedThatDay - oldPoints;
   if(delta !== 0){
-    state.totalPoints = Math.max(0, state.totalPoints + delta);
+    addPoints(delta);
     addLog(`✏️ ajuste em ${formatDateBR(editingDate)}: ${delta>0?'+':''}${delta}`);
   }
 
@@ -142,32 +191,4 @@ function renderDriveSync(){
   let statusHtml, actionsHtml;
 
   if(!configured){
-    statusHtml = `Ainda não configurado neste arquivo.`;
-    actionsHtml = `
-      <button class="icon-btn" id="driveSetupInfoBtn">como configurar</button>
-      <button class="icon-btn" id="driveCopyCodeBtn">📋 ver código do Apps Script</button>
-    `;
-  } else {
-    statusHtml = state.driveLastSyncISO
-      ? `Sincronizado ✓ — ${formatDateBR(state.driveLastSyncISO)}${state.driveConflictCount ? ` · ${state.driveConflictCount} conflito(s) resolvido(s)` : ''}.`
-      : `Sincronização automática ativa — aguardando primeira sincronização.`;
-    actionsHtml = `
-      <button class="icon-btn primary" id="driveSaveBtn">☁️⬆️ forçar salvar agora</button>
-      <button class="icon-btn primary" id="driveLoadBtn">☁️⬇️ forçar carregar agora</button>
-    `;
-  }
-
-  el.innerHTML = `
-    <div class="drive-sync">
-      <h3>☁️ Sincronizado com Google Drive</h3>
-      <div class="hint">O Drive guarda os dados, o histórico e uma cópia diária. O app continua funcionando offline e sincroniza quando a conexão volta.</div>
-      <div class="status">${statusHtml}</div>
-      <div class="drive-sync-row">${actionsHtml}</div>
-      <div id="driveSetupInfo" style="display:none;" class="drive-setup">
-        <b>Passo a passo:</b>
-        <ol>
-          <li>Acesse <code>script.google.com</code> → "Novo projeto".</li>
-          <li>Apague o código de exemplo e cole o código do Apps Script (botão "ver código" ao lado).</li>
-          <li>Clique em "Implantar" → "Nova implantação".</li>
-          <li>Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer pessoa".</li>
-          <li>Implante, autorize (é a sua própria conta), e copie a URL gerada (termina em 
+    statusHtml = `Ainda não con

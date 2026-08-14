@@ -1,4 +1,26 @@
-Updated = remoteEntry.updatedAt || remoteState.updatedAt || '';
+) return null;
+  const safe = JSON.parse(JSON.stringify(remoteConfig));
+  if(!safe.periodsWeekend) safe.periodsWeekend = null;
+  if(!Array.isArray(safe.badHabits)) safe.badHabits = [];
+  if(!Array.isArray(safe.rewards)) safe.rewards = [];
+  if(!Array.isArray(safe.schedule)) safe.schedule = [];
+  if(!Array.isArray(safe.scheduleExceptions)) safe.scheduleExceptions = [];
+  if(!safe.pet || !Array.isArray(safe.pet.stages) || safe.pet.stages.length < 2) {
+    safe.pet = JSON.parse(JSON.stringify(DEFAULT_CONFIG.pet));
+  }
+  return stripLegacyHairTask(safe);
+}
+
+function mergeRemoteData(remote){
+  const remoteState = remote.state || {};
+  const localState = state || {};
+  const merged = JSON.parse(JSON.stringify(remoteState));
+  merged.history = {...(remoteState.history||{})};
+  Object.entries(localState.history||{}).forEach(([iso,entry])=>{
+    const remoteEntry = merged.history[iso];
+    if(!remoteEntry || JSON.stringify(entry) !== JSON.stringify(remoteEntry)){
+      const localUpdated = entry.updatedAt || localState.updatedAt || '';
+      const remoteUpdated = remoteEntry.updatedAt || remoteState.updatedAt || '';
       if(localUpdated >= remoteUpdated) merged.history[iso] = entry;
     }
   });
@@ -73,6 +95,24 @@ function bumpTotal(){
   el.classList.remove('bump');
   void el.offsetWidth;
   el.classList.add('bump');
+}
+
+// 1 Pacus Point ≈ R$0,06 (dentro da faixa combinada de R$0,05–0,08) — o
+// saldo nunca passa de 1000 pontos, equivalente a uns R$60 no máximo.
+const MAX_POINTS = 1000;
+const POINT_VALUE_BRL = 0.06;
+
+function addPoints(delta){
+  state.totalPoints = Math.max(0, Math.min(MAX_POINTS, state.totalPoints + delta));
+}
+
+// Pra "✕ não realizado": perde metade dos pontos daquela tarefa. A metade
+// é sempre arredondada pra cima, e nunca fica em número ímpar (se o
+// arredondamento der ímpar, sobe mais 1 pra virar par).
+function notDonePenalty(pts){
+  let half = Math.ceil(pts/2);
+  if(half % 2 !== 0) half += 1;
+  return half;
 }
 
 /* ===================== TIMER DE TEMPO DE JOGO (diário) ===================== */
@@ -168,41 +208,4 @@ function updateGameTimerDisplay(){
   barEl.classList.toggle('over-limit', used >= limit);
 }
 
-function renderGameTimer(){
-  const el = document.getElementById('gameTimerSection');
-  if(!el) return;
-  const running = gameTimerIsRunning();
-  const limit = gameTimerDailyLimitSeconds();
-  const used = gameTimerSecondsUsedNow();
-  const remaining = limit - used;
-  const pct = Math.min(100, Math.round((used/limit)*100));
-
-  el.innerHTML = `
-    <div class="game-timer">
-      <h3>🎮 Tempo de Jogo</h3>
-      <div class="hint">Cota de ${CONFIG.screenDailyLimitHours || 2}h por dia (resgatar "1 hora de tela" na loja soma mais tempo hoje). É só apertar quando começar e quando parar de jogar.</div>
-      <div class="game-timer-used" id="gameTimerUsed">${remaining > 0 ? `<b>${formatMinSec(remaining)}</b> restantes hoje` : `<b>tempo de hoje acabou</b>`}</div>
-      <div class="game-timer-track"><div class="game-timer-fill ${used>=limit?'over-limit':''}" id="gameTimerBarFill" style="width:${pct}%"></div></div>
-      <button class="game-timer-btn ${running?'running':''}" id="gameTimerToggleBtn">
-        ${running ? '⏸️ Parar de jogar' : '▶️ Começar a jogar'}
-      </button>
-    </div>
-  `;
-  document.getElementById('gameTimerToggleBtn').addEventListener('click', ()=>{
-    if(gameTimerIsRunning()) stopGameTimer(); else startGameTimer();
-  });
-
-  if(running) startGameTimerTicking(); else stopGameTimerTicking();
-}
-
-/* ===================== TIMERS AVULSOS (tempo livre pra qualquer coisa) ===================== */
-let customTimerTickHandle = null;
-
-function findCustomTimer(id){
-  return state.customTimers.find(t=>t.id===id);
-}
-
-function customTimerRemainingNow(t){
-  if(!t.runningSince) return t.remainingSeconds;
-  const elapsed = (Date.now() - t.runningSince)/1000;
-  return Math.
+funct
