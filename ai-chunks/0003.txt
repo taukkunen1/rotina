@@ -330,8 +330,16 @@ ackup-reminder button{
 
 <span class="points-delta" id="pointsDelta"></span>
 
-<div class="overlay" id="siteLockOverlay" style="z-index:500;">
-  <div class="editor" style="max-width:340px; text-align:center;">
-    <div style="font-size:2.5rem; margin-bottom:6px;">🔒</div>
-    <h2 style="font-family:'Segoe Print','Bradley Hand',cursive; font-weight:normal; color:var(--yellow); margin:0 0 14px;">Rotina do Hector</h2>
-    <input type="password" inputmode="numeric" id="siteLockInput" placeh
+<div class="board-frame">
+  <div class="board-inner">
+
+    <div id="testModeBanner"></div>
+
+    <div class="topbar">
+      <h1>🥚 Rotina do Hector</h1>
+      <div class="topbar-right">
+        <div class="pacus-total">
+          <span class="label">Pacus Points</span>
+          <span class="num" id="totalPoints">0</span>
+        </div>
+        <button class="icon-btn primary" id="addPointsBtn" title="Ajuste m

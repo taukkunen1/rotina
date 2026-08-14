@@ -1,13 +1,4 @@
-o === todayISO();
-    let entry;
-    if(isToday){
-      const tasks = allTasks();
-      const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-      const total = applicable.length;
-      const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-      const pointsEarnedThatDay = tasks.filter(t=>state.checkedToday[t.id]==='done').reduce((s,t)=>s+t.pts,0);
-      const perfect = total>0 && done===total;
-      entry = { done, total, pointsEarnedThatDay, perfect, hair:getHairStatus(iso) };
+hair:getHairStatus(iso) };
     } else {
       entry = state.history[iso];
     }
@@ -194,4 +185,15 @@ let draft = null; // cópia de trabalho do CONFIG enquanto o modal está aberto
 function openEditor(){
   draft = JSON.parse(JSON.stringify(CONFIG));
   renderEditorPeriod('manha', 'editManha');
-  renderEditorPeriod('tarde', 'editTarde
+  renderEditorPeriod('tarde', 'editTarde');
+  renderEditorPeriod('noite', 'editNoite');
+  renderEditorBad();
+  renderEditorRewards();
+
+  const weekendToggle = document.getElementById('weekendToggle');
+  const weekendBody = document.getElementById('weekendEditorBody');
+  weekendToggle.checked = !!draft.periodsWeekend;
+  weekendBody.style.display = draft.periodsWeekend ? 'block' : 'none';
+  if(draft.periodsWeekend){
+    renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
+    renderEditorPeriod('tarde', 'editTardeWeeke

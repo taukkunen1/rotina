@@ -1,26 +1,4 @@
-ddPoints(h.pts);
-      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
-      saveState(state);
-      bumpTotal(delta, btn);
-      renderLog();
-    });
-    badEl.appendChild(btn);
-  });
-
-  renderRewards();
-  renderLog();
-  renderHistory();
-  renderWeeklyReview();
-  renderBackupReminder();
-  renderTestPanel();
-  renderTestModeBanner();
-  renderDriveSync();
-}
-
-function daysBetween(isoA, isoB){
-  const a = new Date(isoA+"T00:00:00");
-  const b = new Date(isoB+"T00:00:00");
-  return Math.round((b-a)/86400000);
+h.round((b-a)/86400000);
 }
 
 function shiftISODate(iso, deltaDays){
@@ -221,4 +199,13 @@ function renderHistory(){
   const visibleRows = historyShowAll ? rows : rows.slice(-HISTORY_VISIBLE_DAYS);
 
   body.innerHTML = visibleRows.map(iso=>{
-    const isToday = is
+    const isToday = iso === todayISO();
+    let entry;
+    if(isToday){
+      const tasks = allTasks();
+      const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+      const total = applicable.length;
+      const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+      const pointsEarnedThatDay = tasks.filter(t=>state.checkedToday[t.id]==='done').reduce((s,t)=>s+t.pts,0);
+      const perfect = total>0 && done===total;
+      entry = { done, total, pointsEarnedThatDay, perfect, 

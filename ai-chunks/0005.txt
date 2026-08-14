@@ -1,31 +1,4 @@
-refa.</div>
-      <div id="editSchedule"></div>
-      <button class="add-row-btn" data-add="schedule">+ adicionar compromisso</button>
-    </div>
-
-    <div class="editor-section">
-      <h3>🎮 Tempo de Jogo</h3>
-      <div class="hint">Cota diária de tempo de jogo.</div>
-      <div class="edit-row">
-        <label style="flex:1; font-size:.85rem;">Horas de jogo por dia</label>
-        <input type="number" min="0" step="0.5" id="gameLimitInput" style="width:70px;">
-      </div>
-    </div>
-
-    <div class="editor-section">
-      <h3>🔒 Segurança</h3>
-      <div class="hint">PIN pra pedir antes de abrir "Editar tudo" — protege de mudanças acidentais.</div>
-      <div class="edit-row">
-        <input type="text" inputmode="numeric" id="editorPinInput" placeholder="ex: 1234 (deixe vazio pra não pedir PIN)" maxlength="8">
-      </div>
-      <div class="hint" style="margin-top:12px;">Senha pra abrir o site inteiro — pedida uma vez por sessão do navegador.</div>
-      <div class="edit-row">
-        <input type="text" inputmode="numeric" id="sitePinInput" placeholder="ex: 150402 (deixe vazio pra não pedir senha)" maxlength="12">
-      </div>
-    </div>
-
-    <div class="editor-footer">
-      <button class="btn" id="adultTestBtn">🧪 modo teste</button>
+ton class="btn" id="adultTestBtn">🧪 modo teste</button>
       <button class="btn" id="cancelBtn">fechar</button>
       <button class="btn save" id="saveBtn">salvar tudo</button>
     </div>
@@ -33,15 +6,6 @@ refa.</div>
 </div>
 
 <script>
-/* ---------- trava de acesso ao site (roda antes de tudo, pra não dar
-   nem uma piscada do conteúdo antes de pedir a senha) ---------- */
-const SITE_LOCK_SESSION_KEY = 'hector_rotina_site_unlocked_v1';
-let siteAlreadyUnlocked = false;
-try{ siteAlreadyUnlocked = sessionStorage.getItem(SITE_LOCK_SESSION_KEY) === '1'; }catch(e){}
-if(!siteAlreadyUnlocked){
-  document.getElementById('siteLockOverlay').classList.add('open');
-}
-
 /* =========================================================================
    DEFAULT_CONFIG só é usado da primeira vez que o arquivo abre (sem nada
    salvo ainda no navegador). Depois disso tudo é editado pela tela e fica
@@ -53,34 +17,34 @@ const DEFAULT_CONFIG = {
       label: "Manhã", time: "8:20 – 12:00",
       tasks: [
         { id:"m1", txt:"Arrumar a cama", pts:2, sub:"até às 12h" },
-        { id:"m2", txt:"Beber 1 copo de água", pts:1, sub:"até às 12h" },
-        { id:"m3", txt:"Escovar os dentes", pts:2, sub:"até às 12h" },
         { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h" },
-        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:5 },
+        { id:"m3", txt:"Escovar os dentes", pts:2, sub:"até às 12h" },
         { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 12h" },
+        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:5 },
         { id:"m8", txt:"Arrumar a mochila", pts:2, sub:"até às 12h" },
         { id:"t_djf7hbb", txt:"Levar Lixo", pts:4, sub:"até às 12h" },
+        { id:"m2", txt:"Beber 1 copo de água", pts:1, sub:"até às 12h" },
       ]
     },
     tarde: {
       label: "Tarde", time: "12:00 – 18:00",
       tasks: [
-        { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h" },
         { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h" },
         { id:"t3", txt:"Escovar os dentes", pts:2, sub:"até às 18h" },
-        { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h" },
         { id:"t5", txt:"Arrumar a mochila", pts:2, sub:"até às 18h" },
+        { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h" },
+        { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h" },
       ]
     },
     noite: {
       label: "Noite", time: "18:00 – 22:00",
       tasks: [
-        { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h" },
-        { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h" },
-        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4 },
         { id:"n5", txt:"Arrumar a bagunça", pts:7, fullPenalty:true, sub:"até às 22h" },
+        { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h" },
+        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4 },
         { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h" },
         { id:"t_ci3brlt", txt:"Ler Livro", pts:4, sub:"3 capítulo do livro de casa (até às 22h)" },
+        { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h" },
       ]
     },
   },
@@ -89,9 +53,6 @@ const DEFAULT_CONFIG = {
   periodsWeekend: null,
   // PIN opcional pra travar o botão "Editar tudo" — vazio = sem trava
   editorPin: "",
-  // Senha opcional pra travar o acesso ao site inteiro — vazio = sem trava.
-  // Pedida uma vez por sessão do navegador (fica destravado até fechar a aba).
-  sitePin: "150402",
   badHabits: [],
   rewards: [
     { id:"r1", txt:"1 hora de tela", cost:90, grantsHours:1, maxPerDay:2 },
@@ -170,4 +131,39 @@ const APP_VERSION = "2026.08.11-pacus-v4";
    Passo a passo pra ativar:
    1. Acesse https://script.google.com/ → "Novo projeto".
    2. Apague o código de exemplo e cole o código que aparece no botão
-      "📋 ver código do Apps Script" logo abaixo, na seção de sin
+      "📋 ver código do Apps Script" logo abaixo, na seção de sincronização.
+   3. Clique em "Implantar" → "Nova implantação".
+   4. Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer
+      pessoa".
+   5. Clique em "Implantar", autorize o acesso (é a sua própria conta), e
+      copie a URL gerada (termina em /exec).
+   6. Cole essa URL na constante abaixo, entre aspas.
+   7. No Google Drive, salve o código deste arquivo com o nome exato
+      "rotina-hector.html". A partir daí, abram sempre a URL do Apps
+      Script (não o arquivo local) em todos os aparelhos.
+   ========================================================================= */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec";
+// A mesma URL agora também serve o próprio app (HTML) quando aberta sem
+// parâmetro — pra pedir só os dados (backup), usamos ?data=1.
+const DATA_ENDPOINT = APPS_SCRIPT_URL + "?data=1";
+
+function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9); }
+
+// mapeia palavras-chave do nome da tarefa pra um emoji — reforça o texto
+// com uma pista visual (útil pra leitura rápida / crianças ainda alfabetizando)
+const ICON_RULES = [
+  [/cama/i, "🛏️"], [/água/i, "💧"], [/dente/i, "🦷"], [/rosto|banho/i, "🧼"],
+  [/duolingo|inglês|idioma/i, "🗣️"], [/ler|livro|capítulo/i, "📖"],
+  [/uniforme|vestir/i, "👕"], [/mochila/i, "🎒"], [/almoç/i, "🍽️"],
+  [/escola/i, "🏫"], [/jantar/i, "🍲"], [/bagunça|arrumar/i, "🧹"],
+  [/toalha|cesto|roupa/i, "🧺"], [/tela|jogo|vídeo/i, "📺"],
+  [/dever|tarefa|estud/i, "✏️"], [/dormir|soneca/i, "😴"],
+];
+function taskIcon(txt){
+  for(const [re, icon] of ICON_RULES){ if(re.test(txt)) return icon; }
+  return "⭐";
+}
+
+function isWeekendISO(dateISO){
+  const day = new Date(dateISO+"T00:00:00").getDay();
+  return day === 0 || day ==

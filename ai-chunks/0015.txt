@@ -1,24 +1,4 @@
-);
-        else item.days.push(d);
-        chip.classList.toggle('active');
-      });
-    });
-    row.querySelector('.del').addEventListener('click', ()=>{
-      draft.schedule = draft.schedule.filter(x=>x!==item);
-      renderEditorSchedule();
-    });
-    el.appendChild(row);
-  });
-}
-
-function renderEditorRewards(){
-  const el = document.getElementById('editRewards');
-  el.innerHTML = '';
-  draft.rewards.forEach(r=>{
-    const row = document.createElement('div');
-    row.className = 'edit-row';
-    row.innerHTML = `
-      <input type="text" value="${escapeAttr(r.txt)}" data-field="txt" placeholder="recompensa">
+xt)}" data-field="txt" placeholder="recompensa">
       ${stepperHTML('cost', r.cost)}
       <button class="del" title="remover">🗑</button>
     `;
@@ -102,9 +82,6 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
 
   const pinVal = document.getElementById('editorPinInput').value.trim();
   draft.editorPin = pinVal;
-
-  const sitePinVal = document.getElementById('sitePinInput').value.trim();
-  draft.sitePin = sitePinVal;
 
   const gameLimitVal = parseFloat(document.getElementById('gameLimitInput').value);
   draft.screenDailyLimitHours = isNaN(gameLimitVal) || gameLimitVal < 0 ? 2 : gameLimitVal;
@@ -196,4 +173,16 @@ const APPS_SCRIPT_CODE = `function doGet(e) {
   var appFiles = DriveApp.getFilesByName('rotina-hector.html');
   if (!appFiles.hasNext()) appFiles = DriveApp.getFilesByName('rotina-hector-app.html');
   if (appFiles.hasNext()) {
-    return HtmlService.creat
+    return HtmlService.createHtmlOutput(appFiles.next().getBlob().getDataAsString())
+      .setTitle('Rotina do Hector')
+      .addMetaTag('viewport','width=device-width, initial-scale=1');
+  }
+  return HtmlService.createHtmlOutput('Ainda não encontrei o arquivo rotina-hector.html (nem o arquivo legado rotina-hector-app.html) no seu Drive.');
+}
+
+function doPost(e) {
+  var incoming = JSON.parse(e.postData.contents || '{}');
+  var files = DriveApp.getFilesByName('rotina-hector-backup.json');
+  var file = files.hasNext() ? files.next() : DriveApp.createFile('rotina-hector-backup.json','{}',MimeType.PLAIN_TEXT);
+  var current = {};
+  try { current = JSON.parse(file.getBlob().getDataAsString() || '{}'
