@@ -1,4 +1,4 @@
-holder="Senha" maxlength="12"
+assword" inputmode="numeric" id="siteLockInput" placeholder="Senha" maxlength="12"
       style="width:100%; text-align:center; font-size:1.1rem; letter-spacing:3px; background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--chalk); border-radius:8px; padding:10px; font-family:inherit; margin-bottom:12px;">
     <button class="btn save" id="siteLockBtn" style="width:100%;">entrar</button>
     <div id="siteLockError" style="color:var(--red); font-size:.78rem; margin-top:10px; min-height:1em;"></div>
@@ -16,7 +16,6 @@ holder="Senha" maxlength="12"
         <div class="pacus-total">
           <span class="label">Pacus Points</span>
           <span class="num" id="totalPoints">0</span>
-          <span class="points-delta" id="pointsDelta"></span>
         </div>
         <button class="icon-btn primary" id="addPointsBtn" title="Ajuste manual de Pacus Points">+ pontos</button>
         <button class="icon-btn primary" id="editBtn">🔒 Área dos adultos</button>
@@ -194,4 +193,4 @@ holder="Senha" maxlength="12"
     <div class="editor-section">
       <h3>🎁 Recompensas</h3>
       <div id="editRewards"></div>
-      <but
+      <button class

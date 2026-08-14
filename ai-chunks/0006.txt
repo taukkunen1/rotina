@@ -1,4 +1,4 @@
-onteúdo do arquivo "rotina-hector.html" no Drive uma vez, e todo
+o arquivo "rotina-hector.html" no Drive uma vez, e todo
    aparelho já abre a versão nova sozinho, sem copiar arquivo nenhum.
 
    Passo a passo pra ativar:
@@ -190,4 +190,4 @@ function loadState(){
 function applyHistoryCorrection_v2(state){
   // Correção pontual, aplicada só UMA VEZ (por causa da flag abaixo) —
   // depois disso nunca mais mexe sozinha nesses dias, pra não apagar
-  // edições feitas manu
+  // edições feitas manualmente d

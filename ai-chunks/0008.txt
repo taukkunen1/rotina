@@ -1,4 +1,4 @@
-Push, 2000);
+0);
 }
 
 async function doAutoPush(){
@@ -202,4 +202,4 @@ let gameTimerTickHandle = null;
 
 function gameTimerDailyLimitSeconds(){
   const base = Math.round((CONFIG.screenDailyLimitHours || 2) * 3600);
-  const bonus = Math
+  const bonus = Math.round((s

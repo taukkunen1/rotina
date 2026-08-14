@@ -1,4 +1,4 @@
-    row.querySelector('[data-field=end]').addEventListener('input', e=>{ item.end = e.target.value; });
+uerySelector('[data-field=end]').addEventListener('input', e=>{ item.end = e.target.value; });
     row.querySelector('[data-field=period]').addEventListener('change', e=>{ item.period = e.target.value; });
     wireStepper(row, item, 'pts');
     row.querySelectorAll('.day-chip').forEach(chip=>{
@@ -193,4 +193,4 @@ const APPS_SCRIPT_CODE = `function doGet(e) {
       var raw = file.getBlob().getDataAsString();
       try {
         var data = JSON.parse(raw);
-        re
+        return Cont

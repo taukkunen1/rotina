@@ -1,4 +1,4 @@
-lay" id="customTimerDisplay_${t.id}">${formatHMS(remaining)}</div>
+customTimerDisplay_${t.id}">${formatHMS(remaining)}</div>
         <div class="custom-timer-setrow">
           <input type="number" min="0" step="1" id="customTimerMin_${t.id}" value="${totalMin}" ${running?'disabled':''}>
           <span>min</span>
@@ -156,4 +156,4 @@ function renderPet(){
   const milestones = [
     [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
   ];
-  c
+  const mile

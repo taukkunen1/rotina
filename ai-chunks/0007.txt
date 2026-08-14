@@ -1,4 +1,4 @@
-almente depois. Cobre 09/08 a 12/08: todos os
+epois. Cobre 09/08 a 12/08: todos os
   // dias foram completos; dia 12 teve -10 Pacus Points por causa de uma
   // briga na escola; saldo final confirmado até 12/08: 170 Pacus Points.
   if(state.historyCorrectionV2Applied) return;
@@ -192,4 +192,4 @@ let autoPushTimer = null;
 function scheduleAutoPush(){
   if(!APPS_SCRIPT_URL || suppressAutoPush) return;
   clearTimeout(autoPushTimer);
-  autoPushTimer = setTimeout(doAuto
+  autoPushTimer = setTimeout(doAutoPush, 200

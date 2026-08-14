@@ -332,8 +332,10 @@ ce-between;
 </head>
 <body>
 
+<span class="points-delta" id="pointsDelta"></span>
+
 <div class="overlay" id="siteLockOverlay" style="z-index:500;">
   <div class="editor" style="max-width:340px; text-align:center;">
     <div style="font-size:2.5rem; margin-bottom:6px;">🔒</div>
     <h2 style="font-family:'Segoe Print','Bradley Hand',cursive; font-weight:normal; color:var(--yellow); margin:0 0 14px;">Rotina do Hector</h2>
-    <input type="password" inputmode="numeric" id="siteLockInput" place
+    <input type="p

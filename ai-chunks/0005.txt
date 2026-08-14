@@ -1,4 +1,4 @@
-ton class="add-row-btn" data-add="reward">+ adicionar recompensa</button>
+="add-row-btn" data-add="reward">+ adicionar recompensa</button>
     </div>
 
     <div class="editor-section">
@@ -169,4 +169,4 @@ const APP_VERSION = "2026.08.11-pacus-v4";
    Depois de configurado, o jeito certo de abrir em qualquer aparelho é
    pela URL do Apps Script (a que termina em /exec) — não pelo arquivo
    local. Assim, quando o app for atualizado, basta substituir o
-   c
+   conteúdo d

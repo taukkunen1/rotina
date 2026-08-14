@@ -1,4 +1,4 @@
-turn ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+entService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
       } catch(err) {}
     }
     return ContentService.createTextOutput(JSON.stringify({error:'not_found'})).setMimeType(ContentService.MimeType.JSON);
@@ -161,4 +161,4 @@ async function driveLoad(){
 /* ===================== BACKUP LOCAL (exportar / importar) ===================== */
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const backup = { config: CONFIG, state: state, exportedAt: new Date().toISOString() };
-  const blob = new Bl
+  const blob = new Blob([JSON.
