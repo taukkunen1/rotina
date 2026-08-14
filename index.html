@@ -845,6 +845,39 @@
   }
   .edit-row label{ color:var(--chalk-dim); }
 
+  .achievement-mural{
+    background:rgba(255,126,185,.06);
+    border:1px solid rgba(255,126,185,.3);
+    border-radius:12px;
+    padding:16px 18px;
+  }
+  .mural-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(90px,1fr));
+    gap:10px;
+  }
+  .mural-card{
+    text-align:center;
+    background:rgba(255,255,255,.03);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:10px 6px;
+    opacity:.55;
+  }
+  .mural-card.reached{
+    opacity:1;
+    background:rgba(255,126,185,.1);
+    border-color:rgba(255,126,185,.5);
+  }
+  .mural-stage{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:.95rem;
+    color:var(--pink);
+    margin-bottom:4px;
+  }
+  .mural-date{ font-size:.7rem; color:var(--chalk-dim); }
+  .mural-card.reached .mural-date{ color:var(--chalk); }
+
   .weekly-review{
     background:rgba(255,255,255,.03);
     border:1px solid rgba(95,216,117,.3);
@@ -1014,6 +1047,41 @@
     0%{ transform:translate(0,0) rotate(0deg); opacity:1; }
     100%{ transform:translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity:0; }
   }
+
+  .celebration-card{
+    background:var(--board);
+    border:3px solid var(--yellow);
+    border-radius:16px;
+    padding:28px 24px;
+    max-width:340px;
+    width:100%;
+    text-align:center;
+    box-shadow:0 0 60px rgba(255,217,61,.35), 0 20px 60px rgba(0,0,0,.6);
+    animation:celebrationPop .5s cubic-bezier(.2,1.4,.4,1);
+  }
+  @keyframes celebrationPop{
+    0%{ transform:scale(.6); opacity:0; }
+    70%{ transform:scale(1.06); opacity:1; }
+    100%{ transform:scale(1); }
+  }
+  .celebration-mascot{
+    width:150px;
+    height:150px;
+    margin:0 auto 10px;
+  }
+  .celebration-mascot .pet-mascot{ width:100%; height:100%; }
+  .celebration-title{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:1.5rem;
+    color:var(--yellow);
+    margin-bottom:6px;
+  }
+  .celebration-stage{
+    font-size:1rem;
+    color:var(--chalk);
+    margin-bottom:18px;
+  }
+  .celebration-stage b{ color:var(--green); }
 
   footer{
     text-align:center;
@@ -1254,6 +1322,15 @@
 
 <span class="points-delta" id="pointsDelta"></span>
 
+<div class="overlay" id="evolutionCelebration" style="z-index:700; align-items:center;">
+  <div class="celebration-card" id="celebrationCard">
+    <div class="celebration-mascot" id="celebrationMascot"></div>
+    <div class="celebration-title">🎉 Pacus evoluiu! 🎉</div>
+    <div class="celebration-stage" id="celebrationStage"></div>
+    <button class="btn save" id="celebrationCloseBtn">continuar</button>
+  </div>
+</div>
+
 <div class="board-frame">
   <div class="board-inner">
 
@@ -1311,6 +1388,8 @@
         <div class="log-title">Histórico de hoje</div>
         <div id="logList"></div>
       </div>
+
+      <section class="block" id="achievementMuralSection"></section>
 
       <section class="block" id="weeklyReviewSection"></section>
 
@@ -2702,6 +2781,41 @@ function buildPetVisual(stageFloat){
   return buildPacusSVG(stageFloat);
 }
 
+// Pra cada marco de evolução, descobre em que dia ele foi alcançado (com
+// base na lista de dias completos, em ordem) — usado no mural de conquistas.
+function getMilestoneDates(){
+  const cycle = getPetCycle();
+  const sorted = [...(state.petCompletedDays||[])]
+    .filter(d => d >= cycle.startISO && d <= cycle.endISO)
+    .sort();
+  const milestones = [
+    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
+  ];
+  return milestones.map(([day,label])=>{
+    if(day === 0) return { label, day, date: cycle.startISO, reached: true };
+    const reached = sorted.length >= day;
+    return { label, day, date: reached ? sorted[day-1] : null, reached };
+  });
+}
+
+function renderAchievementMural(){
+  const el = document.getElementById('achievementMuralSection');
+  if(!el) return;
+  const milestones = getMilestoneDates();
+  const cardsHtml = milestones.map(m=>`
+    <div class="mural-card ${m.reached?'reached':''}">
+      <div class="mural-stage">${m.label}</div>
+      <div class="mural-date">${m.reached ? formatDateBR(m.date) : '—'}</div>
+    </div>
+  `).join('');
+  el.innerHTML = `
+    <div class="achievement-mural">
+      <h3 class="block-title" style="color:var(--pink); margin-bottom:12px;">🏆 Mural de Conquistas do Pacus</h3>
+      <div class="mural-grid">${cardsHtml}</div>
+    </div>
+  `;
+}
+
 function renderPet(){
   const el = document.getElementById('petSection');
   const data = computePetStage();
@@ -2767,8 +2881,32 @@ function renderPet(){
     document.getElementById('petEvolvedBanner').innerHTML = `<div class="pet-evolved-banner">Pacus avançou para <b>${stageInfo.label}</b>.</div>`;
     state.lastSeenPetStage = stage;
     saveState(state);
-    fireConfetti(el.querySelector('.pet-mascot'), stage === maxStage ? 50 : 18);
+    showEvolutionCelebration(stageInfo, stage, maxStage);
   }
+}
+
+function showEvolutionCelebration(stageInfo, stage, maxStage){
+  const overlay = document.getElementById('evolutionCelebration');
+  const mascotEl = document.getElementById('celebrationMascot');
+  mascotEl.innerHTML = buildPetVisual(stage);
+  document.getElementById('celebrationStage').innerHTML =
+    stage === maxStage
+      ? `O Pacus chegou em <b>${stageInfo.label}</b> — crescimento completo! 🏆`
+      : `O Pacus virou <b>${stageInfo.label}</b>!`;
+  overlay.classList.add('open');
+
+  // confete espalhado pela tela toda, não só perto do Pacus
+  fireConfetti(null, 40);
+  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.2, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 200);
+  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.8, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 350);
+
+  const autoClose = setTimeout(closeEvolutionCelebration, 4500);
+  overlay.dataset.autoCloseId = autoClose;
+}
+function closeEvolutionCelebration(){
+  const overlay = document.getElementById('evolutionCelebration');
+  if(overlay.dataset.autoCloseId) clearTimeout(Number(overlay.dataset.autoCloseId));
+  overlay.classList.remove('open');
 }
 
 function buildStreakStrip(){
@@ -2933,6 +3071,7 @@ function render(){
   renderRewards();
   renderLog();
   renderHistory();
+  renderAchievementMural();
   renderWeeklyReview();
   renderBackupReminder();
   renderTestPanel();
@@ -3575,6 +3714,11 @@ document.querySelectorAll('.add-row-btn').forEach(btn=>{
       renderEditorSchedule();
     }
   });
+});
+
+document.getElementById('celebrationCloseBtn').addEventListener('click', closeEvolutionCelebration);
+document.getElementById('evolutionCelebration').addEventListener('click', e=>{
+  if(e.target.id === 'evolutionCelebration') closeEvolutionCelebration();
 });
 
 document.getElementById('editBtn').addEventListener('click', ()=>{
