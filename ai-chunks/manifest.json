@@ -2,9 +2,9 @@
   "source": "index.html",
   "encoding": "utf-8",
   "chunkSize": 8000,
-  "totalChunks": 14,
-  "totalSize": 105965,
-  "sha256": "fca285de4ee61ccc1d171e0bc6cab936345b8c124bf9cef7428f205a7cce653e",
+  "totalChunks": 17,
+  "totalSize": 128544,
+  "sha256": "6001f5b8932dc842e650ed5f78073a90f56a0c5f0de35ef17fcbf3a5039b7dec",
   "chunks": [
     {
       "chunk": 0,
@@ -101,8 +101,29 @@
       "chunk": 13,
       "file": "0013.txt",
       "start": 104000,
-      "end": 105965,
-      "size": 1965
+      "end": 112000,
+      "size": 8000
+    },
+    {
+      "chunk": 14,
+      "file": "0014.txt",
+      "start": 112000,
+      "end": 120000,
+      "size": 8000
+    },
+    {
+      "chunk": 15,
+      "file": "0015.txt",
+      "start": 120000,
+      "end": 128000,
+      "size": 8000
+    },
+    {
+      "chunk": 16,
+      "file": "0016.txt",
+      "start": 128000,
+      "end": 128544,
+      "size": 544
     }
   ]
 }

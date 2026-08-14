@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -15,16 +14,16 @@
      ===================================================================== */
 
   :root{
-    --board:#0b1220;
+    --board:#16241f;
     --board-edge:#0e1712;
     --chalk:#f7f4ec;
     --chalk-dim:#c7c0b0;
-    --yellow:#f5d878;
-    --pink:#eeb0cb;
-    --blue:#9ad2ee;
-    --orange:#f3ad6c;
-    --green:#48d7a0;
-    --red:#ef9a9a;
+    --yellow:#ffd93d;
+    --pink:#ff7eb9;
+    --blue:#4fc3f7;
+    --orange:#ff9f43;
+    --green:#5fd875;
+    --red:#ff6b6b;
     --wood:#8a5a34;
     --wood-dark:#6b4324;
     --line:rgba(247,244,236,.18);
@@ -99,7 +98,7 @@
     font-size:1.5rem;
     margin:0;
     color:var(--yellow);
-    text-shadow:0 0 12px rgba(242,214,117,.2);
+    text-shadow:0 0 12px rgba(255,217,61,.2);
     white-space:nowrap;
   }
 
@@ -150,170 +149,158 @@
   }
   .icon-btn:hover{ color:var(--chalk); border-color:rgba(242,237,225,.4); background:rgba(255,255,255,.04); }
   .icon-btn.danger:hover{ color:var(--red); border-color:var(--red); }
-  .icon-btn.primary{ color:var(--yellow); border-color:rgba(242,214,117,.4); }
-  .icon-btn.primary:hover{ background:rgba(242,214,117,.1); }
+  .icon-btn.primary{ color:var(--yellow); border-color:rgba(255,217,61,.4); }
+  .icon-btn.primary:hover{ background:rgba(255,217,61,.1); }
 
   .content{ padding:18px 18px 0; }
-
-  .subtitle{
-    color:var(--chalk-dim);
-    font-size:.82rem;
-    text-align:center;
-    margin:2px 0 20px;
-  }
 
   .weekend-indicator{
     text-align:center;
     font-size:.75rem;
     color:var(--orange);
-    background:rgba(240,168,108,.1);
-    border:1px solid rgba(240,168,108,.35);
+    background:rgba(255,159,67,.1);
+    border:1px solid rgba(255,159,67,.35);
     border-radius:8px;
     padding:6px 10px;
     margin-bottom:14px;
   }
 
-  /* ---------- Pacus, o axolote de estimação ---------- */
-  .pet-section{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:6px;
-    background:linear-gradient(180deg, rgba(143,201,230,.06), rgba(255,255,255,.015));
-    border:1px solid var(--line);
+  /* ---------- timer de tempo de jogo ---------- */
+  .game-timer{
+    background:rgba(255,126,185,.07);
+    border:1px solid rgba(255,126,185,.3);
     border-radius:12px;
-    padding:18px 16px 16px;
-    margin-bottom:22px;
-    position:relative;
-    overflow:hidden;
+    padding:14px 16px;
+    margin-bottom:16px;
+    text-align:center;
   }
-
-  .pet-mascot{
-    width:150px;
-    height:150px;
-    display:block;
-  }
-
-  .pet-name{
+  .game-timer h3{
     font-family:"Segoe Print","Bradley Hand",cursive;
-    font-size:1.35rem;
+    font-weight:normal;
     color:var(--pink);
-    margin:2px 0 0;
+    margin:0 0 4px;
+    font-size:1.05rem;
   }
-
-  .pet-stage-label{
-    font-size:.78rem;
-    color:var(--chalk-dim);
-    margin-bottom:8px;
-  }
-
-  .pet-milestones{
-    width:min(560px,100%);
-    display:grid;
-    grid-template-columns:repeat(6,1fr);
-    gap:6px;
-    margin:4px 0 8px;
-  }
-  .pet-milestone{
-    border:1px solid var(--line);
-    border-radius:7px;
-    padding:5px 4px;
-    text-align:center;
-    font-size:.58rem;
-    color:var(--chalk-dim);
-    background:rgba(255,255,255,.025);
-  }
-  .pet-milestone.active{
-    color:#16241f;
-    background:var(--green);
-    border-color:var(--green);
-    font-weight:bold;
-  }
-  .pet-milestone.current{
-    outline:2px solid var(--yellow);
-    outline-offset:1px;
-  }
-  @media(max-width:520px){
-    .pet-milestones{ grid-template-columns:repeat(3,1fr); }
-  }
-
-  .pet-caption{
-    font-size:.8rem;
-    color:var(--chalk-dim);
-    text-align:center;
-    max-width:420px;
-    line-height:1.4;
-  }
-  .pet-caption b{ color:var(--green); }
-
-  .pet-evolved-banner{
-    background:rgba(242,214,117,.12);
-    border:1px solid rgba(242,214,117,.4);
-    color:var(--yellow);
-    font-size:.82rem;
-    padding:8px 14px;
-    border-radius:8px;
-    margin-top:10px;
-    text-align:center;
-    animation: popIn .3s ease;
-  }
-  @keyframes popIn{
-    from{ transform:scale(.85); opacity:0; }
-    to{ transform:scale(1); opacity:1; }
-  }
-
-  /* ---------- crescimento diário do Pacus ---------- */
-  .pet-day-progress{
-    width:min(520px, 100%);
-    margin:6px 0 2px;
-  }
-  .pet-day-progress-head{
-    display:flex;
-    justify-content:space-between;
-    gap:10px;
-    font-size:.68rem;
-    color:var(--chalk-dim);
-    margin-bottom:5px;
-  }
-  .pet-day-progress-head b{ color:var(--green); }
-  .pet-day-track{
-    height:7px;
+  .game-timer .hint{ font-size:.7rem; color:var(--chalk-dim); margin-bottom:10px; }
+  .game-timer-used{ font-size:.95rem; margin-bottom:8px; }
+  .game-timer-used b{ color:var(--pink); }
+  .game-timer-track{
+    height:8px;
     border-radius:999px;
-    overflow:hidden;
     background:rgba(255,255,255,.08);
     border:1px solid var(--line);
+    overflow:hidden;
+    margin-bottom:12px;
   }
-  .pet-day-fill{
+  .game-timer-fill{
     height:100%;
     width:0;
-    background:var(--blue);
+    background:var(--pink);
     border-radius:999px;
-    transition:width .7s cubic-bezier(.2,.8,.2,1);
+    transition:width .5s ease;
   }
-  .pet-mascot.pet-egg{
-    transform-origin:50% 70%;
-    animation:eggLife 2.8s ease-in-out infinite;
+  .game-timer-fill.over-limit{ background:var(--red); }
+  .game-timer-btn{
+    background:var(--pink);
+    color:#2a1420;
+    border:none;
+    padding:10px 22px;
+    border-radius:8px;
+    font-size:.9rem;
+    font-weight:bold;
+    cursor:pointer;
+    font-family:inherit;
   }
-  .pet-mascot.pet-growth-burst{
-    animation:petGrowthBurst .75s cubic-bezier(.2,.8,.2,1);
+  .game-timer-btn.running{
+    background:rgba(255,255,255,.08);
+    color:var(--chalk);
+    border:1px solid var(--line);
   }
-  .pet-egg .egg-shell{
-    transform-box:fill-box;
-    transform-origin:center;
+
+  /* ---------- timers avulsos (tempo livre pra qualquer coisa) ---------- */
+  .custom-timers-wrap h3{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    color:var(--blue);
+    margin:0 0 10px;
+    font-size:1.05rem;
+    text-align:center;
   }
-  .pet-egg .egg-crack{
-    transition:opacity .5s ease, stroke-width .5s ease;
+  .custom-timers{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
   }
-  @keyframes eggLife{
-    0%,100%{ transform:translateY(0) rotate(0deg); }
-    50%{ transform:translateY(-2px) rotate(.7deg); }
+  @media (max-width:520px){
+    .custom-timers{ grid-template-columns:1fr; }
   }
-  @keyframes petGrowthBurst{
-    0%{ transform:scale(1) rotate(0deg); }
-    25%{ transform:scale(1.08) rotate(-3deg); }
-    50%{ transform:scale(.96) rotate(3deg); }
-    75%{ transform:scale(1.035) rotate(-1deg); }
-    100%{ transform:scale(1) rotate(0deg); }
+  .custom-timer{
+    background:rgba(79,195,247,.07);
+    border:1px solid rgba(79,195,247,.3);
+    border-radius:12px;
+    padding:14px 14px;
+    text-align:center;
   }
-  .pet-hatch-crack{ animation:crackFlash .55s ease-out; }
-  @key
+  .custom-timer.finished{
+    background:rgba(255,107,107,.12);
+    border-color:rgba(255,107,107,.5);
+    animation:timerFlash 1s ease-in-out infinite;
+  }
+  @keyframes timerFlash{
+    0%,100%{ box-shadow:0 0 0 0 rgba(255,107,107,.4); }
+    50%{ box-shadow:0 0 0 8px rgba(255,107,107,0); }
+  }
+  .custom-timer-label{
+    background:none;
+    border:none;
+    color:var(--chalk);
+    font-size:.85rem;
+    font-weight:bold;
+    text-align:center;
+    width:100%;
+    margin-bottom:8px;
+    font-family:inherit;
+    padding:3px;
+    border-radius:6px;
+  }
+  .custom-timer-label:focus{ outline:1px solid var(--blue); background:rgba(255,255,255,.05); }
+  .custom-timer-display{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:2.1rem;
+    color:var(--blue);
+    margin-bottom:10px;
+    letter-spacing:1px;
+  }
+  .custom-timer.finished .custom-timer-display{ color:var(--red); }
+  .custom-timer-setrow{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    margin-bottom:10px;
+  }
+  .custom-timer-setrow input[type=number]{
+    width:56px;
+    text-align:center;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    border-radius:6px;
+    padding:6px 4px;
+    font-size:.82rem;
+    font-family:inherit;
+  }
+  .custom-timer-setrow span{ font-size:.72rem; color:var(--chalk-dim); }
+  .custom-timer-btns{
+    display:flex;
+    gap:6px;
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+  .custom-timer-btn{
+    background:var(--blue);
+    color:#16241f;
+    border:none;
+    padding:7px 14px;
+    border-radius:7px;
+    f

@@ -1,159 +1,194 @@
-:00:00");
-  const totalDays = Math.max(1, Math.round((end-start)/86400000)+1);
-  return { startISO, endISO, start, end, totalDays };
+ompletionISO = dateISO;
+  return true;
 }
 
-function computePetStage(){
-  const cycle = getPetCycle();
-  const maxStage = CONFIG.pet.stages.length - 1;
-  const completed = new Set(Array.isArray(state.petCompletedDays) ? state.petCompletedDays : []);
-  const validDays = [];
-  for(let i=0;i<cycle.totalDays;i++){
-    const d = new Date(cycle.start);
-    d.setDate(d.getDate()+i);
-    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-    if(completed.has(iso)) validDays.push(iso);
+function isDayPerfect(dateISO){
+  if(dateISO === todayISO()){
+    const tasks = allTasks(dateISO);
+    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    return applicable.length > 0 && applicable.every(t=>state.checkedToday[t.id] === 'done');
   }
-  const completedDays = Math.min(cycle.totalDays, validDays.length);
-  const stageFloat = Math.min(maxStage, completedDays);
-  const stage = Math.min(maxStage, completedDays);
-  const todayPerfect = isDayPerfect(todayISO());
-  const canGrowToday = todayISO() >= cycle.startISO && todayISO() <= cycle.endISO && todayPerfect && !completed.has(todayISO());
+  return !!(state.history[dateISO] && state.history[dateISO].perfect);
+}
+
+function syncPetCompletionFromDay(dateISO){
+  if(isDayPerfect(dateISO)) return registerPetDayCompletion(dateISO);
+  return false;
+}
+
+function closeOutDay(state, dateISO){
+  if(!dateISO) return;
+  const tasks = allTasks(dateISO);
+  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+  const total = applicable.length;
+  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+  const pointsEarnedThatDay = tasks
+    .filter(t=>state.checkedToday[t.id] === 'done')
+    .reduce((s,t)=>s+t.pts, 0);
+  const perfect = total > 0 && done === total;
+  if(perfect) registerPetDayCompletion(dateISO);
+  const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
+  const periodsCompleted = periodsCompletedFrom(state.checkedToday, dateISO);
+  state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
+}
+
+function saveState(state, options={}){
+  if(!options.remote){
+    state.revision = (Number(state.revision)||0) + 1;
+    state.updatedAt = new Date().toISOString();
+  }
+  try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+  scheduleAutoPush();
+}
+
+let CONFIG = loadConfig();
+let state = loadState();
+
+/* ---------- sincronização automática com o Google Drive ----------
+   Sempre que o arquivo abre, ele tenta buscar a versão mais nova salva
+   no Drive (via Apps Script) e usa ela — assim, não importa em qual
+   aparelho vocês abrirem, todos mostram a mesma coisa. Sempre que algo
+   muda aqui, ele também manda a atualização pro Drive sozinho, alguns
+   segundos depois (sem precisar clicar em nada). Se estiver offline, o
+   arquivo continua funcionando normal com os dados salvos localmente. */
+let suppressAutoPush = false;
+let autoPushTimer = null;
+
+function scheduleAutoPush(){
+  if(!APPS_SCRIPT_URL || suppressAutoPush) return;
+  clearTimeout(autoPushTimer);
+  autoPushTimer = setTimeout(doAutoPush, 2000);
+}
+
+async function doAutoPush(){
+  if(!APPS_SCRIPT_URL) return;
+  try{
+    const payload = {
+      appVersion: APP_VERSION,
+      config: CONFIG,
+      state: state,
+      baseRevision: Number(state.driveRevision)||0,
+      clientRevision: Number(state.revision)||0,
+      clientUpdatedAt: state.updatedAt || new Date().toISOString(),
+      exportedAt: new Date().toISOString()
+    };
+    const res = await fetch(DATA_ENDPOINT, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if(result.ok){
+      state.driveRevision = Number(result.revision)||state.driveRevision;
+      state.driveLastSyncISO = todayISO();
+      state.driveConflictCount = 0;
+      try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+      renderDriveSync();
+      return;
+    }
+    if(result.conflict && result.data){
+      state.driveConflictCount = (Number(state.driveConflictCount)||0)+1;
+      const server = result.data;
+      const merged = mergeRemoteData(server);
+      CONFIG = merged.config;
+      state = merged.state;
+      state.driveRevision = Number(result.revision)||Number(server.state?.driveRevision)||0;
+      state.driveLastSyncISO = todayISO();
+      saveState(state);
+      saveConfig(CONFIG);
+      render();
+    }
+  }catch(err){
+    renderDriveSync();
+  }
+}
+
+function isValidPeriodsConfig(cfg){
+  try{
+    const p = cfg && cfg.periods;
+    return !!(
+      p &&
+      p.manha && Array.isArray(p.manha.tasks) && p.manha.tasks.length > 0 &&
+      p.tarde && Array.isArray(p.tarde.tasks) && p.tarde.tasks.length > 0 &&
+      p.noite && Array.isArray(p.noite.tasks) && p.noite.tasks.length > 0
+    );
+  }catch(e){
+    return false;
+  }
+}
+
+function sanitizeRemoteConfig(remoteConfig){
+  if(!isValidPeriodsConfig(remoteConfig)) return null;
+  const safe = JSON.parse(JSON.stringify(remoteConfig));
+  if(!safe.periodsWeekend) safe.periodsWeekend = null;
+  if(!Array.isArray(safe.badHabits)) safe.badHabits = [];
+  if(!Array.isArray(safe.rewards)) safe.rewards = [];
+  if(!Array.isArray(safe.schedule)) safe.schedule = [];
+  if(!Array.isArray(safe.scheduleExceptions)) safe.scheduleExceptions = [];
+  if(!safe.pet || !Array.isArray(safe.pet.stages) || safe.pet.stages.length < 2) {
+    safe.pet = JSON.parse(JSON.stringify(DEFAULT_CONFIG.pet));
+  }
+  return safe;
+}
+
+function mergeRemoteData(remote){
+  const remoteState = remote.state || {};
+  const localState = state || {};
+  const merged = JSON.parse(JSON.stringify(remoteState));
+  merged.history = {...(remoteState.history||{})};
+  Object.entries(localState.history||{}).forEach(([iso,entry])=>{
+    const remoteEntry = merged.history[iso];
+    if(!remoteEntry || JSON.stringify(entry) !== JSON.stringify(remoteEntry)){
+      const localUpdated = entry.updatedAt || localState.updatedAt || '';
+      const remoteUpdated = remoteEntry.updatedAt || remoteState.updatedAt || '';
+      if(localUpdated >= remoteUpdated) merged.history[iso] = entry;
+    }
+  });
+  merged.petCompletedDays = [...new Set([...(remoteState.petCompletedDays||[]), ...(localState.petCompletedDays||[])])].sort();
+  merged.historyCorrectionV2Applied = !!(remoteState.historyCorrectionV2Applied || localState.historyCorrectionV2Applied);
+  merged.hairByDate = {...(remoteState.hairByDate||{}), ...(localState.hairByDate||{})};
+  merged.totalPoints = Math.max(Number(remoteState.totalPoints)||0, Number(localState.totalPoints)||0);
+  merged.lastSeenPetStage = Math.max(Number(remoteState.lastSeenPetStage)||0, Number(localState.lastSeenPetStage)||0);
+  merged.log = [...(localState.log||[]), ...(remoteState.log||[])].slice(0,30);
+  merged.revision = Math.max(Number(localState.revision)||0, Number(remoteState.revision)||0)+1;
+  merged.updatedAt = new Date().toISOString();
+  const remoteConfig = sanitizeRemoteConfig(remote.config);
+  const localConfigValid = isValidPeriodsConfig(CONFIG);
+  const useRemoteConfig = remoteConfig && (!localConfigValid || localState.updatedAt < (remoteState.updatedAt||''));
   return {
-    stage, stageFloat, unitsCompleted:completedDays, totalUnits:cycle.totalDays,
-    maxStage, daysEquivalent:completedDays, cycleDays:cycle.totalDays,
-    todayPerfect, canGrowToday, completedDays:validDays
+    config: useRemoteConfig ? remoteConfig : (localConfigValid ? CONFIG : JSON.parse(JSON.stringify(DEFAULT_CONFIG))),
+    state: merged
   };
 }
 
-function svgAttrs(){
-  return 'viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Evolução do Pacus"';
-}
-
-function buildEggSVG(progress){
-  const p = Math.max(0, Math.min(1, progress));
-  const wobble = Math.sin(p*Math.PI*3)*1.4;
-  const crackOpacity = Math.min(1, p*1.5);
-  const cracks = [
-    ["M94 80 L106 96 L98 109 L112 125 L103 142", 0.12],
-    ["M80 96 L92 108 L84 122 L96 136", 0.32],
-    ["M124 90 L113 105 L126 117 L116 132 L123 147", 0.52],
-    ["M76 124 L89 131 L82 147", 0.72],
-    ["M132 119 L122 128 L134 141", 0.88]
-  ];
-  const crackSvg = cracks.map(([d,start],i)=>{
-    const opacity = p < start ? 0 : Math.min(1,(p-start)/0.16);
-    return `<path d="${d}" class="egg-crack" stroke="var(--pink)" stroke-width="${2+i*.25}" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>`;
-  }).join('');
-  const shellBreak = p > .78 ? `<path d="M62 118 Q100 ${142+p*10} 158 118" stroke="var(--pink)" stroke-width="2.4" fill="none" opacity="${(p-.78)/.22}"/>` : '';
-  return `<svg class="pet-mascot pet-egg" ${svgAttrs()}>
-    <g transform="rotate(${wobble} 110 130)">
-      <ellipse cx="110" cy="130" rx="48" ry="60" fill="#f6ecd9" stroke="#e8a3c0" stroke-width="3"/>
-      <ellipse cx="93" cy="106" rx="12" ry="18" fill="#fff" opacity=".48"/>
-      ${crackSvg}${shellBreak}
-    </g>
-    <circle cx="72" cy="169" r="4" fill="var(--pink)" opacity=".55"/>
-    <circle cx="151" cy="165" r="3" fill="var(--pink)" opacity=".45"/>
-  </svg>`;
-}
-
-function buildPacusSVG(stageFloat){
-  const s = Math.max(0, Math.min(23, stageFloat));
-  const hatch = Math.max(0, Math.min(1, (s-8)/6));
-  const growth = Math.max(0, Math.min(1, (s-14)/9));
-  const adult = Math.max(0, Math.min(1, (s-21)/2));
-  const scale = 0.52 + growth*0.42 + adult*0.06;
-  const bodyW = 45 + growth*10 + adult*4;
-  const bodyH = 30 + growth*5 + adult*3;
-  const gillLen = 12 + growth*11 + adult*4;
-  const faceY = 92 - hatch*7;
-  const bodyY = 128 - hatch*5;
-  const shell = hatch < 1 ? `
-    <path d="M62 151 Q45 158 54 174 Q70 184 85 170" fill="#f6ecd9" stroke="#e8a3c0" stroke-width="2.5" opacity="${1-hatch*.75}"/>
-    <path d="M158 151 Q175 158 166 174 Q150 184 135 170" fill="#f6ecd9" stroke="#e8a3c0" stroke-width="2.5" opacity="${1-hatch*.75}"/>` : '';
-  const gills = [];
-  const gillCount = 2 + Math.floor(Math.min(2,growth*2));
-  for(let i=0;i<gillCount;i++){
-    const y = faceY-4+i*7;
-    const len = gillLen-(i*2);
-    gills.push(`<path d="M${74-i*2} ${y} Q ${58-len} ${y-8} ${50-len/2} ${y+2}" stroke="var(--pink)" stroke-width="3.2" fill="none" stroke-linecap="round"/>`);
-    gills.push(`<path d="M${146+i*2} ${y} Q ${162+len} ${y-8} ${170+len/2} ${y+2}" stroke="var(--pink)" stroke-width="3.2" fill="none" stroke-linecap="round"/>`);
-  }
-  const sparkle = adult > .8 ? `<text x="35" y="64" font-size="18">✨</text><text x="166" y="75" font-size="16">✨</text>` : '';
-  return `<svg class="pet-mascot pet-hatch-crack" ${svgAttrs()}>
-    ${shell}
-    <g transform="translate(110 115) scale(${scale.toFixed(3)}) translate(-110 -115)">
-      ${sparkle}
-      <ellipse cx="110" cy="${bodyY}" rx="${bodyW}" ry="${bodyH}" fill="#f6c7dc"/>
-      <ellipse cx="110" cy="${bodyY+8}" rx="${bodyW*.68}" ry="${bodyH*.52}" fill="#fbe2ec" opacity=".85"/>
-      <circle cx="110" cy="${faceY}" r="32" fill="#f6c7dc"/>
-      ${gills.join('')}
-      <circle cx="97" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="123" cy="${faceY-4}" r="4.5" fill="#3a2430"/>
-      <circle cx="98" cy="${faceY-5.5}" r="1.4" fill="#fff"/><circle cx="124" cy="${faceY-5.5}" r="1.4" fill="#fff"/>
-      <path d="M96 ${faceY+12} Q110 ${faceY+18+growth*2} 124 ${faceY+12}" stroke="#b9607f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      <circle cx="89" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/><circle cx="131" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/>
-      <ellipse cx="110" cy="${bodyY+bodyH+5}" rx="22" ry="7" fill="#f6c7dc"/>
-    </g>
-  </svg>`;
-}
-
-function buildPetVisual(stageFloat){
-  if(stageFloat < 9) return buildEggSVG(stageFloat/8);
-  return buildPacusSVG(stageFloat);
-}
-
-function renderPet(){
-  const el = document.getElementById('petSection');
-  const data = computePetStage();
-  const { stage, stageFloat, daysEquivalent, cycleDays, maxStage, todayPerfect, canGrowToday } = data;
-  const stageInfo = CONFIG.pet.stages[stage];
-  const progressPct = Math.round((daysEquivalent/cycleDays)*100);
-
-  const milestones = [
-    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
-  ];
-  const milestoneHtml = milestones.map(([day,label])=>{
-    const active = daysEquivalent >= day;
-    const current = stage >= day && (stage === day || (stage > day && day === 23));
-    return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label}<small>dia ${day}</small></span>`;
-  }).join('');
-
-  let caption;
-  if(stage === maxStage){
-    caption = `Pacus adulto. <b>O ciclo terminou em 31/08.</b>`;
-  } else if(canGrowToday){
-    caption = `<b>Dia completo!</b> O Pacus está pronto para avançar uma etapa.`;
-  } else if(todayPerfect){
-    caption = `Dia completo. <b>Essa evolução já foi registrada.</b>`;
-  } else if(daysEquivalent === 0){
-    caption = `O ovo está esperando. <b>Complete o dia para começar a rachadura.</b>`;
-  } else {
-    caption = `O Pacus está esperando você. <b>Ele não perde progresso.</b>`;
-  }
-
-  const previousProgress = Number(el.dataset.pacusProgress ?? daysEquivalent);
-  const grewNow = daysEquivalent > previousProgress;
-  el.dataset.pacusProgress = String(daysEquivalent);
-
-  el.innerHTML = `
-    ${buildPetVisual(stageFloat)}
-    <div class="pet-name">${CONFIG.pet.name}</div>
-    <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
-    <div class="pet-day-progress">
-      <div class="pet-day-progress-head"><span>Progresso do Pacus</span><b>${progressPct}%</b></div>
-      <div class="pet-day-track" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
-    </div>
-    <div class="pet-milestones">${milestoneHtml}</div>
-    <div class="pet-status-line">${daysEquivalent === cycleDays ? 'Ciclo concluído' : `Próxima evolução após completar mais ${cycleDays-daysEquivalent} ${cycleDays-daysEquivalent===1?'dia':'dias'}.`}</div>
-    <div class="pet-caption">${caption}</div>
-    <div id="petEvolvedBanner"></div>
-    <div class="streak-strip">${buildStreakStrip()}</div>
-  `;
-
-  if(grewNow){
-    const mascotEl = el.querySelector('.pet-mascot');
-    if(mascotEl){
-      mascotEl.classList.remove('pet-growth-burst');
-      void mascotEl.offsetWidth;
-      mascotEl.classList.add('pet-growth-burst');
-  
+async function autoPullOnStartup(){
+  if(!APPS_SCRIPT_URL) return;
+  suppressAutoPush = true;
+  try{
+    const res = await fetch(DATA_ENDPOINT, {method:'GET', cache:'no-store'});
+    if(res.ok){
+      const backup = await res.json();
+      if(backup && backup.config && backup.state){
+        const localRevision = Number(state.driveRevision)||0;
+        const localDirty = (Number(state.revision)||0) > localRevision;
+        const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
+        if(localDirty && remoteRevision !== localRevision){
+          const merged = mergeRemoteData(backup);
+          CONFIG = merged.config;
+          state = merged.state;
+          state.driveRevision = remoteRevision;
+          saveConfig(CONFIG);
+          saveState(state);
+          render();
+        } else if(remoteRevision >= localRevision){
+          const remoteConfig = sanitizeRemoteConfig(backup.config);
+          if(remoteConfig){
+            CONFIG = remoteConfig;
+            state = reconcileState(backup.state);
+            state.driveRevision = remoteRevision;
+            state.driveLastSyncISO = todayISO();
+            try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(CONFIG)); }catch(e){}
+            try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+            render();
+          }else{
+            // Nunca substituir uma 

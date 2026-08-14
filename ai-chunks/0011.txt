@@ -1,198 +1,220 @@
-Obj[key].tasks = periodsObj[key].tasks.filter(t=>t!==task);
-      renderEditorPeriod(key, elId, periodsObj);
+ar hoje">–</button>
+          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, não ganha ponto">✕</button>
+        </span>
+        <span class="txt"><span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
+        <span class="pts">${status==='na' ? 'n/a' : '+'+task.pts}</span>
+      `;
+      ul.appendChild(li);
     });
-    row.querySelectorAll('.reorder-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const dir = btn.getAttribute('data-dir');
-        const i = list.indexOf(task);
-        const swapWith = dir === 'up' ? i-1 : i+1;
-        if(swapWith < 0 || swapWith >= list.length) return;
-        [list[i], list[swapWith]] = [list[swapWith], list[i]];
-        renderEditorPeriod(key, elId, periodsObj);
-      });
-    });
-    el.appendChild(row);
-  });
-}
 
-function stepperHTML(field, value){
-  return `<span class="stepper">
-    <button type="button" class="step-btn" data-step="-1" title="menos">−</button>
-    <input type="number" min="0" value="${value}" data-field="${field}">
-    <button type="button" class="step-btn" data-step="1" title="mais">+</button>
-  </span>`;
-}
-function wireStepper(row, obj, field){
-  const input = row.querySelector(`[data-field=${field}]`);
-  input.addEventListener('input', e=>{ obj[field] = parseInt(e.target.value)||0; });
-  row.querySelectorAll('.step-btn').forEach(btn=>{
+    div.innerHTML = `
+      <div class="period-head"><h2>${period.label}</h2><span class="time">${period.time}</span></div>
+      <span class="progress-txt">${progressMsg}</span>
+      <div class="progress-bar"><div style="width:${pct}%"></div></div>
+    `;
+    div.appendChild(ul);
+    periodsEl.appendChild(div);
+  });
+
+  periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
+    btn.addEventListener('click', onMarkClick);
+  });
+
+  const badEl = document.getElementById('badHabits');
+  badEl.innerHTML = '';
+  CONFIG.badHabits.forEach(h=>{
+    const isPositive = h.pts >= 0;
+    const btn = document.createElement('button');
+    btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
+    btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
     btn.addEventListener('click', ()=>{
-      const delta = parseInt(btn.getAttribute('data-step'));
-      obj[field] = Math.max(0, (obj[field]||0) + delta);
-      input.value = obj[field];
+      state.totalPoints = Math.max(0, state.totalPoints + h.pts);
+      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
+      saveState(state);
+      bumpTotal();
+      renderLog();
     });
+    badEl.appendChild(btn);
   });
-}
 
-function renderEditorBad(){
-  const el = document.getElementById('editBad');
-  el.innerHTML = '';
-  draft.badHabits.forEach(h=>{
-    const row = document.createElement('div');
-    row.className = 'edit-row';
-    row.innerHTML = `
-      <input type="text" value="${escapeAttr(h.txt)}" data-field="txt" placeholder="hábito ruim">
-      ${stepperHTML('pts', h.pts)}
-      <button class="del" title="remover">🗑</button>
-    `;
-    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ h.txt = e.target.value; });
-    wireStepper(row, h, 'pts');
-    row.querySelector('.del').addEventListener('click', ()=>{
-      draft.badHabits = draft.badHabits.filter(x=>x!==h);
-      renderEditorBad();
-    });
-    el.appendChild(row);
-  });
-}
-
-function renderEditorRewards(){
-  const el = document.getElementById('editRewards');
-  el.innerHTML = '';
-  draft.rewards.forEach(r=>{
-    const row = document.createElement('div');
-    row.className = 'edit-row';
-    row.innerHTML = `
-      <input type="text" value="${escapeAttr(r.txt)}" data-field="txt" placeholder="recompensa">
-      ${stepperHTML('cost', r.cost)}
-      <button class="del" title="remover">🗑</button>
-    `;
-    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ r.txt = e.target.value; });
-    wireStepper(row, r, 'cost');
-    row.querySelector('.del').addEventListener('click', ()=>{
-      draft.rewards = draft.rewards.filter(x=>x!==r);
-      renderEditorRewards();
-    });
-    el.appendChild(row);
-  });
-}
-
-function escapeAttr(s){
-  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
-}
-
-document.querySelectorAll('.add-row-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    const kind = btn.getAttribute('data-add');
-    const weekendMap = {manhaWeekend:'manha', tardeWeekend:'tarde', noiteWeekend:'noite'};
-    const weekendElMap = {manhaWeekend:'editManhaWeekend', tardeWeekend:'editTardeWeekend', noiteWeekend:'editNoiteWeekend'};
-    if(kind === 'manha' || kind === 'tarde' || kind === 'noite'){
-      draft.periods[kind].tasks.push({ id: uid('t'), txt:'', pts:1, sub:'' });
-      renderEditorPeriod(kind, {manha:'editManha', tarde:'editTarde', noite:'editNoite'}[kind]);
-    } else if(weekendMap[kind]){
-      const periodKey = weekendMap[kind];
-      if(!draft.periodsWeekend) return;
-      draft.periodsWeekend[periodKey].tasks.push({ id: uid('we'), txt:'', pts:1, sub:'' });
-      renderEditorPeriod(periodKey, weekendElMap[kind], draft.periodsWeekend);
-    } else if(kind === 'bad'){
-      draft.badHabits.push({ id: uid('b'), txt:'', pts:1 });
-      renderEditorBad();
-    } else if(kind === 'reward'){
-      draft.rewards.push({ id: uid('r'), txt:'', cost:10 });
-      renderEditorRewards();
-    }
-  });
-});
-
-document.getElementById('editBtn').addEventListener('click', ()=>{
-  if(CONFIG.editorPin){
-    const entered = prompt('Digite o PIN pra editar:');
-    if(entered === null) return; // cancelou
-    if(entered !== CONFIG.editorPin){
-      alert('PIN incorreto.');
-      return;
-    }
-  }
-  openEditor();
-});
-document.getElementById('adultTestBtn').addEventListener('click', ()=>{
-  closeEditor();
-  testPanelOpen = !testPanelOpen;
+  renderRewards();
+  renderLog();
+  renderHistory();
+  renderWeeklyReview();
+  renderBackupReminder();
   renderTestPanel();
-});
-document.getElementById('closeBtn').addEventListener('click', closeEditor);
-document.getElementById('cancelBtn').addEventListener('click', closeEditor);
-document.getElementById('overlay').addEventListener('click', e=>{
-  if(e.target.id === 'overlay') closeEditor();
-});
+  renderTestModeBanner();
+  renderDriveSync();
+}
 
-document.getElementById('saveBtn').addEventListener('click', ()=>{
-  // limpa linhas vazias (sem nome) antes de salvar
-  ['manha','tarde','noite'].forEach(k=>{
-    draft.periods[k].tasks = draft.periods[k].tasks.filter(t=>t.txt.trim() !== '');
-  });
-  if(draft.periodsWeekend){
-    ['manha','tarde','noite'].forEach(k=>{
-      draft.periodsWeekend[k].tasks = draft.periodsWeekend[k].tasks.filter(t=>t.txt.trim() !== '');
-    });
-  }
-  draft.badHabits = draft.badHabits.filter(h=>h.txt.trim() !== '');
-  draft.rewards = draft.rewards.filter(r=>r.txt.trim() !== '');
+function daysBetween(isoA, isoB){
+  const a = new Date(isoA+"T00:00:00");
+  const b = new Date(isoB+"T00:00:00");
+  return Math.round((b-a)/86400000);
+}
 
-  const pinVal = document.getElementById('editorPinInput').value.trim();
-  draft.editorPin = pinVal;
+function shiftISODate(iso, deltaDays){
+  const d = new Date(iso+"T00:00:00");
+  d.setDate(d.getDate()+deltaDays);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+}
 
-  CONFIG = draft;
-  saveConfig(CONFIG);
-
-  // remove do estado marcado de hoje qualquer tarefa que não existe mais
-  // na rotina ativa de hoje (dia de escola ou fim de semana)
-  const validIds = new Set(allTasks().map(t=>t.id));
-  Object.keys(state.checkedToday).forEach(id=>{
-    if(!validIds.has(id)) delete state.checkedToday[id];
-  });
-  saveState(state);
-
-  closeEditor();
+function goToTestDate(iso){
+  setTestDate(iso);
+  state = loadState();
   render();
-});
-
-/* ===================== EDITOR DE DIA ANTERIOR ===================== */
-let editingDate = null;
-
-function openDayEditor(dateISO){
-  editingDate = dateISO;
-  const entry = state.history[dateISO] || { done:0, total:0, pointsEarnedThatDay:0, perfect:false, screenMinutes:0 };
-  document.getElementById('dayEditorTitle').textContent = 'Editar ' + formatDateBR(dateISO);
-  document.getElementById('dayDone').value = entry.done;
-  document.getElementById('dayTotal').value = entry.total;
-  document.getElementById('dayPoints').value = entry.pointsEarnedThatDay;
-  document.getElementById('dayHair').value = getHairStatus(dateISO) || entry.hair || '';
-  document.getElementById('dayOverlay').classList.add('open');
 }
-function closeDayEditor(){
-  document.getElementById('dayOverlay').classList.remove('open');
-  editingDate = null;
+
+let testPanelOpen = false;
+
+function renderTestModeBanner(){
+  const el = document.getElementById('testModeBanner');
+  if(!el) return;
+  if(!TEST_DATE_OVERRIDE){ el.innerHTML=''; return; }
+  el.innerHTML = `
+    <div class="test-mode-banner">
+      🧪 MODO TESTE ATIVO — data simulada: ${formatDateBR(TEST_DATE_OVERRIDE)}
+      <button id="bannerRealDateBtn">voltar pra data real</button>
+    </div>
+  `;
+  document.getElementById('bannerRealDateBtn').addEventListener('click', ()=>{
+    setTestDate(null);
+    state = loadState();
+    render();
+  });
 }
-document.getElementById('dayCloseBtn').addEventListener('click', closeDayEditor);
-document.getElementById('dayCancelBtn').addEventListener('click', closeDayEditor);
-document.getElementById('dayOverlay').addEventListener('click', e=>{
-  if(e.target.id === 'dayOverlay') closeDayEditor();
-});
 
-document.getElementById('daySaveBtn').addEventListener('click', ()=>{
-  if(!editingDate) return;
-  const oldEntry = state.history[editingDate];
-  const oldPoints = oldEntry ? oldEntry.pointsEarnedThatDay : 0;
+function renderTestPanel(){
+  const el = document.getElementById('testPanel');
+  if(!el) return;
+  if(!testPanelOpen){ el.style.display='none'; el.innerHTML=''; return; }
+  el.style.display='block';
 
-  const done = Math.max(0, parseInt(document.getElementById('dayDone').value,10) || 0);
-  const total = Math.max(0, parseInt(document.getElementById('dayTotal').value,10) || 0);
-  const pointsEarnedThatDay = Math.max(0, parseInt(document.getElementById('dayPoints').value,10) || 0);
-  const hair = document.getElementById('dayHair').value || null;
-  const perfect = total > 0 && done >= total;
+  const realToday = (()=>{
+    const d = new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+  })();
+  const usingOverride = !!TEST_DATE_OVERRIDE;
 
-  if(!state.hairByDate) state.hairByDate = {};
-  if(hair) state.hairByDate[editingDate] = hair; else delete state.hairByDate[editingDate];
-  state.history[editingDate] = { done, total, pointsEarnedThatDay, perfect, screenMinutes: perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0, hair };
-  if(perfect) registerPetDayCompletion(editingDate);
+  el.innerHTML = `
+    <div class="test-panel">
+      <h3>🧪 Modo de teste</h3>
+      <div class="hint">Ferramentas só pra conferir se o crescimento do Pacus e o histórico estão funcionando. Não mexe nas tarefas de verdade — só simula dias.</div>
+      <div class="test-date">Data simulada agora: <b>${formatDateBR(todayISO())}/${todayISO().split('-')[0]}</b>${usingOverride ? ' (modo teste ativo)' : ' (data real do sistema)'}</div>
+      <div class="test-row">
+        <button class="icon-btn" id="testCompleteDayBtn">✅ completar tudo hoje</button>
+        <button class="icon-btn" id="testPrevDayBtn">◀ dia anterior</button>
+        <button class="icon-btn" id="testNextDayBtn">dia seguinte ▶</button>
+        <input type="date" id="testDatePicker" value="${todayISO()}">
+        <button class="icon-btn" id="testGoDateBtn">ir pra essa data</button>
+        <button class="icon-btn danger" id="testResetDateBtn">voltar pra data real</button>
+      </div>
+    </div>
+  `;
 
-  // ajusta o saldo total pela diferença de pont
+  document.getElementById('testCompleteDayBtn').addEventListener('click', ()=>{
+    allTasks().forEach(t=>{
+      if(state.checkedToday[t.id] !== 'done'){
+        state.totalPoints += t.pts;
+      }
+      state.checkedToday[t.id] = 'done';
+    });
+    syncPetCompletionFromDay(todayISO());
+    addLog('🧪 (teste) todas as tarefas de hoje marcadas como feitas');
+    saveState(state);
+    render();
+  });
+
+  document.getElementById('testPrevDayBtn').addEventListener('click', ()=>{
+    goToTestDate(shiftISODate(todayISO(), -1));
+  });
+  document.getElementById('testNextDayBtn').addEventListener('click', ()=>{
+    goToTestDate(shiftISODate(todayISO(), 1));
+  });
+  document.getElementById('testGoDateBtn').addEventListener('click', ()=>{
+    const val = document.getElementById('testDatePicker').value;
+    if(val) goToTestDate(val);
+  });
+  document.getElementById('testResetDateBtn').addEventListener('click', ()=>{
+    goToTestDate(realToday);
+    setTestDate(null);
+    state = loadState();
+    render();
+  });
+}
+
+function renderBackupReminder(){
+  const el = document.getElementById('backupReminder');
+  if(!el) return;
+
+  const today = todayISO();
+  const daysSinceBackup = state.lastBackupISO ? daysBetween(state.lastBackupISO, today) : Infinity;
+  const dismissed = state.backupReminderDismissedFor === today;
+
+  const shouldShow = daysSinceBackup >= 7 && !dismissed;
+
+  if(!shouldShow){ el.innerHTML=''; return; }
+
+  const msg = state.lastBackupISO
+    ? `Já faz ${daysSinceBackup} dias desde o último backup. Que tal exportar de novo?`
+    : `Vocês ainda não fizeram nenhum backup. Vale exportar um agora pra não perder o progresso.`;
+
+  el.innerHTML = `
+    <div class="backup-reminder">
+      <span>💾 ${msg}</span>
+      <span>
+        <button id="backupReminderExportBtn">exportar agora</button>
+        <button class="dismiss" id="backupReminderDismissBtn">lembrar depois</button>
+      </span>
+    </div>
+  `;
+  document.getElementById('backupReminderExportBtn').addEventListener('click', ()=>{
+    document.getElementById('exportBtn').click();
+  });
+  document.getElementById('backupReminderDismissBtn').addEventListener('click', ()=>{
+    state.backupReminderDismissedFor = today;
+    saveState(state);
+    renderBackupReminder();
+  });
+}
+
+function renderWeeklyReview(){
+  const el = document.getElementById('weeklyReviewSection');
+  if(!el) return;
+
+  const days = [];
+  for(let i=6; i>=0; i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    days.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'));
+  }
+
+  let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0;
+  days.forEach(iso=>{
+    const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
+    if(!entry) return;
+    if(iso !== todayISO()){
+      // dias fechados já têm pointsEarnedThatDay e screenMinutes calculados
+      const full = state.history[iso];
+      if(full){
+        totalPointsWeek += full.pointsEarnedThatDay || 0;
+        totalScreenMin += full.screenMinutes || 0;
+      }
+    }
+    if(entry.total > 0 && entry.perfect) perfectDays++;
+  });
+
+  const rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
+
+  el.innerHTML = `
+    <div class="weekly-review">
+      <div class="wr-head">
+        <h3 class="block-title" style="margin:0; color:var(--green);">🗓️ Resumo semanal em família</h3>
+        <span class="wr-range">${rangeLabel}</span>
+      </div>
+      <div class="wr-stats">
+        <div class="wr-stat"><span class="wr-num">${perfectDays}/7</span><span class="wr-label">dias completos</span></div>
+        <div class="wr-stat"><span class="wr-num">${totalPointsWeek}</span><span class="wr-label">Pacus Points ganhos</span></div>
+        <div class="wr-stat"><span class="wr-num">${totalScreenMin}</span><span class="wr-label">min de tela ganhos</span></div>
+      </div>
+    </di

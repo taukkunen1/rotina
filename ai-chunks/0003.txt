@@ -1,3 +1,165 @@
+ze:.72rem; color:var(--chalk-dim); margin-bottom:10px; }
+  .test-panel .test-date{
+    font-size:.85rem;
+    color:var(--chalk);
+    margin-bottom:10px;
+  }
+  .test-panel .test-date b{ color:var(--yellow); }
+  .test-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+  }
+  .test-row input[type=date]{
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    border-radius:6px;
+    padding:6px 8px;
+    font-size:.8rem;
+    font-family:inherit;
+  }
+
+  .confetti-piece{
+    position:fixed;
+    top:0; left:0;
+    width:8px; height:8px;
+    pointer-events:none;
+    z-index:200;
+    border-radius:2px;
+    animation:confetti-fall 900ms ease-out forwards;
+  }
+  @keyframes confetti-fall{
+    0%{ transform:translate(0,0) rotate(0deg); opacity:1; }
+    100%{ transform:translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity:0; }
+  }
+
+  footer{
+    text-align:center;
+    margin-top:22px;
+    font-size:.68rem;
+    color:rgba(242,237,225,.28);
+  }
+
+  /* ---------- editor (modal) ---------- */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(10,16,13,.72);
+    display:none;
+    align-items:flex-start;
+    justify-content:center;
+    padding:30px 14px;
+    overflow-y:auto;
+    z-index:100;
+  }
+  .overlay.open{ display:flex; }
+
+  .editor{
+    width:100%;
+    max-width:720px;
+    background:var(--board);
+    border:3px solid var(--wood);
+    border-radius:10px;
+    padding:20px 20px 24px;
+    box-shadow:0 20px 60px rgba(0,0,0,.6);
+  }
+
+  .editor-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:2px dashed var(--line);
+    padding-bottom:12px;
+    margin-bottom:16px;
+  }
+  .editor-head h2{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    color:var(--yellow);
+    margin:0;
+    font-size:1.4rem;
+  }
+
+  .editor-section{ margin-bottom:22px; }
+  .editor-section h3{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    font-size:1.05rem;
+    margin:0 0 4px;
+    color:var(--chalk);
+  }
+  .editor-section .hint{ font-size:.7rem; color:var(--chalk-dim); margin-bottom:10px; }
+
+  .edit-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:7px;
+  }
+  .edit-row-task{
+    flex-direction:column;
+    align-items:stretch;
+    gap:5px;
+    padding-bottom:8px;
+    margin-bottom:9px;
+    border-bottom:1px dashed var(--line);
+  }
+  .edit-row-task:last-child{ border-bottom:none; }
+  .edit-row-main{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .edit-row-main input[type=text]{ flex:1; }
+  .reorder-group{ display:flex; flex-direction:column; gap:1px; flex-shrink:0; }
+  .reorder-btn{
+    width:20px; height:15px;
+    font-size:.6rem;
+    line-height:1;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk-dim);
+    cursor:pointer;
+    border-radius:3px;
+    padding:0;
+  }
+  .reorder-btn:hover:not(:disabled){ color:var(--chalk); border-color:rgba(242,237,225,.4); }
+  .reorder-btn:disabled{ opacity:.25; cursor:not-allowed; }
+
+  .day-chip-row{ display:flex; gap:4px; margin:6px 0; }
+  .day-chip{
+    width:26px; height:26px;
+    border-radius:6px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.04);
+    color:var(--chalk-dim);
+    font-size:.72rem;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .day-chip.active{
+    background:var(--blue);
+    border-color:var(--blue);
+    color:#16241f;
+    font-weight:bold;
+  }
+
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap:2px;
+    flex-shrink:0;
+  }
+  .stepper input[type=number]{
+    width:44px;
+    text-align:center;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    border-radius:6px;
+    padding:6px 2px;
+    font-size:.82rem;
     font-family:inherit;
   }
   .step-btn{
@@ -134,6 +296,10 @@
 
       <section class="pet-section" id="petSection"></section>
 
+      <section class="block" id="gameTimerSection"></section>
+
+      <section class="block" id="customTimersSection"></section>
+
       <div id="weekendIndicator"></div>
       <div class="periods" id="periods"></div>
 
@@ -151,107 +317,4 @@
 
       <section class="block">
         <h3 class="block-title bad-title">✨ Pacus Points Extra</h3>
-        <div class="bad-habits" id="badHabits"></div>
-      </section>
-
-      <section class="block">
-        <h3 class="block-title reward-title">🎁 Loja de Recompensas</h3>
-        <div class="rewards" id="rewards"></div>
-        <div class="perfect-note" id="perfectNote"></div>
-      </section>
-
-      <div class="log">
-        <div class="log-title">Histórico de hoje</div>
-        <div id="logList"></div>
-      </div>
-
-      <section class="block" id="weeklyReviewSection"></section>
-
-      <section class="block">
-        <h3 class="block-title" style="color:var(--green);">📅 Histórico dos dias</h3>
-        <div class="history">
-          <table class="history-table" id="historyTable">
-            <thead>
-              <tr><th>Dia</th><th>Tarefas</th><th>Pacus Points</th><th>Cabelo</th><th></th></tr>
-            </thead>
-            <tbody id="historyBody"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="block" id="driveSyncSection"></section>
-
-      <footer>
-        <div id="backupReminder"></div>
-        Rotina do Hector · ${APP_VERSION}<br>
-        Funciona offline. O Google Drive é a fonte de sincronização quando configurado.
-        <br>
-        <button class="icon-btn" id="exportBtn" style="margin-top:8px;">⬇️ exportar backup</button>
-        <button class="icon-btn" id="importBtn" style="margin-top:8px;">⬆️ importar backup</button>
-        <input type="file" id="importFile" accept=".json" style="display:none;">
-        <br><button class="icon-btn danger" id="resetBtn" style="margin-top:8px;">reiniciar Pacus Points e histórico</button>
-      </footer>
-    </div>
-
-  </div>
-</div>
-
-<!-- ===================== MODAL DE EDIÇÃO DE DIA ANTERIOR ===================== -->
-<div class="overlay" id="dayOverlay">
-  <div class="editor" style="max-width:420px;">
-    <div class="editor-head">
-      <h2 id="dayEditorTitle">Editar dia</h2>
-      <button class="icon-btn" id="dayCloseBtn">fechar ✕</button>
-    </div>
-
-    <div class="editor-section">
-      <div class="edit-row">
-        <label style="flex:1; font-size:.82rem;">Tarefas feitas</label>
-        <input type="number" min="0" id="dayDone" style="width:70px;">
-      </div>
-      <div class="edit-row">
-        <label style="flex:1; font-size:.82rem;">Tarefas aplicáveis no dia</label>
-        <input type="number" min="0" id="dayTotal" style="width:70px;">
-      </div>
-      <div class="edit-row">
-        <label style="flex:1; font-size:.82rem;">Pacus Points ganhos naquele dia</label>
-        <input type="number" min="0" id="dayPoints" style="width:70px;">
-      </div>
-      <div class="edit-row">
-        <label style="flex:1; font-size:.82rem;">Cabelo</label>
-        <select id="dayHair" style="width:150px;">
-          <option value="">Não registrado</option>
-          <option value="washed">💧 Lavou</option>
-          <option value="not-washed">○ Não lavou</option>
-        </select>
-      </div>
-      <div class="hint">Mudar "Pacus Points ganhos" ajusta automaticamente o saldo total de Pacus Points. O registro de cabelo não interfere no dia perfeito.</div>
-    </div>
-
-    <div class="editor-footer">
-      <button class="btn" id="dayCancelBtn">cancelar</button>
-      <button class="btn save" id="daySaveBtn">salvar dia</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== MODAL DE EDIÇÃO ===================== -->
-<div class="overlay" id="overlay">
-  <div class="editor">
-    <div class="editor-head">
-      <h2>Editar tudo</h2>
-      <button class="icon-btn" id="closeBtn">fechar ✕</button>
-    </div>
-
-    <div class="editor-section">
-      <h3>🌅 Manhã</h3>
-      <div class="hint">Tarefa, pontos e (opcional) um detalhe menor embaixo do nome.</div>
-      <div id="editManha"></div>
-      <button class="add-row-btn" data-add="manha">+ adicionar tarefa</button>
-    </div>
-
-    <div class="editor-section">
-      <h3>☀️ Tarde</h3>
-      <div id="editTarde"></div>
-      <button class="add-row-btn" data-add="tarde">+ adicionar tarefa</button>
-    </di
+        <div class="bad-hab

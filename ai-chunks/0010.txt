@@ -1,202 +1,192 @@
-}</td>
-      <td>${entry.done}/${entry.total}${perfectBadge}</td>
-      <td class="pts-cell">${entry.pointsEarnedThatDay}</td>
-      <td>${hairLabel(hair)}</td>
-      <td>${editCell}</td>
-    </tr>`;
+24 ${faceY+12}" stroke="#b9607f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <circle cx="89" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/><circle cx="131" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/>
+      <ellipse cx="110" cy="${bodyY+bodyH+5}" rx="22" ry="7" fill="#f6c7dc"/>
+    </g>
+  </svg>`;
+}
+
+function buildPetVisual(stageFloat){
+  if(stageFloat < 9) return buildEggSVG(stageFloat/8);
+  return buildPacusSVG(stageFloat);
+}
+
+function renderPet(){
+  const el = document.getElementById('petSection');
+  const data = computePetStage();
+  const { stage, stageFloat, daysEquivalent, cycleDays, maxStage, canGrowToday } = data;
+  const stageInfo = CONFIG.pet.stages[stage];
+  const progressPct = Math.round((daysEquivalent/cycleDays)*100);
+
+  const milestones = [
+    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
+  ];
+  const milestoneHtml = milestones.map(([day,label])=>{
+    const active = daysEquivalent >= day;
+    const current = stage >= day && (stage === day || (stage > day && day === 23));
+    return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label} <small>dia ${day}</small></span>`;
   }).join('');
 
-  body.querySelectorAll('.edit-day-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=> openDayEditor(btn.getAttribute('data-date')));
-  });
-}
-
-function renderRewards(){
-  const rEl = document.getElementById('rewards');
-  rEl.innerHTML = '';
-  CONFIG.rewards.forEach(r=>{
-    const canAfford = state.totalPoints >= r.cost;
-    const div = document.createElement('div');
-    div.className = 'reward';
-    div.innerHTML = `
-      <div class="name">${r.txt}</div>
-      <span class="cost">${r.cost} PP</span>
-      <button ${canAfford ? '' : 'disabled'}>Resgatar</button>
-    `;
-    div.querySelector('button').addEventListener('click', ()=>{
-      if(state.totalPoints < r.cost) return;
-      state.totalPoints -= r.cost;
-      addLog(`🎁 Resgatou: ${r.txt} (−${r.cost})`);
-      saveState(state);
-      bumpTotal();
-      renderRewards();
-      renderLog();
-    });
-    rEl.appendChild(div);
-  });
-}
-
-function renderLog(){
-  const logEl = document.getElementById('logList');
-  logEl.innerHTML = state.log.length
-    ? state.log.map(l=>`<div>${l}</div>`).join('')
-    : '<div>Nada ainda hoje — bora começar!</div>';
-}
-
-function fireConfetti(originEl, count){
-  count = count || 14;
-  const colors = ['#f5d878','#eeb0cb','#9ad2ee','#f3ad6c','#b7ddba'];
-  const rect = originEl && originEl.getBoundingClientRect
-    ? originEl.getBoundingClientRect()
-    : { left: window.innerWidth/2, top: window.innerHeight/2, width:0, height:0 };
-  const originX = rect.left + rect.width/2;
-  const originY = rect.top + rect.height/2;
-
-  for(let i=0;i<count;i++){
-    const piece = document.createElement('span');
-    piece.className = 'confetti-piece';
-    const angle = Math.random()*Math.PI*2;
-    const dist = 60 + Math.random()*90;
-    piece.style.setProperty('--dx', (Math.cos(angle)*dist)+'px');
-    piece.style.setProperty('--dy', (Math.sin(angle)*dist - 40)+'px');
-    piece.style.setProperty('--rot', (Math.random()*360)+'deg');
-    piece.style.left = originX+'px';
-    piece.style.top = originY+'px';
-    piece.style.background = colors[i % colors.length];
-    document.body.appendChild(piece);
-    setTimeout(()=>piece.remove(), 950);
-  }
-}
-
-function onMarkClick(e){
-  const btn = e.currentTarget;
-  const id = btn.closest('.mark-group').getAttribute('data-id');
-  const clickedStatus = btn.getAttribute('data-status'); // 'done', 'na', or 'x'
-  const task = allTasks().find(t=>t.id===id);
-  if(!task) return;
-
-  const current = state.checkedToday[id]; // undefined | 'done' | 'na' | 'x'
-
-  // desfazer pontos do estado anterior, se era 'done'
-  if(current === 'done'){
-    state.totalPoints = Math.max(0, state.totalPoints - task.pts);
-  }
-
-  if(current === clickedStatus){
-    // clicou de novo no mesmo estado: volta pra pendente
-    delete state.checkedToday[id];
-    addLog(`(desmarcado) ${task.txt}`);
+  let caption;
+  if(stage === maxStage){
+    caption = `Pacus adulto! <b>Ciclo concluído em 31/08.</b> 🎉`;
+  } else if(canGrowToday){
+    caption = `<b>Dia completo!</b> O Pacus vai evoluir mais um pouco.`;
+  } else if(daysEquivalent === 0){
+    caption = `Complete um dia inteiro de tarefas pra começar a rachar o ovo.`;
   } else {
-    state.checkedToday[id] = clickedStatus;
-    if(clickedStatus === 'done'){
-      state.totalPoints += task.pts;
-      addLog(`+${task.pts} · ${task.txt}`);
-      fireConfetti(btn);
-    } else if(clickedStatus === 'na'){
-      addLog(`n/a · ${task.txt}`);
+    const nextMilestone = milestones.find(([day]) => day > daysEquivalent);
+    if(nextMilestone){
+      const diasFaltando = nextMilestone[0] - daysEquivalent;
+      caption = `Faltam <b>${diasFaltando} ${diasFaltando===1?'dia':'dias'}</b> para virar <b>${nextMilestone[1]}</b>.`;
     } else {
-      addLog(`✕ não realizado · ${task.txt}`);
+      caption = `Quase lá! O Pacus está quase adulto.`;
     }
   }
 
-  const completedNow = syncPetCompletionFromDay(todayISO());
-  if(completedNow){
-    addLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
-  }
-  saveState(state);
-  bumpTotal();
-  render();
-}
+  const previousProgress = Number(el.dataset.pacusProgress ?? daysEquivalent);
+  const grewNow = daysEquivalent > previousProgress;
+  el.dataset.pacusProgress = String(daysEquivalent);
 
-document.getElementById('hairWashedBtn').addEventListener('click', ()=> setHairStatus('washed'));
-document.getElementById('hairNotWashedBtn').addEventListener('click', ()=> setHairStatus('not-washed'));
+  el.innerHTML = `
+    ${buildPetVisual(stageFloat)}
+    <div class="pet-name">${CONFIG.pet.name}</div>
+    <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
+    <div class="pet-day-progress">
+      <div class="pet-day-progress-head"><span>Progresso do Pacus</span><b>${progressPct}%</b></div>
+      <div class="pet-day-track" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
+    </div>
+    <div class="pet-milestones">${milestoneHtml}</div>
+    <div class="pet-caption">${caption}</div>
+    <div id="petEvolvedBanner"></div>
+    <div class="streak-strip">${buildStreakStrip()}</div>
+  `;
 
-document.getElementById('addPointsBtn').addEventListener('click', ()=>{
-  const raw = prompt('Quantos Pacus Points adicionar?', '5');
-  if(raw === null) return;
-  const amount = parseInt(raw, 10);
-  if(!amount || amount === 0) return;
-  state.totalPoints = Math.max(0, state.totalPoints + amount);
-  addLog(`${amount>0?'+':''}${amount} · ajuste manual`);
-  saveState(state);
-  bumpTotal();
-  render();
-});
-
-document.getElementById('resetBtn').addEventListener('click', ()=>{
-  if(!confirm('Isso apaga os Pacus Points, o histórico de hoje e o histórico de dias. Tem certeza?')) return;
-  state = { totalPoints:0, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, driveLastSyncISO:null, hairByDate:{} };
-  saveState(state);
-  render();
-});
-
-/* ===================== EDITOR ===================== */
-let draft = null; // cópia de trabalho do CONFIG enquanto o modal está aberto
-
-function openEditor(){
-  draft = JSON.parse(JSON.stringify(CONFIG));
-  renderEditorPeriod('manha', 'editManha');
-  renderEditorPeriod('tarde', 'editTarde');
-  renderEditorPeriod('noite', 'editNoite');
-  renderEditorBad();
-  renderEditorRewards();
-
-  const weekendToggle = document.getElementById('weekendToggle');
-  const weekendBody = document.getElementById('weekendEditorBody');
-  weekendToggle.checked = !!draft.periodsWeekend;
-  weekendBody.style.display = draft.periodsWeekend ? 'block' : 'none';
-  if(draft.periodsWeekend){
-    renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
-    renderEditorPeriod('tarde', 'editTardeWeekend', draft.periodsWeekend);
-    renderEditorPeriod('noite', 'editNoiteWeekend', draft.periodsWeekend);
-  }
-  weekendToggle.onchange = ()=>{
-    if(weekendToggle.checked && !draft.periodsWeekend){
-      // clona a rotina de dia de escola como ponto de partida
-      draft.periodsWeekend = JSON.parse(JSON.stringify(draft.periods));
-      // gera ids novos pra não colidir com os da rotina de semana
-      Object.values(draft.periodsWeekend).forEach(period=>{
-        period.tasks.forEach(t=>{ t.id = uid('we'); });
-      });
-      renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
-      renderEditorPeriod('tarde', 'editTardeWeekend', draft.periodsWeekend);
-      renderEditorPeriod('noite', 'editNoiteWeekend', draft.periodsWeekend);
+  if(grewNow){
+    const mascotEl = el.querySelector('.pet-mascot');
+    if(mascotEl){
+      mascotEl.classList.remove('pet-growth-burst');
+      void mascotEl.offsetWidth;
+      mascotEl.classList.add('pet-growth-burst');
+      if(stage < 9){ mascotEl.classList.add('pet-hatch-crack'); }
     }
-    weekendBody.style.display = weekendToggle.checked ? 'block' : 'none';
-    if(!weekendToggle.checked) draft.periodsWeekend = null;
-  };
+  }
 
-  document.getElementById('editorPinInput').value = draft.editorPin || '';
-
-  document.getElementById('overlay').classList.add('open');
-}
-function closeEditor(){
-  document.getElementById('overlay').classList.remove('open');
-  draft = null;
+  if(stage > state.lastSeenPetStage){
+    document.getElementById('petEvolvedBanner').innerHTML = `<div class="pet-evolved-banner">Pacus avançou para <b>${stageInfo.label}</b>.</div>`;
+    state.lastSeenPetStage = stage;
+    saveState(state);
+    fireConfetti(el.querySelector('.pet-mascot'), stage === maxStage ? 50 : 18);
+  }
 }
 
-function renderEditorPeriod(key, elId, periodsObj){
-  periodsObj = periodsObj || draft.periods;
-  const el = document.getElementById(elId);
-  el.innerHTML = '';
-  const list = periodsObj[key].tasks;
-  list.forEach((task, idx)=>{
-    const row = document.createElement('div');
-    row.className = 'edit-row edit-row-task';
-    row.innerHTML = `
-      <div class="edit-row-main">
-        <span class="reorder-group">
-          <button type="button" class="reorder-btn" data-dir="up" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
-          <button type="button" class="reorder-btn" data-dir="down" ${idx===list.length-1?'disabled':''} title="Mover pra baixo">▼</button>
-        </span>
-        <input type="text" value="${escapeAttr(task.txt)}" data-field="txt" placeholder="nome da tarefa">
-        ${stepperHTML('pts', task.pts)}
-        <button class="del" title="remover">🗑</button>
-      </div>
-      <input type="text" class="sub-input" value="${escapeAttr(task.sub||'')}" data-field="sub" placeholder="descrição (opcional)">
-    `;
-    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ task.txt = e.target.value; });
-    wireStepper(row, task, 'pts');
-    row.querySelector('[data-field=sub]').addEventListener('input', e=>{ task.sub = e.target.value; });
-    row.querySelector('.del').addEventListener('click', ()=>{
-      periods
+function buildStreakStrip(){
+  const days = [];
+  for(let i=6; i>=0; i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+    days.push(iso);
+  }
+  const weekdayLetters = ['D','S','T','Q','Q','S','S'];
+  const cells = days.map(iso=>{
+    const isToday = iso === todayISO();
+    const d = new Date(iso+"T00:00:00");
+    const letter = weekdayLetters[d.getDay()];
+    let entry = isToday ? liveTodayEntry() : state.history[iso];
+    let cls = 'streak-cell empty';
+    if(entry && entry.total > 0){
+      if(entry.perfect) cls = 'streak-cell perfect';
+      else if(entry.done > 0) cls = 'streak-cell partial';
+      else cls = 'streak-cell none';
+    }
+    if(isToday) cls += ' today';
+    return `<span class="${cls}" title="${formatDateBR(iso)}"><span class="streak-letter">${letter}</span></span>`;
+  }).join('');
+  return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${cells}</div>`;
+}
+
+function liveTodayEntry(){
+  const tasks = allTasks();
+  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+  const total = applicable.length;
+  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+  const perfect = total>0 && done===total;
+  return { total, done, perfect };
+}
+
+function getHairStatus(dateISO){
+  return state.hairByDate && state.hairByDate[dateISO] ? state.hairByDate[dateISO] : null;
+}
+
+function setHairStatus(status){
+  const iso = todayISO();
+  if(!state.hairByDate) state.hairByDate = {};
+  state.hairByDate[iso] = status;
+  if(!state.history) state.history = {};
+  if(state.history[iso]) state.history[iso].hair = status;
+  saveState(state);
+  renderHair();
+  renderHistory();
+}
+
+function renderHair(){
+  const section = document.getElementById('hairSection');
+  if(!section) return;
+  const status = getHairStatus(todayISO());
+  const washedBtn = document.getElementById('hairWashedBtn');
+  const notWashedBtn = document.getElementById('hairNotWashedBtn');
+  const statusEl = document.getElementById('hairStatus');
+  washedBtn.classList.toggle('active-washed', status === 'washed');
+  notWashedBtn.classList.toggle('active-notwashed', status === 'not-washed');
+  statusEl.innerHTML = status === 'washed'
+    ? 'Hoje: <b class="hair-history-washed">💧 cabelo lavado</b>'
+    : status === 'not-washed'
+      ? 'Hoje: <b class="hair-history-notwashed">○ não lavou</b>'
+      : 'Hoje: ainda não registrado';
+}
+
+function render(){
+  document.getElementById('totalPoints').textContent = state.totalPoints;
+
+  renderPet();
+  renderHair();
+  renderGameTimer();
+  renderCustomTimers();
+
+  const weekendEl = document.getElementById('weekendIndicator');
+  if(weekendEl){
+    weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
+      ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
+      : '';
+  }
+
+  const periodsEl = document.getElementById('periods');
+  periodsEl.innerHTML = '';
+  Object.entries(getPeriodsFor(todayISO())).forEach(([key, period])=>{
+    const div = document.createElement('div');
+    div.className = 'period ' + key;
+
+    const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    const doneCount = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+    const remaining = applicable.length - doneCount;
+    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
+
+    let progressMsg;
+    if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
+    else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
+    else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
+    else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
+
+    const ul = document.createElement('ul');
+    ul.className = 'tasks';
+    period.tasks.forEach(task=>{
+      const li = document.createElement('li');
+      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
+      li.className = 'task'
+        + (status === 'done' ? ' done' : '')
+        + (status === 'na' ? ' na' : '')
+        + (status === 'x' ? ' notdone' : '');
+      li.innerHTML = `
+        <span class="mark-group" data-id="${task.id}">
+          <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
+          <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realiz

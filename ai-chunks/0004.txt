@@ -1,4 +1,106 @@
-v>
+its" id="badHabits"></div>
+      </section>
+
+      <section class="block">
+        <h3 class="block-title reward-title">🎁 Loja de Recompensas</h3>
+        <div class="rewards" id="rewards"></div>
+      </section>
+
+      <div class="log">
+        <div class="log-title">Histórico de hoje</div>
+        <div id="logList"></div>
+      </div>
+
+      <section class="block" id="weeklyReviewSection"></section>
+
+      <section class="block">
+        <h3 class="block-title" style="color:var(--green);">📅 Histórico dos dias</h3>
+        <div class="history">
+          <table class="history-table" id="historyTable">
+            <thead>
+              <tr><th>Dia</th><th>Tarefas</th><th>Pacus Points</th><th>Cabelo</th><th></th></tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="block" id="driveSyncSection"></section>
+
+      <footer>
+        <div id="backupReminder"></div>
+        Rotina do Hector · ${APP_VERSION}<br>
+        Funciona offline. O Google Drive é a fonte de sincronização quando configurado.
+        <br>
+        <button class="icon-btn" id="exportBtn" style="margin-top:8px;">⬇️ exportar backup</button>
+        <button class="icon-btn" id="importBtn" style="margin-top:8px;">⬆️ importar backup</button>
+        <input type="file" id="importFile" accept=".json" style="display:none;">
+        <br><button class="icon-btn danger" id="resetBtn" style="margin-top:8px;">reiniciar Pacus Points e histórico</button>
+      </footer>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================== MODAL DE EDIÇÃO DE DIA ANTERIOR ===================== -->
+<div class="overlay" id="dayOverlay">
+  <div class="editor" style="max-width:420px;">
+    <div class="editor-head">
+      <h2 id="dayEditorTitle">Editar dia</h2>
+      <button class="icon-btn" id="dayCloseBtn">fechar ✕</button>
+    </div>
+
+    <div class="editor-section">
+      <div class="edit-row">
+        <label style="flex:1; font-size:.82rem;">Tarefas feitas</label>
+        <input type="number" min="0" id="dayDone" style="width:70px;">
+      </div>
+      <div class="edit-row">
+        <label style="flex:1; font-size:.82rem;">Tarefas aplicáveis no dia</label>
+        <input type="number" min="0" id="dayTotal" style="width:70px;">
+      </div>
+      <div class="edit-row">
+        <label style="flex:1; font-size:.82rem;">Pacus Points ganhos naquele dia</label>
+        <input type="number" min="0" id="dayPoints" style="width:70px;">
+      </div>
+      <div class="edit-row">
+        <label style="flex:1; font-size:.82rem;">Cabelo</label>
+        <select id="dayHair" style="width:150px;">
+          <option value="">Não registrado</option>
+          <option value="washed">💧 Lavou</option>
+          <option value="not-washed">○ Não lavou</option>
+        </select>
+      </div>
+      <div class="hint">Mudar "Pacus Points ganhos" ajusta automaticamente o saldo total de Pacus Points. O registro de cabelo não interfere no dia perfeito.</div>
+    </div>
+
+    <div class="editor-footer">
+      <button class="btn" id="dayCancelBtn">cancelar</button>
+      <button class="btn save" id="daySaveBtn">salvar dia</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL DE EDIÇÃO ===================== -->
+<div class="overlay" id="overlay">
+  <div class="editor">
+    <div class="editor-head">
+      <h2>Editar tudo</h2>
+      <button class="icon-btn" id="closeBtn">fechar ✕</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>🌅 Manhã</h3>
+      <div class="hint">Tarefa, pontos e (opcional) um detalhe menor embaixo do nome.</div>
+      <div id="editManha"></div>
+      <button class="add-row-btn" data-add="manha">+ adicionar tarefa</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>☀️ Tarde</h3>
+      <div id="editTarde"></div>
+      <button class="add-row-btn" data-add="tarde">+ adicionar tarefa</button>
+    </div>
 
     <div class="editor-section">
       <h3>🌙 Noite</h3>
@@ -41,6 +143,22 @@ v>
     </div>
 
     <div class="editor-section">
+      <h3>📅 Compromissos Fixos</h3>
+      <div class="hint">Aparecem direto na lista de tarefas do dia certo, no período escolhido (Manhã/Tarde/Noite) — valem pontos como qualquer tarefa.</div>
+      <div id="editSchedule"></div>
+      <button class="add-row-btn" data-add="schedule">+ adicionar compromisso</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>🎮 Tempo de Jogo</h3>
+      <div class="hint">Cota diária de tempo de jogo, controlada pelo botão "começar/parar de jogar" na tela.</div>
+      <div class="edit-row">
+        <label style="flex:1; font-size:.85rem;">Horas de jogo por dia</label>
+        <input type="number" min="0" step="0.5" id="gameLimitInput" style="width:70px;">
+      </div>
+    </div>
+
+    <div class="editor-section">
       <h3>🔒 Segurança</h3>
       <div class="hint">Define um PIN pra pedir antes de abrir "Editar tudo" — protege de mudanças acidentais.</div>
       <div class="edit-row">
@@ -67,118 +185,11 @@ const DEFAULT_CONFIG = {
     manha: {
       label: "Manhã", time: "8:20 – 12:00",
       tasks: [
-        { id:"m1", txt:"Arrumar a cama", pts:1 },
-        { id:"m2", txt:"Beber 1 copo de água", pts:1 },
-        { id:"m3", txt:"Escovar os dentes", pts:1 },
-        { id:"m4", txt:"Lavar o rosto", pts:1 },
+        { id:"m1", txt:"Arrumar a cama", pts:1, sub:"até às 12h" },
+        { id:"m2", txt:"Beber 1 copo de água", pts:1, sub:"até às 12h" },
+        { id:"m3", txt:"Escovar os dentes", pts:1, sub:"até às 12h" },
+        { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h" },
         { id:"m5", txt:"Duolingo", sub:"5 lições", pts:4 },
-        { id:"m6", txt:"Ler", sub:"1 capítulo do livro de casa", pts:4 },
-        { id:"m7", txt:"Vestir o uniforme", pts:1 },
-        { id:"m8", txt:"Arrumar a mochila", pts:1 },
-      ]
-    },
-    tarde: {
-      label: "Tarde", time: "12:00 – 18:00",
-      tasks: [
-        { id:"t1", txt:"Beber 1 copo de água", pts:1 },
-        { id:"t2", txt:"Almoçar", pts:1 },
-        { id:"t3", txt:"Escovar os dentes", pts:1 },
-        { id:"t4", txt:"Ir para a escola", pts:5 },
-        { id:"t5", txt:"Arrumar a mochila", pts:1 },
-      ]
-    },
-    noite: {
-      label: "Noite", time: "18:00 – 22:00",
-      tasks: [
-        { id:"n1", txt:"Jantar", pts:1 },
-        { id:"n2", txt:"Beber 1 copo de água", pts:1 },
-        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha", pts:3 },
-        { id:"n5", txt:"Arrumar a bagunça", pts:2 },
-        { id:"n6", txt:"Escovar os dentes", pts:1 },
-      ]
-    },
-  },
-  // rotina de fim de semana: fica null (desativada) até os pais ativarem
-  // no editor — quando ativada, é editada separadamente da de dia de escola
-  periodsWeekend: null,
-  // PIN opcional pra travar o botão "Editar tudo" — vazio = sem trava
-  editorPin: "",
-  badHabits: [],
-  rewards: [
-    { id:"r1", txt:"1 hora de tela", cost:90 },
-    { id:"r2", txt:"Hot Wheels (brinquedo)", cost:300 },
-  ],
-  screenNote: "10 Pacus Points = 1 hora de tela. Limite sugerido: 2 horas de tela por dia.",
-  screenPointsPerHour: 10,
-  screenDailyLimitHours: 2,
-  perfectDayBonusMinutes: 30,
-  historyStartDate: "2026-08-09",
-
-  // Pacus, o axolote: começa em 09/08 e cresce um passo a cada dia
-  // em que todas as tarefas aplicáveis são concluídas. O ciclo termina
-  // em 31/08. São 23 dias de crescimento, contando 09/08 e 31/08.
-  // O Pacus nunca regride por dias já concluídos.
-  pet: {
-    name: "Pacus",
-    growthStartDate: "2026-08-09",
-    growthEndDate: "2026-08-31",
-    stages: [
-      { key:"ovo", label:"Ovo intacto" },
-      { key:"ovo1", label:"Primeira rachadura" },
-      { key:"ovo2", label:"Rachadura inicial" },
-      { key:"ovo3", label:"Rachando" },
-      { key:"ovo4", label:"Mais rachaduras" },
-      { key:"ovo5", label:"Casca cedendo" },
-      { key:"ovo6", label:"Quase abrindo" },
-      { key:"ovo7", label:"Casca bem rachada" },
-      { key:"ovo8", label:"Pronto para nascer" },
-      { key:"hatch1", label:"Começando a eclodir" },
-      { key:"hatch2", label:"Cabeça aparecendo" },
-      { key:"hatch3", label:"Saindo da casca" },
-      { key:"hatch4", label:"Recém-nascido" },
-      { key:"hatch5", label:"Primeiros movimentos" },
-      { key:"baby1", label:"Bebê Pacus" },
-      { key:"baby2", label:"Bebê crescendo" },
-      { key:"baby3", label:"Filhote" },
-      { key:"baby4", label:"Filhote forte" },
-      { key:"baby5", label:"Jovem" },
-      { key:"young1", label:"Jovem crescendo" },
-      { key:"young2", label:"Quase adulto" },
-      { key:"young3", label:"Quase pronto" },
-      { key:"young4", label:"Última fase" },
-      { key:"adulto", label:"Pacus adulto" },
-    ],
-  }};
-
-const STORAGE_CONFIG_KEY = "hector_rotina_config_v3";
-const STORAGE_STATE_KEY  = "hector_rotina_state_v3";
-const APP_VERSION = "2026.08.11-pacus-v4";
-
-/* =========================================================================
-   SINCRONIZAÇÃO COM GOOGLE DRIVE (opcional) — via Google Apps Script
-   Não precisa hospedar esse arquivo em lugar nenhum: o próprio Apps Script
-   serve o app (essa URL abre o app direto) e guarda os dados no Drive.
-
-   Depois de configurado, o jeito certo de abrir em qualquer aparelho é
-   pela URL do Apps Script (a que termina em /exec) — não pelo arquivo
-   local. Assim, quando o app for atualizado, basta substituir o
-   conteúdo do arquivo "rotina-hector.html" no Drive uma vez, e todo
-   aparelho já abre a versão nova sozinho, sem copiar arquivo nenhum.
-
-   Passo a passo pra ativar:
-   1. Acesse https://script.google.com/ → "Novo projeto".
-   2. Apague o código de exemplo e cole o código que aparece no botão
-      "📋 ver código do Apps Script" logo abaixo, na seção de sincronização.
-   3. Clique em "Implantar" → "Nova implantação".
-   4. Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer
-      pessoa".
-   5. Clique em "Implantar", autorize o acesso (é a sua própria conta), e
-      copie a URL gerada (termina em /exec).
-   6. Cole essa URL na constante abaixo, entre aspas.
-   7. No Google Drive, salve o código deste arquivo com o nome exato
-      "rotina-hector.html". A partir daí, abram sempre a URL do Apps
-      Script (não o arquivo local) em todos os aparelhos.
-   ========================================================================= */
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec";
-const DRIVE_SYNC_TOKEN = 'HectorAPI-2026-8fK3mQ7vX2pL9zR4';
-// A mesma URL agora também
+        { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 12h" },
+        { id:"m8", txt:"Arrumar a mochila", pts:1, sub:"até às 12h" },
+    
