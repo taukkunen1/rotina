@@ -2118,7 +2118,7 @@ function addLog(text){
   state.log.unshift(time+" — "+text);
   state.log = state.log.slice(0, 30);
 }
-function bumpTotal(delta){
+function bumpTotal(delta, anchorEl){
   const el = document.getElementById('totalPoints');
   el.textContent = state.totalPoints;
   el.classList.remove('bump');
@@ -2128,7 +2128,7 @@ function bumpTotal(delta){
   if(delta){
     const deltaEl = document.getElementById('pointsDelta');
     if(deltaEl){
-      const rect = el.getBoundingClientRect();
+      const rect = (anchorEl || el).getBoundingClientRect();
       deltaEl.style.left = (rect.left + rect.width/2) + 'px';
       deltaEl.style.top = (rect.top - 6) + 'px';
       deltaEl.classList.remove('show-up','show-down');
@@ -2773,7 +2773,7 @@ function render(){
       const delta = addPoints(h.pts);
       addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
       saveState(state);
-      bumpTotal(delta);
+      bumpTotal(delta, btn);
       renderLog();
     });
     badEl.appendChild(btn);
@@ -3063,7 +3063,7 @@ function renderRewards(){
       ${capNote}
       <button ${(canAfford && !atDailyLimit) ? '' : 'disabled'}>${atDailyLimit ? 'Limite hoje' : 'Resgatar'}</button>
     `;
-    div.querySelector('button').addEventListener('click', ()=>{
+    div.querySelector('button').addEventListener('click', (evt)=>{
       if(state.totalPoints < r.cost) return;
       const redeemed = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
       if(r.maxPerDay != null && redeemed >= r.maxPerDay) return;
@@ -3078,7 +3078,7 @@ function renderRewards(){
       state.gameTimer.redemptions[r.id] = redeemed + 1;
 
       saveState(state);
-      bumpTotal(delta);
+      bumpTotal(delta, evt.currentTarget);
       renderRewards();
       renderLog();
       renderGameTimer();
@@ -3157,7 +3157,7 @@ function onMarkClick(e){
     addLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
   }
   saveState(state);
-  bumpTotal(totalDelta);
+  bumpTotal(totalDelta, btn);
   render();
 }
 
