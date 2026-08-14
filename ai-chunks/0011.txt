@@ -1,4 +1,50 @@
-tas`; }
+derHair(){
+  const section = document.getElementById('hairSection');
+  if(!section) return;
+  const status = getHairStatus(todayISO());
+  const washedBtn = document.getElementById('hairWashedBtn');
+  const notWashedBtn = document.getElementById('hairNotWashedBtn');
+  const statusEl = document.getElementById('hairStatus');
+  washedBtn.classList.toggle('active-washed', status === 'washed');
+  notWashedBtn.classList.toggle('active-notwashed', status === 'not-washed');
+  statusEl.innerHTML = status === 'washed'
+    ? 'Hoje: <b class="hair-history-washed">💧 cabelo lavado</b>'
+    : status === 'not-washed'
+      ? 'Hoje: <b class="hair-history-notwashed">○ não lavou</b>'
+      : 'Hoje: ainda não registrado';
+}
+
+function render(){
+  document.getElementById('totalPoints').textContent = state.totalPoints;
+
+  renderPet();
+  renderHair();
+  renderGameTimer();
+  renderCustomTimers();
+
+  const weekendEl = document.getElementById('weekendIndicator');
+  if(weekendEl){
+    weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
+      ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
+      : '';
+  }
+
+  const periodsEl = document.getElementById('periods');
+  periodsEl.innerHTML = '';
+  Object.entries(getPeriodsFor(todayISO())).forEach(([key, period])=>{
+    const div = document.createElement('div');
+    div.className = 'period ' + key;
+
+    const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    const doneCount = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+    const remaining = applicable.length - doneCount;
+    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
+
+    let progressMsg;
+    if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
+    else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
+    else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
+    else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
 
     const ul = document.createElement('ul');
     ul.className = 'tasks';
@@ -154,63 +200,4 @@ function renderTestPanel(){
     const val = document.getElementById('testDatePicker').value;
     if(val) goToTestDate(val);
   });
-  document.getElementById('testResetDateBtn').addEventListener('click', ()=>{
-    goToTestDate(realToday);
-    setTestDate(null);
-    state = loadState();
-    render();
-  });
-}
-
-function renderBackupReminder(){
-  const el = document.getElementById('backupReminder');
-  if(!el) return;
-
-  const today = todayISO();
-  const daysSinceBackup = state.lastBackupISO ? daysBetween(state.lastBackupISO, today) : Infinity;
-  const dismissed = state.backupReminderDismissedFor === today;
-
-  const shouldShow = daysSinceBackup >= 7 && !dismissed;
-
-  if(!shouldShow){ el.innerHTML=''; return; }
-
-  const msg = state.lastBackupISO
-    ? `Já faz ${daysSinceBackup} dias desde o último backup. Que tal exportar de novo?`
-    : `Vocês ainda não fizeram nenhum backup. Vale exportar um agora pra não perder o progresso.`;
-
-  el.innerHTML = `
-    <div class="backup-reminder">
-      <span>💾 ${msg}</span>
-      <span>
-        <button id="backupReminderExportBtn">exportar agora</button>
-        <button class="dismiss" id="backupReminderDismissBtn">lembrar depois</button>
-      </span>
-    </div>
-  `;
-  document.getElementById('backupReminderExportBtn').addEventListener('click', ()=>{
-    document.getElementById('exportBtn').click();
-  });
-  document.getElementById('backupReminderDismissBtn').addEventListener('click', ()=>{
-    state.backupReminderDismissedFor = today;
-    saveState(state);
-    renderBackupReminder();
-  });
-}
-
-function renderWeeklyReview(){
-  const el = document.getElementById('weeklyReviewSection');
-  if(!el) return;
-
-  const days = [];
-  for(let i=6; i>=0; i--){
-    const d = new Date();
-    d.setDate(d.getDate()-i);
-    days.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'));
-  }
-
-  let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0;
-  days.forEach(iso=>{
-    const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
-    if(!entry) return;
-    if(iso !== todayISO()){
-      // dias fechados já têm pointsEarnedThatD
+  document.getElementById('testRe

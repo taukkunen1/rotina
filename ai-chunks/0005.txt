@@ -1,4 +1,41 @@
-12h" },
+enha)" maxlength="12">
+      </div>
+    </div>
+
+    <div class="editor-footer">
+      <button class="btn" id="adultTestBtn">🧪 modo teste</button>
+      <button class="btn" id="cancelBtn">fechar</button>
+      <button class="btn save" id="saveBtn">salvar tudo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- trava de acesso ao site (roda antes de tudo, pra não dar
+   nem uma piscada do conteúdo antes de pedir a senha) ---------- */
+const SITE_LOCK_SESSION_KEY = 'hector_rotina_site_unlocked_v1';
+let siteAlreadyUnlocked = false;
+try{ siteAlreadyUnlocked = sessionStorage.getItem(SITE_LOCK_SESSION_KEY) === '1'; }catch(e){}
+if(!siteAlreadyUnlocked){
+  document.getElementById('siteLockOverlay').classList.add('open');
+}
+
+/* =========================================================================
+   DEFAULT_CONFIG só é usado da primeira vez que o arquivo abre (sem nada
+   salvo ainda no navegador). Depois disso tudo é editado pela tela e fica
+   guardado em localStorage — o botão "Editar tudo" já resolve tudo.
+   ========================================================================= */
+const DEFAULT_CONFIG = {
+  periods: {
+    manha: {
+      label: "Manhã", time: "8:20 – 12:00",
+      tasks: [
+        { id:"m1", txt:"Arrumar a cama", pts:1, sub:"até às 12h" },
+        { id:"m2", txt:"Beber 1 copo de água", pts:1, sub:"até às 12h" },
+        { id:"m3", txt:"Escovar os dentes", pts:1, sub:"até às 12h" },
+        { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h" },
+        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:4 },
+        { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 12h" },
         { id:"m8", txt:"Arrumar a mochila", pts:1, sub:"até às 12h" },
         { id:"t_djf7hbb", txt:"Levar Lixo", pts:3, sub:"até às 12h" },
       ]
@@ -30,6 +67,9 @@
   periodsWeekend: null,
   // PIN opcional pra travar o botão "Editar tudo" — vazio = sem trava
   editorPin: "",
+  // Senha opcional pra travar o acesso ao site inteiro — vazio = sem trava.
+  // Pedida uma vez por sessão do navegador (fica destravado até fechar a aba).
+  sitePin: "150402",
   badHabits: [],
   rewards: [
     { id:"r1", txt:"1 hora de tela", cost:90, grantsHours:1, maxPerDay:2 },
@@ -127,44 +167,4 @@ const DATA_ENDPOINT = APPS_SCRIPT_URL + "?data=1";
 function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9); }
 
 // mapeia palavras-chave do nome da tarefa pra um emoji — reforça o texto
-// com uma pista visual (útil pra leitura rápida / crianças ainda alfabetizando)
-const ICON_RULES = [
-  [/cama/i, "🛏️"], [/água/i, "💧"], [/dente/i, "🦷"], [/rosto|banho/i, "🧼"],
-  [/duolingo|inglês|idioma/i, "🗣️"], [/ler|livro|capítulo/i, "📖"],
-  [/uniforme|vestir/i, "👕"], [/mochila/i, "🎒"], [/almoç/i, "🍽️"],
-  [/escola/i, "🏫"], [/jantar/i, "🍲"], [/bagunça|arrumar/i, "🧹"],
-  [/toalha|cesto|roupa/i, "🧺"], [/tela|jogo|vídeo/i, "📺"],
-  [/dever|tarefa|estud/i, "✏️"], [/dormir|soneca/i, "😴"],
-];
-function taskIcon(txt){
-  for(const [re, icon] of ICON_RULES){ if(re.test(txt)) return icon; }
-  return "⭐";
-}
-
-function isWeekendISO(dateISO){
-  const day = new Date(dateISO+"T00:00:00").getDay();
-  return day === 0 || day === 6;
-}
-
-const WEEKDAY_KEYS = ['dom','seg','ter','qua','qui','sex','sab'];
-const WEEKDAY_LABELS = {dom:'Domingo', seg:'Segunda', ter:'Terça', qua:'Quarta', qui:'Quinta', sex:'Sexta', sab:'Sábado'};
-
-function weekdayKeyFor(dateISO){
-  return WEEKDAY_KEYS[new Date(dateISO+"T00:00:00").getDay()];
-}
-
-function getPeriodsFor(dateISO){
-  const base = (CONFIG.periodsWeekend && isWeekendISO(dateISO)) ? CONFIG.periodsWeekend : CONFIG.periods;
-  const weekday = weekdayKeyFor(dateISO);
-  const todaysSchedule = (CONFIG.schedule || []).filter(s => s.days && s.days.includes(weekday));
-  const todaysExceptions = (CONFIG.scheduleExceptions || []).filter(s => s.date === dateISO);
-  if(todaysSchedule.length === 0 && todaysExceptions.length === 0) return base;
-
-  // clona pra não mexer no CONFIG original, e injeta os compromissos fixos
-  // (e exceções pontuais) de hoje como tarefas de verdade no período certo
-  const merged = JSON.parse(JSON.stringify(base));
-  todaysSchedule.forEach(s=>{
-    const periodKey = s.period && merged[s.period] ? s.period : 'tarde';
-    merged[periodKey].tasks.push({
-      id: 'sched_' + s.id,
-  
+// com uma pista visual (útil pra leitura r

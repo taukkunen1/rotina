@@ -1,4 +1,39 @@
-     state = merged.state;
+Updated = remoteEntry.updatedAt || remoteState.updatedAt || '';
+      if(localUpdated >= remoteUpdated) merged.history[iso] = entry;
+    }
+  });
+  merged.petCompletedDays = [...new Set([...(remoteState.petCompletedDays||[]), ...(localState.petCompletedDays||[])])].sort();
+  merged.historyCorrectionV2Applied = !!(remoteState.historyCorrectionV2Applied || localState.historyCorrectionV2Applied);
+  merged.hairByDate = {...(remoteState.hairByDate||{}), ...(localState.hairByDate||{})};
+  merged.totalPoints = Math.max(Number(remoteState.totalPoints)||0, Number(localState.totalPoints)||0);
+  merged.lastSeenPetStage = Math.max(Number(remoteState.lastSeenPetStage)||0, Number(localState.lastSeenPetStage)||0);
+  merged.log = [...(localState.log||[]), ...(remoteState.log||[])].slice(0,30);
+  merged.revision = Math.max(Number(localState.revision)||0, Number(remoteState.revision)||0)+1;
+  merged.updatedAt = new Date().toISOString();
+  const remoteConfig = sanitizeRemoteConfig(remote.config);
+  const localConfigValid = isValidPeriodsConfig(CONFIG);
+  const useRemoteConfig = remoteConfig && (!localConfigValid || localState.updatedAt < (remoteState.updatedAt||''));
+  return {
+    config: useRemoteConfig ? remoteConfig : (localConfigValid ? CONFIG : JSON.parse(JSON.stringify(DEFAULT_CONFIG))),
+    state: merged
+  };
+}
+
+async function autoPullOnStartup(){
+  if(!APPS_SCRIPT_URL) return;
+  suppressAutoPush = true;
+  try{
+    const res = await fetch(DATA_ENDPOINT, {method:'GET', cache:'no-store'});
+    if(res.ok){
+      const backup = await res.json();
+      if(backup && backup.config && backup.state){
+        const localRevision = Number(state.driveRevision)||0;
+        const localDirty = (Number(state.revision)||0) > localRevision;
+        const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
+        if(localDirty && remoteRevision !== localRevision){
+          const merged = mergeRemoteData(backup);
+          CONFIG = merged.config;
+          state = merged.state;
           state.driveRevision = remoteRevision;
           saveConfig(CONFIG);
           saveState(state);
@@ -170,77 +205,4 @@ function findCustomTimer(id){
 function customTimerRemainingNow(t){
   if(!t.runningSince) return t.remainingSeconds;
   const elapsed = (Date.now() - t.runningSince)/1000;
-  return Math.max(0, t.remainingSeconds - elapsed);
-}
-
-function setCustomTimerMinutes(id, minutes){
-  const t = findCustomTimer(id);
-  if(!t || t.runningSince) return; // não dá pra mudar enquanto está rodando
-  const secs = Math.max(0, Math.round(minutes*60));
-  t.totalSeconds = secs;
-  t.remainingSeconds = secs;
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function startCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t || t.runningSince || t.remainingSeconds <= 0) return;
-  t.runningSince = Date.now();
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-  startCustomTimerTicking();
-}
-
-function pauseCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t || !t.runningSince) return;
-  t.remainingSeconds = customTimerRemainingNow(t);
-  t.runningSince = null;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function resetCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t) return;
-  t.remainingSeconds = t.totalSeconds;
-  t.runningSince = null;
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function playBeep(){
-  try{
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if(!Ctx) return;
-    const ctx = new Ctx();
-    [0, 220, 440].forEach(delay=>{
-      setTimeout(()=>{
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = 880;
-        gain.gain.value = 0.15;
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.18);
-      }, delay);
-    });
-  }catch(e){ /* som é só um extra, sem problema se falhar */ }
-}
-
-function anyCustomTimerRunning(){
-  return state.customTimers.some(t=>t.runningSince);
-}
-
-function startCustomTimerTicking(){
-  if(customTimerTickHandle) return;
-  customTimerTickHandle = setInterval(()=>{
-    let needsFullRender = false;
-    state.customTimers.forEach(t=>{
-      if(!t.runningSince) return;
-      const remain
+  return Math.

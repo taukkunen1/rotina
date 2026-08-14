@@ -1,4 +1,44 @@
-    txt: s.label,
+ápida / crianças ainda alfabetizando)
+const ICON_RULES = [
+  [/cama/i, "🛏️"], [/água/i, "💧"], [/dente/i, "🦷"], [/rosto|banho/i, "🧼"],
+  [/duolingo|inglês|idioma/i, "🗣️"], [/ler|livro|capítulo/i, "📖"],
+  [/uniforme|vestir/i, "👕"], [/mochila/i, "🎒"], [/almoç/i, "🍽️"],
+  [/escola/i, "🏫"], [/jantar/i, "🍲"], [/bagunça|arrumar/i, "🧹"],
+  [/toalha|cesto|roupa/i, "🧺"], [/tela|jogo|vídeo/i, "📺"],
+  [/dever|tarefa|estud/i, "✏️"], [/dormir|soneca/i, "😴"],
+];
+function taskIcon(txt){
+  for(const [re, icon] of ICON_RULES){ if(re.test(txt)) return icon; }
+  return "⭐";
+}
+
+function isWeekendISO(dateISO){
+  const day = new Date(dateISO+"T00:00:00").getDay();
+  return day === 0 || day === 6;
+}
+
+const WEEKDAY_KEYS = ['dom','seg','ter','qua','qui','sex','sab'];
+const WEEKDAY_LABELS = {dom:'Domingo', seg:'Segunda', ter:'Terça', qua:'Quarta', qui:'Quinta', sex:'Sexta', sab:'Sábado'};
+
+function weekdayKeyFor(dateISO){
+  return WEEKDAY_KEYS[new Date(dateISO+"T00:00:00").getDay()];
+}
+
+function getPeriodsFor(dateISO){
+  const base = (CONFIG.periodsWeekend && isWeekendISO(dateISO)) ? CONFIG.periodsWeekend : CONFIG.periods;
+  const weekday = weekdayKeyFor(dateISO);
+  const todaysSchedule = (CONFIG.schedule || []).filter(s => s.days && s.days.includes(weekday));
+  const todaysExceptions = (CONFIG.scheduleExceptions || []).filter(s => s.date === dateISO);
+  if(todaysSchedule.length === 0 && todaysExceptions.length === 0) return base;
+
+  // clona pra não mexer no CONFIG original, e injeta os compromissos fixos
+  // (e exceções pontuais) de hoje como tarefas de verdade no período certo
+  const merged = JSON.parse(JSON.stringify(base));
+  todaysSchedule.forEach(s=>{
+    const periodKey = s.period && merged[s.period] ? s.period : 'tarde';
+    merged[periodKey].tasks.push({
+      id: 'sched_' + s.id,
+      txt: s.label,
       sub: `${s.start}–${s.end}`,
       pts: s.pts != null ? s.pts : 3,
     });
@@ -34,6 +74,9 @@ function stripLegacyHairTask(cfg){
   if(cfg && cfg.periodsWeekend && cfg.periodsWeekend.noite && Array.isArray(cfg.periodsWeekend.noite.tasks)){
     cfg.periodsWeekend.noite.tasks = cfg.periodsWeekend.noite.tasks.filter(t => t.id !== 't_gzba4xs');
   }
+  // senha do site: se ainda não existe (configs de antes dessa função
+  // existir), aplica a senha pedida uma vez.
+  if(cfg && cfg.sitePin === undefined) cfg.sitePin = "150402";
   return cfg;
 }
 
@@ -153,51 +196,4 @@ function reconcileState(state){
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
   }
-  if(state.gameTimer.bonusSeconds === undefined) state.gameTimer.bonusSeconds = 0;
-  if(!state.gameTimer.redemptions || typeof state.gameTimer.redemptions !== "object") state.gameTimer.redemptions = {};
-  if(!Array.isArray(state.customTimers) || state.customTimers.length !== 2){
-    state.customTimers = [
-      { id:"ct1", label:"Timer 1", totalSeconds:300, remainingSeconds:300, runningSince:null, finished:false },
-      { id:"ct2", label:"Timer 2", totalSeconds:300, remainingSeconds:300, runningSince:null, finished:false },
-    ];
-  }
-  state.customTimers.forEach(t=>{
-    if(t.totalSeconds === undefined) t.totalSeconds = 300;
-    if(t.remainingSeconds === undefined) t.remainingSeconds = t.totalSeconds;
-    if(t.runningSince === undefined) t.runningSince = null;
-    if(t.finished === undefined) t.finished = false;
-  });
-  if(state.historyCorrectionV2Applied === undefined) state.historyCorrectionV2Applied = false;
-
-  seedKnownPerfectDays(state);
-
-  // limpeza: remove qualquer registro de histórico com data no futuro (só pode
-  // ter vindo de uma sessão anterior de teste de data) — evita que isso
-  // inflacione o crescimento do Pacus ou bagunce as tabelas depois
-  let cleaned = false;
-  if(!TEST_DATE_OVERRIDE){
-    const realToday = todayISO();
-    Object.keys(state.history).forEach(iso=>{
-      if(iso > realToday){ delete state.history[iso]; cleaned = true; }
-    });
-    if(state.lastDate > realToday){ state.lastDate = realToday; cleaned = true; }
-  }
-
-  if(state.lastDate !== todayISO()){
-    // fecha o dia anterior no histórico antes de zerar o checklist
-    closeOutDay(state, state.lastDate);
-    state.checkedToday = {};
-    state.log = [];
-    state.lastDate = todayISO();
-    // zera o tempo de jogo usado — é uma cota que renova todo dia
-    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
-    saveState(state);
-  } else if(cleaned){
-    saveState(state);
-  }
-  return state;
-}
-
-function periodsCompletedFrom(checkedMap, dateISO){
-  let count = 0;
-  Objec
+  if(state.gameTimer.bonusSeconds === undefined) state.gameTimer.bonusSe

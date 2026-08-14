@@ -1,4 +1,39 @@
-urn `<svg class="pet-mascot pet-hatch-crack" ${svgAttrs()}>
+ 158 118" stroke="var(--pink)" stroke-width="2.4" fill="none" opacity="${(p-.78)/.22}"/>` : '';
+  return `<svg class="pet-mascot pet-egg" ${svgAttrs()}>
+    <g transform="rotate(${wobble} 110 130)">
+      <ellipse cx="110" cy="130" rx="48" ry="60" fill="#f6ecd9" stroke="#ff7eb9" stroke-width="3"/>
+      <ellipse cx="93" cy="106" rx="12" ry="18" fill="#fff" opacity=".48"/>
+      ${crackSvg}${shellBreak}
+    </g>
+    <circle cx="72" cy="169" r="4" fill="var(--pink)" opacity=".55"/>
+    <circle cx="151" cy="165" r="3" fill="var(--pink)" opacity=".45"/>
+  </svg>`;
+}
+
+function buildPacusSVG(stageFloat){
+  const s = Math.max(0, Math.min(23, stageFloat));
+  const hatch = Math.max(0, Math.min(1, (s-8)/6));
+  const growth = Math.max(0, Math.min(1, (s-14)/9));
+  const adult = Math.max(0, Math.min(1, (s-21)/2));
+  const scale = 0.52 + growth*0.42 + adult*0.06;
+  const bodyW = 45 + growth*10 + adult*4;
+  const bodyH = 30 + growth*5 + adult*3;
+  const gillLen = 12 + growth*11 + adult*4;
+  const faceY = 92 - hatch*7;
+  const bodyY = 128 - hatch*5;
+  const shell = hatch < 1 ? `
+    <path d="M62 151 Q45 158 54 174 Q70 184 85 170" fill="#f6ecd9" stroke="#ff7eb9" stroke-width="2.5" opacity="${1-hatch*.75}"/>
+    <path d="M158 151 Q175 158 166 174 Q150 184 135 170" fill="#f6ecd9" stroke="#ff7eb9" stroke-width="2.5" opacity="${1-hatch*.75}"/>` : '';
+  const gills = [];
+  const gillCount = 2 + Math.floor(Math.min(2,growth*2));
+  for(let i=0;i<gillCount;i++){
+    const y = faceY-4+i*7;
+    const len = gillLen-(i*2);
+    gills.push(`<path d="M${74-i*2} ${y} Q ${58-len} ${y-8} ${50-len/2} ${y+2}" stroke="var(--pink)" stroke-width="3.2" fill="none" stroke-linecap="round"/>`);
+    gills.push(`<path d="M${146+i*2} ${y} Q ${162+len} ${y-8} ${170+len/2} ${y+2}" stroke="var(--pink)" stroke-width="3.2" fill="none" stroke-linecap="round"/>`);
+  }
+  const sparkle = adult > .8 ? `<text x="35" y="64" font-size="18">✨</text><text x="166" y="75" font-size="16">✨</text>` : '';
+  return `<svg class="pet-mascot pet-hatch-crack" ${svgAttrs()}>
     ${shell}
     <g transform="translate(110 115) scale(${scale.toFixed(3)}) translate(-110 -115)">
       ${sparkle}
@@ -139,50 +174,4 @@ function setHairStatus(status){
   renderHistory();
 }
 
-function renderHair(){
-  const section = document.getElementById('hairSection');
-  if(!section) return;
-  const status = getHairStatus(todayISO());
-  const washedBtn = document.getElementById('hairWashedBtn');
-  const notWashedBtn = document.getElementById('hairNotWashedBtn');
-  const statusEl = document.getElementById('hairStatus');
-  washedBtn.classList.toggle('active-washed', status === 'washed');
-  notWashedBtn.classList.toggle('active-notwashed', status === 'not-washed');
-  statusEl.innerHTML = status === 'washed'
-    ? 'Hoje: <b class="hair-history-washed">💧 cabelo lavado</b>'
-    : status === 'not-washed'
-      ? 'Hoje: <b class="hair-history-notwashed">○ não lavou</b>'
-      : 'Hoje: ainda não registrado';
-}
-
-function render(){
-  document.getElementById('totalPoints').textContent = state.totalPoints;
-
-  renderPet();
-  renderHair();
-  renderGameTimer();
-  renderCustomTimers();
-
-  const weekendEl = document.getElementById('weekendIndicator');
-  if(weekendEl){
-    weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
-      ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
-      : '';
-  }
-
-  const periodsEl = document.getElementById('periods');
-  periodsEl.innerHTML = '';
-  Object.entries(getPeriodsFor(todayISO())).forEach(([key, period])=>{
-    const div = document.createElement('div');
-    div.className = 'period ' + key;
-
-    const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    const doneCount = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-    const remaining = applicable.length - doneCount;
-    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
-
-    let progressMsg;
-    if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
-    else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
-    else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
-    else { progressMsg = `${doneCount}/${applicable.length} fei
+function ren
