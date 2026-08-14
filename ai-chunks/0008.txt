@@ -1,4 +1,20 @@
-rotina válida por um backup remoto vazio/incompleto.
+     state = merged.state;
+          state.driveRevision = remoteRevision;
+          saveConfig(CONFIG);
+          saveState(state);
+          render();
+        } else if(remoteRevision >= localRevision){
+          const remoteConfig = sanitizeRemoteConfig(backup.config);
+          if(remoteConfig){
+            CONFIG = remoteConfig;
+            state = reconcileState(backup.state);
+            state.driveRevision = remoteRevision;
+            state.driveLastSyncISO = todayISO();
+            try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(CONFIG)); }catch(e){}
+            try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+            render();
+          }else{
+            // Nunca substituir uma rotina válida por um backup remoto vazio/incompleto.
             // O app continua com a configuração local que já funcionava.
             render();
           }
@@ -227,25 +243,4 @@ function startCustomTimerTicking(){
     let needsFullRender = false;
     state.customTimers.forEach(t=>{
       if(!t.runningSince) return;
-      const remaining = customTimerRemainingNow(t);
-      if(remaining <= 0 && !t.finished){
-        t.remainingSeconds = 0;
-        t.runningSince = null;
-        t.finished = true;
-        playBeep();
-        needsFullRender = true;
-      }
-    });
-    if(needsFullRender){ saveState(state); renderCustomTimers(); }
-    else updateCustomTimerDisplays();
-    if(!anyCustomTimerRunning()) stopCustomTimerTicking();
-  }, 1000);
-}
-function stopCustomTimerTicking(){
-  if(customTimerTickHandle){ clearInterval(customTimerTickHandle); customTimerTickHandle = null; }
-}
-
-function updateCustomTimerDisplays(){
-  state.customTimers.forEach(t=>{
-    const el = document.getElementById('customTimerDisplay_'+t.id);
-    if(el) el.textContent = formatHMS(customTimerRemainingNo
+      const remain

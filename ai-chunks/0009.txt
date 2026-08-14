@@ -1,4 +1,25 @@
-w(t));
+ing = customTimerRemainingNow(t);
+      if(remaining <= 0 && !t.finished){
+        t.remainingSeconds = 0;
+        t.runningSince = null;
+        t.finished = true;
+        playBeep();
+        needsFullRender = true;
+      }
+    });
+    if(needsFullRender){ saveState(state); renderCustomTimers(); }
+    else updateCustomTimerDisplays();
+    if(!anyCustomTimerRunning()) stopCustomTimerTicking();
+  }, 1000);
+}
+function stopCustomTimerTicking(){
+  if(customTimerTickHandle){ clearInterval(customTimerTickHandle); customTimerTickHandle = null; }
+}
+
+function updateCustomTimerDisplays(){
+  state.customTimers.forEach(t=>{
+    const el = document.getElementById('customTimerDisplay_'+t.id);
+    if(el) el.textContent = formatHMS(customTimerRemainingNow(t));
   });
 }
 
@@ -148,14 +169,4 @@ function buildPacusSVG(stageFloat){
     gills.push(`<path d="M${146+i*2} ${y} Q ${162+len} ${y-8} ${170+len/2} ${y+2}" stroke="var(--pink)" stroke-width="3.2" fill="none" stroke-linecap="round"/>`);
   }
   const sparkle = adult > .8 ? `<text x="35" y="64" font-size="18">✨</text><text x="166" y="75" font-size="16">✨</text>` : '';
-  return `<svg class="pet-mascot pet-hatch-crack" ${svgAttrs()}>
-    ${shell}
-    <g transform="translate(110 115) scale(${scale.toFixed(3)}) translate(-110 -115)">
-      ${sparkle}
-      <ellipse cx="110" cy="${bodyY}" rx="${bodyW}" ry="${bodyH}" fill="#f6c7dc"/>
-      <ellipse cx="110" cy="${bodyY+8}" rx="${bodyW*.68}" ry="${bodyH*.52}" fill="#fbe2ec" opacity=".85"/>
-      <circle cx="110" cy="${faceY}" r="32" fill="#f6c7dc"/>
-      ${gills.join('')}
-      <circle cx="97" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="123" cy="${faceY-4}" r="4.5" fill="#3a2430"/>
-      <circle cx="98" cy="${faceY-5.5}" r="1.4" fill="#fff"/><circle cx="124" cy="${faceY-5.5}" r="1.4" fill="#fff"/>
-      <path d="M96 ${faceY+12} Q110 ${faceY+18+growth*2} 1
+  ret

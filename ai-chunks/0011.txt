@@ -1,4 +1,18 @@
-ar hoje">–</button>
+tas`; }
+
+    const ul = document.createElement('ul');
+    ul.className = 'tasks';
+    period.tasks.forEach(task=>{
+      const li = document.createElement('li');
+      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
+      li.className = 'task'
+        + (status === 'done' ? ' done' : '')
+        + (status === 'na' ? ' na' : '')
+        + (status === 'x' ? ' notdone' : '');
+      li.innerHTML = `
+        <span class="mark-group" data-id="${task.id}">
+          <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
+          <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
           <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, não ganha ponto">✕</button>
         </span>
         <span class="txt"><span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
@@ -66,6 +80,11 @@ function goToTestDate(iso){
 }
 
 let testPanelOpen = false;
+// Painéis de "adulto" (sincronização com Drive, editar dia anterior, modo
+// teste) ficam escondidos da tela principal até alguém abrir a "Área dos
+// adultos" com sucesso — assim o Hector só vê o que usa no dia a dia.
+// Reseta sozinho ao recarregar a página.
+let adultUnlocked = false;
 
 function renderTestModeBanner(){
   const el = document.getElementById('testModeBanner');
@@ -194,27 +213,4 @@ function renderWeeklyReview(){
     const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
     if(!entry) return;
     if(iso !== todayISO()){
-      // dias fechados já têm pointsEarnedThatDay e screenMinutes calculados
-      const full = state.history[iso];
-      if(full){
-        totalPointsWeek += full.pointsEarnedThatDay || 0;
-        totalScreenMin += full.screenMinutes || 0;
-      }
-    }
-    if(entry.total > 0 && entry.perfect) perfectDays++;
-  });
-
-  const rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
-
-  el.innerHTML = `
-    <div class="weekly-review">
-      <div class="wr-head">
-        <h3 class="block-title" style="margin:0; color:var(--green);">🗓️ Resumo semanal em família</h3>
-        <span class="wr-range">${rangeLabel}</span>
-      </div>
-      <div class="wr-stats">
-        <div class="wr-stat"><span class="wr-num">${perfectDays}/7</span><span class="wr-label">dias completos</span></div>
-        <div class="wr-stat"><span class="wr-num">${totalPointsWeek}</span><span class="wr-label">Pacus Points ganhos</span></div>
-        <div class="wr-stat"><span class="wr-num">${totalScreenMin}</span><span class="wr-label">min de tela ganhos</span></div>
-      </div>
-    </di
+      // dias fechados já têm pointsEarnedThatD

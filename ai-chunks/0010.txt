@@ -1,4 +1,14 @@
-24 ${faceY+12}" stroke="#b9607f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+urn `<svg class="pet-mascot pet-hatch-crack" ${svgAttrs()}>
+    ${shell}
+    <g transform="translate(110 115) scale(${scale.toFixed(3)}) translate(-110 -115)">
+      ${sparkle}
+      <ellipse cx="110" cy="${bodyY}" rx="${bodyW}" ry="${bodyH}" fill="#f6c7dc"/>
+      <ellipse cx="110" cy="${bodyY+8}" rx="${bodyW*.68}" ry="${bodyH*.52}" fill="#fbe2ec" opacity=".85"/>
+      <circle cx="110" cy="${faceY}" r="32" fill="#f6c7dc"/>
+      ${gills.join('')}
+      <circle cx="97" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="123" cy="${faceY-4}" r="4.5" fill="#3a2430"/>
+      <circle cx="98" cy="${faceY-5.5}" r="1.4" fill="#fff"/><circle cx="124" cy="${faceY-5.5}" r="1.4" fill="#fff"/>
+      <path d="M96 ${faceY+12} Q110 ${faceY+18+growth*2} 124 ${faceY+12}" stroke="#b9607f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
       <circle cx="89" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/><circle cx="131" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/>
       <ellipse cx="110" cy="${bodyY+bodyH+5}" rx="22" ry="7" fill="#f6c7dc"/>
     </g>
@@ -175,18 +185,4 @@ function render(){
     if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
     else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
     else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
-    else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
-
-    const ul = document.createElement('ul');
-    ul.className = 'tasks';
-    period.tasks.forEach(task=>{
-      const li = document.createElement('li');
-      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
-      li.className = 'task'
-        + (status === 'done' ? ' done' : '')
-        + (status === 'na' ? ' na' : '')
-        + (status === 'x' ? ' notdone' : '');
-      li.innerHTML = `
-        <span class="mark-group" data-id="${task.id}">
-          <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
-          <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realiz
+    else { progressMsg = `${doneCount}/${applicable.length} fei

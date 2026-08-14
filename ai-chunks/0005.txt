@@ -1,4 +1,6 @@
-    { id:"t_djf7hbb", txt:"Levar Lixo", pts:3, sub:"até às 12h" },
+12h" },
+        { id:"m8", txt:"Arrumar a mochila", pts:1, sub:"até às 12h" },
+        { id:"t_djf7hbb", txt:"Levar Lixo", pts:3, sub:"até às 12h" },
       ]
     },
     tarde: {
@@ -19,7 +21,6 @@
         { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:3 },
         { id:"n5", txt:"Arrumar a bagunça", pts:2, sub:"até às 22h" },
         { id:"n6", txt:"Escovar os dentes", pts:1, sub:"até às 22h" },
-        { id:"t_gzba4xs", txt:"Cabelo Lavado", pts:1, sub:"" },
         { id:"t_ci3brlt", txt:"Ler Livro", pts:3, sub:"3 capítulo do livro de casa (até às 22h)" },
       ]
     },
@@ -166,5 +167,4 @@ function getPeriodsFor(dateISO){
     const periodKey = s.period && merged[s.period] ? s.period : 'tarde';
     merged[periodKey].tasks.push({
       id: 'sched_' + s.id,
-      txt: s.label,
- 
+  

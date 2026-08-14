@@ -1,4 +1,27 @@
-v>
+ay e screenMinutes calculados
+      const full = state.history[iso];
+      if(full){
+        totalPointsWeek += full.pointsEarnedThatDay || 0;
+        totalScreenMin += full.screenMinutes || 0;
+      }
+    }
+    if(entry.total > 0 && entry.perfect) perfectDays++;
+  });
+
+  const rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
+
+  el.innerHTML = `
+    <div class="weekly-review">
+      <div class="wr-head">
+        <h3 class="block-title" style="margin:0; color:var(--green);">🗓️ Resumo semanal em família</h3>
+        <span class="wr-range">${rangeLabel}</span>
+      </div>
+      <div class="wr-stats">
+        <div class="wr-stat"><span class="wr-num">${perfectDays}/7</span><span class="wr-label">dias completos</span></div>
+        <div class="wr-stat"><span class="wr-num">${totalPointsWeek}</span><span class="wr-label">Pacus Points ganhos</span></div>
+        <div class="wr-stat"><span class="wr-num">${totalScreenMin}</span><span class="wr-label">min de tela ganhos</span></div>
+      </div>
+    </div>
   `;
 }
 
@@ -7,6 +30,8 @@ function hairLabel(status){
   if(status === 'not-washed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
   return '<span class="hair-history-unknown">— Não registrado</span>';
 }
+
+let historyShowAll = false;
 
 function renderHistory(){
   const body = document.getElementById('historyBody');
@@ -20,7 +45,11 @@ function renderHistory(){
     rows.push(iso);
   }
 
-  body.innerHTML = rows.map(iso=>{
+  const HISTORY_VISIBLE_DAYS = 30;
+  const hiddenCount = Math.max(0, rows.length - HISTORY_VISIBLE_DAYS);
+  const visibleRows = historyShowAll ? rows : rows.slice(-HISTORY_VISIBLE_DAYS);
+
+  body.innerHTML = visibleRows.map(iso=>{
     const isToday = iso === todayISO();
     let entry;
     if(isToday){
@@ -41,11 +70,11 @@ function renderHistory(){
         <td>—</td>
         <td class="pts-cell">—</td>
         <td>${hairLabel(hair)}</td>
-        <td>${isToday?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
+        <td>${(isToday||!adultUnlocked)?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
       </tr>`;
     }
     const perfectBadge = entry.perfect ? '<span class="badge-perfect">dia perfeito</span>' : '';
-    const editCell = isToday ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
+    const editCell = (isToday||!adultUnlocked) ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
     return `<tr${isToday?' class="today-row"':''}>
       <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
       <td>${entry.done}/${entry.total}${perfectBadge}</td>
@@ -58,6 +87,21 @@ function renderHistory(){
   body.querySelectorAll('.edit-day-btn').forEach(btn=>{
     btn.addEventListener('click', ()=> openDayEditor(btn.getAttribute('data-date')));
   });
+
+  const toggleEl = document.getElementById('historyToggle');
+  if(toggleEl){
+    if(hiddenCount > 0){
+      toggleEl.innerHTML = historyShowAll
+        ? `<button class="icon-btn" id="historyToggleBtn">mostrar só os últimos ${HISTORY_VISIBLE_DAYS} dias</button>`
+        : `<button class="icon-btn" id="historyToggleBtn">mostrar histórico completo (+${hiddenCount} dias)</button>`;
+      document.getElementById('historyToggleBtn').addEventListener('click', ()=>{
+        historyShowAll = !historyShowAll;
+        renderHistory();
+      });
+    } else {
+      toggleEl.innerHTML = '';
+    }
+  }
 }
 
 function renderRewards(){
@@ -152,52 +196,4 @@ function onMarkClick(e){
     addLog(`(desmarcado) ${task.txt}`);
   } else {
     state.checkedToday[id] = clickedStatus;
-    if(clickedStatus === 'done'){
-      state.totalPoints += task.pts;
-      addLog(`+${task.pts} · ${task.txt}`);
-      fireConfetti(btn);
-    } else if(clickedStatus === 'na'){
-      addLog(`n/a · ${task.txt}`);
-    } else {
-      addLog(`✕ não realizado · ${task.txt}`);
-    }
-  }
-
-  const completedNow = syncPetCompletionFromDay(todayISO());
-  if(completedNow){
-    addLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
-  }
-  saveState(state);
-  bumpTotal();
-  render();
-}
-
-document.getElementById('hairWashedBtn').addEventListener('click', ()=> setHairStatus('washed'));
-document.getElementById('hairNotWashedBtn').addEventListener('click', ()=> setHairStatus('not-washed'));
-
-document.getElementById('addPointsBtn').addEventListener('click', ()=>{
-  const raw = prompt('Quantos Pacus Points adicionar?', '5');
-  if(raw === null) return;
-  const amount = parseInt(raw, 10);
-  if(!amount || amount === 0) return;
-  state.totalPoints = Math.max(0, state.totalPoints + amount);
-  addLog(`${amount>0?'+':''}${amount} · ajuste manual`);
-  saveState(state);
-  bumpTotal();
-  render();
-});
-
-document.getElementById('resetBtn').addEventListener('click', ()=>{
-  if(!confirm('Isso apaga os Pacus Points, o histórico de hoje e o histórico de dias. Tem certeza?')) return;
-  state = { totalPoints:0, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, driveLastSyncISO:null, hairByDate:{} };
-  saveState(state);
-  render();
-});
-
-/* ===================== EDITOR ===================== */
-let draft = null; // cópia de trabalho do CONFIG enquanto o modal está aberto
-
-function openEditor(){
-  draft = JSON.parse(JSON.stringify(CONFIG));
-  renderEditorPeriod('manha', 'editManha');
-  renderEditorPeriod('tarde', 'editTarde');
+    if(clickedStatu

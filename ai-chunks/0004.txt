@@ -23,6 +23,7 @@ its" id="badHabits"></div>
             <tbody id="historyBody"></tbody>
           </table>
         </div>
+        <div id="historyToggle" style="text-align:center; margin-top:10px;"></div>
       </section>
 
       <section class="block" id="driveSyncSection"></section>
@@ -190,6 +191,4 @@ const DEFAULT_CONFIG = {
         { id:"m3", txt:"Escovar os dentes", pts:1, sub:"até às 12h" },
         { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h" },
         { id:"m5", txt:"Duolingo", sub:"5 lições", pts:4 },
-        { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 12h" },
-        { id:"m8", txt:"Arrumar a mochila", pts:1, sub:"até às 12h" },
-    
+        { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 
