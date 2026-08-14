@@ -109,6 +109,7 @@
   }
 
   .pacus-total{
+    position:relative;
     display:flex;
     align-items:baseline;
     gap:7px;
@@ -132,6 +133,35 @@
     text-align:right;
   }
   .pacus-total .num.bump{ transform:scale(1.3); }
+
+  .points-delta{
+    position:absolute;
+    top:-6px;
+    right:8px;
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:1rem;
+    font-weight:bold;
+    pointer-events:none;
+    opacity:0;
+  }
+  .points-delta.show-up{
+    color:var(--green);
+    animation:pointsFloatUp 1.1s ease-out forwards;
+  }
+  .points-delta.show-down{
+    color:var(--red);
+    animation:pointsFloatDown 1.1s ease-out forwards;
+  }
+  @keyframes pointsFloatUp{
+    0%{ opacity:0; transform:translateY(4px) scale(.8); }
+    20%{ opacity:1; transform:translateY(-4px) scale(1.15); }
+    100%{ opacity:0; transform:translateY(-22px) scale(1); }
+  }
+  @keyframes pointsFloatDown{
+    0%{ opacity:0; transform:translateY(-4px) scale(.8); }
+    20%{ opacity:1; transform:translateY(4px) scale(1.15); }
+    100%{ opacity:0; transform:translateY(22px) scale(1); }
+  }
 
   .icon-btn{
     display:inline-flex;
@@ -1192,6 +1222,7 @@
         <div class="pacus-total">
           <span class="label">Pacus Points</span>
           <span class="num" id="totalPoints">0</span>
+          <span class="points-delta" id="pointsDelta"></span>
         </div>
         <button class="icon-btn primary" id="addPointsBtn" title="Ajuste manual de Pacus Points">+ pontos</button>
         <button class="icon-btn primary" id="editBtn">🔒 Área dos adultos</button>
@@ -2062,12 +2093,22 @@ function addLog(text){
   state.log.unshift(time+" — "+text);
   state.log = state.log.slice(0, 30);
 }
-function bumpTotal(){
+function bumpTotal(delta){
   const el = document.getElementById('totalPoints');
   el.textContent = state.totalPoints;
   el.classList.remove('bump');
   void el.offsetWidth;
   el.classList.add('bump');
+
+  if(delta){
+    const deltaEl = document.getElementById('pointsDelta');
+    if(deltaEl){
+      deltaEl.classList.remove('show-up','show-down');
+      void deltaEl.offsetWidth;
+      deltaEl.textContent = (delta>0?'+':'−') + Math.abs(delta);
+      deltaEl.classList.add(delta>0?'show-up':'show-down');
+    }
+  }
 }
 
 // 1 Pacus Point ≈ R$0,06 (dentro da faixa combinada de R$0,05–0,08) — o
@@ -2076,7 +2117,9 @@ const MAX_POINTS = 1000;
 const POINT_VALUE_BRL = 0.06;
 
 function addPoints(delta){
+  const before = state.totalPoints;
   state.totalPoints = Math.max(0, Math.min(MAX_POINTS, state.totalPoints + delta));
+  return state.totalPoints - before;
 }
 
 // Pra "✕ não realizado": perde metade dos pontos daquela tarefa. A metade
@@ -2664,10 +2707,10 @@ function render(){
         <span class="mark-group" data-id="${task.id}">
           <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
           <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
-          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, não ganha ponto">✕</button>
+          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, perde metade dos pontos">✕</button>
         </span>
         <span class="txt"><span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
-        <span class="pts">${status==='na' ? 'n/a' : '+'+task.pts}</span>
+        <span class="pts">${status==='na' ? 'n/a' : status==='x' ? '−'+notDonePenalty(task.pts) : '+'+task.pts}</span>
       `;
       ul.appendChild(li);
     });
@@ -2693,10 +2736,10 @@ function render(){
     btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
     btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
     btn.addEventListener('click', ()=>{
-      addPoints(h.pts);
+      const delta = addPoints(h.pts);
       addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
       saveState(state);
-      bumpTotal();
+      bumpTotal(delta);
       renderLog();
     });
     badEl.appendChild(btn);
@@ -2991,7 +3034,7 @@ function renderRewards(){
       const redeemed = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
       if(r.maxPerDay != null && redeemed >= r.maxPerDay) return;
 
-      addPoints(-r.cost);
+      const delta = addPoints(-r.cost);
       addLog(`🎁 Resgatou: ${r.txt} (−${r.cost})`);
       if(r.grantsHours){
         addGameTimerBonusHours(r.grantsHours);
@@ -3001,7 +3044,7 @@ function renderRewards(){
       state.gameTimer.redemptions[r.id] = redeemed + 1;
 
       saveState(state);
-      bumpTotal();
+      bumpTotal(delta);
       renderRewards();
       renderLog();
       renderGameTimer();
@@ -3050,10 +3093,11 @@ function onMarkClick(e){
   if(!task) return;
 
   const current = state.checkedToday[id]; // undefined | 'done' | 'na' | 'x'
+  let totalDelta = 0;
 
   // desfazer o efeito do estado anterior nos pontos
-  if(current === 'done') addPoints(-task.pts);
-  else if(current === 'x') addPoints(notDonePenalty(task.pts));
+  if(current === 'done') totalDelta += addPoints(-task.pts);
+  else if(current === 'x') totalDelta += addPoints(notDonePenalty(task.pts));
 
   if(current === clickedStatus){
     // clicou de novo no mesmo estado: volta pra pendente
@@ -3062,14 +3106,14 @@ function onMarkClick(e){
   } else {
     state.checkedToday[id] = clickedStatus;
     if(clickedStatus === 'done'){
-      addPoints(task.pts);
+      totalDelta += addPoints(task.pts);
       addLog(`+${task.pts} · ${task.txt}`);
       fireConfetti(btn);
     } else if(clickedStatus === 'na'){
       addLog(`n/a · ${task.txt}`);
     } else {
       const penalty = notDonePenalty(task.pts);
-      addPoints(-penalty);
+      totalDelta += addPoints(-penalty);
       addLog(`✕ não realizado · ${task.txt} (−${penalty})`);
     }
   }
@@ -3079,7 +3123,7 @@ function onMarkClick(e){
     addLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
   }
   saveState(state);
-  bumpTotal();
+  bumpTotal(totalDelta);
   render();
 }
 
@@ -3091,10 +3135,10 @@ document.getElementById('addPointsBtn').addEventListener('click', ()=>{
   if(raw === null) return;
   const amount = parseInt(raw, 10);
   if(!amount || amount === 0) return;
-  addPoints(amount);
+  const delta = addPoints(amount);
   addLog(`${amount>0?'+':''}${amount} · ajuste manual`);
   saveState(state);
-  bumpTotal();
+  bumpTotal(delta);
   render();
 });
 
@@ -3447,14 +3491,15 @@ document.getElementById('daySaveBtn').addEventListener('click', ()=>{
 
   // ajusta o saldo total pela diferença de pontos daquele dia
   const delta = pointsEarnedThatDay - oldPoints;
+  let appliedDelta = 0;
   if(delta !== 0){
-    addPoints(delta);
+    appliedDelta = addPoints(delta);
     addLog(`✏️ ajuste em ${formatDateBR(editingDate)}: ${delta>0?'+':''}${delta}`);
   }
 
   saveState(state);
   closeDayEditor();
-  bumpTotal();
+  bumpTotal(appliedDelta);
   render();
 });
 
