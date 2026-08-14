@@ -1,4 +1,16 @@
-);
+', onMarkClick);
+  });
+
+  const badEl = document.getElementById('badHabits');
+  badEl.innerHTML = '';
+  CONFIG.badHabits.forEach(h=>{
+    const isPositive = h.pts >= 0;
+    const btn = document.createElement('button');
+    btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
+    btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
+    btn.addEventListener('click', ()=>{
+      const delta = addPoints(h.pts);
+      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
       saveState(state);
       bumpTotal(delta);
       renderLog();
@@ -210,18 +222,4 @@ function renderHistory(){
   const today = new Date(todayISO()+"T00:00:00");
 
   const rows = [];
-  for(let d = new Date(startDate); d <= today; d.setDate(d.getDate()+1)){
-    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-    rows.push(iso);
-  }
-
-  const HISTORY_VISIBLE_DAYS = 30;
-  const hiddenCount = Math.max(0, rows.length - HISTORY_VISIBLE_DAYS);
-  const visibleRows = historyShowAll ? rows : rows.slice(-HISTORY_VISIBLE_DAYS);
-
-  body.innerHTML = visibleRows.map(iso=>{
-    const isToday = iso === todayISO();
-    let entry;
-    if(isToday){
-      const tasks = allTasks();
-     
+  for(let d = new Date(startD

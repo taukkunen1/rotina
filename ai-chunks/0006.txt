@@ -1,4 +1,10 @@
-.
+onteúdo do arquivo "rotina-hector.html" no Drive uma vez, e todo
+   aparelho já abre a versão nova sozinho, sem copiar arquivo nenhum.
+
+   Passo a passo pra ativar:
+   1. Acesse https://script.google.com/ → "Novo projeto".
+   2. Apague o código de exemplo e cole o código que aparece no botão
+      "📋 ver código do Apps Script" logo abaixo, na seção de sincronização.
    3. Clique em "Implantar" → "Nova implantação".
    4. Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer
       pessoa".
@@ -184,13 +190,4 @@ function loadState(){
 function applyHistoryCorrection_v2(state){
   // Correção pontual, aplicada só UMA VEZ (por causa da flag abaixo) —
   // depois disso nunca mais mexe sozinha nesses dias, pra não apagar
-  // edições feitas manualmente depois. Cobre 09/08 a 12/08: todos os
-  // dias foram completos; dia 12 teve -10 Pacus Points por causa de uma
-  // briga na escola; saldo final confirmado até 12/08: 170 Pacus Points.
-  if(state.historyCorrectionV2Applied) return;
-
-  const hairByDay = {
-    "2026-08-09": "not-washed",
-    "2026-08-10": "washed",
-    "2026-08-11": "not-washed",
-    "2026-08
+  // edições feitas manu

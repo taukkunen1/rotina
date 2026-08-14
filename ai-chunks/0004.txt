@@ -1,4 +1,7 @@
-siteLockError" style="color:var(--red); font-size:.78rem; margin-top:10px; min-height:1em;"></div>
+holder="Senha" maxlength="12"
+      style="width:100%; text-align:center; font-size:1.1rem; letter-spacing:3px; background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--chalk); border-radius:8px; padding:10px; font-family:inherit; margin-bottom:12px;">
+    <button class="btn save" id="siteLockBtn" style="width:100%;">entrar</button>
+    <div id="siteLockError" style="color:var(--red); font-size:.78rem; margin-top:10px; min-height:1em;"></div>
   </div>
 </div>
 
@@ -191,11 +194,4 @@ siteLockError" style="color:var(--red); font-size:.78rem; margin-top:10px; min-h
     <div class="editor-section">
       <h3>🎁 Recompensas</h3>
       <div id="editRewards"></div>
-      <button class="add-row-btn" data-add="reward">+ adicionar recompensa</button>
-    </div>
-
-    <div class="editor-section">
-      <h3>📅 Compromissos Fixos</h3>
-      <div class="hint">Aparecem direto na lista de tarefas do dia certo, no período escolhido (Manhã/Tarde/Noite) — valem pontos como qualquer tarefa.</div>
-      <div id="editSchedule"></div>
-      <button clas
+      <but

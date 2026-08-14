@@ -1,4 +1,22 @@
-ing:4px 6px;
+ce-between;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .backup-reminder button{
+    background:var(--yellow);
+    color:#2a2410;
+    border:none;
+    padding:4px 10px;
+    border-radius:6px;
+    font-size:.72rem;
+    font-weight:bold;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .backup-reminder .dismiss{
+    background:none;
+    color:var(--chalk-dim);
+    padding:4px 6px;
     font-weight:normal;
   }
 
@@ -318,7 +336,4 @@ ing:4px 6px;
   <div class="editor" style="max-width:340px; text-align:center;">
     <div style="font-size:2.5rem; margin-bottom:6px;">🔒</div>
     <h2 style="font-family:'Segoe Print','Bradley Hand',cursive; font-weight:normal; color:var(--yellow); margin:0 0 14px;">Rotina do Hector</h2>
-    <input type="password" inputmode="numeric" id="siteLockInput" placeholder="Senha" maxlength="12"
-      style="width:100%; text-align:center; font-size:1.1rem; letter-spacing:3px; background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--chalk); border-radius:8px; padding:10px; font-family:inherit; margin-bottom:12px;">
-    <button class="btn save" id="siteLockBtn" style="width:100%;">entrar</button>
-    <div id="
+    <input type="password" inputmode="numeric" id="siteLockInput" place

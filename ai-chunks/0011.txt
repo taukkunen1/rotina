@@ -1,4 +1,15 @@
-quivalent === 0){
+estones.map(([day,label])=>{
+    const active = daysEquivalent >= day;
+    const current = stage >= day && (stage === day || (stage > day && day === 23));
+    return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label} <small>dia ${day}</small></span>`;
+  }).join('');
+
+  let caption;
+  if(stage === maxStage){
+    caption = `Pacus adulto! <b>Ciclo concluído em 31/08.</b> 🎉`;
+  } else if(canGrowToday){
+    caption = `<b>Dia completo!</b> O Pacus vai evoluir mais um pouco.`;
+  } else if(daysEquivalent === 0){
     caption = `Complete um dia inteiro de tarefas pra começar a rachar o ovo.`;
   } else {
     const nextMilestone = milestones.find(([day]) => day > daysEquivalent);
@@ -175,16 +186,4 @@ function render(){
   });
 
   periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
-    btn.addEventListener('click', onMarkClick);
-  });
-
-  const badEl = document.getElementById('badHabits');
-  badEl.innerHTML = '';
-  CONFIG.badHabits.forEach(h=>{
-    const isPositive = h.pts >= 0;
-    const btn = document.createElement('button');
-    btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
-    btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
-    btn.addEventListener('click', ()=>{
-      const delta = addPoints(h.pts);
-      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`
+    btn.addEventListener('click

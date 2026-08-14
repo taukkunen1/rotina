@@ -1,4 +1,11 @@
-s="add-row-btn" data-add="schedule">+ adicionar compromisso</button>
+ton class="add-row-btn" data-add="reward">+ adicionar recompensa</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>📅 Compromissos Fixos</h3>
+      <div class="hint">Aparecem direto na lista de tarefas do dia certo, no período escolhido (Manhã/Tarde/Noite) — valem pontos como qualquer tarefa.</div>
+      <div id="editSchedule"></div>
+      <button class="add-row-btn" data-add="schedule">+ adicionar compromisso</button>
     </div>
 
     <div class="editor-section">
@@ -162,10 +169,4 @@ const APP_VERSION = "2026.08.11-pacus-v4";
    Depois de configurado, o jeito certo de abrir em qualquer aparelho é
    pela URL do Apps Script (a que termina em /exec) — não pelo arquivo
    local. Assim, quando o app for atualizado, basta substituir o
-   conteúdo do arquivo "rotina-hector.html" no Drive uma vez, e todo
-   aparelho já abre a versão nova sozinho, sem copiar arquivo nenhum.
-
-   Passo a passo pra ativar:
-   1. Acesse https://script.google.com/ → "Novo projeto".
-   2. Apague o código de exemplo e cole o código que aparece no botão
-      "📋 ver código do Apps Script" logo abaixo, na seção de sincronização
+   c

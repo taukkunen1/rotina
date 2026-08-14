@@ -1,4 +1,11 @@
-d':''}>▶️ Iniciar</button>
+lay_${t.id}">${formatHMS(remaining)}</div>
+        <div class="custom-timer-setrow">
+          <input type="number" min="0" step="1" id="customTimerMin_${t.id}" value="${totalMin}" ${running?'disabled':''}>
+          <span>min</span>
+          <button class="custom-timer-btn secondary" id="customTimerSetBtn_${t.id}" ${running?'disabled':''}>definir</button>
+        </div>
+        <div class="custom-timer-btns">
+          <button class="custom-timer-btn" id="customTimerStartBtn_${t.id}" ${(running||remaining<=0)?'disabled':''}>▶️ Iniciar</button>
           <button class="custom-timer-btn secondary" id="customTimerPauseBtn_${t.id}" ${running?'':'disabled'}>⏸️ Pausar</button>
           <button class="custom-timer-btn secondary" id="customTimerResetBtn_${t.id}">↺ Reiniciar</button>
         </div>
@@ -149,15 +156,4 @@ function renderPet(){
   const milestones = [
     [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
   ];
-  const milestoneHtml = milestones.map(([day,label])=>{
-    const active = daysEquivalent >= day;
-    const current = stage >= day && (stage === day || (stage > day && day === 23));
-    return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label} <small>dia ${day}</small></span>`;
-  }).join('');
-
-  let caption;
-  if(stage === maxStage){
-    caption = `Pacus adulto! <b>Ciclo concluído em 31/08.</b> 🎉`;
-  } else if(canGrowToday){
-    caption = `<b>Dia completo!</b> O Pacus vai evoluir mais um pouco.`;
-  } else if(daysE
+  const milestoneHtml = mil

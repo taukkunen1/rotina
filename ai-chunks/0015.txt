@@ -1,4 +1,15 @@
-r('.del').addEventListener('click', ()=>{
+er('input', e=>{ item.end = e.target.value; });
+    row.querySelector('[data-field=period]').addEventListener('change', e=>{ item.period = e.target.value; });
+    wireStepper(row, item, 'pts');
+    row.querySelectorAll('.day-chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        const d = chip.getAttribute('data-day');
+        if(item.days.includes(d)) item.days = item.days.filter(x=>x!==d);
+        else item.days.push(d);
+        chip.classList.toggle('active');
+      });
+    });
+    row.querySelector('.del').addEventListener('click', ()=>{
       draft.schedule = draft.schedule.filter(x=>x!==item);
       renderEditorSchedule();
     });
@@ -182,15 +193,4 @@ const APPS_SCRIPT_CODE = `function doGet(e) {
       var raw = file.getBlob().getDataAsString();
       try {
         var data = JSON.parse(raw);
-        return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
-      } catch(err) {}
-    }
-    return ContentService.createTextOutput(JSON.stringify({error:'not_found'})).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  var appFiles = DriveApp.getFilesByName('rotina-hector.html');
-  if (!appFiles.hasNext()) appFiles = DriveApp.getFilesByName('rotina-hector-app.html');
-  if (appFiles.hasNext()) {
-    return HtmlService.createHtmlOutput(appFiles.next().getBlob().getDataAsString())
-      .setTitle('Rotina do Hector')
-      .addMetaTag('vi
+        return ContentService.createTextOutput(JSON.stringify(data

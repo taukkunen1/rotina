@@ -1,4 +1,24 @@
-g()) return;
+bonusSeconds || 0));
+  return base + bonus;
+}
+
+function addGameTimerBonusHours(hours){
+  if(!state.gameTimer.bonusSeconds) state.gameTimer.bonusSeconds = 0;
+  state.gameTimer.bonusSeconds += Math.round(hours * 3600);
+}
+
+function gameTimerSecondsUsedNow(){
+  const gt = state.gameTimer;
+  const running = gt.runningSince ? (Date.now() - gt.runningSince)/1000 : 0;
+  return gt.usedSeconds + running;
+}
+
+function gameTimerIsRunning(){
+  return !!state.gameTimer.runningSince;
+}
+
+function startGameTimer(){
+  if(gameTimerIsRunning()) return;
   state.gameTimer.runningSince = Date.now();
   addLog('🎮 começou a jogar');
   saveState(state);
@@ -221,11 +241,4 @@ function renderCustomTimers(){
     return `
       <div class="custom-timer ${t.finished?'finished':''}">
         <input type="text" class="custom-timer-label" id="customTimerLabel_${t.id}" value="${escapeAttr(t.label)}" maxlength="20">
-        <div class="custom-timer-display" id="customTimerDisplay_${t.id}">${formatHMS(remaining)}</div>
-        <div class="custom-timer-setrow">
-          <input type="number" min="0" step="1" id="customTimerMin_${t.id}" value="${totalMin}" ${running?'disabled':''}>
-          <span>min</span>
-          <button class="custom-timer-btn secondary" id="customTimerSetBtn_${t.id}" ${running?'disabled':''}>definir</button>
-        </div>
-        <div class="custom-timer-btns">
-          <button class="custom-timer-btn" id="customTimerStartBtn_${t.id}" ${(running||remaining<=0)?'disable
+        <div class="custom-timer-display" id="customTimerDisp

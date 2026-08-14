@@ -1,4 +1,18 @@
- const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+ate); d <= today; d.setDate(d.getDate()+1)){
+    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+    rows.push(iso);
+  }
+
+  const HISTORY_VISIBLE_DAYS = 30;
+  const hiddenCount = Math.max(0, rows.length - HISTORY_VISIBLE_DAYS);
+  const visibleRows = historyShowAll ? rows : rows.slice(-HISTORY_VISIBLE_DAYS);
+
+  body.innerHTML = visibleRows.map(iso=>{
+    const isToday = iso === todayISO();
+    let entry;
+    if(isToday){
+      const tasks = allTasks();
+      const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
       const total = applicable.length;
       const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
       const pointsEarnedThatDay = tasks.filter(t=>state.checkedToday[t.id]==='done').reduce((s,t)=>s+t.pts,0);
@@ -179,20 +193,4 @@ document.getElementById('addPointsBtn').addEventListener('click', ()=>{
 
 document.getElementById('resetBtn').addEventListener('click', ()=>{
   if(!confirm('Isso apaga os Pacus Points, o histórico de hoje e o histórico de dias. Tem certeza?')) return;
-  state = { totalPoints:0, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, driveLastSyncISO:null, hairByDate:{} };
-  saveState(state);
-  render();
-});
-
-/* ===================== EDITOR ===================== */
-let draft = null; // cópia de trabalho do CONFIG enquanto o modal está aberto
-
-function openEditor(){
-  draft = JSON.parse(JSON.stringify(CONFIG));
-  renderEditorPeriod('manha', 'editManha');
-  renderEditorPeriod('tarde', 'editTarde');
-  renderEditorPeriod('noite', 'editNoite');
-  renderEditorBad();
-  renderEditorRewards();
-
-  const weekendTogg
+  state = { totalPoints:0, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveConflictCount:0, lastBackupISO:null, backup
