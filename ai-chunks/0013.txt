@@ -1,4 +1,127 @@
-btn" id="testCompleteDayBtn">✅ completar tudo hoje</button>
+ done' : '')
+        + (status === 'na' ? ' na' : '')
+        + (status === 'x' ? ' notdone' : '')
+        + (isSuggested ? ' suggested' : '')
+        + (late ? ' late-done' : '');
+      li.innerHTML = `
+        <span class="mark-group" data-id="${task.id}">
+          <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
+          <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
+          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, perde metade dos pontos">✕</button>
+        </span>
+        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}${late ? '<span class="late-flag">⏰ atrasado</span>' : ''}</span>
+        <span class="pts">${status==='na' ? 'n/a' : status==='x' ? '−'+taskNotDonePenalty(task) : '+'+task.pts}</span>
+      `;
+      ul.appendChild(li);
+    });
+
+    div.innerHTML = `
+      <div class="period-head"><h2>${period.label}</h2><span class="time">${period.time}</span></div>
+      <span class="time-remaining" id="timeRemaining_${key}"></span>
+      <span class="progress-txt">${progressMsg}</span>
+      <div class="progress-bar"><div style="width:${pct}%"></div></div>
+    `;
+    div.dataset.periodTime = period.time;
+    div.appendChild(ul);
+    periodsEl.appendChild(div);
+  });
+
+  updateTimeRemainingDisplays();
+  startTimeRemainingTicking();
+
+  periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
+    btn.addEventListener('click', onMarkClick);
+  });
+
+  const badEl = document.getElementById('badHabits');
+  badEl.innerHTML = '';
+  CONFIG.badHabits.forEach(h=>{
+    const isPositive = h.pts >= 0;
+    const btn = document.createElement('button');
+    btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
+    btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
+    btn.addEventListener('click', ()=>{
+      const delta = addPoints(h.pts);
+      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
+      saveState(state);
+      bumpTotal(delta, btn);
+      renderLog();
+    });
+    badEl.appendChild(btn);
+  });
+
+  renderRewards();
+  renderLog();
+  renderHistory();
+  renderAchievementMural();
+  renderWeeklyReview();
+  renderBackupReminder();
+  renderTestPanel();
+  renderTestModeBanner();
+  renderDriveSync();
+}
+
+function daysBetween(isoA, isoB){
+  const a = new Date(isoA+"T00:00:00");
+  const b = new Date(isoB+"T00:00:00");
+  return Math.round((b-a)/86400000);
+}
+
+function shiftISODate(iso, deltaDays){
+  const d = new Date(iso+"T00:00:00");
+  d.setDate(d.getDate()+deltaDays);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+}
+
+function goToTestDate(iso){
+  setTestDate(iso);
+  state = loadState();
+  render();
+}
+
+let testPanelOpen = false;
+// Painéis de "adulto" (sincronização com Drive, editar dia anterior, modo
+// teste) ficam escondidos da tela principal até alguém abrir a "Área dos
+// adultos" com sucesso — assim o Hector só vê o que usa no dia a dia.
+// Reseta sozinho ao recarregar a página.
+let adultUnlocked = false;
+
+function renderTestModeBanner(){
+  const el = document.getElementById('testModeBanner');
+  if(!el) return;
+  if(!TEST_DATE_OVERRIDE){ el.innerHTML=''; return; }
+  el.innerHTML = `
+    <div class="test-mode-banner">
+      🧪 MODO TESTE ATIVO — data simulada: ${formatDateBR(TEST_DATE_OVERRIDE)}
+      <button id="bannerRealDateBtn">voltar pra data real</button>
+    </div>
+  `;
+  document.getElementById('bannerRealDateBtn').addEventListener('click', ()=>{
+    setTestDate(null);
+    state = loadState();
+    render();
+  });
+}
+
+function renderTestPanel(){
+  const el = document.getElementById('testPanel');
+  if(!el) return;
+  if(!testPanelOpen){ el.style.display='none'; el.innerHTML=''; return; }
+  el.style.display='block';
+
+  const realToday = (()=>{
+    const d = new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+  })();
+  const usingOverride = !!TEST_DATE_OVERRIDE;
+
+  el.innerHTML = `
+    <div class="test-panel">
+      <h3>🧪 Modo de teste</h3>
+      <div class="hint">Ferramentas só pra conferir se o crescimento do Pacus e o histórico estão funcionando. Não mexe nas tarefas de verdade — só simula dias.</div>
+      <div class="test-date">Data simulada agora: <b>${formatDateBR(todayISO())}/${todayISO().split('-')[0]}</b>${usingOverride ? ' (modo teste ativo)' : ' (data real do sistema)'}</div>
+      <div class="test-row">
+        <button class="icon-btn" id="testCompleteDayBtn">✅ completar tudo hoje</button>
         <button class="icon-btn" id="testPrevDayBtn">◀ dia anterior</button>
         <button class="icon-btn" id="testNextDayBtn">dia seguinte ▶</button>
         <input type="date" id="testDatePicker" value="${todayISO()}">
@@ -87,118 +210,4 @@ function renderWeeklyReview(){
 
   let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0;
   days.forEach(iso=>{
-    const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
-    if(!entry) return;
-    if(iso !== todayISO()){
-      // dias fechados já têm pointsEarnedThatDay e screenMinutes calculados
-      const full = state.history[iso];
-      if(full){
-        totalPointsWeek += full.pointsEarnedThatDay || 0;
-        totalScreenMin += full.screenMinutes || 0;
-      }
-    }
-    if(entry.total > 0 && entry.perfect) perfectDays++;
-  });
-
-  const rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
-
-  el.innerHTML = `
-    <div class="weekly-review">
-      <div class="wr-head">
-        <h3 class="block-title" style="margin:0; color:var(--green);">🗓️ Resumo semanal em família</h3>
-        <span class="wr-range">${rangeLabel}</span>
-      </div>
-      <div class="wr-stats">
-        <div class="wr-stat"><span class="wr-num">${perfectDays}/7</span><span class="wr-label">dias completos</span></div>
-        <div class="wr-stat"><span class="wr-num">${totalPointsWeek}</span><span class="wr-label">Pacus Points ganhos</span></div>
-        <div class="wr-stat"><span class="wr-num">${totalScreenMin}</span><span class="wr-label">min de tela ganhos</span></div>
-      </div>
-    </div>
-  `;
-}
-
-function hairLabel(status){
-  if(status === 'washed') return '<span class="hair-history-washed">💧 Lavou</span>';
-  if(status === 'not-washed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
-  return '<span class="hair-history-unknown">— Não registrado</span>';
-}
-
-let historyShowAll = false;
-
-function renderHistory(){
-  const body = document.getElementById('historyBody');
-  const start = CONFIG.historyStartDate || todayISO();
-  const startDate = new Date(start+"T00:00:00");
-  const today = new Date(todayISO()+"T00:00:00");
-
-  const rows = [];
-  for(let d = new Date(startDate); d <= today; d.setDate(d.getDate()+1)){
-    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-    rows.push(iso);
-  }
-
-  const HISTORY_VISIBLE_DAYS = 30;
-  const hiddenCount = Math.max(0, rows.length - HISTORY_VISIBLE_DAYS);
-  const visibleRows = historyShowAll ? rows : rows.slice(-HISTORY_VISIBLE_DAYS);
-
-  body.innerHTML = visibleRows.map(iso=>{
-    const isToday = iso === todayISO();
-    let entry;
-    if(isToday){
-      const tasks = allTasks();
-      const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-      const total = applicable.length;
-      const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-      const pointsEarnedThatDay = tasks.filter(t=>state.checkedToday[t.id]==='done').reduce((s,t)=>s+t.pts,0);
-      const perfect = total>0 && done===total;
-      entry = { done, total, pointsEarnedThatDay, perfect, hair:getHairStatus(iso) };
-    } else {
-      entry = state.history[iso];
-    }
-    const hair = getHairStatus(iso) || (entry && entry.hair) || null;
-    if(!entry){
-      return `<tr${isToday?' class="today-row"':''}>
-        <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
-        <td>—</td>
-        <td class="pts-cell">—</td>
-        <td>${hairLabel(hair)}</td>
-        <td>${(isToday||!adultUnlocked)?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
-      </tr>`;
-    }
-    const perfectBadge = entry.perfect ? '<span class="badge-perfect">dia perfeito</span>' : '';
-    const editCell = (isToday||!adultUnlocked) ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
-    return `<tr${isToday?' class="today-row"':''}>
-      <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
-      <td>${entry.done}/${entry.total}${perfectBadge}</td>
-      <td class="pts-cell">${entry.pointsEarnedThatDay}</td>
-      <td>${hairLabel(hair)}</td>
-      <td>${editCell}</td>
-    </tr>`;
-  }).join('');
-
-  body.querySelectorAll('.edit-day-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=> openDayEditor(btn.getAttribute('data-date')));
-  });
-
-  const toggleEl = document.getElementById('historyToggle');
-  if(toggleEl){
-    if(hiddenCount > 0){
-      toggleEl.innerHTML = historyShowAll
-        ? `<button class="icon-btn" id="historyToggleBtn">mostrar só os últimos ${HISTORY_VISIBLE_DAYS} dias</button>`
-        : `<button class="icon-btn" id="historyToggleBtn">mostrar histórico completo (+${hiddenCount} dias)</button>`;
-      document.getElementById('historyToggleBtn').addEventListener('click', ()=>{
-        historyShowAll = !historyShowAll;
-        renderHistory();
-      });
-    } else {
-      toggleEl.innerHTML = '';
-    }
-  }
-}
-
-function renderRewards(){
-  const rEl = document.getElementById('rewards');
-  rEl.innerHTML = '';
-  CONFIG.rewards.forEach(r=>{
-    const canAfford = state.totalPoints >= r.cost;
-    const redeemedToday = (state.gameTimer.redemptions && state.g
+    const entry = iso === todayISO() ? liveTodayEntry

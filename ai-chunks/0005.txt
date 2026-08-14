@@ -1,4 +1,61 @@
-utton class="add-row-btn" data-add="bad">+ adicionar hábito</button>
+btn save" id="daySaveBtn">salvar dia</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL DE EDIÇÃO ===================== -->
+<div class="overlay" id="overlay">
+  <div class="editor">
+    <div class="editor-head">
+      <h2>Editar tudo</h2>
+      <button class="icon-btn" id="closeBtn">fechar ✕</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>🌅 Manhã</h3>
+      <div class="hint">Tarefa, pontos e (opcional) um detalhe menor embaixo do nome.</div>
+      <div id="editManha"></div>
+      <button class="add-row-btn" data-add="manha">+ adicionar tarefa</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>☀️ Tarde</h3>
+      <div id="editTarde"></div>
+      <button class="add-row-btn" data-add="tarde">+ adicionar tarefa</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>🌙 Noite</h3>
+      <div id="editNoite"></div>
+      <button class="add-row-btn" data-add="noite">+ adicionar tarefa</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>🏖️ Rotina de fim de semana</h3>
+      <div class="hint">Se ativado, sábado e domingo usam essa lista em vez da rotina de dia de escola.</div>
+      <label style="display:flex; align-items:center; gap:8px; font-size:.85rem; margin-bottom:12px;">
+        <input type="checkbox" id="weekendToggle" style="width:16px; height:16px;">
+        Usar rotina diferente no fim de semana
+      </label>
+      <div id="weekendEditorBody" style="display:none;">
+        <h3 style="font-size:.95rem; margin-top:14px;">🌅 Manhã (fim de semana)</h3>
+        <div id="editManhaWeekend"></div>
+        <button class="add-row-btn" data-add="manhaWeekend">+ adicionar tarefa</button>
+
+        <h3 style="font-size:.95rem; margin-top:14px;">☀️ Tarde (fim de semana)</h3>
+        <div id="editTardeWeekend"></div>
+        <button class="add-row-btn" data-add="tardeWeekend">+ adicionar tarefa</button>
+
+        <h3 style="font-size:.95rem; margin-top:14px;">🌙 Noite (fim de semana)</h3>
+        <div id="editNoiteWeekend"></div>
+        <button class="add-row-btn" data-add="noiteWeekend">+ adicionar tarefa</button>
+      </div>
+    </div>
+
+    <div class="editor-section">
+      <h3>✨ Pacus Points Extra</h3>
+      <div id="editBad"></div>
+      <button class="add-row-btn" data-add="bad">+ adicionar hábito</button>
     </div>
 
     <div class="editor-section">
@@ -127,50 +184,4 @@ const DEFAULT_CONFIG = {
       { key:"ovo3", label:"Rachando" },
       { key:"ovo4", label:"Mais rachaduras" },
       { key:"ovo5", label:"Casca cedendo" },
-      { key:"ovo6", label:"Quase abrindo" },
-      { key:"ovo7", label:"Casca bem rachada" },
-      { key:"ovo8", label:"Pronto para nascer" },
-      { key:"hatch1", label:"Começando a eclodir" },
-      { key:"hatch2", label:"Cabeça aparecendo" },
-      { key:"hatch3", label:"Saindo da casca" },
-      { key:"hatch4", label:"Recém-nascido" },
-      { key:"hatch5", label:"Primeiros movimentos" },
-      { key:"baby1", label:"Bebê Pacus" },
-      { key:"baby2", label:"Bebê crescendo" },
-      { key:"baby3", label:"Filhote" },
-      { key:"baby4", label:"Filhote forte" },
-      { key:"baby5", label:"Jovem" },
-      { key:"young1", label:"Jovem crescendo" },
-      { key:"young2", label:"Quase adulto" },
-      { key:"young3", label:"Quase pronto" },
-      { key:"young4", label:"Última fase" },
-      { key:"adulto", label:"Pacus adulto" },
-    ],
-  }};
-
-const STORAGE_CONFIG_KEY = "hector_rotina_config_v3";
-const STORAGE_STATE_KEY  = "hector_rotina_state_v3";
-const APP_VERSION = "2026.08.11-pacus-v4";
-
-/* =========================================================================
-   SINCRONIZAÇÃO COM GOOGLE DRIVE (opcional) — via Google Apps Script
-   Não precisa hospedar esse arquivo em lugar nenhum: o próprio Apps Script
-   serve o app (essa URL abre o app direto) e guarda os dados no Drive.
-
-   Depois de configurado, o jeito certo de abrir em qualquer aparelho é
-   pela URL do Apps Script (a que termina em /exec) — não pelo arquivo
-   local. Assim, quando o app for atualizado, basta substituir o
-   conteúdo do arquivo "rotina-hector.html" no Drive uma vez, e todo
-   aparelho já abre a versão nova sozinho, sem copiar arquivo nenhum.
-
-   Passo a passo pra ativar:
-   1. Acesse https://script.google.com/ → "Novo projeto".
-   2. Apague o código de exemplo e cole o código que aparece no botão
-      "📋 ver código do Apps Script" logo abaixo, na seção de sincronização.
-   3. Clique em "Implantar" → "Nova implantação".
-   4. Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer
-      pessoa".
-   5. Clique em "Implantar", autorize o acesso (é a sua própria conta), e
-      copie a URL gerada (termina em /exec).
-   6. Cole essa URL na constante abaixo, entre aspas.
-   7. No Google Drive, salve o código deste arquivo com o n
+      { key:"ovo6", la

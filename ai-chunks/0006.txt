@@ -1,4 +1,50 @@
-ome exato
+bel:"Quase abrindo" },
+      { key:"ovo7", label:"Casca bem rachada" },
+      { key:"ovo8", label:"Pronto para nascer" },
+      { key:"hatch1", label:"Começando a eclodir" },
+      { key:"hatch2", label:"Cabeça aparecendo" },
+      { key:"hatch3", label:"Saindo da casca" },
+      { key:"hatch4", label:"Recém-nascido" },
+      { key:"hatch5", label:"Primeiros movimentos" },
+      { key:"baby1", label:"Bebê Pacus" },
+      { key:"baby2", label:"Bebê crescendo" },
+      { key:"baby3", label:"Filhote" },
+      { key:"baby4", label:"Filhote forte" },
+      { key:"baby5", label:"Jovem" },
+      { key:"young1", label:"Jovem crescendo" },
+      { key:"young2", label:"Quase adulto" },
+      { key:"young3", label:"Quase pronto" },
+      { key:"young4", label:"Última fase" },
+      { key:"adulto", label:"Pacus adulto" },
+    ],
+  }};
+
+const STORAGE_CONFIG_KEY = "hector_rotina_config_v3";
+const STORAGE_STATE_KEY  = "hector_rotina_state_v3";
+const APP_VERSION = "2026.08.11-pacus-v4";
+
+/* =========================================================================
+   SINCRONIZAÇÃO COM GOOGLE DRIVE (opcional) — via Google Apps Script
+   Não precisa hospedar esse arquivo em lugar nenhum: o próprio Apps Script
+   serve o app (essa URL abre o app direto) e guarda os dados no Drive.
+
+   Depois de configurado, o jeito certo de abrir em qualquer aparelho é
+   pela URL do Apps Script (a que termina em /exec) — não pelo arquivo
+   local. Assim, quando o app for atualizado, basta substituir o
+   conteúdo do arquivo "rotina-hector.html" no Drive uma vez, e todo
+   aparelho já abre a versão nova sozinho, sem copiar arquivo nenhum.
+
+   Passo a passo pra ativar:
+   1. Acesse https://script.google.com/ → "Novo projeto".
+   2. Apague o código de exemplo e cole o código que aparece no botão
+      "📋 ver código do Apps Script" logo abaixo, na seção de sincronização.
+   3. Clique em "Implantar" → "Nova implantação".
+   4. Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer
+      pessoa".
+   5. Clique em "Implantar", autorize o acesso (é a sua própria conta), e
+      copie a URL gerada (termina em /exec).
+   6. Cole essa URL na constante abaixo, entre aspas.
+   7. No Google Drive, salve o código deste arquivo com o nome exato
       "rotina-hector.html". A partir daí, abram sempre a URL do Apps
       Script (não o arquivo local) em todos os aparelhos.
    ========================================================================= */
@@ -138,64 +184,3 @@ function applyPointRebalanceV2(cfg){
 // 1) tarefa mais chata primeiro ("eat the frog" — vontade está mais alta
 //    no início do bloco); 2) tarefas de higiene em sequência (menos troca
 //    de contexto); 3) tarefa de foco cognitivo com a mente ainda
-//    descansada; 4) tarefas de preparar-pra-sair por último; 5) tarefa
-//    fácil (beber água) fechando o bloco — "efeito do final" ajuda a
-//    criar associação positiva com a rotina.
-const TASK_ORDER_V1 = {
-  manha: ["m1","m4","m3","m7","m5","m8","t_djf7hbb","m2"],
-  tarde: ["t2","t3","t5","t4","t1"],
-  noite: ["n5","n1","n4","n6","n7","t_ci3brlt","n2"],
-};
-function applyTaskOrderV1(cfg){
-  if(!cfg || cfg.taskOrderV1Applied) return cfg;
-  ['periods','periodsWeekend'].forEach(key=>{
-    const p = cfg[key];
-    if(!p) return;
-    ['manha','tarde','noite'].forEach(period=>{
-      if(p[period] && Array.isArray(p[period].tasks)){
-        const order = TASK_ORDER_V1[period];
-        const tasks = p[period].tasks;
-        const known = order.map(id => tasks.find(t=>t.id===id)).filter(Boolean);
-        const extra = tasks.filter(t => !order.includes(t.id));
-        p[period].tasks = [...known, ...extra];
-      }
-    });
-  });
-  cfg.taskOrderV1Applied = true;
-  return cfg;
-}
-
-// Nova tarefa fixa da noite — "Momento Criativo" (desenhar, montar Lego,
-// pintar...). Insere logo depois de "Escovar os dentes" e antes de "Ler
-// Livro" pra quem já tinha a rotina sincronizada. Roda só uma vez.
-function addCreativeTaskV1(cfg){
-  if(!cfg || cfg.creativeTaskV1Applied) return cfg;
-  ['periods','periodsWeekend'].forEach(key=>{
-    const p = cfg[key];
-    if(p && p.noite && Array.isArray(p.noite.tasks)){
-      const tasks = p.noite.tasks;
-      if(!tasks.some(t=>t.id === 'n7')){
-        const newTask = { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" };
-        const idx = tasks.findIndex(t=>t.id === 'n6');
-        if(idx >= 0) tasks.splice(idx+1, 0, newTask);
-        else tasks.push(newTask);
-      }
-    }
-  });
-  cfg.creativeTaskV1Applied = true;
-  return cfg;
-}
-
-function loadConfig(){
-  try{
-    const raw = localStorage.getItem(STORAGE_CONFIG_KEY);
-    if(raw) return stripLegacyHairTask(JSON.parse(raw));
-  }catch(e){}
-  return stripLegacyHairTask(JSON.parse(JSON.stringify(DEFAULT_CONFIG)));
-}
-function saveConfig(cfg){
-  try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(cfg)); }catch(e){}
-  scheduleAutoPush();
-}
-
-let TEST_DATE_OVERRIDE = null; // string IS

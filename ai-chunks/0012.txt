@@ -1,4 +1,112 @@
-{
+ daysEquivalent >= day;
+    const current = stage >= day && (stage === day || (stage > day && day === 23));
+    return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label} <small>dia ${day}</small></span>`;
+  }).join('');
+
+  let caption;
+  if(stage === maxStage){
+    caption = `Pacus adulto! <b>Ciclo concluído em 31/08.</b> 🎉`;
+  } else if(canGrowToday){
+    caption = `<b>Dia completo!</b> O Pacus vai evoluir mais um pouco.`;
+  } else if(daysEquivalent === 0){
+    caption = `Complete um dia inteiro de tarefas pra começar a rachar o ovo.`;
+  } else {
+    const nextMilestone = milestones.find(([day]) => day > daysEquivalent);
+    if(nextMilestone){
+      const diasFaltando = nextMilestone[0] - daysEquivalent;
+      caption = `Faltam <b>${diasFaltando} ${diasFaltando===1?'dia':'dias'}</b> para virar <b>${nextMilestone[1]}</b>.`;
+    } else {
+      caption = `Quase lá! O Pacus está quase adulto.`;
+    }
+  }
+
+  const previousProgress = Number(el.dataset.pacusProgress ?? daysEquivalent);
+  const grewNow = daysEquivalent > previousProgress;
+  el.dataset.pacusProgress = String(daysEquivalent);
+
+  el.innerHTML = `
+    ${buildPetVisual(stageFloat)}
+    <div class="pet-name">${CONFIG.pet.name}</div>
+    <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
+    <div class="pet-day-progress">
+      <div class="pet-day-progress-head"><span>Progresso do Pacus</span><b>${progressPct}%</b></div>
+      <div class="pet-day-track" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
+    </div>
+    <div class="pet-milestones">${milestoneHtml}</div>
+    <div class="pet-caption">${caption}</div>
+    <div id="petEvolvedBanner"></div>
+    <div class="streak-strip">${buildStreakStrip()}</div>
+  `;
+
+  if(grewNow){
+    const mascotEl = el.querySelector('.pet-mascot');
+    if(mascotEl){
+      mascotEl.classList.remove('pet-growth-burst');
+      void mascotEl.offsetWidth;
+      mascotEl.classList.add('pet-growth-burst');
+      if(stage < 9){ mascotEl.classList.add('pet-hatch-crack'); }
+    }
+  }
+
+  if(stage > state.lastSeenPetStage){
+    document.getElementById('petEvolvedBanner').innerHTML = `<div class="pet-evolved-banner">Pacus avançou para <b>${stageInfo.label}</b>.</div>`;
+    state.lastSeenPetStage = stage;
+    saveState(state);
+    showEvolutionCelebration(stageInfo, stage, maxStage);
+  }
+}
+
+function showEvolutionCelebration(stageInfo, stage, maxStage){
+  const overlay = document.getElementById('evolutionCelebration');
+  const mascotEl = document.getElementById('celebrationMascot');
+  mascotEl.innerHTML = buildPetVisual(stage);
+  document.getElementById('celebrationStage').innerHTML =
+    stage === maxStage
+      ? `O Pacus chegou em <b>${stageInfo.label}</b> — crescimento completo! 🏆`
+      : `O Pacus virou <b>${stageInfo.label}</b>!`;
+  overlay.classList.add('open');
+
+  // confete espalhado pela tela toda, não só perto do Pacus
+  fireConfetti(null, 40);
+  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.2, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 200);
+  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.8, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 350);
+
+  const autoClose = setTimeout(closeEvolutionCelebration, 4500);
+  overlay.dataset.autoCloseId = autoClose;
+}
+function closeEvolutionCelebration(){
+  const overlay = document.getElementById('evolutionCelebration');
+  if(overlay.dataset.autoCloseId) clearTimeout(Number(overlay.dataset.autoCloseId));
+  overlay.classList.remove('open');
+}
+
+function buildStreakStrip(){
+  const days = [];
+  for(let i=6; i>=0; i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+    days.push(iso);
+  }
+  const weekdayLetters = ['D','S','T','Q','Q','S','S'];
+  const cells = days.map(iso=>{
+    const isToday = iso === todayISO();
+    const d = new Date(iso+"T00:00:00");
+    const letter = weekdayLetters[d.getDay()];
+    let entry = isToday ? liveTodayEntry() : state.history[iso];
+    let cls = 'streak-cell empty';
+    if(entry && entry.total > 0){
+      if(entry.perfect) cls = 'streak-cell perfect';
+      else if(entry.done > 0) cls = 'streak-cell partial';
+      else cls = 'streak-cell none';
+    }
+    if(isToday) cls += ' today';
+    return `<span class="${cls}" title="${formatDateBR(iso)}"><span class="streak-letter">${letter}</span></span>`;
+  }).join('');
+  return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${cells}</div>`;
+}
+
+function liveTodayEntry(){
   const tasks = allTasks();
   const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
   const total = applicable.length;
@@ -79,126 +187,4 @@ function render(){
       const isSuggested = task.id === nextSuggestedId;
       const late = status === 'done' && isTaskLate(task, period.time);
       li.className = 'task'
-        + (status === 'done' ? ' done' : '')
-        + (status === 'na' ? ' na' : '')
-        + (status === 'x' ? ' notdone' : '')
-        + (isSuggested ? ' suggested' : '')
-        + (late ? ' late-done' : '');
-      li.innerHTML = `
-        <span class="mark-group" data-id="${task.id}">
-          <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
-          <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
-          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, perde metade dos pontos">✕</button>
-        </span>
-        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}${late ? '<span class="late-flag">⏰ atrasado</span>' : ''}</span>
-        <span class="pts">${status==='na' ? 'n/a' : status==='x' ? '−'+taskNotDonePenalty(task) : '+'+task.pts}</span>
-      `;
-      ul.appendChild(li);
-    });
-
-    div.innerHTML = `
-      <div class="period-head"><h2>${period.label}</h2><span class="time">${period.time}</span></div>
-      <span class="time-remaining" id="timeRemaining_${key}"></span>
-      <span class="progress-txt">${progressMsg}</span>
-      <div class="progress-bar"><div style="width:${pct}%"></div></div>
-    `;
-    div.dataset.periodTime = period.time;
-    div.appendChild(ul);
-    periodsEl.appendChild(div);
-  });
-
-  updateTimeRemainingDisplays();
-  startTimeRemainingTicking();
-
-  periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
-    btn.addEventListener('click', onMarkClick);
-  });
-
-  const badEl = document.getElementById('badHabits');
-  badEl.innerHTML = '';
-  CONFIG.badHabits.forEach(h=>{
-    const isPositive = h.pts >= 0;
-    const btn = document.createElement('button');
-    btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
-    btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
-    btn.addEventListener('click', ()=>{
-      const delta = addPoints(h.pts);
-      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
-      saveState(state);
-      bumpTotal(delta, btn);
-      renderLog();
-    });
-    badEl.appendChild(btn);
-  });
-
-  renderRewards();
-  renderLog();
-  renderHistory();
-  renderWeeklyReview();
-  renderBackupReminder();
-  renderTestPanel();
-  renderTestModeBanner();
-  renderDriveSync();
-}
-
-function daysBetween(isoA, isoB){
-  const a = new Date(isoA+"T00:00:00");
-  const b = new Date(isoB+"T00:00:00");
-  return Math.round((b-a)/86400000);
-}
-
-function shiftISODate(iso, deltaDays){
-  const d = new Date(iso+"T00:00:00");
-  d.setDate(d.getDate()+deltaDays);
-  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-}
-
-function goToTestDate(iso){
-  setTestDate(iso);
-  state = loadState();
-  render();
-}
-
-let testPanelOpen = false;
-// Painéis de "adulto" (sincronização com Drive, editar dia anterior, modo
-// teste) ficam escondidos da tela principal até alguém abrir a "Área dos
-// adultos" com sucesso — assim o Hector só vê o que usa no dia a dia.
-// Reseta sozinho ao recarregar a página.
-let adultUnlocked = false;
-
-function renderTestModeBanner(){
-  const el = document.getElementById('testModeBanner');
-  if(!el) return;
-  if(!TEST_DATE_OVERRIDE){ el.innerHTML=''; return; }
-  el.innerHTML = `
-    <div class="test-mode-banner">
-      🧪 MODO TESTE ATIVO — data simulada: ${formatDateBR(TEST_DATE_OVERRIDE)}
-      <button id="bannerRealDateBtn">voltar pra data real</button>
-    </div>
-  `;
-  document.getElementById('bannerRealDateBtn').addEventListener('click', ()=>{
-    setTestDate(null);
-    state = loadState();
-    render();
-  });
-}
-
-function renderTestPanel(){
-  const el = document.getElementById('testPanel');
-  if(!el) return;
-  if(!testPanelOpen){ el.style.display='none'; el.innerHTML=''; return; }
-  el.style.display='block';
-
-  const realToday = (()=>{
-    const d = new Date();
-    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-  })();
-  const usingOverride = !!TEST_DATE_OVERRIDE;
-
-  el.innerHTML = `
-    <div class="test-panel">
-      <h3>🧪 Modo de teste</h3>
-      <div class="hint">Ferramentas só pra conferir se o crescimento do Pacus e o histórico estão funcionando. Não mexe nas tarefas de verdade — só simula dias.</div>
-      <div class="test-date">Data simulada agora: <b>${formatDateBR(todayISO())}/${todayISO().split('-')[0]}</b>${usingOverride ? ' (modo teste ativo)' : ' (data real do sistema)'}</div>
-      <div class="test-row">
-        <button class="icon-
+        + (status === 'done' ? '

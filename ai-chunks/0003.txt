@@ -1,4 +1,35 @@
-rem; color:var(--chalk-dim); }
+alk-dim); }
+  .mural-card.reached .mural-date{ color:var(--chalk); }
+
+  .weekly-review{
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(95,216,117,.3);
+    border-radius:12px;
+    padding:16px 18px;
+  }
+  .weekly-review .wr-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:10px;
+  }
+  .weekly-review .wr-range{ font-size:.72rem; color:var(--chalk-dim); }
+  .weekly-review .wr-stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(110px,1fr));
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .wr-stat{ text-align:center; }
+  .wr-stat .wr-num{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:1.5rem;
+    color:var(--green);
+    display:block;
+  }
+  .wr-stat .wr-label{ font-size:.68rem; color:var(--chalk-dim); }
 
   .drive-sync{
     background:rgba(79,195,247,.08);
@@ -140,6 +171,41 @@ rem; color:var(--chalk-dim); }
     100%{ transform:translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity:0; }
   }
 
+  .celebration-card{
+    background:var(--board);
+    border:3px solid var(--yellow);
+    border-radius:16px;
+    padding:28px 24px;
+    max-width:340px;
+    width:100%;
+    text-align:center;
+    box-shadow:0 0 60px rgba(255,217,61,.35), 0 20px 60px rgba(0,0,0,.6);
+    animation:celebrationPop .5s cubic-bezier(.2,1.4,.4,1);
+  }
+  @keyframes celebrationPop{
+    0%{ transform:scale(.6); opacity:0; }
+    70%{ transform:scale(1.06); opacity:1; }
+    100%{ transform:scale(1); }
+  }
+  .celebration-mascot{
+    width:150px;
+    height:150px;
+    margin:0 auto 10px;
+  }
+  .celebration-mascot .pet-mascot{ width:100%; height:100%; }
+  .celebration-title{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:1.5rem;
+    color:var(--yellow);
+    margin-bottom:6px;
+  }
+  .celebration-stage{
+    font-size:1rem;
+    color:var(--chalk);
+    margin-bottom:18px;
+  }
+  .celebration-stage b{ color:var(--green); }
+
   footer{
     text-align:center;
     margin-top:22px;
@@ -261,78 +327,3 @@ rem; color:var(--chalk-dim); }
     text-align:center;
     background:rgba(255,255,255,.05);
     border:1px solid var(--line);
-    color:var(--chalk);
-    border-radius:6px;
-    padding:6px 2px;
-    font-size:.82rem;
-    font-family:inherit;
-  }
-  .step-btn{
-    width:24px; height:28px;
-    background:rgba(255,255,255,.05);
-    border:1px solid var(--line);
-    color:var(--chalk-dim);
-    border-radius:6px;
-    font-size:.9rem;
-    cursor:pointer;
-    font-family:inherit;
-    line-height:1;
-  }
-  .step-btn:hover{ color:var(--chalk); border-color:rgba(242,237,225,.4); }
-
-  .sub-input{
-    font-size:.74rem !important;
-    color:var(--chalk-dim);
-    padding:5px 9px !important;
-  }
-  .edit-row input[type=text]{
-    flex:1;
-    background:rgba(255,255,255,.05);
-    border:1px solid var(--line);
-    color:var(--chalk);
-    border-radius:6px;
-    padding:7px 9px;
-    font-size:.82rem;
-    font-family:inherit;
-  }
-  .edit-row input[type=number]{
-    width:58px;
-    background:rgba(255,255,255,.05);
-    border:1px solid var(--line);
-    color:var(--chalk);
-    border-radius:6px;
-    padding:7px 6px;
-    font-size:.82rem;
-    text-align:center;
-    font-family:inherit;
-  }
-  .edit-row input:focus, .edit-row select:focus{ outline:1px solid var(--yellow); }
-  .edit-row select{
-    background:rgba(255,255,255,.05);
-    border:1px solid var(--line);
-    color:var(--chalk);
-    border-radius:6px;
-    padding:7px 6px;
-    font-size:.78rem;
-    font-family:inherit;
-  }
-  .edit-row .del{
-    background:none;
-    border:none;
-    color:var(--red);
-    font-size:1rem;
-    cursor:pointer;
-    padding:2px 6px;
-    line-height:1;
-  }
-  .edit-row .del:hover{ opacity:.7; }
-
-  .add-row-btn{
-    background:none;
-    border:1px dashed var(--line);
-    color:var(--chalk-dim);
-    font-size:.78rem;
-    padding:7px 12px;
-    border-radius:6px;
-    cursor:pointer;
-  

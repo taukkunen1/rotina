@@ -237,32 +237,34 @@
   }
   .edit-row label{ color:var(--chalk-dim); }
 
-  .weekly-review{
-    background:rgba(255,255,255,.03);
-    border:1px solid rgba(95,216,117,.3);
+  .achievement-mural{
+    background:rgba(255,126,185,.06);
+    border:1px solid rgba(255,126,185,.3);
     border-radius:12px;
     padding:16px 18px;
   }
-  .weekly-review .wr-head{
-    display:flex;
-    align-items:baseline;
-    justify-content:space-between;
-    flex-wrap:wrap;
-    gap:6px;
-    margin-bottom:10px;
-  }
-  .weekly-review .wr-range{ font-size:.72rem; color:var(--chalk-dim); }
-  .weekly-review .wr-stats{
+  .mural-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(110px,1fr));
+    grid-template-columns:repeat(auto-fit, minmax(90px,1fr));
     gap:10px;
-    margin-bottom:10px;
   }
-  .wr-stat{ text-align:center; }
-  .wr-stat .wr-num{
+  .mural-card{
+    text-align:center;
+    background:rgba(255,255,255,.03);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:10px 6px;
+    opacity:.55;
+  }
+  .mural-card.reached{
+    opacity:1;
+    background:rgba(255,126,185,.1);
+    border-color:rgba(255,126,185,.5);
+  }
+  .mural-stage{
     font-family:"Segoe Print","Bradley Hand",cursive;
-    font-size:1.5rem;
-    color:var(--green);
-    display:block;
+    font-size:.95rem;
+    color:var(--pink);
+    margin-bottom:4px;
   }
-  .wr-stat .wr-label{ font-size:.68
+  .mural-date{ font-size:.7rem; color:var(--ch

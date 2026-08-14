@@ -2,9 +2,9 @@
   "source": "index.html",
   "encoding": "utf-8",
   "chunkSize": 8000,
-  "totalChunks": 18,
-  "totalSize": 142255,
-  "sha256": "4365c8480d0589ab72f7278574b1d90aa094614fec080452b06c8bda456cdcd0",
+  "totalChunks": 19,
+  "totalSize": 147311,
+  "sha256": "464ec778dc69e0b96bfac8b530323714df4d4ad41443028cd4173b05c81b39ab",
   "chunks": [
     {
       "chunk": 0,
@@ -129,8 +129,15 @@
       "chunk": 17,
       "file": "0017.txt",
       "start": 136000,
-      "end": 142255,
-      "size": 6255
+      "end": 144000,
+      "size": 8000
+    },
+    {
+      "chunk": 18,
+      "file": "0018.txt",
+      "start": 144000,
+      "end": 147311,
+      "size": 3311
     }
   ]
 }
