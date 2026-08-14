@@ -77,6 +77,7 @@ const DEFAULT_CONFIG = {
         { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h" },
         { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4 },
         { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h" },
+        { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" },
         { id:"t_ci3brlt", txt:"Ler Livro", pts:4, sub:"3 capítulo do livro de casa (até às 22h)" },
         { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h" },
       ]
@@ -172,6 +173,4 @@ const APP_VERSION = "2026.08.11-pacus-v4";
    5. Clique em "Implantar", autorize o acesso (é a sua própria conta), e
       copie a URL gerada (termina em /exec).
    6. Cole essa URL na constante abaixo, entre aspas.
-   7. No Google Drive, salve o código deste arquivo com o nome exato
-      "rotina-hector.html". A partir daí, abram sempre a URL do Apps
-      Script (não o arqui
+   7. No Google Drive, salve o código deste arquivo com o n

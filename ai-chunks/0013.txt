@@ -1,4 +1,28 @@
-stDate(shiftISODate(todayISO(), -1));
+btn" id="testCompleteDayBtn">✅ completar tudo hoje</button>
+        <button class="icon-btn" id="testPrevDayBtn">◀ dia anterior</button>
+        <button class="icon-btn" id="testNextDayBtn">dia seguinte ▶</button>
+        <input type="date" id="testDatePicker" value="${todayISO()}">
+        <button class="icon-btn" id="testGoDateBtn">ir pra essa data</button>
+        <button class="icon-btn danger" id="testResetDateBtn">voltar pra data real</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('testCompleteDayBtn').addEventListener('click', ()=>{
+    allTasks().forEach(t=>{
+      if(state.checkedToday[t.id] !== 'done'){
+        addPoints(t.pts);
+      }
+      state.checkedToday[t.id] = 'done';
+    });
+    syncPetCompletionFromDay(todayISO());
+    addLog('🧪 (teste) todas as tarefas de hoje marcadas como feitas');
+    saveState(state);
+    render();
+  });
+
+  document.getElementById('testPrevDayBtn').addEventListener('click', ()=>{
+    goToTestDate(shiftISODate(todayISO(), -1));
   });
   document.getElementById('testNextDayBtn').addEventListener('click', ()=>{
     goToTestDate(shiftISODate(todayISO(), 1));
@@ -177,23 +201,4 @@ function renderRewards(){
   rEl.innerHTML = '';
   CONFIG.rewards.forEach(r=>{
     const canAfford = state.totalPoints >= r.cost;
-    const redeemedToday = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
-    const atDailyLimit = r.maxPerDay != null && redeemedToday >= r.maxPerDay;
-    const capNote = r.maxPerDay != null ? `<span class="cap-note">${redeemedToday}/${r.maxPerDay} hoje</span>` : '';
-    const div = document.createElement('div');
-    div.className = 'reward';
-    div.innerHTML = `
-      <div class="name">${r.txt}</div>
-      <span class="cost">${r.cost} PP</span>
-      ${capNote}
-      <button ${(canAfford && !atDailyLimit) ? '' : 'disabled'}>${atDailyLimit ? 'Limite hoje' : 'Resgatar'}</button>
-    `;
-    div.querySelector('button').addEventListener('click', (evt)=>{
-      if(state.totalPoints < r.cost) return;
-      const redeemed = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
-      if(r.maxPerDay != null && redeemed >= r.maxPerDay) return;
-
-      const delta = addPoints(-r.cost);
-      addLog(`🎁 Resgatou: ${r.txt} (−${r.cost})`);
-      if(r.grantsHours){
-        addGameTimer
+    const redeemedToday = (state.gameTimer.redemptions && state.g

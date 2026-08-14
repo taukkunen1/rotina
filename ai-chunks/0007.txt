@@ -1,4 +1,28 @@
-eStr.split(/[–-]/).map(s=>s.trim());
+O "yyyy-mm-dd" ou null (usa a data real do sistema)
+// IMPORTANTE: o modo de teste nunca fica salvo entre aberturas do arquivo —
+// toda vez que a página abre, começa sempre na data real do sistema.
+try{ localStorage.removeItem('hector_rotina_testdate_v1'); }catch(e){}
+
+function todayISO(){
+  if(TEST_DATE_OVERRIDE) return TEST_DATE_OVERRIDE;
+  const d = new Date();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return d.getFullYear()+"-"+m+"-"+day;
+}
+function setTestDate(iso){
+  TEST_DATE_OVERRIDE = iso; // só em memória — some sozinho ao recarregar a página
+}
+function formatDateBR(iso){
+  const [,m,d] = iso.split("-");
+  return d+"/"+m;
+}
+
+// Extrai a hora/minuto do horário final do período a partir do texto
+// "8:20 – 12:00" (ou similar) — usado tanto pro aviso de tempo restante
+// quanto pra detectar tarefa concluída atrasada.
+function periodEndTime(periodTimeStr){
+  const parts = periodTimeStr.split(/[–-]/).map(s=>s.trim());
   const endStr = parts[parts.length-1];
   const [h, m] = endStr.split(':').map(Number);
   if(isNaN(h)) return null;
@@ -159,28 +183,4 @@ function reconcileState(state){
   }
   state.customTimers.forEach(t=>{
     if(t.totalSeconds === undefined) t.totalSeconds = 300;
-    if(t.remainingSeconds === undefined) t.remainingSeconds = t.totalSeconds;
-    if(t.runningSince === undefined) t.runningSince = null;
-    if(t.finished === undefined) t.finished = false;
-  });
-  if(state.historyCorrectionV2Applied === undefined) state.historyCorrectionV2Applied = false;
-
-  seedKnownPerfectDays(state);
-
-  // limpeza: remove qualquer registro de histórico com data no futuro (só pode
-  // ter vindo de uma sessão anterior de teste de data) — evita que isso
-  // inflacione o crescimento do Pacus ou bagunce as tabelas depois
-  let cleaned = false;
-  if(!TEST_DATE_OVERRIDE){
-    const realToday = todayISO();
-    Object.keys(state.history).forEach(iso=>{
-      if(iso > realToday){ delete state.history[iso]; cleaned = true; }
-    });
-    if(state.lastDate > realToday){ state.lastDate = realToday; cleaned = true; }
-  }
-
-  if(state.lastDate !== todayISO()){
-    // fecha o dia anterior no histórico antes de zerar o checklist
-    closeOutDay(state, state.lastDate);
-    state.checkedToday = {};
-    state.ta
+    if(t.remainingSeconds === undefined) t.remainingSeconds = t.t

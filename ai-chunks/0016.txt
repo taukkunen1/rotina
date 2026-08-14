@@ -1,4 +1,36 @@
-ks = draft.periods[k].tasks.filter(t=>t.txt.trim() !== '');
+);
+    }
+  });
+});
+
+document.getElementById('editBtn').addEventListener('click', ()=>{
+  if(CONFIG.editorPin){
+    const entered = prompt('Digite o PIN pra editar:');
+    if(entered === null) return; // cancelou
+    if(entered !== CONFIG.editorPin){
+      alert('PIN incorreto.');
+      return;
+    }
+  }
+  adultUnlocked = true;
+  openEditor();
+  render();
+});
+document.getElementById('adultTestBtn').addEventListener('click', ()=>{
+  closeEditor();
+  testPanelOpen = !testPanelOpen;
+  renderTestPanel();
+});
+document.getElementById('closeBtn').addEventListener('click', closeEditor);
+document.getElementById('cancelBtn').addEventListener('click', closeEditor);
+document.getElementById('overlay').addEventListener('click', e=>{
+  if(e.target.id === 'overlay') closeEditor();
+});
+
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  // limpa linhas vazias (sem nome) antes de salvar
+  ['manha','tarde','noite'].forEach(k=>{
+    draft.periods[k].tasks = draft.periods[k].tasks.filter(t=>t.txt.trim() !== '');
   });
   if(draft.periodsWeekend){
     ['manha','tarde','noite'].forEach(k=>{
@@ -159,21 +191,4 @@ function renderDriveSync(){
   if(!configured){
     statusHtml = `Ainda não configurado neste arquivo.`;
     actionsHtml = `
-      <button class="icon-btn" id="driveSetupInfoBtn">como configurar</button>
-      <button class="icon-btn" id="driveCopyCodeBtn">📋 ver código do Apps Script</button>
-    `;
-  } else {
-    statusHtml = state.driveLastSyncISO
-      ? `Sincronizado ✓ — ${formatDateBR(state.driveLastSyncISO)}${state.driveConflictCount ? ` · ${state.driveConflictCount} conflito(s) resolvido(s)` : ''}.`
-      : `Sincronização automática ativa — aguardando primeira sincronização.`;
-    actionsHtml = `
-      <button class="icon-btn primary" id="driveSaveBtn">☁️⬆️ forçar salvar agora</button>
-      <button class="icon-btn primary" id="driveLoadBtn">☁️⬇️ forçar carregar agora</button>
-    `;
-  }
-
-  el.innerHTML = `
-    <div class="drive-sync">
-      <h3>☁️ Sincronizado com Google Drive</h3>
-      <div class="hint">O Drive guarda os dados, o histórico e uma cópia diária. O app continua funcionando offline e sincroniza quando a conexão volta.</div>
-      <div class="status">${statusHtm
+      <but

@@ -1,4 +1,28 @@
-skDoneAt = {};
+otalSeconds;
+    if(t.runningSince === undefined) t.runningSince = null;
+    if(t.finished === undefined) t.finished = false;
+  });
+  if(state.historyCorrectionV2Applied === undefined) state.historyCorrectionV2Applied = false;
+
+  seedKnownPerfectDays(state);
+
+  // limpeza: remove qualquer registro de histórico com data no futuro (só pode
+  // ter vindo de uma sessão anterior de teste de data) — evita que isso
+  // inflacione o crescimento do Pacus ou bagunce as tabelas depois
+  let cleaned = false;
+  if(!TEST_DATE_OVERRIDE){
+    const realToday = todayISO();
+    Object.keys(state.history).forEach(iso=>{
+      if(iso > realToday){ delete state.history[iso]; cleaned = true; }
+    });
+    if(state.lastDate > realToday){ state.lastDate = realToday; cleaned = true; }
+  }
+
+  if(state.lastDate !== todayISO()){
+    // fecha o dia anterior no histórico antes de zerar o checklist
+    closeOutDay(state, state.lastDate);
+    state.checkedToday = {};
+    state.taskDoneAt = {};
     state.log = [];
     state.lastDate = todayISO();
     // zera o tempo de jogo usado — é uma cota que renova todo dia
@@ -177,24 +201,4 @@ function mergeRemoteData(remote){
   merged.historyCorrectionV2Applied = !!(remoteState.historyCorrectionV2Applied || localState.historyCorrectionV2Applied);
   merged.hairByDate = {...(remoteState.hairByDate||{}), ...(localState.hairByDate||{})};
   merged.totalPoints = Math.max(Number(remoteState.totalPoints)||0, Number(localState.totalPoints)||0);
-  merged.lastSeenPetStage = Math.max(Number(remoteState.lastSeenPetStage)||0, Number(localState.lastSeenPetStage)||0);
-  merged.log = [...(localState.log||[]), ...(remoteState.log||[])].slice(0,30);
-  merged.revision = Math.max(Number(localState.revision)||0, Number(remoteState.revision)||0)+1;
-  merged.updatedAt = new Date().toISOString();
-  const remoteConfig = sanitizeRemoteConfig(remote.config);
-  const localConfigValid = isValidPeriodsConfig(CONFIG);
-  const useRemoteConfig = remoteConfig && (!localConfigValid || localState.updatedAt < (remoteState.updatedAt||''));
-  return {
-    config: useRemoteConfig ? remoteConfig : (localConfigValid ? CONFIG : JSON.parse(JSON.stringify(DEFAULT_CONFIG))),
-    state: merged
-  };
-}
-
-async function autoPullOnStartup(){
-  if(!APPS_SCRIPT_URL) return;
-  suppressAutoPush = true;
-  try{
-    const res = await fetch(DATA_ENDPOINT, {method:'GET', cache:'no-store'});
-    if(res.ok){
-      const backup = await res.json();
-      if(
+  merged.las

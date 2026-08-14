@@ -1,4 +1,24 @@
-backup && backup.config && backup.state){
+tSeenPetStage = Math.max(Number(remoteState.lastSeenPetStage)||0, Number(localState.lastSeenPetStage)||0);
+  merged.log = [...(localState.log||[]), ...(remoteState.log||[])].slice(0,30);
+  merged.revision = Math.max(Number(localState.revision)||0, Number(remoteState.revision)||0)+1;
+  merged.updatedAt = new Date().toISOString();
+  const remoteConfig = sanitizeRemoteConfig(remote.config);
+  const localConfigValid = isValidPeriodsConfig(CONFIG);
+  const useRemoteConfig = remoteConfig && (!localConfigValid || localState.updatedAt < (remoteState.updatedAt||''));
+  return {
+    config: useRemoteConfig ? remoteConfig : (localConfigValid ? CONFIG : JSON.parse(JSON.stringify(DEFAULT_CONFIG))),
+    state: merged
+  };
+}
+
+async function autoPullOnStartup(){
+  if(!APPS_SCRIPT_URL) return;
+  suppressAutoPush = true;
+  try{
+    const res = await fetch(DATA_ENDPOINT, {method:'GET', cache:'no-store'});
+    if(res.ok){
+      const backup = await res.json();
+      if(backup && backup.config && backup.state){
         const localRevision = Number(state.driveRevision)||0;
         const localDirty = (Number(state.revision)||0) > localRevision;
         const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
@@ -194,32 +214,4 @@ function renderGameTimer(){
       <div class="hint">Cota de ${CONFIG.screenDailyLimitHours || 2}h por dia.</div>
       <div class="game-timer-used" id="gameTimerUsed">${remaining > 0 ? `<b>${formatMinSec(remaining)}</b> restantes hoje` : `<b>tempo de hoje acabou</b>`}</div>
       <div class="game-timer-track"><div class="game-timer-fill ${used>=limit?'over-limit':''}" id="gameTimerBarFill" style="width:${pct}%"></div></div>
-      <button class="game-timer-btn ${running?'running':''}" id="gameTimerToggleBtn">
-        ${running ? '⏸️ Parar de jogar' : '▶️ Começar a jogar'}
-      </button>
-    </div>
-  `;
-  document.getElementById('gameTimerToggleBtn').addEventListener('click', ()=>{
-    if(gameTimerIsRunning()) stopGameTimer(); else startGameTimer();
-  });
-
-  if(running) startGameTimerTicking(); else stopGameTimerTicking();
-}
-
-/* ===================== TIMERS AVULSOS (tempo livre pra qualquer coisa) ===================== */
-let customTimerTickHandle = null;
-
-function findCustomTimer(id){
-  return state.customTimers.find(t=>t.id===id);
-}
-
-function customTimerRemainingNow(t){
-  if(!t.runningSince) return t.remainingSeconds;
-  const elapsed = (Date.now() - t.runningSince)/1000;
-  return Math.max(0, t.remainingSeconds - elapsed);
-}
-
-function setCustomTimerMinutes(id, minutes){
-  const t = findCustomTimer(id);
-  if(!t || t.runningSince) return; // não dá pra mudar enquanto está rodando
-  const secs = Math.max(0, Math.
+      <button class="game-timer-btn ${run
