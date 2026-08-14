@@ -1232,6 +1232,7 @@
       <section class="block">
         <h3 class="block-title reward-title">🎁 Loja de Recompensas</h3>
         <div class="rewards" id="rewards"></div>
+        <div style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;">1 Pacus Point ≈ R$0,06 · máximo acumulável: 1000 pontos (~R$60)</div>
       </section>
 
       <div class="log">
@@ -1427,14 +1428,14 @@ const DEFAULT_CONFIG = {
     manha: {
       label: "Manhã", time: "8:20 – 12:00",
       tasks: [
-        { id:"m1", txt:"Arrumar a cama", pts:1, sub:"até às 12h" },
+        { id:"m1", txt:"Arrumar a cama", pts:2, sub:"até às 12h" },
         { id:"m2", txt:"Beber 1 copo de água", pts:1, sub:"até às 12h" },
-        { id:"m3", txt:"Escovar os dentes", pts:1, sub:"até às 12h" },
+        { id:"m3", txt:"Escovar os dentes", pts:2, sub:"até às 12h" },
         { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h" },
-        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:4 },
+        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:5 },
         { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 12h" },
-        { id:"m8", txt:"Arrumar a mochila", pts:1, sub:"até às 12h" },
-        { id:"t_djf7hbb", txt:"Levar Lixo", pts:3, sub:"até às 12h" },
+        { id:"m8", txt:"Arrumar a mochila", pts:2, sub:"até às 12h" },
+        { id:"t_djf7hbb", txt:"Levar Lixo", pts:4, sub:"até às 12h" },
       ]
     },
     tarde: {
@@ -1442,9 +1443,9 @@ const DEFAULT_CONFIG = {
       tasks: [
         { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h" },
         { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h" },
-        { id:"t3", txt:"Escovar os dentes", pts:1, sub:"até às 18h" },
+        { id:"t3", txt:"Escovar os dentes", pts:2, sub:"até às 18h" },
         { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h" },
-        { id:"t5", txt:"Arrumar a mochila", pts:1, sub:"até às 18h" },
+        { id:"t5", txt:"Arrumar a mochila", pts:2, sub:"até às 18h" },
       ]
     },
     noite: {
@@ -1452,10 +1453,10 @@ const DEFAULT_CONFIG = {
       tasks: [
         { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h" },
         { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h" },
-        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:3 },
-        { id:"n5", txt:"Arrumar a bagunça", pts:2, sub:"até às 22h" },
-        { id:"n6", txt:"Escovar os dentes", pts:1, sub:"até às 22h" },
-        { id:"t_ci3brlt", txt:"Ler Livro", pts:3, sub:"3 capítulo do livro de casa (até às 22h)" },
+        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4 },
+        { id:"n5", txt:"Arrumar a bagunça", pts:3, sub:"até às 22h" },
+        { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h" },
+        { id:"t_ci3brlt", txt:"Ler Livro", pts:4, sub:"3 capítulo do livro de casa (até às 22h)" },
       ]
     },
   },
@@ -1643,6 +1644,32 @@ function stripLegacyHairTask(cfg){
   // senha do site: se ainda não existe (configs de antes dessa função
   // existir), aplica a senha pedida uma vez.
   if(cfg && cfg.sitePin === undefined) cfg.sitePin = "150402";
+  return applyPointRebalanceV1(cfg);
+}
+
+// Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
+// crianças (arrumar cama, escovar dente, tomar banho, arrumar bagunça,
+// leitura, mochila, lixo) — só roda uma vez (flag), pra não desfazer ajuste
+// manual que os pais façam depois.
+const POINT_REBALANCE_V1 = {
+  m1:2, m3:2, m8:2, t_djf7hbb:4,
+  t3:2, t5:2,
+  n4:4, n5:3, n6:2, t_ci3brlt:4,
+};
+function applyPointRebalanceV1(cfg){
+  if(!cfg || cfg.pointRebalanceV1Applied) return cfg;
+  ['periods','periodsWeekend'].forEach(key=>{
+    const p = cfg[key];
+    if(!p) return;
+    ['manha','tarde','noite'].forEach(period=>{
+      if(p[period] && Array.isArray(p[period].tasks)){
+        p[period].tasks.forEach(t=>{
+          if(POINT_REBALANCE_V1[t.id] !== undefined) t.pts = POINT_REBALANCE_V1[t.id];
+        });
+      }
+    });
+  });
+  cfg.pointRebalanceV1Applied = true;
   return cfg;
 }
 
@@ -2041,6 +2068,24 @@ function bumpTotal(){
   el.classList.remove('bump');
   void el.offsetWidth;
   el.classList.add('bump');
+}
+
+// 1 Pacus Point ≈ R$0,06 (dentro da faixa combinada de R$0,05–0,08) — o
+// saldo nunca passa de 1000 pontos, equivalente a uns R$60 no máximo.
+const MAX_POINTS = 1000;
+const POINT_VALUE_BRL = 0.06;
+
+function addPoints(delta){
+  state.totalPoints = Math.max(0, Math.min(MAX_POINTS, state.totalPoints + delta));
+}
+
+// Pra "✕ não realizado": perde metade dos pontos daquela tarefa. A metade
+// é sempre arredondada pra cima, e nunca fica em número ímpar (se o
+// arredondamento der ímpar, sobe mais 1 pra virar par).
+function notDonePenalty(pts){
+  let half = Math.ceil(pts/2);
+  if(half % 2 !== 0) half += 1;
+  return half;
 }
 
 /* ===================== TIMER DE TEMPO DE JOGO (diário) ===================== */
@@ -2648,7 +2693,7 @@ function render(){
     btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
     btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
     btn.addEventListener('click', ()=>{
-      state.totalPoints = Math.max(0, state.totalPoints + h.pts);
+      addPoints(h.pts);
       addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
       saveState(state);
       bumpTotal();
@@ -2740,7 +2785,7 @@ function renderTestPanel(){
   document.getElementById('testCompleteDayBtn').addEventListener('click', ()=>{
     allTasks().forEach(t=>{
       if(state.checkedToday[t.id] !== 'done'){
-        state.totalPoints += t.pts;
+        addPoints(t.pts);
       }
       state.checkedToday[t.id] = 'done';
     });
@@ -2946,7 +2991,7 @@ function renderRewards(){
       const redeemed = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
       if(r.maxPerDay != null && redeemed >= r.maxPerDay) return;
 
-      state.totalPoints -= r.cost;
+      addPoints(-r.cost);
       addLog(`🎁 Resgatou: ${r.txt} (−${r.cost})`);
       if(r.grantsHours){
         addGameTimerBonusHours(r.grantsHours);
@@ -3006,10 +3051,9 @@ function onMarkClick(e){
 
   const current = state.checkedToday[id]; // undefined | 'done' | 'na' | 'x'
 
-  // desfazer pontos do estado anterior, se era 'done'
-  if(current === 'done'){
-    state.totalPoints = Math.max(0, state.totalPoints - task.pts);
-  }
+  // desfazer o efeito do estado anterior nos pontos
+  if(current === 'done') addPoints(-task.pts);
+  else if(current === 'x') addPoints(notDonePenalty(task.pts));
 
   if(current === clickedStatus){
     // clicou de novo no mesmo estado: volta pra pendente
@@ -3018,13 +3062,15 @@ function onMarkClick(e){
   } else {
     state.checkedToday[id] = clickedStatus;
     if(clickedStatus === 'done'){
-      state.totalPoints += task.pts;
+      addPoints(task.pts);
       addLog(`+${task.pts} · ${task.txt}`);
       fireConfetti(btn);
     } else if(clickedStatus === 'na'){
       addLog(`n/a · ${task.txt}`);
     } else {
-      addLog(`✕ não realizado · ${task.txt}`);
+      const penalty = notDonePenalty(task.pts);
+      addPoints(-penalty);
+      addLog(`✕ não realizado · ${task.txt} (−${penalty})`);
     }
   }
 
@@ -3045,7 +3091,7 @@ document.getElementById('addPointsBtn').addEventListener('click', ()=>{
   if(raw === null) return;
   const amount = parseInt(raw, 10);
   if(!amount || amount === 0) return;
-  state.totalPoints = Math.max(0, state.totalPoints + amount);
+  addPoints(amount);
   addLog(`${amount>0?'+':''}${amount} · ajuste manual`);
   saveState(state);
   bumpTotal();
@@ -3402,7 +3448,7 @@ document.getElementById('daySaveBtn').addEventListener('click', ()=>{
   // ajusta o saldo total pela diferença de pontos daquele dia
   const delta = pointsEarnedThatDay - oldPoints;
   if(delta !== 0){
-    state.totalPoints = Math.max(0, state.totalPoints + delta);
+    addPoints(delta);
     addLog(`✏️ ajuste em ${formatDateBR(editingDate)}: ${delta>0?'+':''}${delta}`);
   }
 
