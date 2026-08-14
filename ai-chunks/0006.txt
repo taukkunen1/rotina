@@ -1,4 +1,16 @@
-to|banho/i, "🧼"],
+vo local) em todos os aparelhos.
+   ========================================================================= */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec";
+// A mesma URL agora também serve o próprio app (HTML) quando aberta sem
+// parâmetro — pra pedir só os dados (backup), usamos ?data=1.
+const DATA_ENDPOINT = APPS_SCRIPT_URL + "?data=1";
+
+function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9); }
+
+// mapeia palavras-chave do nome da tarefa pra um emoji — reforça o texto
+// com uma pista visual (útil pra leitura rápida / crianças ainda alfabetizando)
+const ICON_RULES = [
+  [/cama/i, "🛏️"], [/água/i, "💧"], [/dente/i, "🦷"], [/rosto|banho/i, "🧼"],
   [/duolingo|inglês|idioma/i, "🗣️"], [/ler|livro|capítulo/i, "📖"],
   [/uniforme|vestir/i, "👕"], [/mochila/i, "🎒"], [/almoç/i, "🍽️"],
   [/escola/i, "🏫"], [/jantar/i, "🍲"], [/bagunça|arrumar/i, "🧹"],
@@ -183,21 +195,8 @@ function formatDateBR(iso){
   return d+"/"+m;
 }
 
-function loadState(){
-  let raw = null;
-  try{ raw = localStorage.getItem(STORAGE_STATE_KEY); }catch(e){}
-  let state = raw ? JSON.parse(raw) : null;
-  if(!state) state = { totalPoints:120, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveLastSyncISO:null, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, hairByDate:{} };
-  return reconcileState(state);
-}
-
-function applyHistoryCorrection_v2(state){
-  // Correção pontual, aplicada só UMA VEZ (por causa da flag abaixo) —
-  // depois disso nunca mais mexe sozinha nesses dias, pra não apagar
-  // edições feitas manualmente depois. Cobre 09/08 a 12/08: todos os
-  // dias foram completos; dia 12 teve -10 Pacus Points por causa de uma
-  // briga na escola; saldo final confirmado até 12/08: 170 Pacus Points.
-  if(state.historyCorrectionV2Applied) return;
-
-  const hairByDay = {
-    "2026-08-09": "not-washed",
+// Extrai a hora/minuto do horário final do período a partir do texto
+// "8:20 – 12:00" (ou similar) — usado tanto pro aviso de tempo restante
+// quanto pra detectar tarefa concluída atrasada.
+function periodEndTime(periodTimeStr){
+  const parts = periodTim

@@ -1,4 +1,99 @@
-w, item, 'pts');
+=>{
+      btn.addEventListener('click', ()=>{
+        const dir = btn.getAttribute('data-dir');
+        const i = list.indexOf(task);
+        const swapWith = dir === 'up' ? i-1 : i+1;
+        if(swapWith < 0 || swapWith >= list.length) return;
+        [list[i], list[swapWith]] = [list[swapWith], list[i]];
+        renderEditorPeriod(key, elId, periodsObj);
+      });
+    });
+    el.appendChild(row);
+  });
+}
+
+function stepperHTML(field, value, allowNegative){
+  return `<span class="stepper">
+    <button type="button" class="step-btn" data-step="-1" title="menos">−</button>
+    <input type="number" ${allowNegative?'':'min="0"'} value="${value}" data-field="${field}">
+    <button type="button" class="step-btn" data-step="1" title="mais">+</button>
+  </span>`;
+}
+function wireStepper(row, obj, field, allowNegative){
+  const input = row.querySelector(`[data-field=${field}]`);
+  input.addEventListener('input', e=>{
+    const v = parseInt(e.target.value)||0;
+    obj[field] = allowNegative ? v : Math.max(0, v);
+  });
+  row.querySelectorAll('.step-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const delta = parseInt(btn.getAttribute('data-step'));
+      const next = (obj[field]||0) + delta;
+      obj[field] = allowNegative ? next : Math.max(0, next);
+      input.value = obj[field];
+    });
+  });
+}
+
+function renderEditorBad(){
+  const el = document.getElementById('editBad');
+  el.innerHTML = '';
+  draft.badHabits.forEach(h=>{
+    const row = document.createElement('div');
+    row.className = 'edit-row';
+    row.innerHTML = `
+      <input type="text" value="${escapeAttr(h.txt)}" data-field="txt" placeholder="hábito (ex: brigou -10, ajudou +5)">
+      ${stepperHTML('pts', h.pts, true)}
+      <button class="del" title="remover">🗑</button>
+    `;
+    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ h.txt = e.target.value; });
+    wireStepper(row, h, 'pts', true);
+    row.querySelector('.del').addEventListener('click', ()=>{
+      draft.badHabits = draft.badHabits.filter(x=>x!==h);
+      renderEditorBad();
+    });
+    el.appendChild(row);
+  });
+}
+
+function renderEditorSchedule(){
+  const el = document.getElementById('editSchedule');
+  el.innerHTML = '';
+  const dayOrder = ['seg','ter','qua','qui','sex','sab','dom'];
+  const dayShort = {seg:'S',ter:'T',qua:'Q',qui:'Q',sex:'S',sab:'S',dom:'D'};
+  const periodLabels = {manha:'Manhã', tarde:'Tarde', noite:'Noite'};
+  draft.schedule.forEach(item=>{
+    if(item.pts == null) item.pts = 3;
+    if(!item.period) item.period = 'tarde';
+    const row = document.createElement('div');
+    row.className = 'edit-row-task';
+    const dayChips = dayOrder.map(d=>
+      `<button type="button" class="day-chip ${item.days.includes(d)?'active':''}" data-day="${d}" title="${WEEKDAY_LABELS[d]}">${dayShort[d]}</button>`
+    ).join('');
+    const periodOptions = Object.entries(periodLabels).map(([k,l])=>
+      `<option value="${k}" ${item.period===k?'selected':''}>${l}</option>`
+    ).join('');
+    row.innerHTML = `
+      <div class="edit-row-main">
+        <input type="text" value="${escapeAttr(item.label)}" data-field="label" placeholder="nome (ex: Inglês)">
+        <button class="del" title="remover">🗑</button>
+      </div>
+      <div class="day-chip-row">${dayChips}</div>
+      <div class="edit-row-main">
+        <input type="time" value="${item.start}" data-field="start" style="flex:1;">
+        <span style="color:var(--chalk-dim); font-size:.8rem;">até</span>
+        <input type="time" value="${item.end}" data-field="end" style="flex:1;">
+      </div>
+      <div class="edit-row-main">
+        <select data-field="period" style="flex:1; background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--chalk); border-radius:6px; padding:6px; font-family:inherit; font-size:.8rem;">${periodOptions}</select>
+        ${stepperHTML('pts', item.pts)}
+      </div>
+    `;
+    row.querySelector('[data-field=label]').addEventListener('input', e=>{ item.label = e.target.value; });
+    row.querySelector('[data-field=start]').addEventListener('input', e=>{ item.start = e.target.value; });
+    row.querySelector('[data-field=end]').addEventListener('input', e=>{ item.end = e.target.value; });
+    row.querySelector('[data-field=period]').addEventListener('change', e=>{ item.period = e.target.value; });
+    wireStepper(row, item, 'pts');
     row.querySelectorAll('.day-chip').forEach(chip=>{
       chip.addEventListener('click', ()=>{
         const d = chip.getAttribute('data-day');
@@ -93,106 +188,4 @@ document.getElementById('overlay').addEventListener('click', e=>{
 document.getElementById('saveBtn').addEventListener('click', ()=>{
   // limpa linhas vazias (sem nome) antes de salvar
   ['manha','tarde','noite'].forEach(k=>{
-    draft.periods[k].tasks = draft.periods[k].tasks.filter(t=>t.txt.trim() !== '');
-  });
-  if(draft.periodsWeekend){
-    ['manha','tarde','noite'].forEach(k=>{
-      draft.periodsWeekend[k].tasks = draft.periodsWeekend[k].tasks.filter(t=>t.txt.trim() !== '');
-    });
-  }
-  draft.badHabits = draft.badHabits.filter(h=>h.txt.trim() !== '');
-  draft.rewards = draft.rewards.filter(r=>r.txt.trim() !== '');
-  draft.schedule = (draft.schedule || []).filter(s=>s.label.trim() !== '' && s.days.length > 0);
-
-  const pinVal = document.getElementById('editorPinInput').value.trim();
-  draft.editorPin = pinVal;
-
-  const gameLimitVal = parseFloat(document.getElementById('gameLimitInput').value);
-  draft.screenDailyLimitHours = isNaN(gameLimitVal) || gameLimitVal < 0 ? 2 : gameLimitVal;
-
-  CONFIG = draft;
-  saveConfig(CONFIG);
-
-  // remove do estado marcado de hoje qualquer tarefa que não existe mais
-  // na rotina ativa de hoje (dia de escola ou fim de semana)
-  const validIds = new Set(allTasks().map(t=>t.id));
-  Object.keys(state.checkedToday).forEach(id=>{
-    if(!validIds.has(id)) delete state.checkedToday[id];
-  });
-  saveState(state);
-
-  closeEditor();
-  render();
-});
-
-/* ===================== EDITOR DE DIA ANTERIOR ===================== */
-let editingDate = null;
-
-function openDayEditor(dateISO){
-  editingDate = dateISO;
-  const entry = state.history[dateISO] || { done:0, total:0, pointsEarnedThatDay:0, perfect:false, screenMinutes:0 };
-  document.getElementById('dayEditorTitle').textContent = 'Editar ' + formatDateBR(dateISO);
-  document.getElementById('dayDone').value = entry.done;
-  document.getElementById('dayTotal').value = entry.total;
-  document.getElementById('dayPoints').value = entry.pointsEarnedThatDay;
-  document.getElementById('dayHair').value = getHairStatus(dateISO) || entry.hair || '';
-  document.getElementById('dayOverlay').classList.add('open');
-}
-function closeDayEditor(){
-  document.getElementById('dayOverlay').classList.remove('open');
-  editingDate = null;
-}
-document.getElementById('dayCloseBtn').addEventListener('click', closeDayEditor);
-document.getElementById('dayCancelBtn').addEventListener('click', closeDayEditor);
-document.getElementById('dayOverlay').addEventListener('click', e=>{
-  if(e.target.id === 'dayOverlay') closeDayEditor();
-});
-
-document.getElementById('daySaveBtn').addEventListener('click', ()=>{
-  if(!editingDate) return;
-  const oldEntry = state.history[editingDate];
-  const oldPoints = oldEntry ? oldEntry.pointsEarnedThatDay : 0;
-
-  const done = Math.max(0, parseInt(document.getElementById('dayDone').value,10) || 0);
-  const total = Math.max(0, parseInt(document.getElementById('dayTotal').value,10) || 0);
-  const pointsEarnedThatDay = Math.max(0, parseInt(document.getElementById('dayPoints').value,10) || 0);
-  const hair = document.getElementById('dayHair').value || null;
-  const perfect = total > 0 && done >= total;
-
-  if(!state.hairByDate) state.hairByDate = {};
-  if(hair) state.hairByDate[editingDate] = hair; else delete state.hairByDate[editingDate];
-  state.history[editingDate] = { done, total, pointsEarnedThatDay, perfect, screenMinutes: perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0, hair };
-  if(perfect) registerPetDayCompletion(editingDate);
-
-  // ajusta o saldo total pela diferença de pontos daquele dia
-  const delta = pointsEarnedThatDay - oldPoints;
-  let appliedDelta = 0;
-  if(delta !== 0){
-    appliedDelta = addPoints(delta);
-    addLog(`✏️ ajuste em ${formatDateBR(editingDate)}: ${delta>0?'+':''}${delta}`);
-  }
-
-  saveState(state);
-  closeDayEditor();
-  bumpTotal(appliedDelta);
-  render();
-});
-
-/* ===================== SINCRONIZAÇÃO COM GOOGLE DRIVE (via Apps Script) ===================== */
-
-const APPS_SCRIPT_CODE = `function doGet(e) {
-  if (e.parameter.data === '1') {
-    var files = DriveApp.getFilesByName('rotina-hector-backup.json');
-    if (files.hasNext()) {
-      var file = files.next();
-      var raw = file.getBlob().getDataAsString();
-      try {
-        var data = JSON.parse(raw);
-        return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
-      } catch(err) {}
-    }
-    return ContentService.createTextOutput(JSON.stringify({error:'not_found'})).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  var appFiles = DriveApp.getFilesByName('rotina-hector.html');
-  if (!appFiles.h
+    draft.periods[k].tas

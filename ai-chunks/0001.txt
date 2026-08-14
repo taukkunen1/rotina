@@ -285,6 +285,22 @@
     display:block;
   }
 
+  .time-remaining{
+    font-size:.66rem;
+    display:block;
+    margin-bottom:4px;
+    font-weight:bold;
+  }
+  .time-remaining.urgency-none{ color:var(--chalk-dim); font-weight:normal; }
+  .time-remaining.urgency-low{ color:var(--chalk-dim); }
+  .time-remaining.urgency-medium{ color:var(--orange); }
+  .time-remaining.urgency-high{ color:var(--red); animation:urgentPulse 1.6s ease-in-out infinite; }
+  .time-remaining.urgency-over{ color:var(--chalk-dim); font-style:italic; font-weight:normal; }
+  @keyframes urgentPulse{
+    0%,100%{ opacity:1; }
+    50%{ opacity:.5; }
+  }
+
   .manha h2{ color:var(--yellow); }
   .tarde h2{ color:var(--orange); }
   .noite h2{ color:var(--blue); }
@@ -296,33 +312,3 @@
     margin:6px 0 12px;
     overflow:hidden;
   }
-  .progress-bar > div{
-    height:100%;
-    background:var(--green);
-    transition:width .25s ease;
-  }
-
-  ul.tasks{ list-style:none; margin:0; padding:0; }
-
-  .task{
-    display:flex;
-    align-items:flex-start;
-    gap:9px;
-    padding:6px 6px;
-    border-radius:6px;
-    user-select:none;
-  }
-  .task:hover{ background:rgba(255,255,255,.045); }
-
-  .mark-group{
-    display:flex;
-    gap:5px;
-    flex-shrink:0;
-    margin-top:1px;
-  }
-  .mark-btn{
-    width:30px; height:30px;
-    border-radius:7px;
-    border:1px solid var(--line);
-    background:rgba(255,255,255,.03);
-   

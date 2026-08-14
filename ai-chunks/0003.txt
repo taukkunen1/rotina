@@ -1,4 +1,28 @@
-m);
+rem; color:var(--chalk-dim); }
+
+  .drive-sync{
+    background:rgba(79,195,247,.08);
+    border:1px solid rgba(79,195,247,.35);
+    border-radius:12px;
+    padding:14px 16px;
+  }
+  .drive-sync h3{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    color:var(--blue);
+    margin:0 0 4px;
+    font-size:1.1rem;
+  }
+  .drive-sync .hint{ font-size:.72rem; color:var(--chalk-dim); margin-bottom:10px; }
+  .drive-sync .status{ font-size:.8rem; color:var(--chalk); margin-bottom:10px; }
+  .drive-sync .status b{ color:var(--blue); }
+  .drive-sync-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .drive-setup{
+    margin-top:12px;
+    padding-top:10px;
+    border-top:1px dashed var(--line);
+    font-size:.72rem;
+    color:var(--chalk-dim);
   }
   .drive-setup ol{ margin:6px 0 0 18px; padding:0; }
   .drive-setup li{ margin-bottom:3px; }
@@ -311,38 +335,4 @@ m);
     padding:7px 12px;
     border-radius:6px;
     cursor:pointer;
-    font-family:inherit;
-    width:100%;
-    margin-top:2px;
-  }
-  .add-row-btn:hover{ color:var(--green); border-color:var(--green); }
-
-  .editor-footer{
-    display:flex;
-    justify-content:flex-end;
-    gap:10px;
-    border-top:2px dashed var(--line);
-    padding-top:16px;
-    margin-top:6px;
-  }
-
-  .btn{
-    font-family:inherit;
-    font-size:.85rem;
-    padding:9px 18px;
-    border-radius:8px;
-    cursor:pointer;
-    border:1px solid var(--line);
-    background:none;
-    color:var(--chalk-dim);
-  }
-  .btn:hover{ color:var(--chalk); border-color:rgba(242,237,225,.4); }
-  .btn.save{
-    background:var(--yellow);
-    color:#2a2410;
-    border-color:var(--yellow);
-    font-weight:bold;
-  }
-  .btn.save:hover{ opacity:.9; }
-
-  @media (max-width:500px){
+  

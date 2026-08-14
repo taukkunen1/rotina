@@ -1,4 +1,94 @@
-const isPositive = h.pts >= 0;
+t.getElementById('hairNotWashedBtn');
+  const statusEl = document.getElementById('hairStatus');
+  washedBtn.classList.toggle('active-washed', status === 'washed');
+  notWashedBtn.classList.toggle('active-notwashed', status === 'not-washed');
+  statusEl.innerHTML = status === 'washed'
+    ? 'Hoje: <b class="hair-history-washed">💧 cabelo lavado</b>'
+    : status === 'not-washed'
+      ? 'Hoje: <b class="hair-history-notwashed">○ não lavou</b>'
+      : 'Hoje: ainda não registrado';
+}
+
+function render(){
+  document.getElementById('totalPoints').textContent = state.totalPoints;
+
+  renderPet();
+  renderHair();
+  renderGameTimer();
+  renderCustomTimers();
+
+  const weekendEl = document.getElementById('weekendIndicator');
+  if(weekendEl){
+    weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
+      ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
+      : '';
+  }
+
+  const periodsEl = document.getElementById('periods');
+  periodsEl.innerHTML = '';
+  Object.entries(getPeriodsFor(todayISO())).forEach(([key, period])=>{
+    const div = document.createElement('div');
+    div.className = 'period ' + key;
+
+    const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    const doneCount = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+    const remaining = applicable.length - doneCount;
+    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
+
+    let progressMsg;
+    if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
+    else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
+    else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
+    else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
+
+    const ul = document.createElement('ul');
+    ul.className = 'tasks';
+    const nextSuggestedId = period.tasks.find(t => !state.checkedToday[t.id])?.id;
+    period.tasks.forEach(task=>{
+      const li = document.createElement('li');
+      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
+      const isSuggested = task.id === nextSuggestedId;
+      const late = status === 'done' && isTaskLate(task, period.time);
+      li.className = 'task'
+        + (status === 'done' ? ' done' : '')
+        + (status === 'na' ? ' na' : '')
+        + (status === 'x' ? ' notdone' : '')
+        + (isSuggested ? ' suggested' : '')
+        + (late ? ' late-done' : '');
+      li.innerHTML = `
+        <span class="mark-group" data-id="${task.id}">
+          <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
+          <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
+          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, perde metade dos pontos">✕</button>
+        </span>
+        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}${late ? '<span class="late-flag">⏰ atrasado</span>' : ''}</span>
+        <span class="pts">${status==='na' ? 'n/a' : status==='x' ? '−'+taskNotDonePenalty(task) : '+'+task.pts}</span>
+      `;
+      ul.appendChild(li);
+    });
+
+    div.innerHTML = `
+      <div class="period-head"><h2>${period.label}</h2><span class="time">${period.time}</span></div>
+      <span class="time-remaining" id="timeRemaining_${key}"></span>
+      <span class="progress-txt">${progressMsg}</span>
+      <div class="progress-bar"><div style="width:${pct}%"></div></div>
+    `;
+    div.dataset.periodTime = period.time;
+    div.appendChild(ul);
+    periodsEl.appendChild(div);
+  });
+
+  updateTimeRemainingDisplays();
+  startTimeRemainingTicking();
+
+  periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
+    btn.addEventListener('click', onMarkClick);
+  });
+
+  const badEl = document.getElementById('badHabits');
+  badEl.innerHTML = '';
+  CONFIG.badHabits.forEach(h=>{
+    const isPositive = h.pts >= 0;
     const btn = document.createElement('button');
     btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
     btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
@@ -106,115 +196,4 @@ function renderTestPanel(){
   });
 
   document.getElementById('testPrevDayBtn').addEventListener('click', ()=>{
-    goToTestDate(shiftISODate(todayISO(), -1));
-  });
-  document.getElementById('testNextDayBtn').addEventListener('click', ()=>{
-    goToTestDate(shiftISODate(todayISO(), 1));
-  });
-  document.getElementById('testGoDateBtn').addEventListener('click', ()=>{
-    const val = document.getElementById('testDatePicker').value;
-    if(val) goToTestDate(val);
-  });
-  document.getElementById('testResetDateBtn').addEventListener('click', ()=>{
-    goToTestDate(realToday);
-    setTestDate(null);
-    state = loadState();
-    render();
-  });
-}
-
-function renderBackupReminder(){
-  const el = document.getElementById('backupReminder');
-  if(!el) return;
-
-  const today = todayISO();
-  const daysSinceBackup = state.lastBackupISO ? daysBetween(state.lastBackupISO, today) : Infinity;
-  const dismissed = state.backupReminderDismissedFor === today;
-
-  const shouldShow = daysSinceBackup >= 7 && !dismissed;
-
-  if(!shouldShow){ el.innerHTML=''; return; }
-
-  const msg = state.lastBackupISO
-    ? `Já faz ${daysSinceBackup} dias desde o último backup. Que tal exportar de novo?`
-    : `Vocês ainda não fizeram nenhum backup. Vale exportar um agora pra não perder o progresso.`;
-
-  el.innerHTML = `
-    <div class="backup-reminder">
-      <span>💾 ${msg}</span>
-      <span>
-        <button id="backupReminderExportBtn">exportar agora</button>
-        <button class="dismiss" id="backupReminderDismissBtn">lembrar depois</button>
-      </span>
-    </div>
-  `;
-  document.getElementById('backupReminderExportBtn').addEventListener('click', ()=>{
-    document.getElementById('exportBtn').click();
-  });
-  document.getElementById('backupReminderDismissBtn').addEventListener('click', ()=>{
-    state.backupReminderDismissedFor = today;
-    saveState(state);
-    renderBackupReminder();
-  });
-}
-
-function renderWeeklyReview(){
-  const el = document.getElementById('weeklyReviewSection');
-  if(!el) return;
-
-  const days = [];
-  for(let i=6; i>=0; i--){
-    const d = new Date();
-    d.setDate(d.getDate()-i);
-    days.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'));
-  }
-
-  let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0;
-  days.forEach(iso=>{
-    const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
-    if(!entry) return;
-    if(iso !== todayISO()){
-      // dias fechados já têm pointsEarnedThatDay e screenMinutes calculados
-      const full = state.history[iso];
-      if(full){
-        totalPointsWeek += full.pointsEarnedThatDay || 0;
-        totalScreenMin += full.screenMinutes || 0;
-      }
-    }
-    if(entry.total > 0 && entry.perfect) perfectDays++;
-  });
-
-  const rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
-
-  el.innerHTML = `
-    <div class="weekly-review">
-      <div class="wr-head">
-        <h3 class="block-title" style="margin:0; color:var(--green);">🗓️ Resumo semanal em família</h3>
-        <span class="wr-range">${rangeLabel}</span>
-      </div>
-      <div class="wr-stats">
-        <div class="wr-stat"><span class="wr-num">${perfectDays}/7</span><span class="wr-label">dias completos</span></div>
-        <div class="wr-stat"><span class="wr-num">${totalPointsWeek}</span><span class="wr-label">Pacus Points ganhos</span></div>
-        <div class="wr-stat"><span class="wr-num">${totalScreenMin}</span><span class="wr-label">min de tela ganhos</span></div>
-      </div>
-    </div>
-  `;
-}
-
-function hairLabel(status){
-  if(status === 'washed') return '<span class="hair-history-washed">💧 Lavou</span>';
-  if(status === 'not-washed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
-  return '<span class="hair-history-unknown">— Não registrado</span>';
-}
-
-let historyShowAll = false;
-
-function renderHistory(){
-  const body = document.getElementById('historyBody');
-  const start = CONFIG.historyStartDate || todayISO();
-  const startDate = new Date(start+"T00:00:00");
-  const today = new Date(todayISO()+"T00:00:00");
-
-  const rows = [];
-  for(let d = new Date(startDate); d <= today; d.setDate(d.getDate()+1)){
-    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.
+    goToTe

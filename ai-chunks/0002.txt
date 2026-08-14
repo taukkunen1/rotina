@@ -1,4 +1,33 @@
- color:var(--chalk-dim);
+  .progress-bar > div{
+    height:100%;
+    background:var(--green);
+    transition:width .25s ease;
+  }
+
+  ul.tasks{ list-style:none; margin:0; padding:0; }
+
+  .task{
+    display:flex;
+    align-items:flex-start;
+    gap:9px;
+    padding:6px 6px;
+    border-radius:6px;
+    user-select:none;
+  }
+  .task:hover{ background:rgba(255,255,255,.045); }
+
+  .mark-group{
+    display:flex;
+    gap:5px;
+    flex-shrink:0;
+    margin-top:1px;
+  }
+  .mark-btn{
+    width:30px; height:30px;
+    border-radius:7px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.03);
+    color:var(--chalk-dim);
     font-size:.9rem;
     line-height:1;
     cursor:pointer;
@@ -27,6 +56,14 @@
   .task.na .pts{ color:var(--chalk-dim); border-color:var(--line); }
   .task.notdone .txt{ color:var(--red); }
   .task.notdone .pts{ color:var(--red); border-color:rgba(255,107,107,.4); }
+  .late-flag{
+    display:inline-block;
+    margin-left:6px;
+    font-size:.65rem;
+    color:var(--orange);
+    font-style:normal;
+  }
+  .task.late-done .txt{ color:var(--chalk); }
   .task-icon{ font-size:1.05rem; margin-right:6px; flex-shrink:0; }
 
   .task.suggested{
@@ -228,28 +265,4 @@
     color:var(--green);
     display:block;
   }
-  .wr-stat .wr-label{ font-size:.68rem; color:var(--chalk-dim); }
-
-  .drive-sync{
-    background:rgba(79,195,247,.08);
-    border:1px solid rgba(79,195,247,.35);
-    border-radius:12px;
-    padding:14px 16px;
-  }
-  .drive-sync h3{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-weight:normal;
-    color:var(--blue);
-    margin:0 0 4px;
-    font-size:1.1rem;
-  }
-  .drive-sync .hint{ font-size:.72rem; color:var(--chalk-dim); margin-bottom:10px; }
-  .drive-sync .status{ font-size:.8rem; color:var(--chalk); margin-bottom:10px; }
-  .drive-sync .status b{ color:var(--blue); }
-  .drive-sync-row{ display:flex; flex-wrap:wrap; gap:8px; }
-  .drive-setup{
-    margin-top:12px;
-    padding-top:10px;
-    border-top:1px dashed var(--line);
-    font-size:.72rem;
-    color:var(--chalk-di
+  .wr-stat .wr-label{ font-size:.68

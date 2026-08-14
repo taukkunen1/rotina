@@ -1,4 +1,118 @@
- render();
+BonusHours(r.grantsHours);
+        addLog(`🎮 +${r.grantsHours}h de jogo hoje (bônus da recompensa)`);
+      }
+      if(!state.gameTimer.redemptions) state.gameTimer.redemptions = {};
+      state.gameTimer.redemptions[r.id] = redeemed + 1;
+
+      saveState(state);
+      bumpTotal(delta, evt.currentTarget);
+      renderRewards();
+      renderLog();
+      renderGameTimer();
+    });
+    rEl.appendChild(div);
+  });
+}
+
+function renderLog(){
+  const logEl = document.getElementById('logList');
+  logEl.innerHTML = state.log.length
+    ? state.log.map(l=>`<div>${l}</div>`).join('')
+    : '<div>Nada ainda hoje — bora começar!</div>';
+}
+
+function fireConfetti(originEl, count){
+  count = count || 14;
+  const colors = ['#ffd93d','#ff7eb9','#4fc3f7','#ff9f43','#5fd875'];
+  const rect = originEl && originEl.getBoundingClientRect
+    ? originEl.getBoundingClientRect()
+    : { left: window.innerWidth/2, top: window.innerHeight/2, width:0, height:0 };
+  const originX = rect.left + rect.width/2;
+  const originY = rect.top + rect.height/2;
+
+  for(let i=0;i<count;i++){
+    const piece = document.createElement('span');
+    piece.className = 'confetti-piece';
+    const angle = Math.random()*Math.PI*2;
+    const dist = 60 + Math.random()*90;
+    piece.style.setProperty('--dx', (Math.cos(angle)*dist)+'px');
+    piece.style.setProperty('--dy', (Math.sin(angle)*dist - 40)+'px');
+    piece.style.setProperty('--rot', (Math.random()*360)+'deg');
+    piece.style.left = originX+'px';
+    piece.style.top = originY+'px';
+    piece.style.background = colors[i % colors.length];
+    document.body.appendChild(piece);
+    setTimeout(()=>piece.remove(), 950);
+  }
+}
+
+function onMarkClick(e){
+  const btn = e.currentTarget;
+  const id = btn.closest('.mark-group').getAttribute('data-id');
+  const clickedStatus = btn.getAttribute('data-status'); // 'done', 'na', or 'x'
+  const task = allTasks().find(t=>t.id===id);
+  if(!task) return;
+
+  const current = state.checkedToday[id]; // undefined | 'done' | 'na' | 'x'
+  let totalDelta = 0;
+  if(!state.taskDoneAt) state.taskDoneAt = {};
+
+  // desfazer o efeito do estado anterior nos pontos
+  if(current === 'done') totalDelta += addPoints(-task.pts);
+  else if(current === 'x') totalDelta += addPoints(taskNotDonePenalty(task));
+
+  if(current === clickedStatus){
+    // clicou de novo no mesmo estado: volta pra pendente
+    delete state.checkedToday[id];
+    delete state.taskDoneAt[id];
+    addLog(`(desmarcado) ${task.txt}`);
+  } else {
+    state.checkedToday[id] = clickedStatus;
+    if(clickedStatus === 'done'){
+      totalDelta += addPoints(task.pts);
+      state.taskDoneAt[id] = new Date().toISOString();
+      addLog(`+${task.pts} · ${task.txt}`);
+      fireConfetti(btn);
+    } else if(clickedStatus === 'na'){
+      delete state.taskDoneAt[id];
+      addLog(`n/a · ${task.txt}`);
+    } else {
+      delete state.taskDoneAt[id];
+      const penalty = taskNotDonePenalty(task);
+      totalDelta += addPoints(-penalty);
+      addLog(`✕ não realizado · ${task.txt} (−${penalty})`);
+    }
+  }
+
+  const completedNow = syncPetCompletionFromDay(todayISO());
+  if(completedNow){
+    addLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
+  }
+  saveState(state);
+  bumpTotal(totalDelta, btn);
+  render();
+}
+
+document.getElementById('hairWashedBtn').addEventListener('click', ()=> setHairStatus('washed'));
+document.getElementById('hairNotWashedBtn').addEventListener('click', ()=> setHairStatus('not-washed'));
+
+document.getElementById('addPointsBtn').addEventListener('click', ()=>{
+  const raw = prompt('Quantos Pacus Points adicionar?', '5');
+  if(raw === null) return;
+  const amount = parseInt(raw, 10);
+  if(!amount || amount === 0) return;
+  const delta = addPoints(amount);
+  addLog(`${amount>0?'+':''}${amount} · ajuste manual`);
+  saveState(state);
+  bumpTotal(delta);
+  render();
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(!confirm('Isso apaga os Pacus Points, o histórico de hoje e o histórico de dias. Tem certeza?')) return;
+  state = { totalPoints:0, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, driveLastSyncISO:null, hairByDate:{} };
+  saveState(state);
+  render();
 });
 
 /* ===================== EDITOR ===================== */
@@ -76,99 +190,4 @@ function renderEditorPeriod(key, elId, periodsObj){
       periodsObj[key].tasks = periodsObj[key].tasks.filter(t=>t!==task);
       renderEditorPeriod(key, elId, periodsObj);
     });
-    row.querySelectorAll('.reorder-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const dir = btn.getAttribute('data-dir');
-        const i = list.indexOf(task);
-        const swapWith = dir === 'up' ? i-1 : i+1;
-        if(swapWith < 0 || swapWith >= list.length) return;
-        [list[i], list[swapWith]] = [list[swapWith], list[i]];
-        renderEditorPeriod(key, elId, periodsObj);
-      });
-    });
-    el.appendChild(row);
-  });
-}
-
-function stepperHTML(field, value, allowNegative){
-  return `<span class="stepper">
-    <button type="button" class="step-btn" data-step="-1" title="menos">−</button>
-    <input type="number" ${allowNegative?'':'min="0"'} value="${value}" data-field="${field}">
-    <button type="button" class="step-btn" data-step="1" title="mais">+</button>
-  </span>`;
-}
-function wireStepper(row, obj, field, allowNegative){
-  const input = row.querySelector(`[data-field=${field}]`);
-  input.addEventListener('input', e=>{
-    const v = parseInt(e.target.value)||0;
-    obj[field] = allowNegative ? v : Math.max(0, v);
-  });
-  row.querySelectorAll('.step-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const delta = parseInt(btn.getAttribute('data-step'));
-      const next = (obj[field]||0) + delta;
-      obj[field] = allowNegative ? next : Math.max(0, next);
-      input.value = obj[field];
-    });
-  });
-}
-
-function renderEditorBad(){
-  const el = document.getElementById('editBad');
-  el.innerHTML = '';
-  draft.badHabits.forEach(h=>{
-    const row = document.createElement('div');
-    row.className = 'edit-row';
-    row.innerHTML = `
-      <input type="text" value="${escapeAttr(h.txt)}" data-field="txt" placeholder="hábito (ex: brigou -10, ajudou +5)">
-      ${stepperHTML('pts', h.pts, true)}
-      <button class="del" title="remover">🗑</button>
-    `;
-    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ h.txt = e.target.value; });
-    wireStepper(row, h, 'pts', true);
-    row.querySelector('.del').addEventListener('click', ()=>{
-      draft.badHabits = draft.badHabits.filter(x=>x!==h);
-      renderEditorBad();
-    });
-    el.appendChild(row);
-  });
-}
-
-function renderEditorSchedule(){
-  const el = document.getElementById('editSchedule');
-  el.innerHTML = '';
-  const dayOrder = ['seg','ter','qua','qui','sex','sab','dom'];
-  const dayShort = {seg:'S',ter:'T',qua:'Q',qui:'Q',sex:'S',sab:'S',dom:'D'};
-  const periodLabels = {manha:'Manhã', tarde:'Tarde', noite:'Noite'};
-  draft.schedule.forEach(item=>{
-    if(item.pts == null) item.pts = 3;
-    if(!item.period) item.period = 'tarde';
-    const row = document.createElement('div');
-    row.className = 'edit-row-task';
-    const dayChips = dayOrder.map(d=>
-      `<button type="button" class="day-chip ${item.days.includes(d)?'active':''}" data-day="${d}" title="${WEEKDAY_LABELS[d]}">${dayShort[d]}</button>`
-    ).join('');
-    const periodOptions = Object.entries(periodLabels).map(([k,l])=>
-      `<option value="${k}" ${item.period===k?'selected':''}>${l}</option>`
-    ).join('');
-    row.innerHTML = `
-      <div class="edit-row-main">
-        <input type="text" value="${escapeAttr(item.label)}" data-field="label" placeholder="nome (ex: Inglês)">
-        <button class="del" title="remover">🗑</button>
-      </div>
-      <div class="day-chip-row">${dayChips}</div>
-      <div class="edit-row-main">
-        <input type="time" value="${item.start}" data-field="start" style="flex:1;">
-        <span style="color:var(--chalk-dim); font-size:.8rem;">até</span>
-        <input type="time" value="${item.end}" data-field="end" style="flex:1;">
-      </div>
-      <div class="edit-row-main">
-        <select data-field="period" style="flex:1; background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--chalk); border-radius:6px; padding:6px; font-family:inherit; font-size:.8rem;">${periodOptions}</select>
-        ${stepperHTML('pts', item.pts)}
-      </div>
-    `;
-    row.querySelector('[data-field=label]').addEventListener('input', e=>{ item.label = e.target.value; });
-    row.querySelector('[data-field=start]').addEventListener('input', e=>{ item.start = e.target.value; });
-    row.querySelector('[data-field=end]').addEventListener('input', e=>{ item.end = e.target.value; });
-    row.querySelector('[data-field=period]').addEventListener('change', e=>{ item.period = e.target.value; });
-    wireStepper(ro
+    row.querySelectorAll('.reorder-btn').forEach(btn

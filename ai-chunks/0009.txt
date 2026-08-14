@@ -1,4 +1,107 @@
-ate.gameTimer;
+backup && backup.config && backup.state){
+        const localRevision = Number(state.driveRevision)||0;
+        const localDirty = (Number(state.revision)||0) > localRevision;
+        const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
+        if(localDirty && remoteRevision !== localRevision){
+          const merged = mergeRemoteData(backup);
+          CONFIG = merged.config;
+          state = merged.state;
+          state.driveRevision = remoteRevision;
+          saveConfig(CONFIG);
+          saveState(state);
+          render();
+        } else if(remoteRevision >= localRevision){
+          const remoteConfig = sanitizeRemoteConfig(backup.config);
+          if(remoteConfig){
+            CONFIG = remoteConfig;
+            state = reconcileState(backup.state);
+            state.driveRevision = remoteRevision;
+            state.driveLastSyncISO = todayISO();
+            try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(CONFIG)); }catch(e){}
+            try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+            render();
+          }else{
+            // Nunca substituir uma rotina válida por um backup remoto vazio/incompleto.
+            // O app continua com a configuração local que já funcionava.
+            render();
+          }
+        }
+      }
+    }
+  }catch(err){
+    renderDriveSync();
+  }
+  suppressAutoPush = false;
+}
+
+function addLog(text){
+  const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  state.log.unshift(time+" — "+text);
+  state.log = state.log.slice(0, 30);
+}
+function bumpTotal(delta, anchorEl){
+  const el = document.getElementById('totalPoints');
+  el.textContent = state.totalPoints;
+  el.classList.remove('bump');
+  void el.offsetWidth;
+  el.classList.add('bump');
+
+  if(delta){
+    const deltaEl = document.getElementById('pointsDelta');
+    if(deltaEl){
+      const rect = (anchorEl || el).getBoundingClientRect();
+      deltaEl.style.left = (rect.left + rect.width/2) + 'px';
+      deltaEl.style.top = (rect.top - 6) + 'px';
+      deltaEl.classList.remove('show-up','show-down');
+      void deltaEl.offsetWidth;
+      deltaEl.textContent = (delta>0?'+':'−') + Math.abs(delta);
+      deltaEl.classList.add(delta>0?'show-up':'show-down');
+    }
+  }
+}
+
+// 1 Pacus Point ≈ R$0,06 (dentro da faixa combinada de R$0,05–0,08) — o
+// saldo nunca passa de 1000 pontos, equivalente a uns R$60 no máximo.
+const MAX_POINTS = 1000;
+const POINT_VALUE_BRL = 0.06;
+
+function addPoints(delta){
+  const before = state.totalPoints;
+  state.totalPoints = Math.max(0, Math.min(MAX_POINTS, state.totalPoints + delta));
+  return state.totalPoints - before;
+}
+
+// Pra "✕ não realizado": perde metade dos pontos daquela tarefa. A metade
+// é sempre arredondada pra cima, e nunca fica em número ímpar (se o
+// arredondamento der ímpar, sobe mais 1 pra virar par).
+function notDonePenalty(pts){
+  let half = Math.ceil(pts/2);
+  if(half % 2 !== 0) half += 1;
+  return half;
+}
+
+// Algumas tarefas (marcadas com fullPenalty:true) perdem o valor CHEIO em
+// vez de metade — reforço maior pras tarefas mais chatas/resistidas.
+function taskNotDonePenalty(task){
+  return task.fullPenalty ? task.pts : notDonePenalty(task.pts);
+}
+
+/* ===================== TIMER DE TEMPO DE JOGO (diário) ===================== */
+let gameTimerTickHandle = null;
+
+function gameTimerDailyLimitSeconds(){
+  const base = Math.round((CONFIG.screenDailyLimitHours || 2) * 3600);
+  const bonus = Math.round((state.gameTimer.bonusSeconds || 0));
+  return base + bonus;
+}
+
+function addGameTimerBonusHours(hours){
+  if(!state.gameTimer.bonusSeconds) state.gameTimer.bonusSeconds = 0;
+  state.gameTimer.bonusSeconds += Math.round(hours * 3600);
+}
+
+function gameTimerSecondsUsedNow(){
+  const gt = state.gameTimer;
   const running = gt.runningSince ? (Date.now() - gt.runningSince)/1000 : 0;
   return gt.usedSeconds + running;
 }
@@ -119,122 +222,4 @@ function customTimerRemainingNow(t){
 function setCustomTimerMinutes(id, minutes){
   const t = findCustomTimer(id);
   if(!t || t.runningSince) return; // não dá pra mudar enquanto está rodando
-  const secs = Math.max(0, Math.round(minutes*60));
-  t.totalSeconds = secs;
-  t.remainingSeconds = secs;
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function startCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t || t.runningSince || t.remainingSeconds <= 0) return;
-  t.runningSince = Date.now();
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-  startCustomTimerTicking();
-}
-
-function pauseCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t || !t.runningSince) return;
-  t.remainingSeconds = customTimerRemainingNow(t);
-  t.runningSince = null;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function resetCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t) return;
-  t.remainingSeconds = t.totalSeconds;
-  t.runningSince = null;
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function playBeep(){
-  try{
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if(!Ctx) return;
-    const ctx = new Ctx();
-    [0, 220, 440].forEach(delay=>{
-      setTimeout(()=>{
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = 880;
-        gain.gain.value = 0.15;
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.18);
-      }, delay);
-    });
-  }catch(e){ /* som é só um extra, sem problema se falhar */ }
-}
-
-function anyCustomTimerRunning(){
-  return state.customTimers.some(t=>t.runningSince);
-}
-
-function startCustomTimerTicking(){
-  if(customTimerTickHandle) return;
-  customTimerTickHandle = setInterval(()=>{
-    let needsFullRender = false;
-    state.customTimers.forEach(t=>{
-      if(!t.runningSince) return;
-      const remaining = customTimerRemainingNow(t);
-      if(remaining <= 0 && !t.finished){
-        t.remainingSeconds = 0;
-        t.runningSince = null;
-        t.finished = true;
-        playBeep();
-        needsFullRender = true;
-      }
-    });
-    if(needsFullRender){ saveState(state); renderCustomTimers(); }
-    else updateCustomTimerDisplays();
-    if(!anyCustomTimerRunning()) stopCustomTimerTicking();
-  }, 1000);
-}
-function stopCustomTimerTicking(){
-  if(customTimerTickHandle){ clearInterval(customTimerTickHandle); customTimerTickHandle = null; }
-}
-
-function updateCustomTimerDisplays(){
-  state.customTimers.forEach(t=>{
-    const el = document.getElementById('customTimerDisplay_'+t.id);
-    if(el) el.textContent = formatHMS(customTimerRemainingNow(t));
-  });
-}
-
-function formatHMS(totalSeconds){
-  const s = Math.max(0, Math.round(totalSeconds));
-  const h = Math.floor(s/3600);
-  const m = Math.floor((s%3600)/60);
-  const sec = s%60;
-  if(h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-}
-
-function renderCustomTimers(){
-  const el = document.getElementById('customTimersSection');
-  if(!el) return;
-
-  const cardsHtml = state.customTimers.map(t=>{
-    const running = !!t.runningSince;
-    const remaining = customTimerRemainingNow(t);
-    const totalMin = Math.round(t.totalSeconds/60);
-    return `
-      <div class="custom-timer ${t.finished?'finished':''}">
-        <input type="text" class="custom-timer-label" id="customTimerLabel_${t.id}" value="${escapeAttr(t.label)}" maxlength="20">
-        <div class="custom-timer-display" id="customTimerDisplay_${t.id}">${formatHMS(remaining)}</div>
-        <div class="custom-timer-setrow">
-          <input type="number" min="0" step="1" id="customTimerMin_${t.id}" value="${totalMin}" ${running?'disabled':''}>
-          <span>min</span>
-          <button class="custom-timer-btn secondary" id="customTimerSetBtn_${t.id}" ${running?'disabled':''}>definir</button>
-        </div>
-      
+  const secs = Math.max(0, Math.

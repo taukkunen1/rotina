@@ -1,4 +1,76 @@
-oncluído em 31/08.</b> 🎉`;
+30" rx="48" ry="60" fill="#f6ecd9" stroke="#ff7eb9" stroke-width="3"/>
+      <ellipse cx="93" cy="106" rx="12" ry="18" fill="#fff" opacity=".48"/>
+      ${crackSvg}${shellBreak}
+    </g>
+    <circle cx="72" cy="169" r="4" fill="var(--pink)" opacity=".55"/>
+    <circle cx="151" cy="165" r="3" fill="var(--pink)" opacity=".45"/>
+  </svg>`;
+}
+
+function buildPacusSVG(stageFloat){
+  const s = Math.max(0, Math.min(23, stageFloat));
+  const hatch = Math.max(0, Math.min(1, (s-8)/6));
+  const growth = Math.max(0, Math.min(1, (s-14)/9));
+  const adult = Math.max(0, Math.min(1, (s-21)/2));
+  const scale = 0.52 + growth*0.42 + adult*0.06;
+  const bodyW = 45 + growth*10 + adult*4;
+  const bodyH = 30 + growth*5 + adult*3;
+  const gillLen = 12 + growth*11 + adult*4;
+  const faceY = 92 - hatch*7;
+  const bodyY = 128 - hatch*5;
+  const shell = hatch < 1 ? `
+    <path d="M62 151 Q45 158 54 174 Q70 184 85 170" fill="#f6ecd9" stroke="#ff7eb9" stroke-width="2.5" opacity="${1-hatch*.75}"/>
+    <path d="M158 151 Q175 158 166 174 Q150 184 135 170" fill="#f6ecd9" stroke="#ff7eb9" stroke-width="2.5" opacity="${1-hatch*.75}"/>` : '';
+  const gills = [];
+  const gillCount = 2 + Math.floor(Math.min(2,growth*2));
+  for(let i=0;i<gillCount;i++){
+    const y = faceY-4+i*7;
+    const len = gillLen-(i*2);
+    gills.push(`<path d="M${74-i*2} ${y} Q ${58-len} ${y-8} ${50-len/2} ${y+2}" stroke="var(--pink)" stroke-width="3.2" fill="none" stroke-linecap="round"/>`);
+    gills.push(`<path d="M${146+i*2} ${y} Q ${162+len} ${y-8} ${170+len/2} ${y+2}" stroke="var(--pink)" stroke-width="3.2" fill="none" stroke-linecap="round"/>`);
+  }
+  const sparkle = adult > .8 ? `<text x="35" y="64" font-size="18">✨</text><text x="166" y="75" font-size="16">✨</text>` : '';
+  return `<svg class="pet-mascot pet-hatch-crack" ${svgAttrs()}>
+    ${shell}
+    <g transform="translate(110 115) scale(${scale.toFixed(3)}) translate(-110 -115)">
+      ${sparkle}
+      <ellipse cx="110" cy="${bodyY}" rx="${bodyW}" ry="${bodyH}" fill="#f6c7dc"/>
+      <ellipse cx="110" cy="${bodyY+8}" rx="${bodyW*.68}" ry="${bodyH*.52}" fill="#fbe2ec" opacity=".85"/>
+      <circle cx="110" cy="${faceY}" r="32" fill="#f6c7dc"/>
+      ${gills.join('')}
+      <circle cx="97" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="123" cy="${faceY-4}" r="4.5" fill="#3a2430"/>
+      <circle cx="98" cy="${faceY-5.5}" r="1.4" fill="#fff"/><circle cx="124" cy="${faceY-5.5}" r="1.4" fill="#fff"/>
+      <path d="M96 ${faceY+12} Q110 ${faceY+18+growth*2} 124 ${faceY+12}" stroke="#b9607f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <circle cx="89" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/><circle cx="131" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/>
+      <ellipse cx="110" cy="${bodyY+bodyH+5}" rx="22" ry="7" fill="#f6c7dc"/>
+    </g>
+  </svg>`;
+}
+
+function buildPetVisual(stageFloat){
+  if(stageFloat < 9) return buildEggSVG(stageFloat/8);
+  return buildPacusSVG(stageFloat);
+}
+
+function renderPet(){
+  const el = document.getElementById('petSection');
+  const data = computePetStage();
+  const { stage, stageFloat, daysEquivalent, cycleDays, maxStage, canGrowToday } = data;
+  const stageInfo = CONFIG.pet.stages[stage];
+  const progressPct = Math.round((daysEquivalent/cycleDays)*100);
+
+  const milestones = [
+    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
+  ];
+  const milestoneHtml = milestones.map(([day,label])=>{
+    const active = daysEquivalent >= day;
+    const current = stage >= day && (stage === day || (stage > day && day === 23));
+    return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label} <small>dia ${day}</small></span>`;
+  }).join('');
+
+  let caption;
+  if(stage === maxStage){
+    caption = `Pacus adulto! <b>Ciclo concluído em 31/08.</b> 🎉`;
   } else if(canGrowToday){
     caption = `<b>Dia completo!</b> O Pacus vai evoluir mais um pouco.`;
   } else if(daysEquivalent === 0){
@@ -104,87 +176,4 @@ function renderHair(){
   if(!section) return;
   const status = getHairStatus(todayISO());
   const washedBtn = document.getElementById('hairWashedBtn');
-  const notWashedBtn = document.getElementById('hairNotWashedBtn');
-  const statusEl = document.getElementById('hairStatus');
-  washedBtn.classList.toggle('active-washed', status === 'washed');
-  notWashedBtn.classList.toggle('active-notwashed', status === 'not-washed');
-  statusEl.innerHTML = status === 'washed'
-    ? 'Hoje: <b class="hair-history-washed">💧 cabelo lavado</b>'
-    : status === 'not-washed'
-      ? 'Hoje: <b class="hair-history-notwashed">○ não lavou</b>'
-      : 'Hoje: ainda não registrado';
-}
-
-function render(){
-  document.getElementById('totalPoints').textContent = state.totalPoints;
-
-  renderPet();
-  renderHair();
-  renderGameTimer();
-  renderCustomTimers();
-
-  const weekendEl = document.getElementById('weekendIndicator');
-  if(weekendEl){
-    weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
-      ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
-      : '';
-  }
-
-  const periodsEl = document.getElementById('periods');
-  periodsEl.innerHTML = '';
-  Object.entries(getPeriodsFor(todayISO())).forEach(([key, period])=>{
-    const div = document.createElement('div');
-    div.className = 'period ' + key;
-
-    const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    const doneCount = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-    const remaining = applicable.length - doneCount;
-    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
-
-    let progressMsg;
-    if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
-    else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
-    else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
-    else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
-
-    const ul = document.createElement('ul');
-    ul.className = 'tasks';
-    const nextSuggestedId = period.tasks.find(t => !state.checkedToday[t.id])?.id;
-    period.tasks.forEach(task=>{
-      const li = document.createElement('li');
-      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
-      const isSuggested = task.id === nextSuggestedId;
-      li.className = 'task'
-        + (status === 'done' ? ' done' : '')
-        + (status === 'na' ? ' na' : '')
-        + (status === 'x' ? ' notdone' : '')
-        + (isSuggested ? ' suggested' : '');
-      li.innerHTML = `
-        <span class="mark-group" data-id="${task.id}">
-          <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
-          <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
-          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, perde metade dos pontos">✕</button>
-        </span>
-        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
-        <span class="pts">${status==='na' ? 'n/a' : status==='x' ? '−'+taskNotDonePenalty(task) : '+'+task.pts}</span>
-      `;
-      ul.appendChild(li);
-    });
-
-    div.innerHTML = `
-      <div class="period-head"><h2>${period.label}</h2><span class="time">${period.time}</span></div>
-      <span class="progress-txt">${progressMsg}</span>
-      <div class="progress-bar"><div style="width:${pct}%"></div></div>
-    `;
-    div.appendChild(ul);
-    periodsEl.appendChild(div);
-  });
-
-  periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
-    btn.addEventListener('click', onMarkClick);
-  });
-
-  const badEl = document.getElementById('badHabits');
-  badEl.innerHTML = '';
-  CONFIG.badHabits.forEach(h=>{
-    
+  const notWashedBtn = documen
