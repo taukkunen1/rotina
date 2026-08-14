@@ -1579,10 +1579,10 @@ const DEFAULT_CONFIG = {
     tarde: {
       label: "Tarde", time: "12:00 – 18:00",
       tasks: [
-        { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h" },
+        { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h", external:true },
         { id:"t3", txt:"Escovar os dentes", pts:2, sub:"até às 18h" },
         { id:"t5", txt:"Arrumar a mochila", pts:2, sub:"até às 18h" },
-        { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h" },
+        { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h", external:true },
         { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h" },
       ]
     },
@@ -1590,7 +1590,7 @@ const DEFAULT_CONFIG = {
       label: "Noite", time: "18:00 – 22:00",
       tasks: [
         { id:"n5", txt:"Arrumar a bagunça", pts:7, fullPenalty:true, sub:"até às 22h" },
-        { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h" },
+        { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h", external:true },
         { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4 },
         { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h" },
         { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" },
@@ -1780,7 +1780,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))));
+  return markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))));
 }
 
 // Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
@@ -1874,6 +1874,27 @@ function addCreativeTaskV1(cfg){
     }
   });
   cfg.creativeTaskV1Applied = true;
+  return cfg;
+}
+
+// Marca as tarefas que não dependem da iniciativa do Hector (refeições e
+// horário da escola são definidos pela família/instituição, não por ele)
+// pra ficarem "soltas" — fora do encadeamento de "próxima tarefa sugerida".
+const EXTERNAL_TASK_IDS = ["t2","t4","n1"];
+function markExternalTasksV1(cfg){
+  if(!cfg || cfg.externalTasksV1Applied) return cfg;
+  ['periods','periodsWeekend'].forEach(key=>{
+    const p = cfg[key];
+    if(!p) return;
+    ['manha','tarde','noite'].forEach(period=>{
+      if(p[period] && Array.isArray(p[period].tasks)){
+        p[period].tasks.forEach(t=>{
+          if(EXTERNAL_TASK_IDS.includes(t.id)) t.external = true;
+        });
+      }
+    });
+  });
+  cfg.externalTasksV1Applied = true;
   return cfg;
 }
 
@@ -3009,7 +3030,7 @@ function render(){
 
     const ul = document.createElement('ul');
     ul.className = 'tasks';
-    const nextSuggestedId = period.tasks.find(t => !state.checkedToday[t.id])?.id;
+    const nextSuggestedId = period.tasks.find(t => !t.external && !state.checkedToday[t.id])?.id;
     period.tasks.forEach(task=>{
       const li = document.createElement('li');
       const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
