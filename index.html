@@ -1514,6 +1514,7 @@ const DEFAULT_CONFIG = {
         { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h" },
         { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4 },
         { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h" },
+        { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" },
         { id:"t_ci3brlt", txt:"Ler Livro", pts:4, sub:"3 capítulo do livro de casa (até às 22h)" },
         { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h" },
       ]
@@ -1700,7 +1701,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)));
+  return addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))));
 }
 
 // Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
@@ -1755,7 +1756,7 @@ function applyPointRebalanceV2(cfg){
 const TASK_ORDER_V1 = {
   manha: ["m1","m4","m3","m7","m5","m8","t_djf7hbb","m2"],
   tarde: ["t2","t3","t5","t4","t1"],
-  noite: ["n5","n1","n4","n6","t_ci3brlt","n2"],
+  noite: ["n5","n1","n4","n6","n7","t_ci3brlt","n2"],
 };
 function applyTaskOrderV1(cfg){
   if(!cfg || cfg.taskOrderV1Applied) return cfg;
@@ -1773,6 +1774,27 @@ function applyTaskOrderV1(cfg){
     });
   });
   cfg.taskOrderV1Applied = true;
+  return cfg;
+}
+
+// Nova tarefa fixa da noite — "Momento Criativo" (desenhar, montar Lego,
+// pintar...). Insere logo depois de "Escovar os dentes" e antes de "Ler
+// Livro" pra quem já tinha a rotina sincronizada. Roda só uma vez.
+function addCreativeTaskV1(cfg){
+  if(!cfg || cfg.creativeTaskV1Applied) return cfg;
+  ['periods','periodsWeekend'].forEach(key=>{
+    const p = cfg[key];
+    if(p && p.noite && Array.isArray(p.noite.tasks)){
+      const tasks = p.noite.tasks;
+      if(!tasks.some(t=>t.id === 'n7')){
+        const newTask = { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" };
+        const idx = tasks.findIndex(t=>t.id === 'n6');
+        if(idx >= 0) tasks.splice(idx+1, 0, newTask);
+        else tasks.push(newTask);
+      }
+    }
+  });
+  cfg.creativeTaskV1Applied = true;
   return cfg;
 }
 
