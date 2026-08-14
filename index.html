@@ -1240,6 +1240,7 @@
             <tbody id="historyBody"></tbody>
           </table>
         </div>
+        <div id="historyToggle" style="text-align:center; margin-top:10px;"></div>
       </section>
 
       <section class="block" id="driveSyncSection"></section>
@@ -1430,7 +1431,6 @@ const DEFAULT_CONFIG = {
         { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:3 },
         { id:"n5", txt:"Arrumar a bagunça", pts:2, sub:"até às 22h" },
         { id:"n6", txt:"Escovar os dentes", pts:1, sub:"até às 22h" },
-        { id:"t_gzba4xs", txt:"Cabelo Lavado", pts:1, sub:"" },
         { id:"t_ci3brlt", txt:"Ler Livro", pts:3, sub:"3 capítulo do livro de casa (até às 22h)" },
       ]
     },
@@ -1603,12 +1603,25 @@ function allTasks(dateISO){
   ];
 }
 
+function stripLegacyHairTask(cfg){
+  // "Cabelo Lavado" virou tarefa duplicada por engano em algum momento —
+  // o controle de cabelo já tem sua própria seção dedicada (🧴 Lavar o
+  // cabelo), então removemos essa tarefa específica se ela aparecer.
+  if(cfg && cfg.periods && cfg.periods.noite && Array.isArray(cfg.periods.noite.tasks)){
+    cfg.periods.noite.tasks = cfg.periods.noite.tasks.filter(t => t.id !== 't_gzba4xs');
+  }
+  if(cfg && cfg.periodsWeekend && cfg.periodsWeekend.noite && Array.isArray(cfg.periodsWeekend.noite.tasks)){
+    cfg.periodsWeekend.noite.tasks = cfg.periodsWeekend.noite.tasks.filter(t => t.id !== 't_gzba4xs');
+  }
+  return cfg;
+}
+
 function loadConfig(){
   try{
     const raw = localStorage.getItem(STORAGE_CONFIG_KEY);
-    if(raw) return JSON.parse(raw);
+    if(raw) return stripLegacyHairTask(JSON.parse(raw));
   }catch(e){}
-  return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+  return stripLegacyHairTask(JSON.parse(JSON.stringify(DEFAULT_CONFIG)));
 }
 function saveConfig(cfg){
   try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(cfg)); }catch(e){}
@@ -1911,7 +1924,7 @@ function sanitizeRemoteConfig(remoteConfig){
   if(!safe.pet || !Array.isArray(safe.pet.stages) || safe.pet.stages.length < 2) {
     safe.pet = JSON.parse(JSON.stringify(DEFAULT_CONFIG.pet));
   }
-  return safe;
+  return stripLegacyHairTask(safe);
 }
 
 function mergeRemoteData(remote){
@@ -2643,6 +2656,11 @@ function goToTestDate(iso){
 }
 
 let testPanelOpen = false;
+// Painéis de "adulto" (sincronização com Drive, editar dia anterior, modo
+// teste) ficam escondidos da tela principal até alguém abrir a "Área dos
+// adultos" com sucesso — assim o Hector só vê o que usa no dia a dia.
+// Reseta sozinho ao recarregar a página.
+let adultUnlocked = false;
 
 function renderTestModeBanner(){
   const el = document.getElementById('testModeBanner');
@@ -2804,6 +2822,8 @@ function hairLabel(status){
   return '<span class="hair-history-unknown">— Não registrado</span>';
 }
 
+let historyShowAll = false;
+
 function renderHistory(){
   const body = document.getElementById('historyBody');
   const start = CONFIG.historyStartDate || todayISO();
@@ -2816,7 +2836,11 @@ function renderHistory(){
     rows.push(iso);
   }
 
-  body.innerHTML = rows.map(iso=>{
+  const HISTORY_VISIBLE_DAYS = 30;
+  const hiddenCount = Math.max(0, rows.length - HISTORY_VISIBLE_DAYS);
+  const visibleRows = historyShowAll ? rows : rows.slice(-HISTORY_VISIBLE_DAYS);
+
+  body.innerHTML = visibleRows.map(iso=>{
     const isToday = iso === todayISO();
     let entry;
     if(isToday){
@@ -2837,11 +2861,11 @@ function renderHistory(){
         <td>—</td>
         <td class="pts-cell">—</td>
         <td>${hairLabel(hair)}</td>
-        <td>${isToday?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
+        <td>${(isToday||!adultUnlocked)?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
       </tr>`;
     }
     const perfectBadge = entry.perfect ? '<span class="badge-perfect">dia perfeito</span>' : '';
-    const editCell = isToday ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
+    const editCell = (isToday||!adultUnlocked) ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
     return `<tr${isToday?' class="today-row"':''}>
       <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
       <td>${entry.done}/${entry.total}${perfectBadge}</td>
@@ -2854,6 +2878,21 @@ function renderHistory(){
   body.querySelectorAll('.edit-day-btn').forEach(btn=>{
     btn.addEventListener('click', ()=> openDayEditor(btn.getAttribute('data-date')));
   });
+
+  const toggleEl = document.getElementById('historyToggle');
+  if(toggleEl){
+    if(hiddenCount > 0){
+      toggleEl.innerHTML = historyShowAll
+        ? `<button class="icon-btn" id="historyToggleBtn">mostrar só os últimos ${HISTORY_VISIBLE_DAYS} dias</button>`
+        : `<button class="icon-btn" id="historyToggleBtn">mostrar histórico completo (+${hiddenCount} dias)</button>`;
+      document.getElementById('historyToggleBtn').addEventListener('click', ()=>{
+        historyShowAll = !historyShowAll;
+        renderHistory();
+      });
+    } else {
+      toggleEl.innerHTML = '';
+    }
+  }
 }
 
 function renderRewards(){
@@ -3237,7 +3276,9 @@ document.getElementById('editBtn').addEventListener('click', ()=>{
       return;
     }
   }
+  adultUnlocked = true;
   openEditor();
+  render();
 });
 document.getElementById('adultTestBtn').addEventListener('click', ()=>{
   closeEditor();
@@ -3404,6 +3445,7 @@ function doPost(e) {
 function renderDriveSync(){
   const el = document.getElementById('driveSyncSection');
   if(!el) return;
+  if(!adultUnlocked){ el.innerHTML=''; return; }
 
   const configured = !!APPS_SCRIPT_URL;
 
