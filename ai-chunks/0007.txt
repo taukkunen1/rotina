@@ -1,4 +1,24 @@
-t.id];
+sksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))));
+}
+
+// Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
+// crianças (arrumar cama, escovar dente, tomar banho, arrumar bagunça,
+// leitura, mochila, lixo) — só roda uma vez (flag), pra não desfazer ajuste
+// manual que os pais façam depois.
+const POINT_REBALANCE_V1 = {
+  m1:2, m3:2, m8:2, t_djf7hbb:4,
+  t3:2, t5:2,
+  n4:4, n5:3, n6:2, t_ci3brlt:4,
+};
+function applyPointRebalanceV1(cfg){
+  if(!cfg || cfg.pointRebalanceV1Applied) return cfg;
+  ['periods','periodsWeekend'].forEach(key=>{
+    const p = cfg[key];
+    if(!p) return;
+    ['manha','tarde','noite'].forEach(period=>{
+      if(p[period] && Array.isArray(p[period].tasks)){
+        p[period].tasks.forEach(t=>{
+          if(POINT_REBALANCE_V1[t.id] !== undefined) t.pts = POINT_REBALANCE_V1[t.id];
         });
       }
     });
@@ -186,21 +206,4 @@ function updateTimeRemainingDisplays(){
   document.querySelectorAll('.period').forEach(div=>{
     const el = div.querySelector('.time-remaining');
     const periodTime = div.dataset.periodTime;
-    if(!el || !periodTime) return;
-    const info = formatTimeRemaining(periodTime);
-    if(!info){ el.textContent = ''; el.className = 'time-remaining'; return; }
-    el.textContent = info.text;
-    el.className = 'time-remaining urgency-' + info.urgency;
-  });
-}
-function startTimeRemainingTicking(){
-  if(timeRemainingTickHandle) return;
-  timeRemainingTickHandle = setInterval(updateTimeRemainingDisplays, 30000);
-}
-
-function loadState(){
-  let raw = null;
-  try{ raw = localStorage.getItem(STORAGE_STATE_KEY); }catch(e){}
-  let state = raw ? JSON.parse(raw) : null;
-  if(!state) state = { totalPoints:120, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveLastSyncISO:null, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, hairByDate:{} };
-  re
+    if(!el || !periodTime) retur

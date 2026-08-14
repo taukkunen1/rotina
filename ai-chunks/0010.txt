@@ -1,4 +1,30 @@
-idas.
+w-up':'show-down');
+    }
+  }
+}
+
+// 1 Pacus Point ≈ R$0,06 (dentro da faixa combinada de R$0,05–0,08) — o
+// saldo nunca passa de 1000 pontos, equivalente a uns R$60 no máximo.
+const MAX_POINTS = 1000;
+const POINT_VALUE_BRL = 0.06;
+
+function addPoints(delta){
+  const before = state.totalPoints;
+  state.totalPoints = Math.max(0, Math.min(MAX_POINTS, state.totalPoints + delta));
+  return state.totalPoints - before;
+}
+
+// Pra "✕ não realizado": perde metade dos pontos daquela tarefa. A metade
+// é sempre arredondada pra cima, e nunca fica em número ímpar (se o
+// arredondamento der ímpar, sobe mais 1 pra virar par).
+function notDonePenalty(pts){
+  let half = Math.ceil(pts/2);
+  if(half % 2 !== 0) half += 1;
+  return half;
+}
+
+// Algumas tarefas (marcadas com fullPenalty:true) perdem o valor CHEIO em
+// vez de metade — reforço maior pras tarefas mais chatas/resistidas.
 function taskNotDonePenalty(task){
   return task.fullPenalty ? task.pts : notDonePenalty(task.pts);
 }
@@ -221,30 +247,4 @@ function startCustomTimerTicking(){
   }, 1000);
 }
 function stopCustomTimerTicking(){
-  if(customTimerTickHandle){ clearInterval(customTimerTickHandle); customTimerTickHandle = null; }
-}
-
-function updateCustomTimerDisplays(){
-  state.customTimers.forEach(t=>{
-    const el = document.getElementById('customTimerDisplay_'+t.id);
-    if(el) el.textContent = formatHMS(customTimerRemainingNow(t));
-  });
-}
-
-function formatHMS(totalSeconds){
-  const s = Math.max(0, Math.round(totalSeconds));
-  const h = Math.floor(s/3600);
-  const m = Math.floor((s%3600)/60);
-  const sec = s%60;
-  if(h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-}
-
-function renderCustomTimers(){
-  const el = document.getElementById('customTimersSection');
-  if(!el) return;
-
-  const cardsHtml = state.customTimers.map(t=>{
-    const running = !!t.runningSince;
-    const remaining = customTimerRemainingNow(t);
-    const totalMin = Math.round(t.totalSeconds/60)
+  if(customTimerTickHandle){ clearInterval(customTimerTickHandle); customTimerTi

@@ -1,4 +1,40 @@
-isplay:block;
+   border-radius:10px;
+    overflow:hidden;
+  }
+  @media (max-width:760px){
+    .periods{ grid-template-columns:1fr; }
+  }
+
+  .period{
+    background:rgba(255,255,255,.015);
+    padding:16px 16px 14px;
+  }
+  .period:not(:last-child){ border-right:1px dashed var(--line); }
+  @media (max-width:760px){
+    .period:not(:last-child){ border-right:none; border-bottom:1px dashed var(--line); }
+  }
+
+  .period-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:2px;
+  }
+  .period h2{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    font-size:1.3rem;
+    margin:0;
+  }
+  .period .time{
+    font-size:.68rem;
+    color:var(--chalk-dim);
+  }
+  .period .progress-txt{
+    font-size:.68rem;
+    color:var(--chalk-dim);
+    margin-bottom:10px;
+    display:block;
   }
 
   .time-remaining{
@@ -229,37 +265,4 @@ isplay:block;
   .hair-history-notwashed{color:var(--yellow);font-weight:bold;}
   .hair-history-unknown{color:var(--chalk-dim);}
 
-  .history{ overflow-x:auto; }
-  table.history-table{
-    width:100%;
-    border-collapse:collapse;
-    font-size:.8rem;
-  }
-  table.history-table th, table.history-table td{
-    padding:8px 10px;
-    text-align:left;
-    border-bottom:1px solid var(--line);
-    white-space:nowrap;
-  }
-  table.history-table th{
-    color:var(--chalk-dim);
-    font-weight:normal;
-    font-size:.68rem;
-    text-transform:uppercase;
-    letter-spacing:.5px;
-  }
-  table.history-table td.pts-cell{ color:var(--green); }
-  .badge-perfect{
-    display:inline-block;
-    background:rgba(255,217,61,.15);
-    color:var(--yellow);
-    border:1px solid rgba(255,217,61,.4);
-    border-radius:999px;
-    padding:1px 8px;
-    font-size:.68rem;
-    margin-left:6px;
-  }
-  tr.today-row td{ color:var(--chalk); font-weight:bold; }
-  .edit-day-btn{
-    padding:3px 7px;
-    font-
+  .history{ overflow-x:aut

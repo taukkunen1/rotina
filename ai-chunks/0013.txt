@@ -1,4 +1,46 @@
-ndow.innerHeight*0.3, width:0, height:0}) }, 20), 350);
+31/08</div>
+    <div class="pet-day-progress">
+      <div class="pet-day-progress-head"><span>Progresso do Pacus</span><b>${progressPct}%</b></div>
+      <div class="pet-day-track" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
+    </div>
+    <div class="pet-milestones">${milestoneHtml}</div>
+    <div class="pet-caption">${caption}</div>
+    <div id="petEvolvedBanner"></div>
+    <div class="streak-strip">${buildStreakStrip()}</div>
+  `;
+
+  if(grewNow){
+    const mascotEl = el.querySelector('.pet-mascot');
+    if(mascotEl){
+      mascotEl.classList.remove('pet-growth-burst');
+      void mascotEl.offsetWidth;
+      mascotEl.classList.add('pet-growth-burst');
+      if(stage < 9){ mascotEl.classList.add('pet-hatch-crack'); }
+    }
+  }
+
+  if(stage > state.lastSeenPetStage){
+    document.getElementById('petEvolvedBanner').innerHTML = `<div class="pet-evolved-banner">Pacus avançou para <b>${stageInfo.label}</b>.</div>`;
+    state.lastSeenPetStage = stage;
+    saveState(state);
+    showEvolutionCelebration(stageInfo, stage, maxStage);
+  }
+}
+
+function showEvolutionCelebration(stageInfo, stage, maxStage){
+  const overlay = document.getElementById('evolutionCelebration');
+  const mascotEl = document.getElementById('celebrationMascot');
+  mascotEl.innerHTML = buildPetVisual(stage);
+  document.getElementById('celebrationStage').innerHTML =
+    stage === maxStage
+      ? `O Pacus chegou em <b>${stageInfo.label}</b> — crescimento completo! 🏆`
+      : `O Pacus virou <b>${stageInfo.label}</b>!`;
+  overlay.classList.add('open');
+
+  // confete espalhado pela tela toda, não só perto do Pacus
+  fireConfetti(null, 40);
+  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.2, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 200);
+  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.8, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 350);
 
   const autoClose = setTimeout(closeEvolutionCelebration, 4500);
   overlay.dataset.autoCloseId = autoClose;
@@ -135,70 +177,4 @@ function render(){
 
     div.innerHTML = `
       <div class="period-head"><h2>${period.label}</h2><span class="time">${period.time}</span></div>
-      <span class="time-remaining" id="timeRemaining_${key}"></span>
-      <span class="progress-txt">${progressMsg}</span>
-      <div class="progress-bar"><div style="width:${pct}%"></div></div>
-    `;
-    div.dataset.periodTime = period.time;
-    div.appendChild(ul);
-    periodsEl.appendChild(div);
-  });
-
-  updateTimeRemainingDisplays();
-  startTimeRemainingTicking();
-
-  periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
-    btn.addEventListener('click', onMarkClick);
-  });
-
-  const badEl = document.getElementById('badHabits');
-  badEl.innerHTML = '';
-  CONFIG.badHabits.forEach(h=>{
-    const isPositive = h.pts >= 0;
-    const btn = document.createElement('button');
-    btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
-    btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
-    btn.addEventListener('click', ()=>{
-      const delta = addPoints(h.pts);
-      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
-      saveState(state);
-      bumpTotal(delta, btn);
-      renderLog();
-    });
-    badEl.appendChild(btn);
-  });
-
-  renderRewards();
-  renderLog();
-  renderHistory();
-  renderAchievementMural();
-  renderWeeklyReview();
-  renderBackupReminder();
-  renderTestPanel();
-  renderTestModeBanner();
-  renderDriveSync();
-}
-
-function daysBetween(isoA, isoB){
-  const a = new Date(isoA+"T00:00:00");
-  const b = new Date(isoB+"T00:00:00");
-  return Math.round((b-a)/86400000);
-}
-
-function shiftISODate(iso, deltaDays){
-  const d = new Date(iso+"T00:00:00");
-  d.setDate(d.getDate()+deltaDays);
-  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-}
-
-function goToTestDate(iso){
-  setTestDate(iso);
-  state = loadState();
-  render();
-}
-
-let testPanelOpen = false;
-// Painéis de "adulto" (sincronização com Drive, editar dia anterior, modo
-// teste) ficam escondidos da tela principal até alguém abrir a "Área dos
-// adultos" com sucesso — assim o Hector só vê o que usa no dia a dia.
-/
+      <span class="time-remaining" id="timeRemaining_${key}"></s

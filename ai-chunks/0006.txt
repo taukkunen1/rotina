@@ -1,4 +1,23 @@
-specífico, sem mexer
+ditorPin: "",
+  badHabits: [],
+  rewards: [
+    { id:"r1", txt:"1 hora de tela", cost:90, grantsHours:1, maxPerDay:2 },
+    { id:"r2", txt:"Hot Wheels (brinquedo)", cost:300 },
+  ],
+  screenDailyLimitHours: 2, // usado pelo timer de jogo diário abaixo
+  perfectDayBonusMinutes: 30,
+  historyStartDate: "2026-08-09",
+
+  // compromissos fixos da semana — aparecem direto como tarefas do dia
+  // (no período certo), não como uma lista separada. "period" é onde a
+  // tarefa aparece: manha, tarde ou noite. "Escola" já existe como tarefa
+  // fixa lá em cima, então não repetimos ela aqui.
+  schedule: [
+    { id:"sc1", label:"Inglês", days:["ter","qui"], start:"09:00", end:"10:00", period:"manha", pts:5 },
+    { id:"sc3", label:"Escoteiros", days:["sab"], start:"13:00", end:"17:30", period:"tarde", pts:5 },
+  ],
+
+  // exceções pontuais: um compromisso só naquele dia específico, sem mexer
   // na regra recorrente (ex: Inglês de reposição numa sexta).
   scheduleExceptions: [
     { id:"exc1", date:"2026-08-14", label:"Inglês (exceção)", period:"manha", pts:5, start:"09:00", end:"10:00" },
@@ -156,24 +175,4 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))));
-}
-
-// Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
-// crianças (arrumar cama, escovar dente, tomar banho, arrumar bagunça,
-// leitura, mochila, lixo) — só roda uma vez (flag), pra não desfazer ajuste
-// manual que os pais façam depois.
-const POINT_REBALANCE_V1 = {
-  m1:2, m3:2, m8:2, t_djf7hbb:4,
-  t3:2, t5:2,
-  n4:4, n5:3, n6:2, t_ci3brlt:4,
-};
-function applyPointRebalanceV1(cfg){
-  if(!cfg || cfg.pointRebalanceV1Applied) return cfg;
-  ['periods','periodsWeekend'].forEach(key=>{
-    const p = cfg[key];
-    if(!p) return;
-    ['manha','tarde','noite'].forEach(period=>{
-      if(p[period] && Array.isArray(p[period].tasks)){
-        p[period].tasks.forEach(t=>{
-          if(POINT_REBALANCE_V1[t.id] !== undefined) t.pts = POINT_REBALANCE_V1[
+  return markExternalTa

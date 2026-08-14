@@ -1,4 +1,14 @@
-{172+len/2} ${y+len*0.35}" stroke="#f3a7c6" stroke-width="2.3" fill="none" stroke-linecap="round"/>
+Count;i++){
+    const y = faceY-6+i*8;
+    const len = gillLen-(i*2);
+    const delay = (i*0.18).toFixed(2);
+    gills += `<g class="pacus-gill" style="animation-delay:${delay}s; transform-origin:${74-i*2}px ${y}px;">
+      <path d="M${74-i*2} ${y} Q ${60-len*0.6} ${y-len*0.5} ${50-len/2} ${y-len*0.15}" stroke="#ef8fb3" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M${74-i*2} ${y} Q ${58-len*0.5} ${y+len*0.15} ${48-len/2} ${y+len*0.35}" stroke="#f3a7c6" stroke-width="2.3" fill="none" stroke-linecap="round"/>
+    </g>
+    <g class="pacus-gill" style="animation-delay:${delay}s; transform-origin:${146+i*2}px ${y}px;">
+      <path d="M${146+i*2} ${y} Q ${160+len*0.6} ${y-len*0.5} ${170+len/2} ${y-len*0.15}" stroke="#ef8fb3" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M${146+i*2} ${y} Q ${162+len*0.5} ${y+len*0.15} ${172+len/2} ${y+len*0.35}" stroke="#f3a7c6" stroke-width="2.3" fill="none" stroke-linecap="round"/>
     </g>`;
   }
 
@@ -45,6 +55,33 @@ function buildPetVisual(stageFloat){
   return buildPacusSVG(stageFloat);
 }
 
+// Miniatura do Pacus fixa no canto — fica visível quando a seção principal
+// dele sai da tela (ex: rolando pra baixo pra marcar tarefas), assim ele
+// nunca some de vista de verdade. Um toque nela rola de volta pro topo.
+let miniPacusObserverStarted = false;
+function renderMiniPacus(stageFloat){
+  const el = document.getElementById('miniPacus');
+  if(!el) return;
+  el.innerHTML = buildPetVisual(stageFloat);
+  startMiniPacusObserver();
+}
+function startMiniPacusObserver(){
+  if(miniPacusObserverStarted) return;
+  const target = document.getElementById('petSection');
+  const mini = document.getElementById('miniPacus');
+  if(!target || !mini || !('IntersectionObserver' in window)) return;
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      mini.classList.toggle('visible', !entry.isIntersecting);
+    });
+  }, { threshold: 0 });
+  observer.observe(target);
+  mini.addEventListener('click', ()=>{
+    target.scrollIntoView({ behavior:'smooth', block:'center' });
+  });
+  miniPacusObserverStarted = true;
+}
+
 // Pra cada marco de evolução, descobre em que dia ele foi alcançado (com
 // base na lista de dias completos, em ordem) — usado no mural de conquistas.
 function getMilestoneDates(){
@@ -87,6 +124,8 @@ function renderPet(){
   const stageInfo = CONFIG.pet.stages[stage];
   const progressPct = Math.round((daysEquivalent/cycleDays)*100);
 
+  renderMiniPacus(stageFloat);
+
   const milestones = [
     [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
   ];
@@ -120,46 +159,4 @@ function renderPet(){
   el.innerHTML = `
     ${buildPetVisual(stageFloat)}
     <div class="pet-name">${CONFIG.pet.name}</div>
-    <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
-    <div class="pet-day-progress">
-      <div class="pet-day-progress-head"><span>Progresso do Pacus</span><b>${progressPct}%</b></div>
-      <div class="pet-day-track" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
-    </div>
-    <div class="pet-milestones">${milestoneHtml}</div>
-    <div class="pet-caption">${caption}</div>
-    <div id="petEvolvedBanner"></div>
-    <div class="streak-strip">${buildStreakStrip()}</div>
-  `;
-
-  if(grewNow){
-    const mascotEl = el.querySelector('.pet-mascot');
-    if(mascotEl){
-      mascotEl.classList.remove('pet-growth-burst');
-      void mascotEl.offsetWidth;
-      mascotEl.classList.add('pet-growth-burst');
-      if(stage < 9){ mascotEl.classList.add('pet-hatch-crack'); }
-    }
-  }
-
-  if(stage > state.lastSeenPetStage){
-    document.getElementById('petEvolvedBanner').innerHTML = `<div class="pet-evolved-banner">Pacus avançou para <b>${stageInfo.label}</b>.</div>`;
-    state.lastSeenPetStage = stage;
-    saveState(state);
-    showEvolutionCelebration(stageInfo, stage, maxStage);
-  }
-}
-
-function showEvolutionCelebration(stageInfo, stage, maxStage){
-  const overlay = document.getElementById('evolutionCelebration');
-  const mascotEl = document.getElementById('celebrationMascot');
-  mascotEl.innerHTML = buildPetVisual(stage);
-  document.getElementById('celebrationStage').innerHTML =
-    stage === maxStage
-      ? `O Pacus chegou em <b>${stageInfo.label}</b> — crescimento completo! 🏆`
-      : `O Pacus virou <b>${stageInfo.label}</b>!`;
-  overlay.classList.add('open');
-
-  // confete espalhado pela tela toda, não só perto do Pacus
-  fireConfetti(null, 40);
-  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.2, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 200);
-  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.8, top:wi
+    <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 

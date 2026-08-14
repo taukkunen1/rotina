@@ -1,4 +1,21 @@
-turn reconcileState(state);
+n;
+    const info = formatTimeRemaining(periodTime);
+    if(!info){ el.textContent = ''; el.className = 'time-remaining'; return; }
+    el.textContent = info.text;
+    el.className = 'time-remaining urgency-' + info.urgency;
+  });
+}
+function startTimeRemainingTicking(){
+  if(timeRemainingTickHandle) return;
+  timeRemainingTickHandle = setInterval(updateTimeRemainingDisplays, 30000);
+}
+
+function loadState(){
+  let raw = null;
+  try{ raw = localStorage.getItem(STORAGE_STATE_KEY); }catch(e){}
+  let state = raw ? JSON.parse(raw) : null;
+  if(!state) state = { totalPoints:120, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveLastSyncISO:null, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, hairByDate:{} };
+  return reconcileState(state);
 }
 
 function applyHistoryCorrection_v2(state){
@@ -171,24 +188,4 @@ function closeOutDay(state, dateISO){
   const perfect = total > 0 && done === total;
   if(perfect) registerPetDayCompletion(dateISO);
   const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
-  const periodsCompleted = periodsCompletedFrom(state.checkedToday, dateISO);
-  state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
-}
-
-function saveState(state, options={}){
-  if(!options.remote){
-    state.revision = (Number(state.revision)||0) + 1;
-    state.updatedAt = new Date().toISOString();
-  }
-  try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
-  scheduleAutoPush();
-}
-
-let CONFIG = loadConfig();
-let state = loadState();
-
-/* ---------- sincronização automática com o Google Drive ----------
-   Sempre que o arquivo abre, ele tenta buscar a versão mais nova salva
-   no Drive (via Apps Script) e usa ela — assim, não importa em qual
-   aparelho vocês abrirem, todos mostram a mesma coisa. Sempre que algo
-   muda aqui, ele também manda a atualização pro Drive sozinho, al
+  const periodsCompleted = periodsCom

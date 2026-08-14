@@ -1,4 +1,46 @@
-tina de semana
+5');
+  if(raw === null) return;
+  const amount = parseInt(raw, 10);
+  if(!amount || amount === 0) return;
+  const delta = addPoints(amount);
+  addLog(`${amount>0?'+':''}${amount} · ajuste manual`);
+  saveState(state);
+  bumpTotal(delta);
+  render();
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(!confirm('Isso apaga os Pacus Points, o histórico de hoje e o histórico de dias. Tem certeza?')) return;
+  state = { totalPoints:0, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, driveLastSyncISO:null, hairByDate:{} };
+  saveState(state);
+  render();
+});
+
+/* ===================== EDITOR ===================== */
+let draft = null; // cópia de trabalho do CONFIG enquanto o modal está aberto
+
+function openEditor(){
+  draft = JSON.parse(JSON.stringify(CONFIG));
+  renderEditorPeriod('manha', 'editManha');
+  renderEditorPeriod('tarde', 'editTarde');
+  renderEditorPeriod('noite', 'editNoite');
+  renderEditorBad();
+  renderEditorRewards();
+
+  const weekendToggle = document.getElementById('weekendToggle');
+  const weekendBody = document.getElementById('weekendEditorBody');
+  weekendToggle.checked = !!draft.periodsWeekend;
+  weekendBody.style.display = draft.periodsWeekend ? 'block' : 'none';
+  if(draft.periodsWeekend){
+    renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
+    renderEditorPeriod('tarde', 'editTardeWeekend', draft.periodsWeekend);
+    renderEditorPeriod('noite', 'editNoiteWeekend', draft.periodsWeekend);
+  }
+  weekendToggle.onchange = ()=>{
+    if(weekendToggle.checked && !draft.periodsWeekend){
+      // clona a rotina de dia de escola como ponto de partida
+      draft.periodsWeekend = JSON.parse(JSON.stringify(draft.periods));
+      // gera ids novos pra não colidir com os da rotina de semana
       Object.values(draft.periodsWeekend).forEach(period=>{
         period.tasks.forEach(t=>{ t.id = uid('we'); });
       });
@@ -135,44 +177,4 @@ function renderEditorSchedule(){
         <span style="color:var(--chalk-dim); font-size:.8rem;">até</span>
         <input type="time" value="${item.end}" data-field="end" style="flex:1;">
       </div>
-      <div class="edit-row-main">
-        <select data-field="period" style="flex:1; background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--chalk); border-radius:6px; padding:6px; font-family:inherit; font-size:.8rem;">${periodOptions}</select>
-        ${stepperHTML('pts', item.pts)}
-      </div>
-    `;
-    row.querySelector('[data-field=label]').addEventListener('input', e=>{ item.label = e.target.value; });
-    row.querySelector('[data-field=start]').addEventListener('input', e=>{ item.start = e.target.value; });
-    row.querySelector('[data-field=end]').addEventListener('input', e=>{ item.end = e.target.value; });
-    row.querySelector('[data-field=period]').addEventListener('change', e=>{ item.period = e.target.value; });
-    wireStepper(row, item, 'pts');
-    row.querySelectorAll('.day-chip').forEach(chip=>{
-      chip.addEventListener('click', ()=>{
-        const d = chip.getAttribute('data-day');
-        if(item.days.includes(d)) item.days = item.days.filter(x=>x!==d);
-        else item.days.push(d);
-        chip.classList.toggle('active');
-      });
-    });
-    row.querySelector('.del').addEventListener('click', ()=>{
-      draft.schedule = draft.schedule.filter(x=>x!==item);
-      renderEditorSchedule();
-    });
-    el.appendChild(row);
-  });
-}
-
-function renderEditorRewards(){
-  const el = document.getElementById('editRewards');
-  el.innerHTML = '';
-  draft.rewards.forEach(r=>{
-    const row = document.createElement('div');
-    row.className = 'edit-row';
-    row.innerHTML = `
-      <input type="text" value="${escapeAttr(r.txt)}" data-field="txt" placeholder="recompensa">
-      ${stepperHTML('cost', r.cost)}
-      <button class="del" title="remover">🗑</button>
-    `;
-    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ r.txt = e.target.value; });
-    wireStepper(row, r, 'cost');
-    row.querySelector('.del').addEventListener('click', ()=>{
-      draft.rewards = draft.rewards.filte
+      

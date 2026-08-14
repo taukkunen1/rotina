@@ -1,4 +1,37 @@
-size:.75rem;
+o; }
+  table.history-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:.8rem;
+  }
+  table.history-table th, table.history-table td{
+    padding:8px 10px;
+    text-align:left;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  table.history-table th{
+    color:var(--chalk-dim);
+    font-weight:normal;
+    font-size:.68rem;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+  }
+  table.history-table td.pts-cell{ color:var(--green); }
+  .badge-perfect{
+    display:inline-block;
+    background:rgba(255,217,61,.15);
+    color:var(--yellow);
+    border:1px solid rgba(255,217,61,.4);
+    border-radius:999px;
+    padding:1px 8px;
+    font-size:.68rem;
+    margin-left:6px;
+  }
+  tr.today-row td{ color:var(--chalk); font-weight:bold; }
+  .edit-day-btn{
+    padding:3px 7px;
+    font-size:.75rem;
     border:1px solid var(--line);
   }
   .edit-row label{ color:var(--chalk-dim); }
@@ -293,37 +326,4 @@ size:.75rem;
     font-weight:normal;
     font-size:1.05rem;
     margin:0 0 4px;
-    color:var(--chalk);
-  }
-  .editor-section .hint{ font-size:.7rem; color:var(--chalk-dim); margin-bottom:10px; }
-
-  .edit-row{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    margin-bottom:7px;
-  }
-  .edit-row-task{
-    flex-direction:column;
-    align-items:stretch;
-    gap:5px;
-    padding-bottom:8px;
-    margin-bottom:9px;
-    border-bottom:1px dashed var(--line);
-  }
-  .edit-row-task:last-child{ border-bottom:none; }
-  .edit-row-main{
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-  .edit-row-main input[type=text]{ flex:1; }
-  .reorder-group{ display:flex; flex-direction:column; gap:1px; flex-shrink:0; }
-  .reorder-btn{
-    width:20px; height:15px;
-    font-size:.6rem;
-    line-height:1;
-    background:rgba(255,255,255,.05);
-    border:1px solid var(--line);
-    color:var(--chalk-dim);
-    cursor:pointe
+    color:var(--chal

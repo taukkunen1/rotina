@@ -1,4 +1,24 @@
-guns
+pletedFrom(state.checkedToday, dateISO);
+  state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
+}
+
+function saveState(state, options={}){
+  if(!options.remote){
+    state.revision = (Number(state.revision)||0) + 1;
+    state.updatedAt = new Date().toISOString();
+  }
+  try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+  scheduleAutoPush();
+}
+
+let CONFIG = loadConfig();
+let state = loadState();
+
+/* ---------- sincronização automática com o Google Drive ----------
+   Sempre que o arquivo abre, ele tenta buscar a versão mais nova salva
+   no Drive (via Apps Script) e usa ela — assim, não importa em qual
+   aparelho vocês abrirem, todos mostram a mesma coisa. Sempre que algo
+   muda aqui, ele também manda a atualização pro Drive sozinho, alguns
    segundos depois (sem precisar clicar em nada). Se estiver offline, o
    arquivo continua funcionando normal com os dados salvos localmente. */
 let suppressAutoPush = false;
@@ -175,30 +195,4 @@ function bumpTotal(delta, anchorEl){
       deltaEl.classList.remove('show-up','show-down');
       void deltaEl.offsetWidth;
       deltaEl.textContent = (delta>0?'+':'−') + Math.abs(delta);
-      deltaEl.classList.add(delta>0?'show-up':'show-down');
-    }
-  }
-}
-
-// 1 Pacus Point ≈ R$0,06 (dentro da faixa combinada de R$0,05–0,08) — o
-// saldo nunca passa de 1000 pontos, equivalente a uns R$60 no máximo.
-const MAX_POINTS = 1000;
-const POINT_VALUE_BRL = 0.06;
-
-function addPoints(delta){
-  const before = state.totalPoints;
-  state.totalPoints = Math.max(0, Math.min(MAX_POINTS, state.totalPoints + delta));
-  return state.totalPoints - before;
-}
-
-// Pra "✕ não realizado": perde metade dos pontos daquela tarefa. A metade
-// é sempre arredondada pra cima, e nunca fica em número ímpar (se o
-// arredondamento der ímpar, sobe mais 1 pra virar par).
-function notDonePenalty(pts){
-  let half = Math.ceil(pts/2);
-  if(half % 2 !== 0) half += 1;
-  return half;
-}
-
-// Algumas tarefas (marcadas com fullPenalty:true) perdem o valor CHEIO em
-// vez de metade — reforço maior pras tarefas mais chatas/resist
+      deltaEl.classList.add(delta>0?'sho

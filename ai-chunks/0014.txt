@@ -1,4 +1,70 @@
-/ Reseta sozinho ao recarregar a página.
+pan>
+      <span class="progress-txt">${progressMsg}</span>
+      <div class="progress-bar"><div style="width:${pct}%"></div></div>
+    `;
+    div.dataset.periodTime = period.time;
+    div.appendChild(ul);
+    periodsEl.appendChild(div);
+  });
+
+  updateTimeRemainingDisplays();
+  startTimeRemainingTicking();
+
+  periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
+    btn.addEventListener('click', onMarkClick);
+  });
+
+  const badEl = document.getElementById('badHabits');
+  badEl.innerHTML = '';
+  CONFIG.badHabits.forEach(h=>{
+    const isPositive = h.pts >= 0;
+    const btn = document.createElement('button');
+    btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
+    btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
+    btn.addEventListener('click', ()=>{
+      const delta = addPoints(h.pts);
+      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
+      saveState(state);
+      bumpTotal(delta, btn);
+      renderLog();
+    });
+    badEl.appendChild(btn);
+  });
+
+  renderRewards();
+  renderLog();
+  renderHistory();
+  renderAchievementMural();
+  renderWeeklyReview();
+  renderBackupReminder();
+  renderTestPanel();
+  renderTestModeBanner();
+  renderDriveSync();
+}
+
+function daysBetween(isoA, isoB){
+  const a = new Date(isoA+"T00:00:00");
+  const b = new Date(isoB+"T00:00:00");
+  return Math.round((b-a)/86400000);
+}
+
+function shiftISODate(iso, deltaDays){
+  const d = new Date(iso+"T00:00:00");
+  d.setDate(d.getDate()+deltaDays);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+}
+
+function goToTestDate(iso){
+  setTestDate(iso);
+  state = loadState();
+  render();
+}
+
+let testPanelOpen = false;
+// Painéis de "adulto" (sincronização com Drive, editar dia anterior, modo
+// teste) ficam escondidos da tela principal até alguém abrir a "Área dos
+// adultos" com sucesso — assim o Hector só vê o que usa no dia a dia.
+// Reseta sozinho ao recarregar a página.
 let adultUnlocked = false;
 
 function renderTestModeBanner(){
@@ -157,50 +223,4 @@ function renderWeeklyReview(){
 
 function hairLabel(status){
   if(status === 'washed') return '<span class="hair-history-washed">💧 Lavou</span>';
-  if(status === 'not-washed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
-  return '<span class="hair-history-unknown">— Não registrado</span>';
-}
-
-let historyShowAll = false;
-
-function renderHistory(){
-  const body = document.getElementById('historyBody');
-  const start = CONFIG.historyStartDate || todayISO();
-  const startDate = new Date(start+"T00:00:00");
-  const today = new Date(todayISO()+"T00:00:00");
-
-  const rows = [];
-  for(let d = new Date(startDate); d <= today; d.setDate(d.getDate()+1)){
-    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-    rows.push(iso);
-  }
-
-  const HISTORY_VISIBLE_DAYS = 30;
-  const hiddenCount = Math.max(0, rows.length - HISTORY_VISIBLE_DAYS);
-  const visibleRows = historyShowAll ? rows : rows.slice(-HISTORY_VISIBLE_DAYS);
-
-  body.innerHTML = visibleRows.map(iso=>{
-    const isToday = iso === todayISO();
-    let entry;
-    if(isToday){
-      const tasks = allTasks();
-      const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-      const total = applicable.length;
-      const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-      const pointsEarnedThatDay = tasks.filter(t=>state.checkedToday[t.id]==='done').reduce((s,t)=>s+t.pts,0);
-      const perfect = total>0 && done===total;
-      entry = { done, total, pointsEarnedThatDay, perfect, hair:getHairStatus(iso) };
-    } else {
-      entry = state.history[iso];
-    }
-    const hair = getHairStatus(iso) || (entry && entry.hair) || null;
-    if(!entry){
-      return `<tr${isToday?' class="today-row"':''}>
-        <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
-        <td>—</td>
-        <td class="pts-cell">—</td>
-        <td>${hairLabel(hair)}</td>
-        <td>${(isToday||!adultUnlocked)?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
-      </tr>`;
-    }
-    const perfectBadge = entry.perfect ? '<span class
+  if(status === 'not-washed') return '<span class="h

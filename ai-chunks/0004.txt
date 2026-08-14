@@ -1,4 +1,37 @@
-r;
+k);
+  }
+  .editor-section .hint{ font-size:.7rem; color:var(--chalk-dim); margin-bottom:10px; }
+
+  .edit-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:7px;
+  }
+  .edit-row-task{
+    flex-direction:column;
+    align-items:stretch;
+    gap:5px;
+    padding-bottom:8px;
+    margin-bottom:9px;
+    border-bottom:1px dashed var(--line);
+  }
+  .edit-row-task:last-child{ border-bottom:none; }
+  .edit-row-main{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .edit-row-main input[type=text]{ flex:1; }
+  .reorder-group{ display:flex; flex-direction:column; gap:1px; flex-shrink:0; }
+  .reorder-btn{
+    width:20px; height:15px;
+    font-size:.6rem;
+    line-height:1;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk-dim);
+    cursor:pointer;
     border-radius:3px;
     padding:0;
   }
@@ -152,6 +185,8 @@ r;
 
 <span class="points-delta" id="pointsDelta"></span>
 
+<div class="mini-pacus" id="miniPacus"></div>
+
 <div class="overlay" id="evolutionCelebration" style="z-index:700; align-items:center;">
   <div class="celebration-card" id="celebrationCard">
     <div class="celebration-mascot" id="celebrationMascot"></div>
@@ -245,26 +280,4 @@ r;
         <br>
         <button class="icon-btn" id="exportBtn" style="margin-top:8px;">⬇️ exportar backup</button>
         <button class="icon-btn" id="importBtn" style="margin-top:8px;">⬆️ importar backup</button>
-        <input type="file" id="importFile" accept=".json" style="display:none;">
-        <br><button class="icon-btn danger" id="resetBtn" style="margin-top:8px;">reiniciar Pacus Points e histórico</button>
-      </footer>
-    </div>
-
-  </div>
-</div>
-
-<!-- ===================== MODAL DE EDIÇÃO DE DIA ANTERIOR ===================== -->
-<div class="overlay" id="dayOverlay">
-  <div class="editor" style="max-width:420px;">
-    <div class="editor-head">
-      <h2 id="dayEditorTitle">Editar dia</h2>
-      <button class="icon-btn" id="dayCloseBtn">fechar ✕</button>
-    </div>
-
-    <div class="editor-section">
-      <div class="edit-row">
-        <label style="flex:1; font-size:.82rem;">Tarefas feitas</label>
-        <input type="number" min="0" id="dayDone" style="width:70px;">
-      </div>
-      <div class="edit-row">
-        <label style="flex:1; font-size:.82rem;">Tarefas aplicáveis no
+        <input type="fi
