@@ -109,6 +109,7 @@
   }
 
   .pacus-total{
+    position:relative;
     display:flex;
     align-items:baseline;
     gap:7px;
@@ -132,6 +133,35 @@
     text-align:right;
   }
   .pacus-total .num.bump{ transform:scale(1.3); }
+
+  .points-delta{
+    position:absolute;
+    top:-6px;
+    right:8px;
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:1rem;
+    font-weight:bold;
+    pointer-events:none;
+    opacity:0;
+  }
+  .points-delta.show-up{
+    color:var(--green);
+    animation:pointsFloatUp 1.1s ease-out forwards;
+  }
+  .points-delta.show-down{
+    color:var(--red);
+    animation:pointsFloatDown 1.1s ease-out forwards;
+  }
+  @keyframes pointsFloatUp{
+    0%{ opacity:0; transform:translateY(4px) scale(.8); }
+    20%{ opacity:1; transform:translateY(-4px) scale(1.15); }
+    100%{ opacity:0; transform:translateY(-22px) scale(1); }
+  }
+  @keyframes pointsFloatDown{
+    0%{ opacity:0; transform:translateY(-4px) scale(.8); }
+    20%{ opacity:1; transform:translateY(4px) scale(1.15); }
+    100%{ opacity:0; transform:translateY(22px) scale(1); }
+  }
 
   .icon-btn{
     display:inline-flex;
@@ -266,41 +296,4 @@
   .custom-timer-label:focus{ outline:1px solid var(--blue); background:rgba(255,255,255,.05); }
   .custom-timer-display{
     font-family:"Segoe Print","Bradley Hand",cursive;
-    font-size:2.1rem;
-    color:var(--blue);
-    margin-bottom:10px;
-    letter-spacing:1px;
-  }
-  .custom-timer.finished .custom-timer-display{ color:var(--red); }
-  .custom-timer-setrow{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:6px;
-    margin-bottom:10px;
-  }
-  .custom-timer-setrow input[type=number]{
-    width:56px;
-    text-align:center;
-    background:rgba(255,255,255,.05);
-    border:1px solid var(--line);
-    color:var(--chalk);
-    border-radius:6px;
-    padding:6px 4px;
-    font-size:.82rem;
-    font-family:inherit;
-  }
-  .custom-timer-setrow span{ font-size:.72rem; color:var(--chalk-dim); }
-  .custom-timer-btns{
-    display:flex;
-    gap:6px;
-    justify-content:center;
-    flex-wrap:wrap;
-  }
-  .custom-timer-btn{
-    background:var(--blue);
-    color:#16241f;
-    border:none;
-    padding:7px 14px;
-    border-radius:7px;
-    f
+    font-size:

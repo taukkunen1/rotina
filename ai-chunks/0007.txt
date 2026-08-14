@@ -1,4 +1,36 @@
-tate.lastSeenPetStage === undefined) state.lastSeenPetStage = 0;
+.history[iso] = {
+      done: total,
+      total: total,
+      pointsEarnedThatDay: netPoints,
+      perfect: true,
+      screenMinutes: CONFIG.perfectDayBonusMinutes || 30,
+      periodsCompleted: 3,
+      hair: hairByDay[iso],
+    };
+    state.hairByDate[iso] = hairByDay[iso];
+
+    if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
+  });
+
+  state.petCompletedDays.sort();
+  state.petLastCompletionISO = state.petCompletedDays.length
+    ? state.petCompletedDays[state.petCompletedDays.length - 1]
+    : null;
+
+  // saldo confirmado até 12/08 — hoje (13/08) ainda não foi jogado
+  state.totalPoints = 170;
+
+  state.historyCorrectionV2Applied = true;
+}
+
+function seedKnownPerfectDays(state){
+  applyHistoryCorrection_v2(state);
+}
+
+function reconcileState(state){
+  if(state.driveFileId === undefined) state.driveFileId = null;
+  if(state.driveLastSyncISO === undefined) state.driveLastSyncISO = null;
+  if(state.lastSeenPetStage === undefined) state.lastSeenPetStage = 0;
   if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
   if(state.petLastCompletionISO === undefined) state.petLastCompletionISO = null;
   if(typeof state.revision !== 'number') state.revision = 0;
@@ -163,36 +195,4 @@ async function doAutoPush(){
       renderDriveSync();
       return;
     }
-    if(result.conflict && result.data){
-      state.driveConflictCount = (Number(state.driveConflictCount)||0)+1;
-      const server = result.data;
-      const merged = mergeRemoteData(server);
-      CONFIG = merged.config;
-      state = merged.state;
-      state.driveRevision = Number(result.revision)||Number(server.state?.driveRevision)||0;
-      state.driveLastSyncISO = todayISO();
-      saveState(state);
-      saveConfig(CONFIG);
-      render();
-    }
-  }catch(err){
-    renderDriveSync();
-  }
-}
-
-function isValidPeriodsConfig(cfg){
-  try{
-    const p = cfg && cfg.periods;
-    return !!(
-      p &&
-      p.manha && Array.isArray(p.manha.tasks) && p.manha.tasks.length > 0 &&
-      p.tarde && Array.isArray(p.tarde.tasks) && p.tarde.tasks.length > 0 &&
-      p.noite && Array.isArray(p.noite.tasks) && p.noite.tasks.length > 0
-    );
-  }catch(e){
-    return false;
-  }
-}
-
-function sanitizeRemoteConfig(remoteConfig){
-  if(!isValidPeriodsConfig(remoteConfig)
+    if(result.conflict && result

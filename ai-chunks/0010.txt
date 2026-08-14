@@ -1,4 +1,32 @@
-te(cycle.start);
+Min_'+t.id).value);
+      setCustomTimerMinutes(t.id, isNaN(val) ? 0 : val);
+    });
+    document.getElementById('customTimerStartBtn_'+t.id).addEventListener('click', ()=> startCustomTimer(t.id));
+    document.getElementById('customTimerPauseBtn_'+t.id).addEventListener('click', ()=> pauseCustomTimer(t.id));
+    document.getElementById('customTimerResetBtn_'+t.id).addEventListener('click', ()=> resetCustomTimer(t.id));
+  });
+
+  if(anyCustomTimerRunning()) startCustomTimerTicking(); else stopCustomTimerTicking();
+}
+
+/* ---------------- render principal ---------------- */
+/* ===================== PACUS, O AXOLOTE ===================== */
+function getPetCycle(){
+  const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
+  const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
+  const start = new Date(startISO+"T00:00:00");
+  const end = new Date(endISO+"T00:00:00");
+  const totalDays = Math.max(1, Math.round((end-start)/86400000)+1);
+  return { startISO, endISO, start, end, totalDays };
+}
+
+function computePetStage(){
+  const cycle = getPetCycle();
+  const maxStage = CONFIG.pet.stages.length - 1;
+  const completed = new Set(Array.isArray(state.petCompletedDays) ? state.petCompletedDays : []);
+  const validDays = [];
+  for(let i=0;i<cycle.totalDays;i++){
+    const d = new Date(cycle.start);
     d.setDate(d.getDate()+i);
     const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
     if(completed.has(iso)) validDays.push(iso);
@@ -130,37 +158,4 @@ function renderPet(){
   el.innerHTML = `
     ${buildPetVisual(stageFloat)}
     <div class="pet-name">${CONFIG.pet.name}</div>
-    <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
-    <div class="pet-day-progress">
-      <div class="pet-day-progress-head"><span>Progresso do Pacus</span><b>${progressPct}%</b></div>
-      <div class="pet-day-track" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
-    </div>
-    <div class="pet-milestones">${milestoneHtml}</div>
-    <div class="pet-caption">${caption}</div>
-    <div id="petEvolvedBanner"></div>
-    <div class="streak-strip">${buildStreakStrip()}</div>
-  `;
-
-  if(grewNow){
-    const mascotEl = el.querySelector('.pet-mascot');
-    if(mascotEl){
-      mascotEl.classList.remove('pet-growth-burst');
-      void mascotEl.offsetWidth;
-      mascotEl.classList.add('pet-growth-burst');
-      if(stage < 9){ mascotEl.classList.add('pet-hatch-crack'); }
-    }
-  }
-
-  if(stage > state.lastSeenPetStage){
-    document.getElementById('petEvolvedBanner').innerHTML = `<div class="pet-evolved-banner">Pacus avançou para <b>${stageInfo.label}</b>.</div>`;
-    state.lastSeenPetStage = stage;
-    saveState(state);
-    fireConfetti(el.querySelector('.pet-mascot'), stage === maxStage ? 50 : 18);
-  }
-}
-
-function buildStreakStrip(){
-  const days = [];
-  for(let i=6; i>=0; i--){
-    const d = new Date();
-    d.setDate
+    <div class="pet-stage-label">${stageInfo.label} · ${da

@@ -1,4 +1,36 @@
-) return null;
+.data){
+      state.driveConflictCount = (Number(state.driveConflictCount)||0)+1;
+      const server = result.data;
+      const merged = mergeRemoteData(server);
+      CONFIG = merged.config;
+      state = merged.state;
+      state.driveRevision = Number(result.revision)||Number(server.state?.driveRevision)||0;
+      state.driveLastSyncISO = todayISO();
+      saveState(state);
+      saveConfig(CONFIG);
+      render();
+    }
+  }catch(err){
+    renderDriveSync();
+  }
+}
+
+function isValidPeriodsConfig(cfg){
+  try{
+    const p = cfg && cfg.periods;
+    return !!(
+      p &&
+      p.manha && Array.isArray(p.manha.tasks) && p.manha.tasks.length > 0 &&
+      p.tarde && Array.isArray(p.tarde.tasks) && p.tarde.tasks.length > 0 &&
+      p.noite && Array.isArray(p.noite.tasks) && p.noite.tasks.length > 0
+    );
+  }catch(e){
+    return false;
+  }
+}
+
+function sanitizeRemoteConfig(remoteConfig){
+  if(!isValidPeriodsConfig(remoteConfig)) return null;
   const safe = JSON.parse(JSON.stringify(remoteConfig));
   if(!safe.periodsWeekend) safe.periodsWeekend = null;
   if(!Array.isArray(safe.badHabits)) safe.badHabits = [];
@@ -89,12 +121,22 @@ function addLog(text){
   state.log.unshift(time+" — "+text);
   state.log = state.log.slice(0, 30);
 }
-function bumpTotal(){
+function bumpTotal(delta){
   const el = document.getElementById('totalPoints');
   el.textContent = state.totalPoints;
   el.classList.remove('bump');
   void el.offsetWidth;
   el.classList.add('bump');
+
+  if(delta){
+    const deltaEl = document.getElementById('pointsDelta');
+    if(deltaEl){
+      deltaEl.classList.remove('show-up','show-down');
+      void deltaEl.offsetWidth;
+      deltaEl.textContent = (delta>0?'+':'−') + Math.abs(delta);
+      deltaEl.classList.add(delta>0?'show-up':'show-down');
+    }
+  }
 }
 
 // 1 Pacus Point ≈ R$0,06 (dentro da faixa combinada de R$0,05–0,08) — o
@@ -103,7 +145,9 @@ const MAX_POINTS = 1000;
 const POINT_VALUE_BRL = 0.06;
 
 function addPoints(delta){
+  const before = state.totalPoints;
   state.totalPoints = Math.max(0, Math.min(MAX_POINTS, state.totalPoints + delta));
+  return state.totalPoints - before;
 }
 
 // Pra "✕ não realizado": perde metade dos pontos daquela tarefa. A metade
@@ -165,47 +209,4 @@ function flushGameTimer(){
   if(!gameTimerIsRunning()) return;
   const elapsed = (Date.now() - state.gameTimer.runningSince)/1000;
   state.gameTimer.usedSeconds += elapsed;
-  state.gameTimer.runningSince = Date.now();
-  saveState(state);
-}
-
-function formatMinSec(totalSeconds){
-  const s = Math.max(0, Math.round(totalSeconds));
-  const h = Math.floor(s/3600);
-  const m = Math.floor((s%3600)/60);
-  if(h > 0) return `${h}h ${String(m).padStart(2,'0')}min`;
-  return `${m} min`;
-}
-
-function startGameTimerTicking(){
-  if(gameTimerTickHandle) return;
-  let flushCounter = 0;
-  gameTimerTickHandle = setInterval(()=>{
-    updateGameTimerDisplay();
-    flushCounter++;
-    if(flushCounter >= 20){ // ~20s, descarrega pro estado salvo
-      flushCounter = 0;
-      flushGameTimer();
-    }
-  }, 1000);
-}
-function stopGameTimerTicking(){
-  if(gameTimerTickHandle){ clearInterval(gameTimerTickHandle); gameTimerTickHandle = null; }
-}
-
-function updateGameTimerDisplay(){
-  const usedEl = document.getElementById('gameTimerUsed');
-  const barEl = document.getElementById('gameTimerBarFill');
-  if(!usedEl || !barEl) return;
-  const limit = gameTimerDailyLimitSeconds();
-  const used = gameTimerSecondsUsedNow();
-  const remaining = limit - used;
-  const pct = Math.min(100, Math.round((used/limit)*100));
-  usedEl.innerHTML = remaining > 0
-    ? `<b>${formatMinSec(remaining)}</b> restantes hoje`
-    : `<b>tempo de hoje acabou</b>`;
-  barEl.style.width = pct + '%';
-  barEl.classList.toggle('over-limit', used >= limit);
-}
-
-funct
+  state.gameTimer.runni

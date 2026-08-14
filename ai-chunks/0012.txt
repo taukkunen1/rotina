@@ -1,4 +1,42 @@
- tarefas de verdade — só simula dias.</div>
+om Drive, editar dia anterior, modo
+// teste) ficam escondidos da tela principal até alguém abrir a "Área dos
+// adultos" com sucesso — assim o Hector só vê o que usa no dia a dia.
+// Reseta sozinho ao recarregar a página.
+let adultUnlocked = false;
+
+function renderTestModeBanner(){
+  const el = document.getElementById('testModeBanner');
+  if(!el) return;
+  if(!TEST_DATE_OVERRIDE){ el.innerHTML=''; return; }
+  el.innerHTML = `
+    <div class="test-mode-banner">
+      🧪 MODO TESTE ATIVO — data simulada: ${formatDateBR(TEST_DATE_OVERRIDE)}
+      <button id="bannerRealDateBtn">voltar pra data real</button>
+    </div>
+  `;
+  document.getElementById('bannerRealDateBtn').addEventListener('click', ()=>{
+    setTestDate(null);
+    state = loadState();
+    render();
+  });
+}
+
+function renderTestPanel(){
+  const el = document.getElementById('testPanel');
+  if(!el) return;
+  if(!testPanelOpen){ el.style.display='none'; el.innerHTML=''; return; }
+  el.style.display='block';
+
+  const realToday = (()=>{
+    const d = new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+  })();
+  const usingOverride = !!TEST_DATE_OVERRIDE;
+
+  el.innerHTML = `
+    <div class="test-panel">
+      <h3>🧪 Modo de teste</h3>
+      <div class="hint">Ferramentas só pra conferir se o crescimento do Pacus e o histórico estão funcionando. Não mexe nas tarefas de verdade — só simula dias.</div>
       <div class="test-date">Data simulada agora: <b>${formatDateBR(todayISO())}/${todayISO().split('-')[0]}</b>${usingOverride ? ' (modo teste ativo)' : ' (data real do sistema)'}</div>
       <div class="test-row">
         <button class="icon-btn" id="testCompleteDayBtn">✅ completar tudo hoje</button>
@@ -165,32 +203,4 @@ function renderHistory(){
         <td>—</td>
         <td class="pts-cell">—</td>
         <td>${hairLabel(hair)}</td>
-        <td>${(isToday||!adultUnlocked)?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
-      </tr>`;
-    }
-    const perfectBadge = entry.perfect ? '<span class="badge-perfect">dia perfeito</span>' : '';
-    const editCell = (isToday||!adultUnlocked) ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
-    return `<tr${isToday?' class="today-row"':''}>
-      <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
-      <td>${entry.done}/${entry.total}${perfectBadge}</td>
-      <td class="pts-cell">${entry.pointsEarnedThatDay}</td>
-      <td>${hairLabel(hair)}</td>
-      <td>${editCell}</td>
-    </tr>`;
-  }).join('');
-
-  body.querySelectorAll('.edit-day-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=> openDayEditor(btn.getAttribute('data-date')));
-  });
-
-  const toggleEl = document.getElementById('historyToggle');
-  if(toggleEl){
-    if(hiddenCount > 0){
-      toggleEl.innerHTML = historyShowAll
-        ? `<button class="icon-btn" id="historyToggleBtn">mostrar só os últimos ${HISTORY_VISIBLE_DAYS} dias</button>`
-        : `<button class="icon-btn" id="historyToggleBtn">mostrar histórico completo (+${hiddenCount} dias)</button>`;
-      document.getElementById('historyToggleBtn').addEventListener('click', ()=>{
-        historyShowAll = !historyShowAll;
-        renderHistory();
-      });
-    } else {
+        <td>${(isToday||!adultUnloc

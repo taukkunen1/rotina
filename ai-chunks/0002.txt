@@ -1,4 +1,19 @@
-(--line); }
+ale(1.06); }
+  .mark-btn:active{ transform:scale(.92); }
+  .mark-done.active{ background:var(--green); border-color:var(--green); color:#132015; font-weight:bold; animation:markPop .3s ease; }
+  .mark-na.active{ background:var(--chalk-dim); border-color:var(--chalk-dim); color:#1b2e28; font-weight:bold; }
+  .mark-x.active{ background:var(--red); border-color:var(--red); color:#2a1414; font-weight:bold; }
+  @keyframes markPop{
+    0%{ transform:scale(1); }
+    40%{ transform:scale(1.35); }
+    100%{ transform:scale(1); }
+  }
+
+  .task .txt{ flex:1; font-size:.9rem; line-height:1.35; }
+  .task .sub{ display:block; font-size:.7rem; color:var(--chalk-dim); margin-top:1px; }
+  .task.done .txt{ text-decoration:line-through; color:var(--chalk-dim); }
+  .task.na .txt{ color:var(--chalk-dim); font-style:italic; }
+  .task.na .pts{ color:var(--chalk-dim); border-color:var(--line); }
   .task.notdone .txt{ color:var(--red); }
   .task.notdone .pts{ color:var(--red); border-color:rgba(255,107,107,.4); }
   .task-icon{ font-size:1.05rem; margin-right:6px; flex-shrink:0; }
@@ -246,46 +261,4 @@
   .backup-reminder .dismiss{
     background:none;
     color:var(--chalk-dim);
-    padding:4px 6px;
-    font-weight:normal;
-  }
-
-  .test-mode-banner{
-    background:var(--red);
-    color:#2a1414;
-    font-weight:bold;
-    font-size:.8rem;
-    text-align:center;
-    padding:8px 12px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:12px;
-    flex-wrap:wrap;
-  }
-  .test-mode-banner button{
-    background:#2a1414;
-    color:#fff;
-    border:none;
-    padding:4px 10px;
-    border-radius:6px;
-    font-size:.72rem;
-    cursor:pointer;
-    font-family:inherit;
-  }
-
-  .test-panel{
-    margin:14px 18px 0;
-    background:rgba(255,107,107,.06);
-    border:1px dashed rgba(255,107,107,.5);
-    border-radius:10px;
-    padding:14px 16px;
-  }
-  .test-panel h3{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-weight:normal;
-    color:var(--red);
-    margin:0 0 4px;
-    font-size:1.05rem;
-  }
-  .test-panel .hint{ font-si
+    padd

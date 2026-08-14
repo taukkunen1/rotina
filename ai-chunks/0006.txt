@@ -1,4 +1,19 @@
-x + "_" + Math.random().toString(36).slice(2,9); }
+"Implantar" → "Nova implantação".
+   4. Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer
+      pessoa".
+   5. Clique em "Implantar", autorize o acesso (é a sua própria conta), e
+      copie a URL gerada (termina em /exec).
+   6. Cole essa URL na constante abaixo, entre aspas.
+   7. No Google Drive, salve o código deste arquivo com o nome exato
+      "rotina-hector.html". A partir daí, abram sempre a URL do Apps
+      Script (não o arquivo local) em todos os aparelhos.
+   ========================================================================= */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec";
+// A mesma URL agora também serve o próprio app (HTML) quando aberta sem
+// parâmetro — pra pedir só os dados (backup), usamos ?data=1.
+const DATA_ENDPOINT = APPS_SCRIPT_URL + "?data=1";
+
+function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9); }
 
 // mapeia palavras-chave do nome da tarefa pra um emoji — reforça o texto
 // com uma pista visual (útil pra leitura rápida / crianças ainda alfabetizando)
@@ -178,36 +193,4 @@ function applyHistoryCorrection_v2(state){
     const penalty = pointsPenaltyByDay[iso] || 0;
     const netPoints = Math.max(0, rawPoints - penalty);
 
-    state.history[iso] = {
-      done: total,
-      total: total,
-      pointsEarnedThatDay: netPoints,
-      perfect: true,
-      screenMinutes: CONFIG.perfectDayBonusMinutes || 30,
-      periodsCompleted: 3,
-      hair: hairByDay[iso],
-    };
-    state.hairByDate[iso] = hairByDay[iso];
-
-    if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
-  });
-
-  state.petCompletedDays.sort();
-  state.petLastCompletionISO = state.petCompletedDays.length
-    ? state.petCompletedDays[state.petCompletedDays.length - 1]
-    : null;
-
-  // saldo confirmado até 12/08 — hoje (13/08) ainda não foi jogado
-  state.totalPoints = 170;
-
-  state.historyCorrectionV2Applied = true;
-}
-
-function seedKnownPerfectDays(state){
-  applyHistoryCorrection_v2(state);
-}
-
-function reconcileState(state){
-  if(state.driveFileId === undefined) state.driveFileId = null;
-  if(state.driveLastSyncISO === undefined) state.driveLastSyncISO = null;
-  if(s
+    state

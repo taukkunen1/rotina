@@ -1,4 +1,42 @@
-figurado neste arquivo.`;
+n ContentService.createTextOutput(JSON.stringify({conflict:true, revision:currentRevision, data:current})).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  var nextRevision = currentRevision + 1;
+  incoming.revision = nextRevision;
+  incoming.serverUpdatedAt = new Date().toISOString();
+  if (incoming.state) incoming.state.driveRevision = nextRevision;
+  file.setContent(JSON.stringify(incoming, null, 2));
+
+  var backupDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'America/Sao_Paulo', 'yyyy-MM-dd');
+  var backupName = 'rotina-hector-backup-' + backupDate + '.json';
+  var backups = DriveApp.getFilesByName(backupName);
+  if (!backups.hasNext()) {
+    DriveApp.createFile(backupName, JSON.stringify(incoming, null, 2), MimeType.PLAIN_TEXT);
+  }
+
+  var allBackups = [];
+  var it = DriveApp.getFiles();
+  while(it.hasNext()) {
+    var f = it.next();
+    if (/^rotina-hector-backup-\d{4}-\d{2}-\d{2}[.]json$/.test(f.getName())) allBackups.push(f);
+  }
+  allBackups.sort(function(a,b){ return b.getDateCreated().getTime() - a.getDateCreated().getTime(); });
+  for (var i=30; i<allBackups.length; i++) allBackups[i].setTrashed(true);
+
+  return ContentService.createTextOutput(JSON.stringify({ok:true, revision:nextRevision})).setMimeType(ContentService.MimeType.JSON);
+}`;
+
+function renderDriveSync(){
+  const el = document.getElementById('driveSyncSection');
+  if(!el) return;
+  if(!adultUnlocked){ el.innerHTML=''; return; }
+
+  const configured = !!APPS_SCRIPT_URL;
+
+  let statusHtml, actionsHtml;
+
+  if(!configured){
+    statusHtml = `Ainda não configurado neste arquivo.`;
     actionsHtml = `
       <button class="icon-btn" id="driveSetupInfoBtn">como configurar</button>
       <button class="icon-btn" id="driveCopyCodeBtn">📋 ver código do Apps Script</button>
@@ -138,28 +176,4 @@ document.getElementById('importFile').addEventListener('change', (e)=>{
 /* ---------- desbloqueio do site ---------- */
 function trySiteUnlock(){
   const input = document.getElementById('siteLockInput');
-  const errEl = document.getElementById('siteLockError');
-  const entered = input.value;
-  if(!CONFIG.sitePin || entered === CONFIG.sitePin){
-    try{ sessionStorage.setItem(SITE_LOCK_SESSION_KEY, '1'); }catch(e){}
-    document.getElementById('siteLockOverlay').classList.remove('open');
-    errEl.textContent = '';
-  } else {
-    errEl.textContent = 'Senha incorreta.';
-    input.value = '';
-    input.focus();
-  }
-}
-document.getElementById('siteLockBtn').addEventListener('click', trySiteUnlock);
-document.getElementById('siteLockInput').addEventListener('keydown', e=>{
-  if(e.key === 'Enter') trySiteUnlock();
-});
-if(document.getElementById('siteLockOverlay').classList.contains('open')){
-  document.getElementById('siteLockInput').focus();
-}
-
-render();
-autoPullOnStartup();
-</script>
-</body>
-</html>
+  const errEl = document.getElementById

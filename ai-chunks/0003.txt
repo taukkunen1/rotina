@@ -1,4 +1,46 @@
-ze:.72rem; color:var(--chalk-dim); margin-bottom:10px; }
+ing:4px 6px;
+    font-weight:normal;
+  }
+
+  .test-mode-banner{
+    background:var(--red);
+    color:#2a1414;
+    font-weight:bold;
+    font-size:.8rem;
+    text-align:center;
+    padding:8px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .test-mode-banner button{
+    background:#2a1414;
+    color:#fff;
+    border:none;
+    padding:4px 10px;
+    border-radius:6px;
+    font-size:.72rem;
+    cursor:pointer;
+    font-family:inherit;
+  }
+
+  .test-panel{
+    margin:14px 18px 0;
+    background:rgba(255,107,107,.06);
+    border:1px dashed rgba(255,107,107,.5);
+    border-radius:10px;
+    padding:14px 16px;
+  }
+  .test-panel h3{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    color:var(--red);
+    margin:0 0 4px;
+    font-size:1.05rem;
+  }
+  .test-panel .hint{ font-size:.72rem; color:var(--chalk-dim); margin-bottom:10px; }
   .test-panel .test-date{
     font-size:.85rem;
     color:var(--chalk);
@@ -279,32 +321,4 @@ ze:.72rem; color:var(--chalk-dim); margin-bottom:10px; }
     <input type="password" inputmode="numeric" id="siteLockInput" placeholder="Senha" maxlength="12"
       style="width:100%; text-align:center; font-size:1.1rem; letter-spacing:3px; background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--chalk); border-radius:8px; padding:10px; font-family:inherit; margin-bottom:12px;">
     <button class="btn save" id="siteLockBtn" style="width:100%;">entrar</button>
-    <div id="siteLockError" style="color:var(--red); font-size:.78rem; margin-top:10px; min-height:1em;"></div>
-  </div>
-</div>
-
-<div class="board-frame">
-  <div class="board-inner">
-
-    <div id="testModeBanner"></div>
-
-    <div class="topbar">
-      <h1>🥚 Rotina do Hector</h1>
-      <div class="topbar-right">
-        <div class="pacus-total">
-          <span class="label">Pacus Points</span>
-          <span class="num" id="totalPoints">0</span>
-        </div>
-        <button class="icon-btn primary" id="addPointsBtn" title="Ajuste manual de Pacus Points">+ pontos</button>
-        <button class="icon-btn primary" id="editBtn">🔒 Área dos adultos</button>
-      </div>
-    </div>
-
-    <section class="block" id="testPanel" style="display:none;"></section>
-
-    <div class="content">
-
-
-      <section class="pet-section" id="petSection"></section>
-
-      <section class="block" i
+    <div id="

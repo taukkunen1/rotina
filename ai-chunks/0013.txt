@@ -1,3 +1,32 @@
+ked)?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
+      </tr>`;
+    }
+    const perfectBadge = entry.perfect ? '<span class="badge-perfect">dia perfeito</span>' : '';
+    const editCell = (isToday||!adultUnlocked) ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
+    return `<tr${isToday?' class="today-row"':''}>
+      <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
+      <td>${entry.done}/${entry.total}${perfectBadge}</td>
+      <td class="pts-cell">${entry.pointsEarnedThatDay}</td>
+      <td>${hairLabel(hair)}</td>
+      <td>${editCell}</td>
+    </tr>`;
+  }).join('');
+
+  body.querySelectorAll('.edit-day-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> openDayEditor(btn.getAttribute('data-date')));
+  });
+
+  const toggleEl = document.getElementById('historyToggle');
+  if(toggleEl){
+    if(hiddenCount > 0){
+      toggleEl.innerHTML = historyShowAll
+        ? `<button class="icon-btn" id="historyToggleBtn">mostrar só os últimos ${HISTORY_VISIBLE_DAYS} dias</button>`
+        : `<button class="icon-btn" id="historyToggleBtn">mostrar histórico completo (+${hiddenCount} dias)</button>`;
+      document.getElementById('historyToggleBtn').addEventListener('click', ()=>{
+        historyShowAll = !historyShowAll;
+        renderHistory();
+      });
+    } else {
       toggleEl.innerHTML = '';
     }
   }
@@ -24,7 +53,7 @@ function renderRewards(){
       const redeemed = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
       if(r.maxPerDay != null && redeemed >= r.maxPerDay) return;
 
-      addPoints(-r.cost);
+      const delta = addPoints(-r.cost);
       addLog(`🎁 Resgatou: ${r.txt} (−${r.cost})`);
       if(r.grantsHours){
         addGameTimerBonusHours(r.grantsHours);
@@ -34,7 +63,7 @@ function renderRewards(){
       state.gameTimer.redemptions[r.id] = redeemed + 1;
 
       saveState(state);
-      bumpTotal();
+      bumpTotal(delta);
       renderRewards();
       renderLog();
       renderGameTimer();
@@ -83,10 +112,11 @@ function onMarkClick(e){
   if(!task) return;
 
   const current = state.checkedToday[id]; // undefined | 'done' | 'na' | 'x'
+  let totalDelta = 0;
 
   // desfazer o efeito do estado anterior nos pontos
-  if(current === 'done') addPoints(-task.pts);
-  else if(current === 'x') addPoints(notDonePenalty(task.pts));
+  if(current === 'done') totalDelta += addPoints(-task.pts);
+  else if(current === 'x') totalDelta += addPoints(notDonePenalty(task.pts));
 
   if(current === clickedStatus){
     // clicou de novo no mesmo estado: volta pra pendente
@@ -95,14 +125,14 @@ function onMarkClick(e){
   } else {
     state.checkedToday[id] = clickedStatus;
     if(clickedStatus === 'done'){
-      addPoints(task.pts);
+      totalDelta += addPoints(task.pts);
       addLog(`+${task.pts} · ${task.txt}`);
       fireConfetti(btn);
     } else if(clickedStatus === 'na'){
       addLog(`n/a · ${task.txt}`);
     } else {
       const penalty = notDonePenalty(task.pts);
-      addPoints(-penalty);
+      totalDelta += addPoints(-penalty);
       addLog(`✕ não realizado · ${task.txt} (−${penalty})`);
     }
   }
@@ -112,7 +142,7 @@ function onMarkClick(e){
     addLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
   }
   saveState(state);
-  bumpTotal();
+  bumpTotal(totalDelta);
   render();
 }
 
@@ -124,10 +154,10 @@ document.getElementById('addPointsBtn').addEventListener('click', ()=>{
   if(raw === null) return;
   const amount = parseInt(raw, 10);
   if(!amount || amount === 0) return;
-  addPoints(amount);
+  const delta = addPoints(amount);
   addLog(`${amount>0?'+':''}${amount} · ajuste manual`);
   saveState(state);
-  bumpTotal();
+  bumpTotal(delta);
   render();
 });
 
@@ -163,40 +193,4 @@ function openEditor(){
       // clona a rotina de dia de escola como ponto de partida
       draft.periodsWeekend = JSON.parse(JSON.stringify(draft.periods));
       // gera ids novos pra não colidir com os da rotina de semana
-      Object.values(draft.periodsWeekend).forEach(period=>{
-        period.tasks.forEach(t=>{ t.id = uid('we'); });
-      });
-      renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
-      renderEditorPeriod('tarde', 'editTardeWeekend', draft.periodsWeekend);
-      renderEditorPeriod('noite', 'editNoiteWeekend', draft.periodsWeekend);
-    }
-    weekendBody.style.display = weekendToggle.checked ? 'block' : 'none';
-    if(!weekendToggle.checked) draft.periodsWeekend = null;
-  };
-
-  document.getElementById('editorPinInput').value = draft.editorPin || '';
-  document.getElementById('sitePinInput').value = draft.sitePin || '';
-  document.getElementById('gameLimitInput').value = draft.screenDailyLimitHours ?? 2;
-  if(!Array.isArray(draft.schedule)) draft.schedule = [];
-  renderEditorSchedule();
-
-  document.getElementById('overlay').classList.add('open');
-}
-function closeEditor(){
-  document.getElementById('overlay').classList.remove('open');
-  draft = null;
-}
-
-function renderEditorPeriod(key, elId, periodsObj){
-  periodsObj = periodsObj || draft.periods;
-  const el = document.getElementById(elId);
-  el.innerHTML = '';
-  const list = periodsObj[key].tasks;
-  list.forEach((task, idx)=>{
-    const row = document.createElement('div');
-    row.className = 'edit-row edit-row-task';
-    row.innerHTML = `
-      <div class="edit-row-main">
-        <span class="reorder-group">
-          <button type="button" class="reorder-btn" data-dir="up" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
-          <button type="button"
+      Object.values(draft.periodsWe

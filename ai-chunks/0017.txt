@@ -1,0 +1,25 @@
+('siteLockError');
+  const entered = input.value;
+  if(!CONFIG.sitePin || entered === CONFIG.sitePin){
+    try{ sessionStorage.setItem(SITE_LOCK_SESSION_KEY, '1'); }catch(e){}
+    document.getElementById('siteLockOverlay').classList.remove('open');
+    errEl.textContent = '';
+  } else {
+    errEl.textContent = 'Senha incorreta.';
+    input.value = '';
+    input.focus();
+  }
+}
+document.getElementById('siteLockBtn').addEventListener('click', trySiteUnlock);
+document.getElementById('siteLockInput').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') trySiteUnlock();
+});
+if(document.getElementById('siteLockOverlay').classList.contains('open')){
+  document.getElementById('siteLockInput').focus();
+}
+
+render();
+autoPullOnStartup();
+</script>
+</body>
+</html>

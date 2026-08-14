@@ -1,4 +1,41 @@
-ont-size:.78rem;
+2.1rem;
+    color:var(--blue);
+    margin-bottom:10px;
+    letter-spacing:1px;
+  }
+  .custom-timer.finished .custom-timer-display{ color:var(--red); }
+  .custom-timer-setrow{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    margin-bottom:10px;
+  }
+  .custom-timer-setrow input[type=number]{
+    width:56px;
+    text-align:center;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    border-radius:6px;
+    padding:6px 4px;
+    font-size:.82rem;
+    font-family:inherit;
+  }
+  .custom-timer-setrow span{ font-size:.72rem; color:var(--chalk-dim); }
+  .custom-timer-btns{
+    display:flex;
+    gap:6px;
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+  .custom-timer-btn{
+    background:var(--blue);
+    color:#16241f;
+    border:none;
+    padding:7px 14px;
+    border-radius:7px;
+    font-size:.78rem;
     font-weight:bold;
     cursor:pointer;
     font-family:inherit;
@@ -286,19 +323,4 @@ ont-size:.78rem;
     padding:0;
     transition:transform .12s ease, background .12s ease, border-color .12s ease;
   }
-  .mark-btn:hover{ border-color:rgba(242,237,225,.4); color:var(--chalk); transform:scale(1.06); }
-  .mark-btn:active{ transform:scale(.92); }
-  .mark-done.active{ background:var(--green); border-color:var(--green); color:#132015; font-weight:bold; animation:markPop .3s ease; }
-  .mark-na.active{ background:var(--chalk-dim); border-color:var(--chalk-dim); color:#1b2e28; font-weight:bold; }
-  .mark-x.active{ background:var(--red); border-color:var(--red); color:#2a1414; font-weight:bold; }
-  @keyframes markPop{
-    0%{ transform:scale(1); }
-    40%{ transform:scale(1.35); }
-    100%{ transform:scale(1); }
-  }
-
-  .task .txt{ flex:1; font-size:.9rem; line-height:1.35; }
-  .task .sub{ display:block; font-size:.7rem; color:var(--chalk-dim); margin-top:1px; }
-  .task.done .txt{ text-decoration:line-through; color:var(--chalk-dim); }
-  .task.na .txt{ color:var(--chalk-dim); font-style:italic; }
-  .task.na .pts{ color:var(--chalk-dim); border-color:var
+  .mark-btn:hover{ border-color:rgba(242,237,225,.4); color:var(--chalk); transform:sc

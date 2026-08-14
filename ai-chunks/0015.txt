@@ -1,4 +1,36 @@
-();
+= draft.rewards.filter(x=>x!==r);
+      renderEditorRewards();
+    });
+    el.appendChild(row);
+  });
+}
+
+function escapeAttr(s){
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+document.querySelectorAll('.add-row-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const kind = btn.getAttribute('data-add');
+    const weekendMap = {manhaWeekend:'manha', tardeWeekend:'tarde', noiteWeekend:'noite'};
+    const weekendElMap = {manhaWeekend:'editManhaWeekend', tardeWeekend:'editTardeWeekend', noiteWeekend:'editNoiteWeekend'};
+    if(kind === 'manha' || kind === 'tarde' || kind === 'noite'){
+      draft.periods[kind].tasks.push({ id: uid('t'), txt:'', pts:1, sub:'' });
+      renderEditorPeriod(kind, {manha:'editManha', tarde:'editTarde', noite:'editNoite'}[kind]);
+    } else if(weekendMap[kind]){
+      const periodKey = weekendMap[kind];
+      if(!draft.periodsWeekend) return;
+      draft.periodsWeekend[periodKey].tasks.push({ id: uid('we'), txt:'', pts:1, sub:'' });
+      renderEditorPeriod(periodKey, weekendElMap[kind], draft.periodsWeekend);
+    } else if(kind === 'bad'){
+      draft.badHabits.push({ id: uid('b'), txt:'', pts:1 });
+      renderEditorBad();
+    } else if(kind === 'reward'){
+      draft.rewards.push({ id: uid('r'), txt:'', cost:10 });
+      renderEditorRewards();
+    } else if(kind === 'schedule'){
+      draft.schedule.push({ id: uid('sc'), label:'', days:[], start:'09:00', end:'10:00', period:'tarde', pts:3 });
+      renderEditorSchedule();
     }
   });
 });
@@ -106,14 +138,15 @@ document.getElementById('daySaveBtn').addEventListener('click', ()=>{
 
   // ajusta o saldo total pela diferença de pontos daquele dia
   const delta = pointsEarnedThatDay - oldPoints;
+  let appliedDelta = 0;
   if(delta !== 0){
-    addPoints(delta);
+    appliedDelta = addPoints(delta);
     addLog(`✏️ ajuste em ${formatDateBR(editingDate)}: ${delta>0?'+':''}${delta}`);
   }
 
   saveState(state);
   closeDayEditor();
-  bumpTotal();
+  bumpTotal(appliedDelta);
   render();
 });
 
@@ -153,42 +186,4 @@ function doPost(e) {
   var baseRevision = Number(incoming.baseRevision || 0);
 
   if (currentRevision > 0 && baseRevision !== currentRevision) {
-    return ContentService.createTextOutput(JSON.stringify({conflict:true, revision:currentRevision, data:current})).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  var nextRevision = currentRevision + 1;
-  incoming.revision = nextRevision;
-  incoming.serverUpdatedAt = new Date().toISOString();
-  if (incoming.state) incoming.state.driveRevision = nextRevision;
-  file.setContent(JSON.stringify(incoming, null, 2));
-
-  var backupDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'America/Sao_Paulo', 'yyyy-MM-dd');
-  var backupName = 'rotina-hector-backup-' + backupDate + '.json';
-  var backups = DriveApp.getFilesByName(backupName);
-  if (!backups.hasNext()) {
-    DriveApp.createFile(backupName, JSON.stringify(incoming, null, 2), MimeType.PLAIN_TEXT);
-  }
-
-  var allBackups = [];
-  var it = DriveApp.getFiles();
-  while(it.hasNext()) {
-    var f = it.next();
-    if (/^rotina-hector-backup-\d{4}-\d{2}-\d{2}[.]json$/.test(f.getName())) allBackups.push(f);
-  }
-  allBackups.sort(function(a,b){ return b.getDateCreated().getTime() - a.getDateCreated().getTime(); });
-  for (var i=30; i<allBackups.length; i++) allBackups[i].setTrashed(true);
-
-  return ContentService.createTextOutput(JSON.stringify({ok:true, revision:nextRevision})).setMimeType(ContentService.MimeType.JSON);
-}`;
-
-function renderDriveSync(){
-  const el = document.getElementById('driveSyncSection');
-  if(!el) return;
-  if(!adultUnlocked){ el.innerHTML=''; return; }
-
-  const configured = !!APPS_SCRIPT_URL;
-
-  let statusHtml, actionsHtml;
-
-  if(!configured){
-    statusHtml = `Ainda não con
+    retur
