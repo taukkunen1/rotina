@@ -1,4 +1,23 @@
-ysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
+quivalent === 0){
+    caption = `Complete um dia inteiro de tarefas pra começar a rachar o ovo.`;
+  } else {
+    const nextMilestone = milestones.find(([day]) => day > daysEquivalent);
+    if(nextMilestone){
+      const diasFaltando = nextMilestone[0] - daysEquivalent;
+      caption = `Faltam <b>${diasFaltando} ${diasFaltando===1?'dia':'dias'}</b> para virar <b>${nextMilestone[1]}</b>.`;
+    } else {
+      caption = `Quase lá! O Pacus está quase adulto.`;
+    }
+  }
+
+  const previousProgress = Number(el.dataset.pacusProgress ?? daysEquivalent);
+  const grewNow = daysEquivalent > previousProgress;
+  el.dataset.pacusProgress = String(daysEquivalent);
+
+  el.innerHTML = `
+    ${buildPetVisual(stageFloat)}
+    <div class="pet-name">${CONFIG.pet.name}</div>
+    <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
     <div class="pet-day-progress">
       <div class="pet-day-progress-head"><span>Progresso do Pacus</span><b>${progressPct}%</b></div>
       <div class="pet-day-track" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
@@ -141,7 +160,7 @@ function render(){
           <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, perde metade dos pontos">✕</button>
         </span>
         <span class="txt"><span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
-        <span class="pts">${status==='na' ? 'n/a' : status==='x' ? '−'+notDonePenalty(task.pts) : '+'+task.pts}</span>
+        <span class="pts">${status==='na' ? 'n/a' : status==='x' ? '−'+taskNotDonePenalty(task) : '+'+task.pts}</span>
       `;
       ul.appendChild(li);
     });
@@ -168,41 +187,4 @@ function render(){
     btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
     btn.addEventListener('click', ()=>{
       const delta = addPoints(h.pts);
-      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
-      saveState(state);
-      bumpTotal(delta);
-      renderLog();
-    });
-    badEl.appendChild(btn);
-  });
-
-  renderRewards();
-  renderLog();
-  renderHistory();
-  renderWeeklyReview();
-  renderBackupReminder();
-  renderTestPanel();
-  renderTestModeBanner();
-  renderDriveSync();
-}
-
-function daysBetween(isoA, isoB){
-  const a = new Date(isoA+"T00:00:00");
-  const b = new Date(isoB+"T00:00:00");
-  return Math.round((b-a)/86400000);
-}
-
-function shiftISODate(iso, deltaDays){
-  const d = new Date(iso+"T00:00:00");
-  d.setDate(d.getDate()+deltaDays);
-  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-}
-
-function goToTestDate(iso){
-  setTestDate(iso);
-  state = loadState();
-  render();
-}
-
-let testPanelOpen = false;
-// Painéis de "adulto" (sincronização c
+      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`

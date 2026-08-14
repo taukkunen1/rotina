@@ -1,4 +1,5 @@
-"Implantar" → "Nova implantação".
+.
+   3. Clique em "Implantar" → "Nova implantação".
    4. Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer
       pessoa".
    5. Clique em "Implantar", autorize o acesso (é a sua própria conta), e
@@ -95,7 +96,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: se ainda não existe (configs de antes dessa função
   // existir), aplica a senha pedida uma vez.
   if(cfg && cfg.sitePin === undefined) cfg.sitePin = "150402";
-  return applyPointRebalanceV1(cfg);
+  return applyPointRebalanceV2(applyPointRebalanceV1(cfg));
 }
 
 // Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
@@ -121,6 +122,22 @@ function applyPointRebalanceV1(cfg){
     });
   });
   cfg.pointRebalanceV1Applied = true;
+  return cfg;
+}
+
+// "Arrumar a bagunça" é a tarefa mais chata pro Hector — fixada em 7
+// pontos, com penalidade CHEIA (perde os 7, não a metade) se não fizer.
+function applyPointRebalanceV2(cfg){
+  if(!cfg || cfg.pointRebalanceV2Applied) return cfg;
+  ['periods','periodsWeekend'].forEach(key=>{
+    const p = cfg[key];
+    if(p && p.noite && Array.isArray(p.noite.tasks)){
+      p.noite.tasks.forEach(t=>{
+        if(t.id === 'n5'){ t.pts = 7; t.fullPenalty = true; }
+      });
+    }
+  });
+  cfg.pointRebalanceV2Applied = true;
   return cfg;
 }
 
@@ -176,21 +193,4 @@ function applyHistoryCorrection_v2(state){
     "2026-08-09": "not-washed",
     "2026-08-10": "washed",
     "2026-08-11": "not-washed",
-    "2026-08-12": "washed",
-  };
-  const pointsPenaltyByDay = {
-    "2026-08-12": 10, // brigou na escola
-  };
-
-  if(!state.history) state.history = {};
-  if(!state.hairByDate) state.hairByDate = {};
-  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
-
-  Object.keys(hairByDay).forEach(iso => {
-    const tasks = allTasks(iso);
-    const total = tasks.length;
-    const rawPoints = tasks.reduce((sum, task) => sum + (Number(task.pts) || 0), 0);
-    const penalty = pointsPenaltyByDay[iso] || 0;
-    const netPoints = Math.max(0, rawPoints - penalty);
-
-    state
+    "2026-08

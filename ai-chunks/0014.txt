@@ -1,4 +1,18 @@
-ekend).forEach(period=>{
+le = document.getElementById('weekendToggle');
+  const weekendBody = document.getElementById('weekendEditorBody');
+  weekendToggle.checked = !!draft.periodsWeekend;
+  weekendBody.style.display = draft.periodsWeekend ? 'block' : 'none';
+  if(draft.periodsWeekend){
+    renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
+    renderEditorPeriod('tarde', 'editTardeWeekend', draft.periodsWeekend);
+    renderEditorPeriod('noite', 'editNoiteWeekend', draft.periodsWeekend);
+  }
+  weekendToggle.onchange = ()=>{
+    if(weekendToggle.checked && !draft.periodsWeekend){
+      // clona a rotina de dia de escola como ponto de partida
+      draft.periodsWeekend = JSON.parse(JSON.stringify(draft.periods));
+      // gera ids novos pra não colidir com os da rotina de semana
+      Object.values(draft.periodsWeekend).forEach(period=>{
         period.tasks.forEach(t=>{ t.id = uid('we'); });
       });
       renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
@@ -153,26 +167,4 @@ function renderEditorSchedule(){
         chip.classList.toggle('active');
       });
     });
-    row.querySelector('.del').addEventListener('click', ()=>{
-      draft.schedule = draft.schedule.filter(x=>x!==item);
-      renderEditorSchedule();
-    });
-    el.appendChild(row);
-  });
-}
-
-function renderEditorRewards(){
-  const el = document.getElementById('editRewards');
-  el.innerHTML = '';
-  draft.rewards.forEach(r=>{
-    const row = document.createElement('div');
-    row.className = 'edit-row';
-    row.innerHTML = `
-      <input type="text" value="${escapeAttr(r.txt)}" data-field="txt" placeholder="recompensa">
-      ${stepperHTML('cost', r.cost)}
-      <button class="del" title="remover">🗑</button>
-    `;
-    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ r.txt = e.target.value; });
-    wireStepper(row, r, 'cost');
-    row.querySelector('.del').addEventListener('click', ()=>{
-      draft.rewards 
+    row.querySelecto

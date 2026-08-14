@@ -1,4 +1,41 @@
-om Drive, editar dia anterior, modo
+);
+      saveState(state);
+      bumpTotal(delta);
+      renderLog();
+    });
+    badEl.appendChild(btn);
+  });
+
+  renderRewards();
+  renderLog();
+  renderHistory();
+  renderWeeklyReview();
+  renderBackupReminder();
+  renderTestPanel();
+  renderTestModeBanner();
+  renderDriveSync();
+}
+
+function daysBetween(isoA, isoB){
+  const a = new Date(isoA+"T00:00:00");
+  const b = new Date(isoB+"T00:00:00");
+  return Math.round((b-a)/86400000);
+}
+
+function shiftISODate(iso, deltaDays){
+  const d = new Date(iso+"T00:00:00");
+  d.setDate(d.getDate()+deltaDays);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+}
+
+function goToTestDate(iso){
+  setTestDate(iso);
+  state = loadState();
+  render();
+}
+
+let testPanelOpen = false;
+// Painéis de "adulto" (sincronização com Drive, editar dia anterior, modo
 // teste) ficam escondidos da tela principal até alguém abrir a "Área dos
 // adultos" com sucesso — assim o Hector só vê o que usa no dia a dia.
 // Reseta sozinho ao recarregar a página.
@@ -187,20 +224,4 @@ function renderHistory(){
     let entry;
     if(isToday){
       const tasks = allTasks();
-      const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-      const total = applicable.length;
-      const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-      const pointsEarnedThatDay = tasks.filter(t=>state.checkedToday[t.id]==='done').reduce((s,t)=>s+t.pts,0);
-      const perfect = total>0 && done===total;
-      entry = { done, total, pointsEarnedThatDay, perfect, hair:getHairStatus(iso) };
-    } else {
-      entry = state.history[iso];
-    }
-    const hair = getHairStatus(iso) || (entry && entry.hair) || null;
-    if(!entry){
-      return `<tr${isToday?' class="today-row"':''}>
-        <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
-        <td>—</td>
-        <td class="pts-cell">—</td>
-        <td>${hairLabel(hair)}</td>
-        <td>${(isToday||!adultUnloc
+     
