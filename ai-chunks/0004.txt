@@ -1,4 +1,26 @@
-anual de Pacus Points">+ pontos</button>
+
+    .topbar{ flex-wrap:wrap; }
+    .topbar h1{ font-size:1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<span class="points-delta" id="pointsDelta"></span>
+
+<div class="board-frame">
+  <div class="board-inner">
+
+    <div id="testModeBanner"></div>
+
+    <div class="topbar">
+      <h1>🥚 Rotina do Hector</h1>
+      <div class="topbar-right">
+        <div class="pacus-total">
+          <span class="label">Pacus Points</span>
+          <span class="num" id="totalPoints">0</span>
+        </div>
+        <button class="icon-btn primary" id="addPointsBtn" title="Ajuste manual de Pacus Points">+ pontos</button>
         <button class="icon-btn primary" id="editBtn">🔒 Área dos adultos</button>
       </div>
     </div>
@@ -187,18 +209,4 @@ anual de Pacus Points">+ pontos</button>
       <h3>🎮 Tempo de Jogo</h3>
       <div class="hint">Cota diária de tempo de jogo.</div>
       <div class="edit-row">
-        <label style="flex:1; font-size:.85rem;">Horas de jogo por dia</label>
-        <input type="number" min="0" step="0.5" id="gameLimitInput" style="width:70px;">
-      </div>
-    </div>
-
-    <div class="editor-section">
-      <h3>🔒 Segurança</h3>
-      <div class="hint">PIN pra pedir antes de abrir "Editar tudo" — protege de mudanças acidentais.</div>
-      <div class="edit-row">
-        <input type="text" inputmode="numeric" id="editorPinInput" placeholder="ex: 1234 (deixe vazio pra não pedir PIN)" maxlength="8">
-      </div>
-    </div>
-
-    <div class="editor-footer">
-      <but
+        <label style="flex:1; f

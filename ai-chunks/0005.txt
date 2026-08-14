@@ -1,4 +1,18 @@
-ton class="btn" id="adultTestBtn">🧪 modo teste</button>
+ont-size:.85rem;">Horas de jogo por dia</label>
+        <input type="number" min="0" step="0.5" id="gameLimitInput" style="width:70px;">
+      </div>
+    </div>
+
+    <div class="editor-section">
+      <h3>🔒 Segurança</h3>
+      <div class="hint">PIN pra pedir antes de abrir "Editar tudo" — protege de mudanças acidentais.</div>
+      <div class="edit-row">
+        <input type="text" inputmode="numeric" id="editorPinInput" placeholder="ex: 1234 (deixe vazio pra não pedir PIN)" maxlength="8">
+      </div>
+    </div>
+
+    <div class="editor-footer">
+      <button class="btn" id="adultTestBtn">🧪 modo teste</button>
       <button class="btn" id="cancelBtn">fechar</button>
       <button class="btn save" id="saveBtn">salvar tudo</button>
     </div>
@@ -152,18 +166,4 @@ function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9
 // mapeia palavras-chave do nome da tarefa pra um emoji — reforça o texto
 // com uma pista visual (útil pra leitura rápida / crianças ainda alfabetizando)
 const ICON_RULES = [
-  [/cama/i, "🛏️"], [/água/i, "💧"], [/dente/i, "🦷"], [/rosto|banho/i, "🧼"],
-  [/duolingo|inglês|idioma/i, "🗣️"], [/ler|livro|capítulo/i, "📖"],
-  [/uniforme|vestir/i, "👕"], [/mochila/i, "🎒"], [/almoç/i, "🍽️"],
-  [/escola/i, "🏫"], [/jantar/i, "🍲"], [/bagunça|arrumar/i, "🧹"],
-  [/toalha|cesto|roupa/i, "🧺"], [/tela|jogo|vídeo/i, "📺"],
-  [/dever|tarefa|estud/i, "✏️"], [/dormir|soneca/i, "😴"],
-];
-function taskIcon(txt){
-  for(const [re, icon] of ICON_RULES){ if(re.test(txt)) return icon; }
-  return "⭐";
-}
-
-function isWeekendISO(dateISO){
-  const day = new Date(dateISO+"T00:00:00").getDay();
-  return day === 0 || day ==
+  [/cama/i, "🛏️"], [/água/i, "💧"], [/dente/i, "🦷"], [/ros

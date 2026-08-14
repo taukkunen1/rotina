@@ -1,4 +1,24 @@
-nd', draft.periodsWeekend);
+ render();
+});
+
+/* ===================== EDITOR ===================== */
+let draft = null; // cópia de trabalho do CONFIG enquanto o modal está aberto
+
+function openEditor(){
+  draft = JSON.parse(JSON.stringify(CONFIG));
+  renderEditorPeriod('manha', 'editManha');
+  renderEditorPeriod('tarde', 'editTarde');
+  renderEditorPeriod('noite', 'editNoite');
+  renderEditorBad();
+  renderEditorRewards();
+
+  const weekendToggle = document.getElementById('weekendToggle');
+  const weekendBody = document.getElementById('weekendEditorBody');
+  weekendToggle.checked = !!draft.periodsWeekend;
+  weekendBody.style.display = draft.periodsWeekend ? 'block' : 'none';
+  if(draft.periodsWeekend){
+    renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
+    renderEditorPeriod('tarde', 'editTardeWeekend', draft.periodsWeekend);
     renderEditorPeriod('noite', 'editNoiteWeekend', draft.periodsWeekend);
   }
   weekendToggle.onchange = ()=>{
@@ -151,28 +171,4 @@ function renderEditorSchedule(){
     row.querySelector('[data-field=start]').addEventListener('input', e=>{ item.start = e.target.value; });
     row.querySelector('[data-field=end]').addEventListener('input', e=>{ item.end = e.target.value; });
     row.querySelector('[data-field=period]').addEventListener('change', e=>{ item.period = e.target.value; });
-    wireStepper(row, item, 'pts');
-    row.querySelectorAll('.day-chip').forEach(chip=>{
-      chip.addEventListener('click', ()=>{
-        const d = chip.getAttribute('data-day');
-        if(item.days.includes(d)) item.days = item.days.filter(x=>x!==d);
-        else item.days.push(d);
-        chip.classList.toggle('active');
-      });
-    });
-    row.querySelector('.del').addEventListener('click', ()=>{
-      draft.schedule = draft.schedule.filter(x=>x!==item);
-      renderEditorSchedule();
-    });
-    el.appendChild(row);
-  });
-}
-
-function renderEditorRewards(){
-  const el = document.getElementById('editRewards');
-  el.innerHTML = '';
-  draft.rewards.forEach(r=>{
-    const row = document.createElement('div');
-    row.className = 'edit-row';
-    row.innerHTML = `
-      <input type="text" value="${escapeAttr(r.t
+    wireStepper(ro

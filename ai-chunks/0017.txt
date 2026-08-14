@@ -1,4 +1,25 @@
-uivo de backup.');
+e.lastBackupISO = todayISO();
+  state.backupReminderDismissedFor = null;
+  saveState(state);
+  renderBackupReminder();
+});
+
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const backup = JSON.parse(reader.result);
+      if(!confirm('Isso vai substituir os dados atuais pelos do arquivo importado. Continuar?')) return;
+      if(backup.config) { CONFIG = backup.config; saveConfig(CONFIG); }
+      if(backup.state) { state = backup.state; saveState(state); }
+      render();
+    }catch(err){
+      alert('Não consegui ler esse arquivo de backup.');
     }
   };
   reader.readAsText(file);

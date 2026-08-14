@@ -1,4 +1,17 @@
-){}
+tedAt: state.updatedAt || new Date().toISOString(),
+      exportedAt: new Date().toISOString()
+    };
+    const res = await fetch(DATA_ENDPOINT, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if(result.ok){
+      state.driveRevision = Number(result.revision)||state.driveRevision;
+      state.driveLastSyncISO = todayISO();
+      state.driveConflictCount = 0;
+      try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
       renderDriveSync();
       return;
     }
@@ -187,25 +200,4 @@ function addGameTimerBonusHours(hours){
 }
 
 function gameTimerSecondsUsedNow(){
-  const gt = state.gameTimer;
-  const running = gt.runningSince ? (Date.now() - gt.runningSince)/1000 : 0;
-  return gt.usedSeconds + running;
-}
-
-function gameTimerIsRunning(){
-  return !!state.gameTimer.runningSince;
-}
-
-function startGameTimer(){
-  if(gameTimerIsRunning()) return;
-  state.gameTimer.runningSince = Date.now();
-  addLog('🎮 começou a jogar');
-  saveState(state);
-  renderGameTimer();
-  startGameTimerTicking();
-}
-
-function stopGameTimer(){
-  if(!gameTimerIsRunning()) return;
-  const elapsed = (Date.now() - state.gameTimer.runningSince)/1000;
-  state.gameTimer.
+  const gt = st

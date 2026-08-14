@@ -1,4 +1,20 @@
-Day[iso] || 0;
+    "2026-08-10": "washed",
+    "2026-08-11": "not-washed",
+    "2026-08-12": "washed",
+  };
+  const pointsPenaltyByDay = {
+    "2026-08-12": 10, // brigou na escola
+  };
+
+  if(!state.history) state.history = {};
+  if(!state.hairByDate) state.hairByDate = {};
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+
+  Object.keys(hairByDay).forEach(iso => {
+    const tasks = allTasks(iso);
+    const total = tasks.length;
+    const rawPoints = tasks.reduce((sum, task) => sum + (Number(task.pts) || 0), 0);
+    const penalty = pointsPenaltyByDay[iso] || 0;
     const netPoints = Math.max(0, rawPoints - penalty);
 
     state.history[iso] = {
@@ -181,17 +197,4 @@ async function doAutoPush(){
       state: state,
       baseRevision: Number(state.driveRevision)||0,
       clientRevision: Number(state.revision)||0,
-      clientUpdatedAt: state.updatedAt || new Date().toISOString(),
-      exportedAt: new Date().toISOString()
-    };
-    const res = await fetch(DATA_ENDPOINT, {
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify(payload)
-    });
-    const result = await res.json();
-    if(result.ok){
-      state.driveRevision = Number(result.revision)||state.driveRevision;
-      state.driveLastSyncISO = todayISO();
-      state.driveConflictCount = 0;
-      try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e
+      clientUpda

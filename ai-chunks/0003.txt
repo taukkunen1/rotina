@@ -1,4 +1,29 @@
-ackup-reminder button{
+m);
+  }
+  .drive-setup ol{ margin:6px 0 0 18px; padding:0; }
+  .drive-setup li{ margin-bottom:3px; }
+  .drive-setup code{
+    background:rgba(255,255,255,.08);
+    padding:1px 5px;
+    border-radius:4px;
+    font-size:.7rem;
+  }
+
+  .backup-reminder{
+    background:rgba(255,217,61,.1);
+    border:1px solid rgba(255,217,61,.4);
+    border-radius:8px;
+    padding:8px 12px;
+    font-size:.75rem;
+    color:var(--chalk);
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .backup-reminder button{
     background:var(--yellow);
     color:#2a2410;
     border:none;
@@ -321,25 +346,3 @@ ackup-reminder button{
   .btn.save:hover{ opacity:.9; }
 
   @media (max-width:500px){
-    .topbar{ flex-wrap:wrap; }
-    .topbar h1{ font-size:1.25rem; }
-  }
-</style>
-</head>
-<body>
-
-<span class="points-delta" id="pointsDelta"></span>
-
-<div class="board-frame">
-  <div class="board-inner">
-
-    <div id="testModeBanner"></div>
-
-    <div class="topbar">
-      <h1>🥚 Rotina do Hector</h1>
-      <div class="topbar-right">
-        <div class="pacus-total">
-          <span class="label">Pacus Points</span>
-          <span class="num" id="totalPoints">0</span>
-        </div>
-        <button class="icon-btn primary" id="addPointsBtn" title="Ajuste m

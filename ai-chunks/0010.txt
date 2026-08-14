@@ -1,4 +1,16 @@
-om-timers">${cardsHtml}</div>
+  <div class="custom-timer-btns">
+          <button class="custom-timer-btn" id="customTimerStartBtn_${t.id}" ${(running||remaining<=0)?'disabled':''}>▶️ Iniciar</button>
+          <button class="custom-timer-btn secondary" id="customTimerPauseBtn_${t.id}" ${running?'':'disabled'}>⏸️ Pausar</button>
+          <button class="custom-timer-btn secondary" id="customTimerResetBtn_${t.id}">↺ Reiniciar</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="custom-timers-wrap">
+      <h3>⏱️ Timers</h3>
+      <div class="custom-timers">${cardsHtml}</div>
     </div>
   `;
 
@@ -146,15 +158,4 @@ function renderPet(){
 
   let caption;
   if(stage === maxStage){
-    caption = `Pacus adulto! <b>Ciclo concluído em 31/08.</b> 🎉`;
-  } else if(canGrowToday){
-    caption = `<b>Dia completo!</b> O Pacus vai evoluir mais um pouco.`;
-  } else if(daysEquivalent === 0){
-    caption = `Complete um dia inteiro de tarefas pra começar a rachar o ovo.`;
-  } else {
-    const nextMilestone = milestones.find(([day]) => day > daysEquivalent);
-    if(nextMilestone){
-      const diasFaltando = nextMilestone[0] - daysEquivalent;
-      caption = `Faltam <b>${diasFaltando} ${diasFaltando===1?'dia':'dias'}</b> para virar <b>${nextMilestone[1]}</b>.`;
-    } else {
-      caption 
+    caption = `Pacus adulto! <b>Ciclo c
