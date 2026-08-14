@@ -1,4 +1,21 @@
- done' : '')
+0;
+
+    let progressMsg;
+    if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
+    else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
+    else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
+    else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
+
+    const ul = document.createElement('ul');
+    ul.className = 'tasks';
+    const nextSuggestedId = period.tasks.find(t => !t.external && !state.checkedToday[t.id])?.id;
+    period.tasks.forEach(task=>{
+      const li = document.createElement('li');
+      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
+      const isSuggested = task.id === nextSuggestedId;
+      const late = status === 'done' && isTaskLate(task, period.time);
+      li.className = 'task'
+        + (status === 'done' ? ' done' : '')
         + (status === 'na' ? ' na' : '')
         + (status === 'x' ? ' notdone' : '')
         + (isSuggested ? ' suggested' : '')
@@ -185,29 +202,3 @@ function renderBackupReminder(){
         <button id="backupReminderExportBtn">exportar agora</button>
         <button class="dismiss" id="backupReminderDismissBtn">lembrar depois</button>
       </span>
-    </div>
-  `;
-  document.getElementById('backupReminderExportBtn').addEventListener('click', ()=>{
-    document.getElementById('exportBtn').click();
-  });
-  document.getElementById('backupReminderDismissBtn').addEventListener('click', ()=>{
-    state.backupReminderDismissedFor = today;
-    saveState(state);
-    renderBackupReminder();
-  });
-}
-
-function renderWeeklyReview(){
-  const el = document.getElementById('weeklyReviewSection');
-  if(!el) return;
-
-  const days = [];
-  for(let i=6; i>=0; i--){
-    const d = new Date();
-    d.setDate(d.getDate()-i);
-    days.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'));
-  }
-
-  let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0;
-  days.forEach(iso=>{
-    const entry = iso === todayISO() ? liveTodayEntry

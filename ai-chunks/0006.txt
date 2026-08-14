@@ -1,4 +1,5 @@
-bel:"Quase abrindo" },
+bel:"Casca cedendo" },
+      { key:"ovo6", label:"Quase abrindo" },
       { key:"ovo7", label:"Casca bem rachada" },
       { key:"ovo8", label:"Pronto para nascer" },
       { key:"hatch1", label:"Começando a eclodir" },
@@ -135,7 +136,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))));
+  return markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))));
 }
 
 // Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
@@ -183,4 +184,3 @@ function applyPointRebalanceV2(cfg){
 // Reordena as tarefas com base em princípios de ciência comportamental:
 // 1) tarefa mais chata primeiro ("eat the frog" — vontade está mais alta
 //    no início do bloco); 2) tarefas de higiene em sequência (menos troca
-//    de contexto); 3) tarefa de foco cognitivo com a mente ainda

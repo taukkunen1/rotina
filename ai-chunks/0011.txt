@@ -1,4 +1,25 @@
-inutes(t.id, isNaN(val) ? 0 : val);
+stom-timer-btn secondary" id="customTimerPauseBtn_${t.id}" ${running?'':'disabled'}>⏸️ Pausar</button>
+          <button class="custom-timer-btn secondary" id="customTimerResetBtn_${t.id}">↺ Reiniciar</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="custom-timers-wrap">
+      <h3>⏱️ Timers</h3>
+      <div class="custom-timers">${cardsHtml}</div>
+    </div>
+  `;
+
+  state.customTimers.forEach(t=>{
+    document.getElementById('customTimerLabel_'+t.id).addEventListener('change', e=>{
+      t.label = e.target.value.trim() || t.label;
+      saveState(state);
+    });
+    document.getElementById('customTimerSetBtn_'+t.id).addEventListener('click', ()=>{
+      const val = parseFloat(document.getElementById('customTimerMin_'+t.id).value);
+      setCustomTimerMinutes(t.id, isNaN(val) ? 0 : val);
     });
     document.getElementById('customTimerStartBtn_'+t.id).addEventListener('click', ()=> startCustomTimer(t.id));
     document.getElementById('customTimerPauseBtn_'+t.id).addEventListener('click', ()=> pauseCustomTimer(t.id));
@@ -141,26 +162,4 @@ function renderAchievementMural(){
   const cardsHtml = milestones.map(m=>`
     <div class="mural-card ${m.reached?'reached':''}">
       <div class="mural-stage">${m.label}</div>
-      <div class="mural-date">${m.reached ? formatDateBR(m.date) : '—'}</div>
-    </div>
-  `).join('');
-  el.innerHTML = `
-    <div class="achievement-mural">
-      <h3 class="block-title" style="color:var(--pink); margin-bottom:12px;">🏆 Mural de Conquistas do Pacus</h3>
-      <div class="mural-grid">${cardsHtml}</div>
-    </div>
-  `;
-}
-
-function renderPet(){
-  const el = document.getElementById('petSection');
-  const data = computePetStage();
-  const { stage, stageFloat, daysEquivalent, cycleDays, maxStage, canGrowToday } = data;
-  const stageInfo = CONFIG.pet.stages[stage];
-  const progressPct = Math.round((daysEquivalent/cycleDays)*100);
-
-  const milestones = [
-    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
-  ];
-  const milestoneHtml = milestones.map(([day,label])=>{
-    const active =
+      <div class="mural-date">${m

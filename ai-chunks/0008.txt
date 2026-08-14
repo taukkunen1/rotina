@@ -1,4 +1,29 @@
-etCompletedDays[state.petCompletedDays.length - 1]
+etCompletedDays = [];
+
+  Object.keys(hairByDay).forEach(iso => {
+    const tasks = allTasks(iso);
+    const total = tasks.length;
+    const rawPoints = tasks.reduce((sum, task) => sum + (Number(task.pts) || 0), 0);
+    const penalty = pointsPenaltyByDay[iso] || 0;
+    const netPoints = Math.max(0, rawPoints - penalty);
+
+    state.history[iso] = {
+      done: total,
+      total: total,
+      pointsEarnedThatDay: netPoints,
+      perfect: true,
+      screenMinutes: CONFIG.perfectDayBonusMinutes || 30,
+      periodsCompleted: 3,
+      hair: hairByDay[iso],
+    };
+    state.hairByDate[iso] = hairByDay[iso];
+
+    if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
+  });
+
+  state.petCompletedDays.sort();
+  state.petLastCompletionISO = state.petCompletedDays.length
+    ? state.petCompletedDays[state.petCompletedDays.length - 1]
     : null;
 
   // saldo confirmado até 12/08 — hoje (13/08) ainda não foi jogado
@@ -169,24 +194,4 @@ async function doAutoPush(){
     };
     const res = await fetch(DATA_ENDPOINT, {
       method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify(payload)
-    });
-    const result = await res.json();
-    if(result.ok){
-      state.driveRevision = Number(result.revision)||state.driveRevision;
-      state.driveLastSyncISO = todayISO();
-      state.driveConflictCount = 0;
-      try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
-      renderDriveSync();
-      return;
-    }
-    if(result.conflict && result.data){
-      state.driveConflictCount = (Number(state.driveConflictCount)||0)+1;
-      const server = result.data;
-      const merged = mergeRemoteData(server);
-      CONFIG = merged.config;
-      state = merged.state;
-      state.driveRevision = Number(result.revision)||Number(server.state?.driveRevision)||0;
-      state.driveLastSyncISO = todayISO();
-     
+      headers:{'Content-Type':

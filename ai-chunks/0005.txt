@@ -120,10 +120,10 @@ const DEFAULT_CONFIG = {
     tarde: {
       label: "Tarde", time: "12:00 – 18:00",
       tasks: [
-        { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h" },
+        { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h", external:true },
         { id:"t3", txt:"Escovar os dentes", pts:2, sub:"até às 18h" },
         { id:"t5", txt:"Arrumar a mochila", pts:2, sub:"até às 18h" },
-        { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h" },
+        { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h", external:true },
         { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h" },
       ]
     },
@@ -131,7 +131,7 @@ const DEFAULT_CONFIG = {
       label: "Noite", time: "18:00 – 22:00",
       tasks: [
         { id:"n5", txt:"Arrumar a bagunça", pts:7, fullPenalty:true, sub:"até às 22h" },
-        { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h" },
+        { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h", external:true },
         { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4 },
         { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h" },
         { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" },
@@ -183,5 +183,4 @@ const DEFAULT_CONFIG = {
       { key:"ovo2", label:"Rachadura inicial" },
       { key:"ovo3", label:"Rachando" },
       { key:"ovo4", label:"Mais rachaduras" },
-      { key:"ovo5", label:"Casca cedendo" },
-      { key:"ovo6", la
+      { key:"ovo5", la

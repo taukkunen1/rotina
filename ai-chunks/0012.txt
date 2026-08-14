@@ -1,4 +1,26 @@
- daysEquivalent >= day;
+.reached ? formatDateBR(m.date) : '—'}</div>
+    </div>
+  `).join('');
+  el.innerHTML = `
+    <div class="achievement-mural">
+      <h3 class="block-title" style="color:var(--pink); margin-bottom:12px;">🏆 Mural de Conquistas do Pacus</h3>
+      <div class="mural-grid">${cardsHtml}</div>
+    </div>
+  `;
+}
+
+function renderPet(){
+  const el = document.getElementById('petSection');
+  const data = computePetStage();
+  const { stage, stageFloat, daysEquivalent, cycleDays, maxStage, canGrowToday } = data;
+  const stageInfo = CONFIG.pet.stages[stage];
+  const progressPct = Math.round((daysEquivalent/cycleDays)*100);
+
+  const milestones = [
+    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
+  ];
+  const milestoneHtml = milestones.map(([day,label])=>{
+    const active = daysEquivalent >= day;
     const current = stage >= day && (stage === day || (stage > day && day === 23));
     return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label} <small>dia ${day}</small></span>`;
   }).join('');
@@ -170,21 +192,4 @@ function render(){
     const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
     const doneCount = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
     const remaining = applicable.length - doneCount;
-    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
-
-    let progressMsg;
-    if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
-    else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
-    else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
-    else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
-
-    const ul = document.createElement('ul');
-    ul.className = 'tasks';
-    const nextSuggestedId = period.tasks.find(t => !state.checkedToday[t.id])?.id;
-    period.tasks.forEach(task=>{
-      const li = document.createElement('li');
-      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
-      const isSuggested = task.id === nextSuggestedId;
-      const late = status === 'done' && isTaskLate(task, period.time);
-      li.className = 'task'
-        + (status === 'done' ? '
+    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 
