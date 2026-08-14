@@ -1210,17 +1210,6 @@
 
 <span class="points-delta" id="pointsDelta"></span>
 
-<div class="overlay" id="siteLockOverlay" style="z-index:500;">
-  <div class="editor" style="max-width:340px; text-align:center;">
-    <div style="font-size:2.5rem; margin-bottom:6px;">🔒</div>
-    <h2 style="font-family:'Segoe Print','Bradley Hand',cursive; font-weight:normal; color:var(--yellow); margin:0 0 14px;">Rotina do Hector</h2>
-    <input type="password" inputmode="numeric" id="siteLockInput" placeholder="Senha" maxlength="12"
-      style="width:100%; text-align:center; font-size:1.1rem; letter-spacing:3px; background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--chalk); border-radius:8px; padding:10px; font-family:inherit; margin-bottom:12px;">
-    <button class="btn save" id="siteLockBtn" style="width:100%;">entrar</button>
-    <div id="siteLockError" style="color:var(--red); font-size:.78rem; margin-top:10px; min-height:1em;"></div>
-  </div>
-</div>
-
 <div class="board-frame">
   <div class="board-inner">
 
@@ -1433,10 +1422,6 @@
       <div class="edit-row">
         <input type="text" inputmode="numeric" id="editorPinInput" placeholder="ex: 1234 (deixe vazio pra não pedir PIN)" maxlength="8">
       </div>
-      <div class="hint" style="margin-top:12px;">Senha pra abrir o site inteiro — pedida uma vez por sessão do navegador.</div>
-      <div class="edit-row">
-        <input type="text" inputmode="numeric" id="sitePinInput" placeholder="ex: 150402 (deixe vazio pra não pedir senha)" maxlength="12">
-      </div>
     </div>
 
     <div class="editor-footer">
@@ -1448,15 +1433,6 @@
 </div>
 
 <script>
-/* ---------- trava de acesso ao site (roda antes de tudo, pra não dar
-   nem uma piscada do conteúdo antes de pedir a senha) ---------- */
-const SITE_LOCK_SESSION_KEY = 'hector_rotina_site_unlocked_v1';
-let siteAlreadyUnlocked = false;
-try{ siteAlreadyUnlocked = sessionStorage.getItem(SITE_LOCK_SESSION_KEY) === '1'; }catch(e){}
-if(!siteAlreadyUnlocked){
-  document.getElementById('siteLockOverlay').classList.add('open');
-}
-
 /* =========================================================================
    DEFAULT_CONFIG só é usado da primeira vez que o arquivo abre (sem nada
    salvo ainda no navegador). Depois disso tudo é editado pela tela e fica
@@ -1468,34 +1444,34 @@ const DEFAULT_CONFIG = {
       label: "Manhã", time: "8:20 – 12:00",
       tasks: [
         { id:"m1", txt:"Arrumar a cama", pts:2, sub:"até às 12h" },
-        { id:"m2", txt:"Beber 1 copo de água", pts:1, sub:"até às 12h" },
-        { id:"m3", txt:"Escovar os dentes", pts:2, sub:"até às 12h" },
         { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h" },
-        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:5 },
+        { id:"m3", txt:"Escovar os dentes", pts:2, sub:"até às 12h" },
         { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 12h" },
+        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:5 },
         { id:"m8", txt:"Arrumar a mochila", pts:2, sub:"até às 12h" },
         { id:"t_djf7hbb", txt:"Levar Lixo", pts:4, sub:"até às 12h" },
+        { id:"m2", txt:"Beber 1 copo de água", pts:1, sub:"até às 12h" },
       ]
     },
     tarde: {
       label: "Tarde", time: "12:00 – 18:00",
       tasks: [
-        { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h" },
         { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h" },
         { id:"t3", txt:"Escovar os dentes", pts:2, sub:"até às 18h" },
-        { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h" },
         { id:"t5", txt:"Arrumar a mochila", pts:2, sub:"até às 18h" },
+        { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h" },
+        { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h" },
       ]
     },
     noite: {
       label: "Noite", time: "18:00 – 22:00",
       tasks: [
-        { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h" },
-        { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h" },
-        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4 },
         { id:"n5", txt:"Arrumar a bagunça", pts:7, fullPenalty:true, sub:"até às 22h" },
+        { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h" },
+        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4 },
         { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h" },
         { id:"t_ci3brlt", txt:"Ler Livro", pts:4, sub:"3 capítulo do livro de casa (até às 22h)" },
+        { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h" },
       ]
     },
   },
@@ -1504,9 +1480,6 @@ const DEFAULT_CONFIG = {
   periodsWeekend: null,
   // PIN opcional pra travar o botão "Editar tudo" — vazio = sem trava
   editorPin: "",
-  // Senha opcional pra travar o acesso ao site inteiro — vazio = sem trava.
-  // Pedida uma vez por sessão do navegador (fica destravado até fechar a aba).
-  sitePin: "150402",
   badHabits: [],
   rewards: [
     { id:"r1", txt:"1 hora de tela", cost:90, grantsHours:1, maxPerDay:2 },
@@ -1680,10 +1653,10 @@ function stripLegacyHairTask(cfg){
   if(cfg && cfg.periodsWeekend && cfg.periodsWeekend.noite && Array.isArray(cfg.periodsWeekend.noite.tasks)){
     cfg.periodsWeekend.noite.tasks = cfg.periodsWeekend.noite.tasks.filter(t => t.id !== 't_gzba4xs');
   }
-  // senha do site: se ainda não existe (configs de antes dessa função
-  // existir), aplica a senha pedida uma vez.
-  if(cfg && cfg.sitePin === undefined) cfg.sitePin = "150402";
-  return applyPointRebalanceV2(applyPointRebalanceV1(cfg));
+  // senha do site: recurso removido — limpa de qualquer config que já
+  // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
+  if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
+  return applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)));
 }
 
 // Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
@@ -1725,6 +1698,37 @@ function applyPointRebalanceV2(cfg){
     }
   });
   cfg.pointRebalanceV2Applied = true;
+  return cfg;
+}
+
+// Reordena as tarefas com base em princípios de ciência comportamental:
+// 1) tarefa mais chata primeiro ("eat the frog" — vontade está mais alta
+//    no início do bloco); 2) tarefas de higiene em sequência (menos troca
+//    de contexto); 3) tarefa de foco cognitivo com a mente ainda
+//    descansada; 4) tarefas de preparar-pra-sair por último; 5) tarefa
+//    fácil (beber água) fechando o bloco — "efeito do final" ajuda a
+//    criar associação positiva com a rotina.
+const TASK_ORDER_V1 = {
+  manha: ["m1","m4","m3","m7","m5","m8","t_djf7hbb","m2"],
+  tarde: ["t2","t3","t5","t4","t1"],
+  noite: ["n5","n1","n4","n6","t_ci3brlt","n2"],
+};
+function applyTaskOrderV1(cfg){
+  if(!cfg || cfg.taskOrderV1Applied) return cfg;
+  ['periods','periodsWeekend'].forEach(key=>{
+    const p = cfg[key];
+    if(!p) return;
+    ['manha','tarde','noite'].forEach(period=>{
+      if(p[period] && Array.isArray(p[period].tasks)){
+        const order = TASK_ORDER_V1[period];
+        const tasks = p[period].tasks;
+        const known = order.map(id => tasks.find(t=>t.id===id)).filter(Boolean);
+        const extra = tasks.filter(t => !order.includes(t.id));
+        p[period].tasks = [...known, ...extra];
+      }
+    });
+  });
+  cfg.taskOrderV1Applied = true;
   return cfg;
 }
 
@@ -3219,7 +3223,6 @@ function openEditor(){
   };
 
   document.getElementById('editorPinInput').value = draft.editorPin || '';
-  document.getElementById('sitePinInput').value = draft.sitePin || '';
   document.getElementById('gameLimitInput').value = draft.screenDailyLimitHours ?? 2;
   if(!Array.isArray(draft.schedule)) draft.schedule = [];
   renderEditorSchedule();
@@ -3461,9 +3464,6 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
 
   const pinVal = document.getElementById('editorPinInput').value.trim();
   draft.editorPin = pinVal;
-
-  const sitePinVal = document.getElementById('sitePinInput').value.trim();
-  draft.sitePin = sitePinVal;
 
   const gameLimitVal = parseFloat(document.getElementById('gameLimitInput').value);
   draft.screenDailyLimitHours = isNaN(gameLimitVal) || gameLimitVal < 0 ? 2 : gameLimitVal;
@@ -3746,29 +3746,6 @@ document.getElementById('importFile').addEventListener('change', (e)=>{
   reader.readAsText(file);
   e.target.value = '';
 });
-
-/* ---------- desbloqueio do site ---------- */
-function trySiteUnlock(){
-  const input = document.getElementById('siteLockInput');
-  const errEl = document.getElementById('siteLockError');
-  const entered = input.value;
-  if(!CONFIG.sitePin || entered === CONFIG.sitePin){
-    try{ sessionStorage.setItem(SITE_LOCK_SESSION_KEY, '1'); }catch(e){}
-    document.getElementById('siteLockOverlay').classList.remove('open');
-    errEl.textContent = '';
-  } else {
-    errEl.textContent = 'Senha incorreta.';
-    input.value = '';
-    input.focus();
-  }
-}
-document.getElementById('siteLockBtn').addEventListener('click', trySiteUnlock);
-document.getElementById('siteLockInput').addEventListener('keydown', e=>{
-  if(e.key === 'Enter') trySiteUnlock();
-});
-if(document.getElementById('siteLockOverlay').classList.contains('open')){
-  document.getElementById('siteLockInput').focus();
-}
 
 render();
 autoPullOnStartup();
