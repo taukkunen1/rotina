@@ -1,15 +1,4 @@
-tate.gameTimer.bonusSeconds || 0));
-  return base + bonus;
-}
-
-function addGameTimerBonusHours(hours){
-  if(!state.gameTimer.bonusSeconds) state.gameTimer.bonusSeconds = 0;
-  state.gameTimer.bonusSeconds += Math.round(hours * 3600);
-}
-
-function gameTimerSecondsUsedNow(){
-  const gt = state.gameTimer;
-  const running = gt.runningSince ? (Date.now() - gt.runningSince)/1000 : 0;
+ - gt.runningSince)/1000 : 0;
   return gt.usedSeconds + running;
 }
 
@@ -98,7 +87,7 @@ function renderGameTimer(){
   el.innerHTML = `
     <div class="game-timer">
       <h3>🎮 Tempo de Jogo</h3>
-      <div class="hint">Cota de ${CONFIG.screenDailyLimitHours || 2}h por dia (resgatar "1 hora de tela" na loja soma mais tempo hoje). É só apertar quando começar e quando parar de jogar.</div>
+      <div class="hint">Cota de ${CONFIG.screenDailyLimitHours || 2}h por dia.</div>
       <div class="game-timer-used" id="gameTimerUsed">${remaining > 0 ? `<b>${formatMinSec(remaining)}</b> restantes hoje` : `<b>tempo de hoje acabou</b>`}</div>
       <div class="game-timer-track"><div class="game-timer-fill ${used>=limit?'over-limit':''}" id="gameTimerBarFill" style="width:${pct}%"></div></div>
       <button class="game-timer-btn ${running?'running':''}" id="gameTimerToggleBtn">
@@ -241,4 +230,11 @@ function renderCustomTimers(){
     return `
       <div class="custom-timer ${t.finished?'finished':''}">
         <input type="text" class="custom-timer-label" id="customTimerLabel_${t.id}" value="${escapeAttr(t.label)}" maxlength="20">
-        <div class="custom-timer-display" id="
+        <div class="custom-timer-display" id="customTimerDisplay_${t.id}">${formatHMS(remaining)}</div>
+        <div class="custom-timer-setrow">
+          <input type="number" min="0" step="1" id="customTimerMin_${t.id}" value="${totalMin}" ${running?'disabled':''}>
+          <span>min</span>
+          <button class="custom-timer-btn secondary" id="customTimerSetBtn_${t.id}" ${running?'disabled':''}>definir</button>
+        </div>
+        <div class="custom-timer-btns">
+          <button class="cus

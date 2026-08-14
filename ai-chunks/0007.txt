@@ -1,13 +1,4 @@
-epois. Cobre 09/08 a 12/08: todos os
-  // dias foram completos; dia 12 teve -10 Pacus Points por causa de uma
-  // briga na escola; saldo final confirmado até 12/08: 170 Pacus Points.
-  if(state.historyCorrectionV2Applied) return;
-
-  const hairByDay = {
-    "2026-08-09": "not-washed",
-    "2026-08-10": "washed",
-    "2026-08-11": "not-washed",
-    "2026-08-12": "washed",
+  "2026-08-12": "washed",
   };
   const pointsPenaltyByDay = {
     "2026-08-12": 10, // brigou na escola
@@ -192,4 +183,17 @@ let autoPushTimer = null;
 function scheduleAutoPush(){
   if(!APPS_SCRIPT_URL || suppressAutoPush) return;
   clearTimeout(autoPushTimer);
-  autoPushTimer = setTimeout(doAutoPush, 200
+  autoPushTimer = setTimeout(doAutoPush, 2000);
+}
+
+async function doAutoPush(){
+  if(!APPS_SCRIPT_URL) return;
+  try{
+    const payload = {
+      appVersion: APP_VERSION,
+      config: CONFIG,
+      state: state,
+      baseRevision: Number(state.driveRevision)||0,
+      clientRevision: Number(state.revision)||0,
+      clientUpdatedAt: state.updatedAt || new Date().toISOString(),
+      expo

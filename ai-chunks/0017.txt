@@ -1,20 +1,4 @@
-stringify(backup, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'rotina-hector-backup-' + todayISO() + '.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-
-  state.lastBackupISO = todayISO();
-  state.backupReminderDismissedFor = null;
-  saveState(state);
-  renderBackupReminder();
-});
-
-document.getElementById('importBtn').addEventListener('click', ()=>{
+ment.getElementById('importBtn').addEventListener('click', ()=>{
   document.getElementById('importFile').click();
 });
 document.getElementById('importFile').addEventListener('change', (e)=>{

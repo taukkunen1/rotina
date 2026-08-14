@@ -1,4 +1,4 @@
-assword" inputmode="numeric" id="siteLockInput" placeholder="Senha" maxlength="12"
+older="Senha" maxlength="12"
       style="width:100%; text-align:center; font-size:1.1rem; letter-spacing:3px; background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--chalk); border-radius:8px; padding:10px; font-family:inherit; margin-bottom:12px;">
     <button class="btn save" id="siteLockBtn" style="width:100%;">entrar</button>
     <div id="siteLockError" style="color:var(--red); font-size:.78rem; margin-top:10px; min-height:1em;"></div>
@@ -29,17 +29,12 @@ assword" inputmode="numeric" id="siteLockInput" placeholder="Senha" maxlength="1
 
       <section class="pet-section" id="petSection"></section>
 
-      <section class="block" id="gameTimerSection"></section>
-
-      <section class="block" id="customTimersSection"></section>
-
       <div id="weekendIndicator"></div>
       <div class="periods" id="periods"></div>
 
       <section class="hair-section" id="hairSection">
         <div class="hair-head">
           <div class="hair-title">🧴 Lavar o cabelo</div>
-          <div class="hair-note">Registro diário, sem interferir no dia perfeito</div>
         </div>
         <div class="hair-actions">
           <button type="button" class="hair-btn" id="hairWashedBtn">💧 Lavei o cabelo</button>
@@ -47,6 +42,10 @@ assword" inputmode="numeric" id="siteLockInput" placeholder="Senha" maxlength="1
         </div>
         <div class="hair-status" id="hairStatus">Hoje: ainda não registrado</div>
       </section>
+
+      <section class="block" id="gameTimerSection"></section>
+
+      <section class="block" id="customTimersSection"></section>
 
       <section class="block">
         <h3 class="block-title bad-title">✨ Pacus Points Extra</h3>
@@ -56,7 +55,7 @@ assword" inputmode="numeric" id="siteLockInput" placeholder="Senha" maxlength="1
       <section class="block">
         <h3 class="block-title reward-title">🎁 Loja de Recompensas</h3>
         <div class="rewards" id="rewards"></div>
-        <div style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;">1 Pacus Point ≈ R$0,06 · máximo acumulável: 1000 pontos (~R$60)</div>
+        <div style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;">1 Pacus Point ≈ R$0,06 · máximo: 1000 pontos (~R$60)</div>
       </section>
 
       <div class="log">
@@ -125,7 +124,7 @@ assword" inputmode="numeric" id="siteLockInput" placeholder="Senha" maxlength="1
           <option value="not-washed">○ Não lavou</option>
         </select>
       </div>
-      <div class="hint">Mudar "Pacus Points ganhos" ajusta automaticamente o saldo total de Pacus Points. O registro de cabelo não interfere no dia perfeito.</div>
+      <div class="hint">Mudar os pontos ajusta o saldo total automaticamente.</div>
     </div>
 
     <div class="editor-footer">
@@ -193,4 +192,9 @@ assword" inputmode="numeric" id="siteLockInput" placeholder="Senha" maxlength="1
     <div class="editor-section">
       <h3>🎁 Recompensas</h3>
       <div id="editRewards"></div>
-      <button class
+      <button class="add-row-btn" data-add="reward">+ adicionar recompensa</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>📅 Compromissos Fixos</h3>
+      <div class="hint">Aparecem na lista do dia certo e valem pontos como qualquer ta

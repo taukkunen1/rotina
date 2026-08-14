@@ -1,17 +1,4 @@
-0);
-}
-
-async function doAutoPush(){
-  if(!APPS_SCRIPT_URL) return;
-  try{
-    const payload = {
-      appVersion: APP_VERSION,
-      config: CONFIG,
-      state: state,
-      baseRevision: Number(state.driveRevision)||0,
-      clientRevision: Number(state.revision)||0,
-      clientUpdatedAt: state.updatedAt || new Date().toISOString(),
-      exportedAt: new Date().toISOString()
+rtedAt: new Date().toISOString()
     };
     const res = await fetch(DATA_ENDPOINT, {
       method:'POST',
@@ -202,4 +189,15 @@ let gameTimerTickHandle = null;
 
 function gameTimerDailyLimitSeconds(){
   const base = Math.round((CONFIG.screenDailyLimitHours || 2) * 3600);
-  const bonus = Math.round((s
+  const bonus = Math.round((state.gameTimer.bonusSeconds || 0));
+  return base + bonus;
+}
+
+function addGameTimerBonusHours(hours){
+  if(!state.gameTimer.bonusSeconds) state.gameTimer.bonusSeconds = 0;
+  state.gameTimer.bonusSeconds += Math.round(hours * 3600);
+}
+
+function gameTimerSecondsUsedNow(){
+  const gt = state.gameTimer;
+  const running = gt.runningSince ? (Date.now()

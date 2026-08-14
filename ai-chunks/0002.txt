@@ -133,7 +133,6 @@
   }
   .hair-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
   .hair-title{font-size:1rem;color:var(--chalk);font-weight:bold;}
-  .hair-note{font-size:.7rem;color:var(--chalk-dim);}
   .hair-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   .hair-btn{border:1px solid var(--line);background:rgba(255,255,255,.035);color:var(--chalk);border-radius:9px;padding:9px 10px;font:inherit;font-size:.78rem;cursor:pointer;}
   .hair-btn.active-washed{background:rgba(95,216,117,.22);border-color:var(--green);color:var(--green);font-weight:bold;}
@@ -254,4 +253,8 @@
     margin-bottom:10px;
     display:flex;
     align-items:center;
-    justify-content:spa
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .b

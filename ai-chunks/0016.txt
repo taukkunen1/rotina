@@ -1,13 +1,4 @@
-entService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
-      } catch(err) {}
-    }
-    return ContentService.createTextOutput(JSON.stringify({error:'not_found'})).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  var appFiles = DriveApp.getFilesByName('rotina-hector.html');
-  if (!appFiles.hasNext()) appFiles = DriveApp.getFilesByName('rotina-hector-app.html');
-  if (appFiles.hasNext()) {
-    return HtmlService.createHtmlOutput(appFiles.next().getBlob().getDataAsString())
+eHtmlOutput(appFiles.next().getBlob().getDataAsString())
       .setTitle('Rotina do Hector')
       .addMetaTag('viewport','width=device-width, initial-scale=1');
   }
@@ -161,4 +152,20 @@ async function driveLoad(){
 /* ===================== BACKUP LOCAL (exportar / importar) ===================== */
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const backup = { config: CONFIG, state: state, exportedAt: new Date().toISOString() };
-  const blob = new Blob([JSON.
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'rotina-hector-backup-' + todayISO() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  state.lastBackupISO = todayISO();
+  state.backupReminderDismissedFor = null;
+  saveState(state);
+  renderBackupReminder();
+});
+
+docu
