@@ -112,8 +112,60 @@ function applyHistoryCorrection_v2(state){
   state.historyCorrectionV2Applied = true;
 }
 
+// Correção pontual pra 13/08 e 14/08: tudo foi feito EXCETO "Arrumar a
+// bagunça" (não fez em nenhum dos dois dias) — que tem penalidade cheia
+// (perde os 7 pontos, não a metade). Mesmo não sendo dia 100% perfeito,
+// o Pacus continua contando o dia pro crescimento (crescimento não exige
+// perfeição, só engajamento real). Roda só uma vez.
+function applyHistoryCorrection_v3(state){
+  if(state.historyCorrectionV3Applied) return;
+
+  const days = ["2026-08-13", "2026-08-14"];
+  if(!state.history) state.history = {};
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+
+  let totalDelta = 0;
+  days.forEach(iso=>{
+    const tasks = allTasks(iso);
+    const total = tasks.length;
+    const bagunca = tasks.find(t=>t.id === 'n5');
+    const penalty = bagunca ? (bagunca.fullPenalty ? bagunca.pts : Math.ceil(bagunca.pts/2)) : 0;
+    const rawPoints = tasks.reduce((sum, t) => sum + (Number(t.pts) || 0), 0);
+    // pontos de todas as tarefas MENOS os pontos da bagunça (não feita) MENOS a penalidade dela
+    const pointsEarnedThatDay = Math.max(0, (rawPoints - (bagunca ? bagunca.pts : 0)) - penalty);
+    const done = bagunca ? total - 1 : total;
+
+    const oldPoints = (state.history[iso] && state.history[iso].pointsEarnedThatDay) || 0;
+    totalDelta += pointsEarnedThatDay - oldPoints;
+
+    const hair = (state.history[iso] && state.history[iso].hair) || (state.hairByDate && state.hairByDate[iso]) || null;
+
+    state.history[iso] = {
+      done,
+      total,
+      pointsEarnedThatDay,
+      perfect: false, // "Arrumar a bagunça" ficou de fora
+      screenMinutes: 0,
+      periodsCompleted: 2, // manhã e tarde completos; noite não (faltou a bagunça)
+      hair,
+    };
+
+    // crescimento do Pacus não exige dia perfeito — só engajamento real
+    if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
+  });
+
+  state.petCompletedDays.sort();
+  state.petLastCompletionISO = state.petCompletedDays.length
+    ? state.petCompletedDays[state.petCompletedDays.length - 1]
+    : null;
+
+  state.totalPoints = Math.max(0, (Number(state.totalPoints)||0) + totalDelta);
+  state.historyCorrectionV3Applied = true;
+}
+
 function seedKnownPerfectDays(state){
   applyHistoryCorrection_v2(state);
+  applyHistoryCorrection_v3(state);
 }
 
 function reconcileState(state){
@@ -134,54 +186,4 @@ function reconcileState(state){
   if(!state.taskDoneAt || typeof state.taskDoneAt !== "object") state.taskDoneAt = {};
   if(!state.customTaskOrder || typeof state.customTaskOrder !== "object") state.customTaskOrder = {};
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
-    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
-  }
-  if(state.gameTimer.bonusSeconds === undefined) state.gameTimer.bonusSeconds = 0;
-  if(!state.gameTimer.redemptions || typeof state.gameTimer.redemptions !== "object") state.gameTimer.redemptions = {};
-  if(!Array.isArray(state.customTimers) || state.customTimers.length !== 2){
-    state.customTimers = [
-      { id:"ct1", label:"Timer 1", totalSeconds:300, remainingSeconds:300, runningSince:null, finished:false },
-      { id:"ct2", label:"Timer 2", totalSeconds:300, remainingSeconds:300, runningSince:null, finished:false },
-    ];
-  }
-  state.customTimers.forEach(t=>{
-    if(t.totalSeconds === undefined) t.totalSeconds = 300;
-    if(t.remainingSeconds === undefined) t.remainingSeconds = t.totalSeconds;
-    if(t.runningSince === undefined) t.runningSince = null;
-    if(t.finished === undefined) t.finished = false;
-  });
-  if(state.historyCorrectionV2Applied === undefined) state.historyCorrectionV2Applied = false;
-
-  seedKnownPerfectDays(state);
-
-  // limpeza: remove qualquer registro de histórico com data no futuro (só pode
-  // ter vindo de uma sessão anterior de teste de data) — evita que isso
-  // inflacione o crescimento do Pacus ou bagunce as tabelas depois
-  let cleaned = false;
-  if(!TEST_DATE_OVERRIDE){
-    const realToday = todayISO();
-    Object.keys(state.history).forEach(iso=>{
-      if(iso > realToday){ delete state.history[iso]; cleaned = true; }
-    });
-    if(state.lastDate > realToday){ state.lastDate = realToday; cleaned = true; }
-  }
-
-  if(state.lastDate !== todayISO()){
-    // fecha o dia anterior no histórico antes de zerar o checklist
-    closeOutDay(state, state.lastDate);
-    state.checkedToday = {};
-    state.taskDoneAt = {};
-    state.log = [];
-    state.lastDate = todayISO();
-    // zera o tempo de jogo usado — é uma cota que renova todo dia
-    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
-    saveState(state);
-  } else if(cleaned){
-    saveState(state);
-  }
-  return state;
-}
-
-function periodsCompletedFrom(checkedMap, dateISO){
-  let count = 0;
-  Object.values(getPeriodsFor(dateISO || tod
+    state.gameTimer = { date: toda

@@ -1,4 +1,79 @@
-Id('petSection');
+="2.5" fill="none" stroke-linecap="round"/>
+        <circle cx="89" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/><circle cx="131" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/>
+      </g>
+    </g>
+  </svg>`;
+}
+
+function buildPetVisual(stageFloat){
+  if(stageFloat < 9) return buildEggSVG(stageFloat/8);
+  return buildPacusSVG(stageFloat);
+}
+
+// Miniatura do Pacus fixa no canto — fica visível quando a seção principal
+// dele sai da tela (ex: rolando pra baixo pra marcar tarefas), assim ele
+// nunca some de vista de verdade. Um toque nela rola de volta pro topo.
+let miniPacusObserverStarted = false;
+function renderMiniPacus(stageFloat){
+  const el = document.getElementById('miniPacus');
+  if(!el) return;
+  el.innerHTML = buildPetVisual(stageFloat);
+  startMiniPacusObserver();
+}
+function startMiniPacusObserver(){
+  if(miniPacusObserverStarted) return;
+  const target = document.getElementById('petSection');
+  const mini = document.getElementById('miniPacus');
+  if(!target || !mini || !('IntersectionObserver' in window)) return;
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      mini.classList.toggle('visible', !entry.isIntersecting);
+    });
+  }, { threshold: 0 });
+  observer.observe(target);
+  mini.addEventListener('click', ()=>{
+    target.scrollIntoView({ behavior:'smooth', block:'center' });
+  });
+  miniPacusObserverStarted = true;
+}
+
+// Pra cada marco de evolução, descobre em que dia ele foi alcançado (com
+// base na lista de dias completos, em ordem) — usado no mural de conquistas.
+function getMilestoneDates(){
+  const cycle = getPetCycle();
+  const sorted = [...(state.petCompletedDays||[])]
+    .filter(d => d >= cycle.startISO && d <= cycle.endISO)
+    .sort();
+  const milestones = [
+    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
+  ];
+  return milestones.map(([day,label])=>{
+    if(day === 0) return { label, day, date: cycle.startISO, reached: true };
+    const reached = sorted.length >= day;
+    return { label, day, date: reached ? sorted[day-1] : null, reached };
+  });
+}
+
+function renderAchievementMural(){
+  const el = document.getElementById('achievementMuralSection');
+  if(!el) return;
+  const milestones = getMilestoneDates();
+  const cardsHtml = milestones.map(m=>`
+    <div class="mural-card ${m.reached?'reached':''}">
+      <div class="mural-stage">${m.label}</div>
+      <div class="mural-date">${m.reached ? formatDateBR(m.date) : '—'}</div>
+    </div>
+  `).join('');
+  el.innerHTML = `
+    <div class="achievement-mural">
+      <h3 class="block-title" style="color:var(--pink); margin-bottom:12px;">🏆 Mural de Conquistas do Pacus</h3>
+      <div class="mural-grid">${cardsHtml}</div>
+    </div>
+  `;
+}
+
+function renderPet(){
+  const el = document.getElementById('petSection');
   const data = computePetStage();
   const { stage, stageFloat, daysEquivalent, cycleDays, maxStage, canGrowToday } = data;
   const stageInfo = CONFIG.pet.stages[stage];
@@ -19,7 +94,7 @@ Id('petSection');
   if(stage === maxStage){
     caption = `Pacus adulto! <b>Ciclo concluído em 31/08.</b> 🎉`;
   } else if(canGrowToday){
-    caption = `<b>Dia completo!</b> O Pacus vai evoluir mais um pouco.`;
+    caption = `<b>Boa!</b> O Pacus vai evoluir mais um pouco hoje.`;
   } else if(daysEquivalent === 0){
     caption = `Complete um dia inteiro de tarefas pra começar a rachar o ovo.`;
   } else {
@@ -115,79 +190,4 @@ function buildStreakStrip(){
     if(isToday) cls += ' today';
     return `<span class="${cls}" title="${formatDateBR(iso)}"><span class="streak-letter">${letter}</span></span>`;
   }).join('');
-  return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${cells}</div>`;
-}
-
-function liveTodayEntry(){
-  const tasks = allTasks();
-  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  const total = applicable.length;
-  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-  const perfect = total>0 && done===total;
-  return { total, done, perfect };
-}
-
-function getHairStatus(dateISO){
-  return state.hairByDate && state.hairByDate[dateISO] ? state.hairByDate[dateISO] : null;
-}
-
-function setHairStatus(status){
-  const iso = todayISO();
-  if(!state.hairByDate) state.hairByDate = {};
-  state.hairByDate[iso] = status;
-  if(!state.history) state.history = {};
-  if(state.history[iso]) state.history[iso].hair = status;
-  saveState(state);
-  renderHair();
-  renderHistory();
-}
-
-function renderHair(){
-  const section = document.getElementById('hairSection');
-  if(!section) return;
-  const status = getHairStatus(todayISO());
-  const washedBtn = document.getElementById('hairWashedBtn');
-  const notWashedBtn = document.getElementById('hairNotWashedBtn');
-  const statusEl = document.getElementById('hairStatus');
-  washedBtn.classList.toggle('active-washed', status === 'washed');
-  notWashedBtn.classList.toggle('active-notwashed', status === 'not-washed');
-  statusEl.innerHTML = status === 'washed'
-    ? 'Hoje: <b class="hair-history-washed">💧 cabelo lavado</b>'
-    : status === 'not-washed'
-      ? 'Hoje: <b class="hair-history-notwashed">○ não lavou</b>'
-      : 'Hoje: ainda não registrado';
-}
-
-function render(){
-  document.getElementById('totalPoints').textContent = state.totalPoints;
-
-  renderPet();
-  renderHair();
-  renderGameTimer();
-  renderCustomTimers();
-
-  const weekendEl = document.getElementById('weekendIndicator');
-  if(weekendEl){
-    weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
-      ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
-      : '';
-  }
-
-  const periodsEl = document.getElementById('periods');
-  periodsEl.innerHTML = '';
-  Object.entries(getPeriodsFor(todayISO())).forEach(([key, period])=>{
-    const div = document.createElement('div');
-    div.className = 'period ' + key;
-
-    const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    const doneCount = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-    const remaining = applicable.length - doneCount;
-    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
-
-    let progressMsg;
-    if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
-    else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
-    else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
-    else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
-
-    const ul = document.createEl
+  return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${

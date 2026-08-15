@@ -1,4 +1,72 @@
-dHabits = draft.badHabits.filter(h=>h.txt.trim() !== '');
+lt;');
+}
+
+document.querySelectorAll('.add-row-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const kind = btn.getAttribute('data-add');
+    const weekendMap = {manhaWeekend:'manha', tardeWeekend:'tarde', noiteWeekend:'noite'};
+    const weekendElMap = {manhaWeekend:'editManhaWeekend', tardeWeekend:'editTardeWeekend', noiteWeekend:'editNoiteWeekend'};
+    if(kind === 'manha' || kind === 'tarde' || kind === 'noite'){
+      draft.periods[kind].tasks.push({ id: uid('t'), txt:'', pts:1, sub:'' });
+      renderEditorPeriod(kind, {manha:'editManha', tarde:'editTarde', noite:'editNoite'}[kind]);
+    } else if(weekendMap[kind]){
+      const periodKey = weekendMap[kind];
+      if(!draft.periodsWeekend) return;
+      draft.periodsWeekend[periodKey].tasks.push({ id: uid('we'), txt:'', pts:1, sub:'' });
+      renderEditorPeriod(periodKey, weekendElMap[kind], draft.periodsWeekend);
+    } else if(kind === 'bad'){
+      draft.badHabits.push({ id: uid('b'), txt:'', pts:1 });
+      renderEditorBad();
+    } else if(kind === 'reward'){
+      draft.rewards.push({ id: uid('r'), txt:'', cost:10 });
+      renderEditorRewards();
+    } else if(kind === 'schedule'){
+      draft.schedule.push({ id: uid('sc'), label:'', days:[], start:'09:00', end:'10:00', period:'tarde', pts:3 });
+      renderEditorSchedule();
+    }
+  });
+});
+
+document.getElementById('celebrationCloseBtn').addEventListener('click', closeEvolutionCelebration);
+document.getElementById('evolutionCelebration').addEventListener('click', e=>{
+  if(e.target.id === 'evolutionCelebration') closeEvolutionCelebration();
+});
+
+document.getElementById('editBtn').addEventListener('click', ()=>{
+  if(CONFIG.editorPin){
+    const entered = prompt('Digite o PIN pra editar:');
+    if(entered === null) return; // cancelou
+    if(entered !== CONFIG.editorPin){
+      alert('PIN incorreto.');
+      return;
+    }
+  }
+  adultUnlocked = true;
+  openEditor();
+  render();
+});
+document.getElementById('adultTestBtn').addEventListener('click', ()=>{
+  closeEditor();
+  testPanelOpen = !testPanelOpen;
+  renderTestPanel();
+});
+document.getElementById('closeBtn').addEventListener('click', closeEditor);
+document.getElementById('cancelBtn').addEventListener('click', closeEditor);
+document.getElementById('overlay').addEventListener('click', e=>{
+  if(e.target.id === 'overlay') closeEditor();
+});
+
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  // limpa linhas vazias (sem nome) antes de salvar
+  ['manha','tarde','noite'].forEach(k=>{
+    draft.periods[k].tasks = draft.periods[k].tasks.filter(t=>t.txt.trim() !== '');
+  });
+  if(draft.periodsWeekend){
+    ['manha','tarde','noite'].forEach(k=>{
+      draft.periodsWeekend[k].tasks = draft.periodsWeekend[k].tasks.filter(t=>t.txt.trim() !== '');
+    });
+  }
+  draft.badHabits = draft.badHabits.filter(h=>h.txt.trim() !== '');
   draft.rewards = draft.rewards.filter(r=>r.txt.trim() !== '');
   draft.schedule = (draft.schedule || []).filter(s=>s.label.trim() !== '' && s.days.length > 0);
 
@@ -112,67 +180,4 @@ function doPost(e) {
   var baseRevision = Number(incoming.baseRevision || 0);
 
   if (currentRevision > 0 && baseRevision !== currentRevision) {
-    return ContentService.createTextOutput(JSON.stringify({conflict:true, revision:currentRevision, data:current})).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  var nextRevision = currentRevision + 1;
-  incoming.revision = nextRevision;
-  incoming.serverUpdatedAt = new Date().toISOString();
-  if (incoming.state) incoming.state.driveRevision = nextRevision;
-  file.setContent(JSON.stringify(incoming, null, 2));
-
-  var backupDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'America/Sao_Paulo', 'yyyy-MM-dd');
-  var backupName = 'rotina-hector-backup-' + backupDate + '.json';
-  var backups = DriveApp.getFilesByName(backupName);
-  if (!backups.hasNext()) {
-    DriveApp.createFile(backupName, JSON.stringify(incoming, null, 2), MimeType.PLAIN_TEXT);
-  }
-
-  var allBackups = [];
-  var it = DriveApp.getFiles();
-  while(it.hasNext()) {
-    var f = it.next();
-    if (/^rotina-hector-backup-\d{4}-\d{2}-\d{2}[.]json$/.test(f.getName())) allBackups.push(f);
-  }
-  allBackups.sort(function(a,b){ return b.getDateCreated().getTime() - a.getDateCreated().getTime(); });
-  for (var i=30; i<allBackups.length; i++) allBackups[i].setTrashed(true);
-
-  return ContentService.createTextOutput(JSON.stringify({ok:true, revision:nextRevision})).setMimeType(ContentService.MimeType.JSON);
-}`;
-
-function renderDriveSync(){
-  const el = document.getElementById('driveSyncSection');
-  if(!el) return;
-  if(!adultUnlocked){ el.innerHTML=''; return; }
-
-  const configured = !!APPS_SCRIPT_URL;
-
-  let statusHtml, actionsHtml;
-
-  if(!configured){
-    statusHtml = `Ainda não configurado neste arquivo.`;
-    actionsHtml = `
-      <button class="icon-btn" id="driveSetupInfoBtn">como configurar</button>
-      <button class="icon-btn" id="driveCopyCodeBtn">📋 ver código do Apps Script</button>
-    `;
-  } else {
-    statusHtml = state.driveLastSyncISO
-      ? `Sincronizado ✓ — ${formatDateBR(state.driveLastSyncISO)}${state.driveConflictCount ? ` · ${state.driveConflictCount} conflito(s) resolvido(s)` : ''}.`
-      : `Sincronização automática ativa — aguardando primeira sincronização.`;
-    actionsHtml = `
-      <button class="icon-btn primary" id="driveSaveBtn">☁️⬆️ forçar salvar agora</button>
-      <button class="icon-btn primary" id="driveLoadBtn">☁️⬇️ forçar carregar agora</button>
-    `;
-  }
-
-  el.innerHTML = `
-    <div class="drive-sync">
-      <h3>☁️ Sincronizado com Google Drive</h3>
-      <div class="hint">O Drive guarda os dados, o histórico e uma cópia diária. O app continua funcionando offline e sincroniza quando a conexão volta.</div>
-      <div class="status">${statusHtml}</div>
-      <div class="drive-sync-row">${actionsHtml}</div>
-      <div id="driveSetupInfo" style="display:none;" class="drive-setup">
-        <b>Passo a passo:</b>
-        <ol>
-          <li>Acesse <code>script.google.com</code> → "Novo projeto".</li>
-   
+    return ContentService.createTextOutput(JSON.stringify({confl
