@@ -1,4 +1,76 @@
-ou</span>';
+  const shouldShow = daysSinceBackup >= 7 && !dismissed;
+
+  if(!shouldShow){ el.innerHTML=''; return; }
+
+  const msg = state.lastBackupISO
+    ? `Já faz ${daysSinceBackup} dias desde o último backup. Que tal exportar de novo?`
+    : `Vocês ainda não fizeram nenhum backup. Vale exportar um agora pra não perder o progresso.`;
+
+  el.innerHTML = `
+    <div class="backup-reminder">
+      <span>💾 ${msg}</span>
+      <span>
+        <button id="backupReminderExportBtn">exportar agora</button>
+        <button class="dismiss" id="backupReminderDismissBtn">lembrar depois</button>
+      </span>
+    </div>
+  `;
+  document.getElementById('backupReminderExportBtn').addEventListener('click', ()=>{
+    document.getElementById('exportBtn').click();
+  });
+  document.getElementById('backupReminderDismissBtn').addEventListener('click', ()=>{
+    state.backupReminderDismissedFor = today;
+    saveState(state);
+    renderBackupReminder();
+  });
+}
+
+function renderWeeklyReview(){
+  const el = document.getElementById('weeklyReviewSection');
+  if(!el) return;
+
+  const days = [];
+  for(let i=6; i>=0; i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    days.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'));
+  }
+
+  let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0;
+  days.forEach(iso=>{
+    const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
+    if(!entry) return;
+    if(iso !== todayISO()){
+      // dias fechados já têm pointsEarnedThatDay e screenMinutes calculados
+      const full = state.history[iso];
+      if(full){
+        totalPointsWeek += full.pointsEarnedThatDay || 0;
+        totalScreenMin += full.screenMinutes || 0;
+      }
+    }
+    if(entry.total > 0 && entry.perfect) perfectDays++;
+  });
+
+  const rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
+
+  el.innerHTML = `
+    <div class="weekly-review">
+      <div class="wr-head">
+        <h3 class="block-title" style="margin:0; color:var(--green);">🗓️ Resumo semanal em família</h3>
+        <span class="wr-range">${rangeLabel}</span>
+      </div>
+      <div class="wr-stats">
+        <div class="wr-stat"><span class="wr-num">${perfectDays}/7</span><span class="wr-label">dias completos</span></div>
+        <div class="wr-stat"><span class="wr-num">${totalPointsWeek}</span><span class="wr-label">Pacus Points ganhos</span></div>
+        <div class="wr-stat"><span class="wr-num">${totalScreenMin}</span><span class="wr-label">min de tela ganhos</span></div>
+      </div>
+    </div>
+  `;
+}
+
+function hairLabel(status){
+  if(status === 'washed') return '<span class="hair-history-washed">💧 Lavou</span>';
+  if(status === 'not-washed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
   return '<span class="hair-history-unknown">— Não registrado</span>';
 }
 
@@ -124,81 +196,4 @@ function renderRewards(){
 
 function renderLog(){
   const logEl = document.getElementById('logList');
-  logEl.innerHTML = state.log.length
-    ? state.log.map(l=>`<div>${l}</div>`).join('')
-    : '<div>Nada ainda hoje — bora começar!</div>';
-}
-
-function fireConfetti(originEl, count){
-  count = count || 14;
-  const colors = ['#ffd93d','#ff7eb9','#4fc3f7','#ff9f43','#5fd875'];
-  const rect = originEl && originEl.getBoundingClientRect
-    ? originEl.getBoundingClientRect()
-    : { left: window.innerWidth/2, top: window.innerHeight/2, width:0, height:0 };
-  const originX = rect.left + rect.width/2;
-  const originY = rect.top + rect.height/2;
-
-  for(let i=0;i<count;i++){
-    const piece = document.createElement('span');
-    piece.className = 'confetti-piece';
-    const angle = Math.random()*Math.PI*2;
-    const dist = 60 + Math.random()*90;
-    piece.style.setProperty('--dx', (Math.cos(angle)*dist)+'px');
-    piece.style.setProperty('--dy', (Math.sin(angle)*dist - 40)+'px');
-    piece.style.setProperty('--rot', (Math.random()*360)+'deg');
-    piece.style.left = originX+'px';
-    piece.style.top = originY+'px';
-    piece.style.background = colors[i % colors.length];
-    document.body.appendChild(piece);
-    setTimeout(()=>piece.remove(), 950);
-  }
-}
-
-function onMarkClick(e){
-  const btn = e.currentTarget;
-  const id = btn.closest('.mark-group').getAttribute('data-id');
-  const clickedStatus = btn.getAttribute('data-status'); // 'done', 'na', or 'x'
-  const task = allTasks().find(t=>t.id===id);
-  if(!task) return;
-
-  const current = state.checkedToday[id]; // undefined | 'done' | 'na' | 'x'
-  let totalDelta = 0;
-  if(!state.taskDoneAt) state.taskDoneAt = {};
-
-  // desfazer o efeito do estado anterior nos pontos
-  if(current === 'done') totalDelta += addPoints(-task.pts);
-  else if(current === 'x') totalDelta += addPoints(taskNotDonePenalty(task));
-
-  if(current === clickedStatus){
-    // clicou de novo no mesmo estado: volta pra pendente
-    delete state.checkedToday[id];
-    delete state.taskDoneAt[id];
-    addLog(`(desmarcado) ${task.txt}`);
-  } else {
-    state.checkedToday[id] = clickedStatus;
-    if(clickedStatus === 'done'){
-      totalDelta += addPoints(task.pts);
-      state.taskDoneAt[id] = new Date().toISOString();
-      addLog(`+${task.pts} · ${task.txt}`);
-      fireConfetti(btn);
-    } else if(clickedStatus === 'na'){
-      delete state.taskDoneAt[id];
-      addLog(`n/a · ${task.txt}`);
-    } else {
-      delete state.taskDoneAt[id];
-      const penalty = taskNotDonePenalty(task);
-      totalDelta += addPoints(-penalty);
-      addLog(`✕ não realizado · ${task.txt} (−${penalty})`);
-    }
-  }
-
-  const completedNow = syncPetCompletionFromDay(todayISO());
-  if(completedNow){
-    addLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
-  }
-  saveState(state);
-  bumpTotal(totalDelta, btn);
-  render();
-}
-
-document.getElementById('hairWashedBtn').addEventListe
+  logEl.innerHTML = state.l

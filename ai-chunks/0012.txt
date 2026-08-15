@@ -1,4 +1,39 @@
-6+i*8;
+pse cx="110" cy="130" rx="48" ry="60" fill="url(#${gid}-shell)" stroke="#e88aa8" stroke-width="3"/>
+        <ellipse cx="93" cy="106" rx="12" ry="18" fill="#fff" opacity=".5"/>
+        <g transform="translate(110 138) scale(${embryoScale.toFixed(2)}) translate(-110 -138)" opacity="${embryoOpacity.toFixed(2)}">
+          <ellipse cx="110" cy="138" rx="26" ry="20" fill="#f6c7dc"/>
+          <circle cx="110" cy="122" r="15" fill="#f6c7dc"/>
+        </g>
+        ${crackSvg}${shellBreak}
+      </g>
+    </g>
+    <circle class="pacus-bubble" cx="72" cy="169" r="4" fill="#e8a3c0" opacity=".55"/>
+    <circle class="pacus-bubble" cx="151" cy="165" r="3" fill="#e8a3c0" opacity=".45" style="animation-delay:1s;"/>
+    <circle class="pacus-bubble" cx="118" cy="182" r="2.4" fill="#e8a3c0" opacity=".4" style="animation-delay:1.9s;"/>
+  </svg>`;
+}
+
+function buildPacusSVG(stageFloat){
+  const s = Math.max(0, Math.min(23, stageFloat));
+  const hatch = Math.max(0, Math.min(1, (s-8)/6));
+  const growth = Math.max(0, Math.min(1, (s-14)/9));
+  const adult = Math.max(0, Math.min(1, (s-21)/2));
+  const scale = 0.52 + growth*0.42 + adult*0.06;
+  const bodyW = 45 + growth*10 + adult*4;
+  const bodyH = 30 + growth*5 + adult*3;
+  const gillLen = 12 + growth*11 + adult*4;
+  const faceY = 92 - hatch*7;
+  const bodyY = 128 - hatch*5;
+  const gid = uid('pacus');
+  const shell = hatch < 1 ? `
+    <path d="M62 151 Q45 158 54 174 Q70 184 85 170" fill="#f6ecd9" stroke="#e88aa8" stroke-width="2.5" opacity="${1-hatch*.75}"/>
+    <path d="M158 151 Q175 158 166 174 Q150 184 135 170" fill="#f6ecd9" stroke="#e88aa8" stroke-width="2.5" opacity="${1-hatch*.75}"/>` : '';
+
+  // guelras com dois filamentos cada, balançando devagar (efeito de água)
+  const gillCount = 2 + Math.floor(Math.min(2,growth*2));
+  let gills = '';
+  for(let i=0;i<gillCount;i++){
+    const y = faceY-6+i*8;
     const len = gillLen-(i*2);
     const delay = (i*0.18).toFixed(2);
     gills += `<g class="pacus-gill" style="animation-delay:${delay}s; transform-origin:${74-i*2}px ${y}px;">
@@ -117,46 +152,4 @@ function renderAchievementMural(){
 }
 
 function renderPet(){
-  const el = document.getElementById('petSection');
-  const data = computePetStage();
-  const { stage, stageFloat, daysEquivalent, cycleDays, maxStage, canGrowToday } = data;
-  const stageInfo = CONFIG.pet.stages[stage];
-  const progressPct = Math.round((daysEquivalent/cycleDays)*100);
-
-  renderMiniPacus(stageFloat);
-
-  const milestones = [
-    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
-  ];
-  const milestoneHtml = milestones.map(([day,label])=>{
-    const active = daysEquivalent >= day;
-    const current = stage >= day && (stage === day || (stage > day && day === 23));
-    return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label} <small>dia ${day}</small></span>`;
-  }).join('');
-
-  let caption;
-  if(stage === maxStage){
-    caption = `Pacus adulto! <b>Ciclo concluído em 31/08.</b> 🎉`;
-  } else if(canGrowToday){
-    caption = `<b>Dia completo!</b> O Pacus vai evoluir mais um pouco.`;
-  } else if(daysEquivalent === 0){
-    caption = `Complete um dia inteiro de tarefas pra começar a rachar o ovo.`;
-  } else {
-    const nextMilestone = milestones.find(([day]) => day > daysEquivalent);
-    if(nextMilestone){
-      const diasFaltando = nextMilestone[0] - daysEquivalent;
-      caption = `Faltam <b>${diasFaltando} ${diasFaltando===1?'dia':'dias'}</b> para virar <b>${nextMilestone[1]}</b>.`;
-    } else {
-      caption = `Quase lá! O Pacus está quase adulto.`;
-    }
-  }
-
-  const previousProgress = Number(el.dataset.pacusProgress ?? daysEquivalent);
-  const grewNow = daysEquivalent > previousProgress;
-  el.dataset.pacusProgress = String(daysEquivalent);
-
-  el.innerHTML = `
-    ${buildPetVisual(stageFloat)}
-    <div class="pet-name">${CONFIG.pet.name}</div>
-    <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
-    <div class="pet-
+  const el = document.getElementBy

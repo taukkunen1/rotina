@@ -1,4 +1,28 @@
-k);
+  }
+
+  .editor-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:2px dashed var(--line);
+    padding-bottom:12px;
+    margin-bottom:16px;
+  }
+  .editor-head h2{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    color:var(--yellow);
+    margin:0;
+    font-size:1.4rem;
+  }
+
+  .editor-section{ margin-bottom:22px; }
+  .editor-section h3{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    font-size:1.05rem;
+    margin:0 0 4px;
+    color:var(--chalk);
   }
   .editor-section .hint{ font-size:.7rem; color:var(--chalk-dim); margin-bottom:10px; }
 
@@ -268,16 +292,4 @@ k);
             <tbody id="historyBody"></tbody>
           </table>
         </div>
-        <div id="historyToggle" style="text-align:center; margin-top:10px;"></div>
-      </section>
-
-      <section class="block" id="driveSyncSection"></section>
-
-      <footer>
-        <div id="backupReminder"></div>
-        Rotina do Hector · ${APP_VERSION}<br>
-        Funciona offline. O Google Drive é a fonte de sincronização quando configurado.
-        <br>
-        <button class="icon-btn" id="exportBtn" style="margin-top:8px;">⬇️ exportar backup</button>
-        <button class="icon-btn" id="importBtn" style="margin-top:8px;">⬆️ importar backup</button>
-        <input type="file" id="importFile" accept=".jso
+        <div id="historyToggle" style="text-align:center; mar

@@ -1,4 +1,12 @@
-o; }
+r:pointer;}
+  .hair-btn.active-washed{background:rgba(95,216,117,.22);border-color:var(--green);color:var(--green);font-weight:bold;}
+  .hair-btn.active-notwashed{background:rgba(255,217,61,.12);border-color:rgba(255,217,61,.45);color:var(--yellow);font-weight:bold;}
+  .hair-status{text-align:center;margin-top:8px;font-size:.72rem;color:var(--chalk-dim);}
+  .hair-history-washed{color:var(--green);font-weight:bold;}
+  .hair-history-notwashed{color:var(--yellow);font-weight:bold;}
+  .hair-history-unknown{color:var(--chalk-dim);}
+
+  .history{ overflow-x:auto; }
   table.history-table{
     width:100%;
     border-collapse:collapse;
@@ -302,28 +310,3 @@ o; }
     border-radius:10px;
     padding:20px 20px 24px;
     box-shadow:0 20px 60px rgba(0,0,0,.6);
-  }
-
-  .editor-head{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    border-bottom:2px dashed var(--line);
-    padding-bottom:12px;
-    margin-bottom:16px;
-  }
-  .editor-head h2{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-weight:normal;
-    color:var(--yellow);
-    margin:0;
-    font-size:1.4rem;
-  }
-
-  .editor-section{ margin-bottom:22px; }
-  .editor-section h3{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-weight:normal;
-    font-size:1.05rem;
-    margin:0 0 4px;
-    color:var(--chal

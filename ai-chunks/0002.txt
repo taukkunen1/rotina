@@ -82,6 +82,28 @@
   }
   .task:hover{ background:rgba(255,255,255,.045); }
 
+  .task-reorder{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    flex-shrink:0;
+    margin-top:1px;
+  }
+  .mini-reorder-btn{
+    width:20px; height:15px;
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+    color:var(--chalk-dim);
+    font-size:.55rem;
+    line-height:1;
+    border-radius:4px;
+    cursor:pointer;
+    font-family:inherit;
+    padding:0;
+  }
+  .mini-reorder-btn:hover:not(:disabled){ color:var(--chalk); border-color:rgba(242,237,225,.4); }
+  .mini-reorder-btn:disabled{ opacity:.2; cursor:not-allowed; }
+
   .mark-group{
     display:flex;
     gap:5px;
@@ -257,12 +279,4 @@
   .hair-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
   .hair-title{font-size:1rem;color:var(--chalk);font-weight:bold;}
   .hair-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-  .hair-btn{border:1px solid var(--line);background:rgba(255,255,255,.035);color:var(--chalk);border-radius:9px;padding:9px 10px;font:inherit;font-size:.78rem;cursor:pointer;}
-  .hair-btn.active-washed{background:rgba(95,216,117,.22);border-color:var(--green);color:var(--green);font-weight:bold;}
-  .hair-btn.active-notwashed{background:rgba(255,217,61,.12);border-color:rgba(255,217,61,.45);color:var(--yellow);font-weight:bold;}
-  .hair-status{text-align:center;margin-top:8px;font-size:.72rem;color:var(--chalk-dim);}
-  .hair-history-washed{color:var(--green);font-weight:bold;}
-  .hair-history-notwashed{color:var(--yellow);font-weight:bold;}
-  .hair-history-unknown{color:var(--chalk-dim);}
-
-  .history{ overflow-x:aut
+  .hair-btn{border:1px solid var(--line);background:rgba(255,255,255,.035);color:var(--chalk);border-radius:9px;padding:9px 10px;font:inherit;font-size:.78rem;curso

@@ -1,4 +1,45 @@
-maining(periodTime);
+a).
+function isTaskLate(task, periodTimeStr){
+  const doneAtIso = state.taskDoneAt && state.taskDoneAt[task.id];
+  if(!doneAtIso) return false;
+  const end = periodEndTime(periodTimeStr);
+  if(!end) return false;
+  const doneAt = new Date(doneAtIso);
+  const deadline = new Date(doneAt);
+  deadline.setHours(end.hour, end.minute, 0, 0);
+  return doneAt.getTime() > deadline.getTime();
+}
+
+// Calcula quanto tempo falta pra acabar o período (com base no horário
+// real do dispositivo) — usado no aviso visual ao lado de cada bloco.
+function formatTimeRemaining(periodTimeStr){
+  const start = periodStartTime(periodTimeStr);
+  const end = periodEndTime(periodTimeStr);
+  if(!start || !end) return null;
+  const now = new Date();
+  const startDate = new Date(now); startDate.setHours(start.hour, start.minute, 0, 0);
+  const endDate = new Date(now); endDate.setHours(end.hour, end.minute, 0, 0);
+  if(now < startDate){
+    return { text: `começa às ${String(start.hour).padStart(2,'0')}:${String(start.minute).padStart(2,'0')}`, urgency: 'none' };
+  }
+  if(now > endDate){
+    return { text: `período encerrado`, urgency: 'over' };
+  }
+  const diffMin = Math.max(0, Math.round((endDate - now)/60000));
+  const h = Math.floor(diffMin/60);
+  const m = diffMin%60;
+  const text = h > 0 ? `⏳ faltam ${h}h ${String(m).padStart(2,'0')}min` : `⏳ faltam ${m}min`;
+  const urgency = diffMin <= 30 ? 'high' : diffMin <= 60 ? 'medium' : 'low';
+  return { text, urgency };
+}
+
+let timeRemainingTickHandle = null;
+function updateTimeRemainingDisplays(){
+  document.querySelectorAll('.period').forEach(div=>{
+    const el = div.querySelector('.time-remaining');
+    const periodTime = div.dataset.periodTime;
+    if(!el || !periodTime) return;
+    const info = formatTimeRemaining(periodTime);
     if(!info){ el.textContent = ''; el.className = 'time-remaining'; return; }
     el.textContent = info.text;
     el.className = 'time-remaining urgency-' + info.urgency;
@@ -91,6 +132,7 @@ function reconcileState(state){
   if(!state.history) state.history = {};
   if(!state.hairByDate || typeof state.hairByDate !== "object") state.hairByDate = {};
   if(!state.taskDoneAt || typeof state.taskDoneAt !== "object") state.taskDoneAt = {};
+  if(!state.customTaskOrder || typeof state.customTaskOrder !== "object") state.customTaskOrder = {};
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
   }
@@ -142,49 +184,4 @@ function reconcileState(state){
 
 function periodsCompletedFrom(checkedMap, dateISO){
   let count = 0;
-  Object.values(getPeriodsFor(dateISO || todayISO())).forEach(period=>{
-    const applicable = period.tasks.filter(t=>checkedMap[t.id] !== 'na');
-    if(applicable.length>0 && applicable.every(t=>checkedMap[t.id]==='done')) count++;
-  });
-  return count;
-}
-
-function registerPetDayCompletion(dateISO){
-  const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
-  const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
-  if(dateISO < startISO || dateISO > endISO) return false;
-  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
-  if(state.petCompletedDays.includes(dateISO)) return false;
-  state.petCompletedDays.push(dateISO);
-  state.petCompletedDays.sort();
-  state.petLastCompletionISO = dateISO;
-  return true;
-}
-
-function isDayPerfect(dateISO){
-  if(dateISO === todayISO()){
-    const tasks = allTasks(dateISO);
-    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    return applicable.length > 0 && applicable.every(t=>state.checkedToday[t.id] === 'done');
-  }
-  return !!(state.history[dateISO] && state.history[dateISO].perfect);
-}
-
-function syncPetCompletionFromDay(dateISO){
-  if(isDayPerfect(dateISO)) return registerPetDayCompletion(dateISO);
-  return false;
-}
-
-function closeOutDay(state, dateISO){
-  if(!dateISO) return;
-  const tasks = allTasks(dateISO);
-  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  const total = applicable.length;
-  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-  const pointsEarnedThatDay = tasks
-    .filter(t=>state.checkedToday[t.id] === 'done')
-    .reduce((s,t)=>s+t.pts, 0);
-  const perfect = total > 0 && done === total;
-  if(perfect) registerPetDayCompletion(dateISO);
-  const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
-  const periodsCompleted = periodsCompletedFrom(state.checkedToday, d
+  Object.values(getPeriodsFor(dateISO || tod

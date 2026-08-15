@@ -1,4 +1,36 @@
-kOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))));
+e.customTaskOrder = {};
+  const customOrder = state.customTaskOrder[periodKey];
+  if(!customOrder || !customOrder.length) return tasks;
+  const byId = new Map(tasks.map(t=>[t.id, t]));
+  const ordered = customOrder.map(id=>byId.get(id)).filter(Boolean);
+  const missing = tasks.filter(t=>!customOrder.includes(t.id));
+  return [...ordered, ...missing];
+}
+function moveTaskInOrder(periodKey, tasks, taskId, direction){
+  const current = getEffectiveTaskOrder(periodKey, tasks).map(t=>t.id);
+  const idx = current.indexOf(taskId);
+  const swapWith = direction === 'up' ? idx-1 : idx+1;
+  if(idx < 0 || swapWith < 0 || swapWith >= current.length) return;
+  [current[idx], current[swapWith]] = [current[swapWith], current[idx]];
+  if(!state.customTaskOrder) state.customTaskOrder = {};
+  state.customTaskOrder[periodKey] = current;
+  saveState(state);
+}
+
+function stripLegacyHairTask(cfg){
+  // "Cabelo Lavado" virou tarefa duplicada por engano em algum momento —
+  // o controle de cabelo já tem sua própria seção dedicada (🧴 Lavar o
+  // cabelo), então removemos essa tarefa específica se ela aparecer.
+  if(cfg && cfg.periods && cfg.periods.noite && Array.isArray(cfg.periods.noite.tasks)){
+    cfg.periods.noite.tasks = cfg.periods.noite.tasks.filter(t => t.id !== 't_gzba4xs');
+  }
+  if(cfg && cfg.periodsWeekend && cfg.periodsWeekend.noite && Array.isArray(cfg.periodsWeekend.noite.tasks)){
+    cfg.periodsWeekend.noite.tasks = cfg.periodsWeekend.noite.tasks.filter(t => t.id !== 't_gzba4xs');
+  }
+  // senha do site: recurso removido — limpa de qualquer config que já
+  // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
+  if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
+  return markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))));
 }
 
 // Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
@@ -166,45 +198,4 @@ function periodStartTime(periodTimeStr){
 }
 
 // Verifica se uma tarefa marcada "feita" hoje foi concluída depois do
-// horário limite do período (comparando timestamps reais, não só a data).
-function isTaskLate(task, periodTimeStr){
-  const doneAtIso = state.taskDoneAt && state.taskDoneAt[task.id];
-  if(!doneAtIso) return false;
-  const end = periodEndTime(periodTimeStr);
-  if(!end) return false;
-  const doneAt = new Date(doneAtIso);
-  const deadline = new Date(doneAt);
-  deadline.setHours(end.hour, end.minute, 0, 0);
-  return doneAt.getTime() > deadline.getTime();
-}
-
-// Calcula quanto tempo falta pra acabar o período (com base no horário
-// real do dispositivo) — usado no aviso visual ao lado de cada bloco.
-function formatTimeRemaining(periodTimeStr){
-  const start = periodStartTime(periodTimeStr);
-  const end = periodEndTime(periodTimeStr);
-  if(!start || !end) return null;
-  const now = new Date();
-  const startDate = new Date(now); startDate.setHours(start.hour, start.minute, 0, 0);
-  const endDate = new Date(now); endDate.setHours(end.hour, end.minute, 0, 0);
-  if(now < startDate){
-    return { text: `começa às ${String(start.hour).padStart(2,'0')}:${String(start.minute).padStart(2,'0')}`, urgency: 'none' };
-  }
-  if(now > endDate){
-    return { text: `período encerrado`, urgency: 'over' };
-  }
-  const diffMin = Math.max(0, Math.round((endDate - now)/60000));
-  const h = Math.floor(diffMin/60);
-  const m = diffMin%60;
-  const text = h > 0 ? `⏳ faltam ${h}h ${String(m).padStart(2,'0')}min` : `⏳ faltam ${m}min`;
-  const urgency = diffMin <= 30 ? 'high' : diffMin <= 60 ? 'medium' : 'low';
-  return { text, urgency };
-}
-
-let timeRemainingTickHandle = null;
-function updateTimeRemainingDisplays(){
-  document.querySelectorAll('.period').forEach(div=>{
-    const el = div.querySelector('.time-remaining');
-    const periodTime = div.dataset.periodTime;
-    if(!el || !periodTime) return;
-    const info = formatTimeRe
+// horário limite do período (comparando timestamps reais, não só a dat

@@ -1,4 +1,49 @@
-ateISO);
+ayISO())).forEach(period=>{
+    const applicable = period.tasks.filter(t=>checkedMap[t.id] !== 'na');
+    if(applicable.length>0 && applicable.every(t=>checkedMap[t.id]==='done')) count++;
+  });
+  return count;
+}
+
+function registerPetDayCompletion(dateISO){
+  const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
+  const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
+  if(dateISO < startISO || dateISO > endISO) return false;
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+  if(state.petCompletedDays.includes(dateISO)) return false;
+  state.petCompletedDays.push(dateISO);
+  state.petCompletedDays.sort();
+  state.petLastCompletionISO = dateISO;
+  return true;
+}
+
+function isDayPerfect(dateISO){
+  if(dateISO === todayISO()){
+    const tasks = allTasks(dateISO);
+    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    return applicable.length > 0 && applicable.every(t=>state.checkedToday[t.id] === 'done');
+  }
+  return !!(state.history[dateISO] && state.history[dateISO].perfect);
+}
+
+function syncPetCompletionFromDay(dateISO){
+  if(isDayPerfect(dateISO)) return registerPetDayCompletion(dateISO);
+  return false;
+}
+
+function closeOutDay(state, dateISO){
+  if(!dateISO) return;
+  const tasks = allTasks(dateISO);
+  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+  const total = applicable.length;
+  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+  const pointsEarnedThatDay = tasks
+    .filter(t=>state.checkedToday[t.id] === 'done')
+    .reduce((s,t)=>s+t.pts, 0);
+  const perfect = total > 0 && done === total;
+  if(perfect) registerPetDayCompletion(dateISO);
+  const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
+  const periodsCompleted = periodsCompletedFrom(state.checkedToday, dateISO);
   state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
 }
 
@@ -146,56 +191,4 @@ async function autoPullOnStartup(){
           const merged = mergeRemoteData(backup);
           CONFIG = merged.config;
           state = merged.state;
-          state.driveRevision = remoteRevision;
-          saveConfig(CONFIG);
-          saveState(state);
-          render();
-        } else if(remoteRevision >= localRevision){
-          const remoteConfig = sanitizeRemoteConfig(backup.config);
-          if(remoteConfig){
-            CONFIG = remoteConfig;
-            state = reconcileState(backup.state);
-            state.driveRevision = remoteRevision;
-            state.driveLastSyncISO = todayISO();
-            try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(CONFIG)); }catch(e){}
-            try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
-            render();
-          }else{
-            // Nunca substituir uma rotina válida por um backup remoto vazio/incompleto.
-            // O app continua com a configuração local que já funcionava.
-            render();
-          }
-        }
-      }
-    }
-  }catch(err){
-    renderDriveSync();
-  }
-  suppressAutoPush = false;
-}
-
-function addLog(text){
-  const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-  state.log.unshift(time+" — "+text);
-  state.log = state.log.slice(0, 30);
-}
-function bumpTotal(delta, anchorEl){
-  const el = document.getElementById('totalPoints');
-  el.textContent = state.totalPoints;
-  el.classList.remove('bump');
-  void el.offsetWidth;
-  el.classList.add('bump');
-
-  if(delta){
-    const deltaEl = document.getElementById('pointsDelta');
-    if(deltaEl){
-      const rect = (anchorEl || el).getBoundingClientRect();
-      deltaEl.style.left = (rect.left + rect.width/2) + 'px';
-      deltaEl.style.top = (rect.top - 6) + 'px';
-      deltaEl.classList.remove('show-up','show-down');
-      void deltaEl.offsetWidth;
-      deltaEl.textContent = (delta>0?'+':'−') + Math.abs(delta);
-      deltaEl.classList.add(delta>0?'show-up':'show-down');
-    }
-  }
-}
+          
