@@ -1446,7 +1446,7 @@
       <section class="block">
         <h3 class="block-title reward-title">🎁 Loja de Recompensas</h3>
         <div class="rewards" id="rewards"></div>
-        <div style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;">1 Pacus Point ≈ R$0,06 · máximo: 1000 pontos (~R$60)</div>
+        <div id="pointValueNote" style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;"></div>
       </section>
 
       <div class="log">
@@ -3539,6 +3539,13 @@ function renderRewards(){
     });
     rEl.appendChild(div);
   });
+
+  const noteEl = document.getElementById('pointValueNote');
+  if(noteEl){
+    const brlValue = POINT_VALUE_BRL.toFixed(2).replace('.', ',');
+    const maxBrl = Math.round(MAX_POINTS * POINT_VALUE_BRL);
+    noteEl.textContent = `1 Pacus Point ≈ R$${brlValue} · máximo: ${MAX_POINTS} pontos (~R$${maxBrl})`;
+  }
 }
 
 function renderLog(){
