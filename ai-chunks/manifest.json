@@ -3,8 +3,8 @@
   "encoding": "utf-8",
   "chunkSize": 8000,
   "totalChunks": 20,
-  "totalSize": 153975,
-  "sha256": "8fadc957c87f102b47282e26761d8f39b7d0b88aba47fc27c9cb3cfe7de99d77",
+  "totalSize": 154254,
+  "sha256": "37b0a11463e2e81c4a5dc6f580ca7abe7fcc91905c3ef37863de68d3afbf7394",
   "chunks": [
     {
       "chunk": 0,
@@ -143,8 +143,8 @@
       "chunk": 19,
       "file": "0019.txt",
       "start": 152000,
-      "end": 153975,
-      "size": 1975
+      "end": 154254,
+      "size": 2254
     }
   ]
 }

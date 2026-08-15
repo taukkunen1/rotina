@@ -1,5 +1,4 @@
-Count;i++){
-    const y = faceY-6+i*8;
+6+i*8;
     const len = gillLen-(i*2);
     const delay = (i*0.18).toFixed(2);
     gills += `<g class="pacus-gill" style="animation-delay:${delay}s; transform-origin:${74-i*2}px ${y}px;">
@@ -159,4 +158,5 @@ function renderPet(){
   el.innerHTML = `
     ${buildPetVisual(stageFloat)}
     <div class="pet-name">${CONFIG.pet.name}</div>
-    <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 
+    <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
+    <div class="pet-

@@ -1,5 +1,4 @@
-31/08</div>
-    <div class="pet-day-progress">
+day-progress">
       <div class="pet-day-progress-head"><span>Progresso do Pacus</span><b>${progressPct}%</b></div>
       <div class="pet-day-track" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
     </div>
@@ -177,4 +176,5 @@ function render(){
 
     div.innerHTML = `
       <div class="period-head"><h2>${period.label}</h2><span class="time">${period.time}</span></div>
-      <span class="time-remaining" id="timeRemaining_${key}"></s
+      <span class="time-remaining" id="timeRemaining_${key}"></span>
+      <span class="progress

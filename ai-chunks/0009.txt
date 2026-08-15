@@ -1,4 +1,4 @@
-pletedFrom(state.checkedToday, dateISO);
+ateISO);
   state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
 }
 
@@ -195,4 +195,7 @@ function bumpTotal(delta, anchorEl){
       deltaEl.classList.remove('show-up','show-down');
       void deltaEl.offsetWidth;
       deltaEl.textContent = (delta>0?'+':'−') + Math.abs(delta);
-      deltaEl.classList.add(delta>0?'sho
+      deltaEl.classList.add(delta>0?'show-up':'show-down');
+    }
+  }
+}

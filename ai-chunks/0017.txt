@@ -1,4 +1,9 @@
-<div class="edit-row-main">
+ss="edit-row-main">
+        <input type="time" value="${item.start}" data-field="start" style="flex:1;">
+        <span style="color:var(--chalk-dim); font-size:.8rem;">até</span>
+        <input type="time" value="${item.end}" data-field="end" style="flex:1;">
+      </div>
+      <div class="edit-row-main">
         <select data-field="period" style="flex:1; background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--chalk); border-radius:6px; padding:6px; font-family:inherit; font-size:.8rem;">${periodOptions}</select>
         ${stepperHTML('pts', item.pts)}
       </div>
@@ -175,8 +180,4 @@ document.getElementById('daySaveBtn').addEventListener('click', ()=>{
 
   if(!state.hairByDate) state.hairByDate = {};
   if(hair) state.hairByDate[editingDate] = hair; else delete state.hairByDate[editingDate];
-  state.history[editingDate] = { done, total, pointsEarnedThatDay, perfect, screenMinutes: perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0, hair };
-  if(perfect) registerPetDayCompletion(editingDate);
-
-  // ajusta o saldo total pela diferença de pontos daquele dia
-  const delta = pointsEarnedT
+  state.history[edi

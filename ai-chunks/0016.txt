@@ -1,4 +1,8 @@
-5');
+ner('click', ()=> setHairStatus('washed'));
+document.getElementById('hairNotWashedBtn').addEventListener('click', ()=> setHairStatus('not-washed'));
+
+document.getElementById('addPointsBtn').addEventListener('click', ()=>{
+  const raw = prompt('Quantos Pacus Points adicionar?', '5');
   if(raw === null) return;
   const amount = parseInt(raw, 10);
   if(!amount || amount === 0) return;
@@ -172,9 +176,4 @@ function renderEditorSchedule(){
         <button class="del" title="remover">🗑</button>
       </div>
       <div class="day-chip-row">${dayChips}</div>
-      <div class="edit-row-main">
-        <input type="time" value="${item.start}" data-field="start" style="flex:1;">
-        <span style="color:var(--chalk-dim); font-size:.8rem;">até</span>
-        <input type="time" value="${item.end}" data-field="end" style="flex:1;">
-      </div>
-      
+      <div cla

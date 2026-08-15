@@ -1,7 +1,4 @@
-ckHandle = null; }
-}
-
-function updateCustomTimerDisplays(){
+pdateCustomTimerDisplays(){
   state.customTimers.forEach(t=>{
     const el = document.getElementById('customTimerDisplay_'+t.id);
     if(el) el.textContent = formatHMS(customTimerRemainingNow(t));
@@ -168,4 +165,5 @@ function buildPacusSVG(stageFloat){
   // guelras com dois filamentos cada, balançando devagar (efeito de água)
   const gillCount = 2 + Math.floor(Math.min(2,growth*2));
   let gills = '';
-  for(let i=0;i<gill
+  for(let i=0;i<gillCount;i++){
+    const y = faceY-

@@ -1,4 +1,4 @@
-air-history-notwashed">○ Não lavou</span>';
+ou</span>';
   return '<span class="hair-history-unknown">— Não registrado</span>';
 }
 
@@ -113,6 +113,13 @@ function renderRewards(){
     });
     rEl.appendChild(div);
   });
+
+  const noteEl = document.getElementById('pointValueNote');
+  if(noteEl){
+    const brlValue = POINT_VALUE_BRL.toFixed(2).replace('.', ',');
+    const maxBrl = Math.round(MAX_POINTS * POINT_VALUE_BRL);
+    noteEl.textContent = `1 Pacus Point ≈ R$${brlValue} · máximo: ${MAX_POINTS} pontos (~R$${maxBrl})`;
+  }
 }
 
 function renderLog(){
@@ -194,8 +201,4 @@ function onMarkClick(e){
   render();
 }
 
-document.getElementById('hairWashedBtn').addEventListener('click', ()=> setHairStatus('washed'));
-document.getElementById('hairNotWashedBtn').addEventListener('click', ()=> setHairStatus('not-washed'));
-
-document.getElementById('addPointsBtn').addEventListener('click', ()=>{
-  const raw = prompt('Quantos Pacus Points adicionar?', '
+document.getElementById('hairWashedBtn').addEventListe

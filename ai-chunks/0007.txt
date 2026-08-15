@@ -1,4 +1,4 @@
-sksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))));
+kOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))));
 }
 
 // Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
@@ -206,4 +206,5 @@ function updateTimeRemainingDisplays(){
   document.querySelectorAll('.period').forEach(div=>{
     const el = div.querySelector('.time-remaining');
     const periodTime = div.dataset.periodTime;
-    if(!el || !periodTime) retur
+    if(!el || !periodTime) return;
+    const info = formatTimeRe

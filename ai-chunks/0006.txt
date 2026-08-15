@@ -1,6 +1,4 @@
-ditorPin: "",
-  badHabits: [],
-  rewards: [
+ rewards: [
     { id:"r1", txt:"1 hora de tela", cost:90, grantsHours:1, maxPerDay:2 },
     { id:"r2", txt:"Hot Wheels (brinquedo)", cost:300 },
   ],
@@ -175,4 +173,4 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return markExternalTa
+  return markExternalTasksV1(addCreativeTaskV1(applyTas

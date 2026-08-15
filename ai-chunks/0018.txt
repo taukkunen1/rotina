@@ -1,4 +1,8 @@
-hatDay - oldPoints;
+tingDate] = { done, total, pointsEarnedThatDay, perfect, screenMinutes: perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0, hair };
+  if(perfect) registerPetDayCompletion(editingDate);
+
+  // ajusta o saldo total pela diferença de pontos daquele dia
+  const delta = pointsEarnedThatDay - oldPoints;
   let appliedDelta = 0;
   if(delta !== 0){
     appliedDelta = addPoints(delta);
@@ -164,9 +168,4 @@ async function driveSave(){
 
 async function driveLoad(){
   try{
-    const res = await fetch(DATA_ENDPOINT, { method: 'GET' });
-    if(!res.ok) throw new Error('Falha ao carregar');
-    const backup = await res.json();
-    if(backup.error === 'not_found'){ alert('Nenhum backup encontrado no Google Drive ainda.'); return; }
-
-    if(!confirm('Isso vai substituir
+    const res = aw

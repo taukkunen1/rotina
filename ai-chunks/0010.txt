@@ -1,7 +1,3 @@
-w-up':'show-down');
-    }
-  }
-}
 
 // 1 Pacus Point ≈ R$0,06 (dentro da faixa combinada de R$0,05–0,08) — o
 // saldo nunca passa de 1000 pontos, equivalente a uns R$60 no máximo.
@@ -247,4 +243,7 @@ function startCustomTimerTicking(){
   }, 1000);
 }
 function stopCustomTimerTicking(){
-  if(customTimerTickHandle){ clearInterval(customTimerTickHandle); customTimerTi
+  if(customTimerTickHandle){ clearInterval(customTimerTickHandle); customTimerTickHandle = null; }
+}
+
+function u

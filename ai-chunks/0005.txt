@@ -1,4 +1,4 @@
-le" id="importFile" accept=".json" style="display:none;">
+n" style="display:none;">
         <br><button class="icon-btn danger" id="resetBtn" style="margin-top:8px;">reiniciar Pacus Points e histórico</button>
       </footer>
     </div>
@@ -186,4 +186,6 @@ const DEFAULT_CONFIG = {
   // no editor — quando ativada, é editada separadamente da de dia de escola
   periodsWeekend: null,
   // PIN opcional pra travar o botão "Editar tudo" — vazio = sem trava
-  e
+  editorPin: "",
+  badHabits: [],
+ 

@@ -1,4 +1,9 @@
- os dados atuais pelos que estão salvos no Google Drive. Continuar?')) return;
+ait fetch(DATA_ENDPOINT, { method: 'GET' });
+    if(!res.ok) throw new Error('Falha ao carregar');
+    const backup = await res.json();
+    if(backup.error === 'not_found'){ alert('Nenhum backup encontrado no Google Drive ainda.'); return; }
+
+    if(!confirm('Isso vai substituir os dados atuais pelos que estão salvos no Google Drive. Continuar?')) return;
 
     if(backup.config){ CONFIG = backup.config; saveConfig(CONFIG); }
     if(backup.state){ state = backup.state; saveState(state); }

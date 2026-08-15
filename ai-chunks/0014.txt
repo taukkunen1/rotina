@@ -1,5 +1,4 @@
-pan>
-      <span class="progress-txt">${progressMsg}</span>
+-txt">${progressMsg}</span>
       <div class="progress-bar"><div style="width:${pct}%"></div></div>
     `;
     div.dataset.periodTime = period.time;
@@ -223,4 +222,4 @@ function renderWeeklyReview(){
 
 function hairLabel(status){
   if(status === 'washed') return '<span class="hair-history-washed">💧 Lavou</span>';
-  if(status === 'not-washed') return '<span class="h
+  if(status === 'not-washed') return '<span class="hair-history-notwashed">○ Não lav

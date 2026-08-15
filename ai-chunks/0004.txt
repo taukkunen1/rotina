@@ -246,7 +246,7 @@ k);
       <section class="block">
         <h3 class="block-title reward-title">🎁 Loja de Recompensas</h3>
         <div class="rewards" id="rewards"></div>
-        <div style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;">1 Pacus Point ≈ R$0,06 · máximo: 1000 pontos (~R$60)</div>
+        <div id="pointValueNote" style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;"></div>
       </section>
 
       <div class="log">
@@ -280,4 +280,4 @@ k);
         <br>
         <button class="icon-btn" id="exportBtn" style="margin-top:8px;">⬇️ exportar backup</button>
         <button class="icon-btn" id="importBtn" style="margin-top:8px;">⬆️ importar backup</button>
-        <input type="fi
+        <input type="file" id="importFile" accept=".jso

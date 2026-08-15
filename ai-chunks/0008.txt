@@ -1,5 +1,4 @@
-n;
-    const info = formatTimeRemaining(periodTime);
+maining(periodTime);
     if(!info){ el.textContent = ''; el.className = 'time-remaining'; return; }
     el.textContent = info.text;
     el.className = 'time-remaining urgency-' + info.urgency;
@@ -188,4 +187,4 @@ function closeOutDay(state, dateISO){
   const perfect = total > 0 && done === total;
   if(perfect) registerPetDayCompletion(dateISO);
   const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
-  const periodsCompleted = periodsCom
+  const periodsCompleted = periodsCompletedFrom(state.checkedToday, d
