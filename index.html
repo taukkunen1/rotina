@@ -2173,8 +2173,60 @@ function applyHistoryCorrection_v2(state){
   state.historyCorrectionV2Applied = true;
 }
 
+// Correção pontual pra 13/08 e 14/08: tudo foi feito EXCETO "Arrumar a
+// bagunça" (não fez em nenhum dos dois dias) — que tem penalidade cheia
+// (perde os 7 pontos, não a metade). Mesmo não sendo dia 100% perfeito,
+// o Pacus continua contando o dia pro crescimento (crescimento não exige
+// perfeição, só engajamento real). Roda só uma vez.
+function applyHistoryCorrection_v3(state){
+  if(state.historyCorrectionV3Applied) return;
+
+  const days = ["2026-08-13", "2026-08-14"];
+  if(!state.history) state.history = {};
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+
+  let totalDelta = 0;
+  days.forEach(iso=>{
+    const tasks = allTasks(iso);
+    const total = tasks.length;
+    const bagunca = tasks.find(t=>t.id === 'n5');
+    const penalty = bagunca ? (bagunca.fullPenalty ? bagunca.pts : Math.ceil(bagunca.pts/2)) : 0;
+    const rawPoints = tasks.reduce((sum, t) => sum + (Number(t.pts) || 0), 0);
+    // pontos de todas as tarefas MENOS os pontos da bagunça (não feita) MENOS a penalidade dela
+    const pointsEarnedThatDay = Math.max(0, (rawPoints - (bagunca ? bagunca.pts : 0)) - penalty);
+    const done = bagunca ? total - 1 : total;
+
+    const oldPoints = (state.history[iso] && state.history[iso].pointsEarnedThatDay) || 0;
+    totalDelta += pointsEarnedThatDay - oldPoints;
+
+    const hair = (state.history[iso] && state.history[iso].hair) || (state.hairByDate && state.hairByDate[iso]) || null;
+
+    state.history[iso] = {
+      done,
+      total,
+      pointsEarnedThatDay,
+      perfect: false, // "Arrumar a bagunça" ficou de fora
+      screenMinutes: 0,
+      periodsCompleted: 2, // manhã e tarde completos; noite não (faltou a bagunça)
+      hair,
+    };
+
+    // crescimento do Pacus não exige dia perfeito — só engajamento real
+    if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
+  });
+
+  state.petCompletedDays.sort();
+  state.petLastCompletionISO = state.petCompletedDays.length
+    ? state.petCompletedDays[state.petCompletedDays.length - 1]
+    : null;
+
+  state.totalPoints = Math.max(0, (Number(state.totalPoints)||0) + totalDelta);
+  state.historyCorrectionV3Applied = true;
+}
+
 function seedKnownPerfectDays(state){
   applyHistoryCorrection_v2(state);
+  applyHistoryCorrection_v3(state);
 }
 
 function reconcileState(state){
@@ -2273,8 +2325,22 @@ function isDayPerfect(dateISO){
   return !!(state.history[dateISO] && state.history[dateISO].perfect);
 }
 
+// O crescimento do Pacus NÃO exige o dia 100% perfeito — só que alguma
+// tarefa de verdade tenha sido feita naquele dia. "isDayPerfect" continua
+// controlando o bônus de tela e o selo "dia perfeito"; esta função aqui
+// é só pro crescimento.
+function hasDayProgress(dateISO){
+  if(dateISO === todayISO()){
+    const tasks = allTasks(dateISO);
+    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    return applicable.some(t=>state.checkedToday[t.id] === 'done');
+  }
+  const entry = state.history[dateISO];
+  return !!(entry && entry.done > 0);
+}
+
 function syncPetCompletionFromDay(dateISO){
-  if(isDayPerfect(dateISO)) return registerPetDayCompletion(dateISO);
+  if(hasDayProgress(dateISO)) return registerPetDayCompletion(dateISO);
   return false;
 }
 
@@ -2288,7 +2354,7 @@ function closeOutDay(state, dateISO){
     .filter(t=>state.checkedToday[t.id] === 'done')
     .reduce((s,t)=>s+t.pts, 0);
   const perfect = total > 0 && done === total;
-  if(perfect) registerPetDayCompletion(dateISO);
+  if(done > 0) registerPetDayCompletion(dateISO);
   const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
   const periodsCompleted = periodsCompletedFrom(state.checkedToday, dateISO);
   state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
@@ -2830,12 +2896,12 @@ function computePetStage(){
   const completedDays = Math.min(cycle.totalDays, validDays.length);
   const stageFloat = Math.min(maxStage, completedDays);
   const stage = Math.min(maxStage, completedDays);
-  const todayPerfect = isDayPerfect(todayISO());
-  const canGrowToday = todayISO() >= cycle.startISO && todayISO() <= cycle.endISO && todayPerfect && !completed.has(todayISO());
+  const todayHasProgress = hasDayProgress(todayISO());
+  const canGrowToday = todayISO() >= cycle.startISO && todayISO() <= cycle.endISO && todayHasProgress && !completed.has(todayISO());
   return {
     stage, stageFloat, unitsCompleted:completedDays, totalUnits:cycle.totalDays,
     maxStage, daysEquivalent:completedDays, cycleDays:cycle.totalDays,
-    todayPerfect, canGrowToday, completedDays:validDays
+    todayPerfect:todayHasProgress, canGrowToday, completedDays:validDays
   };
 }
 
@@ -3047,7 +3113,7 @@ function renderPet(){
   if(stage === maxStage){
     caption = `Pacus adulto! <b>Ciclo concluído em 31/08.</b> 🎉`;
   } else if(canGrowToday){
-    caption = `<b>Dia completo!</b> O Pacus vai evoluir mais um pouco.`;
+    caption = `<b>Boa!</b> O Pacus vai evoluir mais um pouco hoje.`;
   } else if(daysEquivalent === 0){
     caption = `Complete um dia inteiro de tarefas pra começar a rachar o ovo.`;
   } else {
