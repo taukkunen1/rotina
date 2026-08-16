@@ -298,14 +298,6 @@
   }
 
   /* ---------- timers avulsos (tempo livre pra qualquer coisa) ---------- */
-  .custom-timers-wrap h3{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-weight:normal;
-    color:var(--blue);
-    margin:0 0 10px;
-    font-size:1.05rem;
-    text-align:center;
-  }
   .custom-timers{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -808,15 +800,41 @@
     border-top:2px dashed var(--line);
   }
 
-  h3.block-title{
+  .block-collapsible{
+    margin-top:22px;
+    padding-top:16px;
+    border-top:2px dashed var(--line);
+  }
+  .block-collapsible summary{
     font-family:"Segoe Print","Bradley Hand",cursive;
     font-weight:normal;
     font-size:1.2rem;
-    margin:0 0 12px;
     text-align:center;
+    cursor:pointer;
+    list-style:none;
+    color:var(--chalk);
+    padding:4px 0;
+    position:relative;
   }
-  .bad-title{ color:var(--red); }
-  .reward-title{ color:var(--pink); }
+  .block-collapsible summary::-webkit-details-marker{ display:none; }
+  .block-collapsible summary::after{
+    content:"▾";
+    display:inline-block;
+    margin-left:8px;
+    font-size:.85rem;
+    color:var(--chalk-dim);
+    transition:transform .2s ease;
+  }
+  .block-collapsible[open] summary::after{ transform:rotate(180deg); }
+  .block-collapsible summary:hover{ color:var(--yellow); }
+  .block-collapsible-body{
+    margin-top:14px;
+    animation:detailsFadeIn .25s ease;
+  }
+  @keyframes detailsFadeIn{
+    0%{ opacity:0; transform:translateY(-4px); }
+    100%{ opacity:1; transform:translateY(0); }
+  }
 
   .bad-habits{ display:flex; flex-wrap:wrap; gap:9px; justify-content:center; }
 
@@ -873,17 +891,13 @@
     cursor:not-allowed;
   }
 
-  .log{
-    margin-top:20px;
-    padding-top:12px;
-    border-top:1px dashed var(--line);
+  #logList{
     font-size:.72rem;
     color:var(--chalk-dim);
     max-height:100px;
     overflow-y:auto;
   }
-  .log-title{ text-transform:uppercase; letter-spacing:1px; font-size:.62rem; margin-bottom:5px; }
-  .log div{ padding:2px 0; }
+  #logList div{ padding:2px 0; }
 
 
   .hair-section{
@@ -1520,40 +1534,57 @@
 
       <section class="block" id="gameTimerSection"></section>
 
-      <section class="block" id="customTimersSection"></section>
+      <details class="block-collapsible">
+        <summary>⏱️ Timers</summary>
+        <section class="block-collapsible-body" id="customTimersSection"></section>
+      </details>
 
-      <section class="block">
-        <h3 class="block-title bad-title">✨ Pacus Points Extra</h3>
-        <div class="bad-habits" id="badHabits"></div>
-      </section>
-
-      <section class="block">
-        <h3 class="block-title reward-title">🎁 Loja de Recompensas</h3>
-        <div class="rewards" id="rewards"></div>
-        <div id="pointValueNote" style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;"></div>
-      </section>
-
-      <div class="log">
-        <div class="log-title">Histórico de hoje</div>
-        <div id="logList"></div>
-      </div>
-
-      <section class="block" id="achievementMuralSection"></section>
-
-      <section class="block" id="weeklyReviewSection"></section>
-
-      <section class="block">
-        <h3 class="block-title" style="color:var(--green);">📅 Histórico dos dias</h3>
-        <div class="history">
-          <table class="history-table" id="historyTable">
-            <thead>
-              <tr><th>Dia</th><th>Tarefas</th><th>Pacus Points</th><th>Cabelo</th><th></th></tr>
-            </thead>
-            <tbody id="historyBody"></tbody>
-          </table>
+      <details class="block-collapsible">
+        <summary>✨ Pacus Points Extra</summary>
+        <div class="block-collapsible-body">
+          <div class="bad-habits" id="badHabits"></div>
         </div>
-        <div id="historyToggle" style="text-align:center; margin-top:10px;"></div>
-      </section>
+      </details>
+
+      <details class="block-collapsible">
+        <summary>🎁 Loja de Recompensas</summary>
+        <div class="block-collapsible-body">
+          <div class="rewards" id="rewards"></div>
+          <div id="pointValueNote" style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;"></div>
+        </div>
+      </details>
+
+      <details class="block-collapsible">
+        <summary>📝 Histórico de hoje</summary>
+        <div class="block-collapsible-body">
+          <div id="logList"></div>
+        </div>
+      </details>
+
+      <details class="block-collapsible">
+        <summary>🏆 Mural de Conquistas do Pacus</summary>
+        <section class="block-collapsible-body" id="achievementMuralSection"></section>
+      </details>
+
+      <details class="block-collapsible">
+        <summary>🗓️ Resumo semanal em família</summary>
+        <section class="block-collapsible-body" id="weeklyReviewSection"></section>
+      </details>
+
+      <details class="block-collapsible">
+        <summary>📅 Histórico dos dias</summary>
+        <div class="block-collapsible-body">
+          <div class="history">
+            <table class="history-table" id="historyTable">
+              <thead>
+                <tr><th>Dia</th><th>Tarefas</th><th>Pacus Points</th><th>Cabelo</th><th></th></tr>
+              </thead>
+              <tbody id="historyBody"></tbody>
+            </table>
+          </div>
+          <div id="historyToggle" style="text-align:center; margin-top:10px;"></div>
+        </div>
+      </details>
 
       <section class="block" id="driveSyncSection"></section>
 
@@ -2997,7 +3028,6 @@ function renderCustomTimers(){
 
   el.innerHTML = `
     <div class="custom-timers-wrap">
-      <h3>⏱️ Timers</h3>
       <div class="custom-timers">${cardsHtml}</div>
     </div>
   `;
@@ -3233,7 +3263,6 @@ function renderAchievementMural(){
   `).join('');
   el.innerHTML = `
     <div class="achievement-mural">
-      <h3 class="block-title" style="color:var(--pink); margin-bottom:12px;">🏆 Mural de Conquistas do Pacus</h3>
       <div class="mural-grid">${cardsHtml}</div>
     </div>
   `;
@@ -3710,7 +3739,6 @@ function renderWeeklyReview(){
   el.innerHTML = `
     <div class="weekly-review">
       <div class="wr-head">
-        <h3 class="block-title" style="margin:0; color:var(--green);">🗓️ Resumo semanal em família</h3>
         <span class="wr-range">${rangeLabel}</span>
       </div>
       <div class="wr-stats">
