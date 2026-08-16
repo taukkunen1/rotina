@@ -1,6 +1,4 @@
-.35); border-color:var(--yellow); }
-  .streak-cell.partial .streak-letter{ color:#2a2410; font-weight:bold; }
-  .streak-cell.none{ background:rgba(255,107,107,.18); border-color:rgba(255,107,107,.4); }
+; }
   .streak-cell.today{ box-shadow:0 0 0 2px var(--yellow); }
 
   /* ---------- períodos ---------- */
@@ -202,15 +200,41 @@
     border-top:2px dashed var(--line);
   }
 
-  h3.block-title{
+  .block-collapsible{
+    margin-top:22px;
+    padding-top:16px;
+    border-top:2px dashed var(--line);
+  }
+  .block-collapsible summary{
     font-family:"Segoe Print","Bradley Hand",cursive;
     font-weight:normal;
     font-size:1.2rem;
-    margin:0 0 12px;
     text-align:center;
+    cursor:pointer;
+    list-style:none;
+    color:var(--chalk);
+    padding:4px 0;
+    position:relative;
   }
-  .bad-title{ color:var(--red); }
-  .reward-title{ color:var(--pink); }
+  .block-collapsible summary::-webkit-details-marker{ display:none; }
+  .block-collapsible summary::after{
+    content:"▾";
+    display:inline-block;
+    margin-left:8px;
+    font-size:.85rem;
+    color:var(--chalk-dim);
+    transition:transform .2s ease;
+  }
+  .block-collapsible[open] summary::after{ transform:rotate(180deg); }
+  .block-collapsible summary:hover{ color:var(--yellow); }
+  .block-collapsible-body{
+    margin-top:14px;
+    animation:detailsFadeIn .25s ease;
+  }
+  @keyframes detailsFadeIn{
+    0%{ opacity:0; transform:translateY(-4px); }
+    100%{ opacity:1; transform:translateY(0); }
+  }
 
   .bad-habits{ display:flex; flex-wrap:wrap; gap:9px; justify-content:center; }
 
@@ -262,28 +286,4 @@
     font-weight:bold;
   }
   .reward button:disabled{
-    background:rgba(255,255,255,.08);
-    color:var(--chalk-dim);
-    cursor:not-allowed;
-  }
-
-  .log{
-    margin-top:20px;
-    padding-top:12px;
-    border-top:1px dashed var(--line);
-    font-size:.72rem;
-    color:var(--chalk-dim);
-    max-height:100px;
-    overflow-y:auto;
-  }
-  .log-title{ text-transform:uppercase; letter-spacing:1px; font-size:.62rem; margin-bottom:5px; }
-  .log div{ padding:2px 0; }
-
-
-  .hair-section{
-    margin-top:18px;
-    padding:14px 16px;
-    border:1px solid rgba(95,216,117,.3);
-    border-radius:12px;
-    background:rgba(255,255,255,.025);
-  }
+    background:rgba(255,255,255,.08)

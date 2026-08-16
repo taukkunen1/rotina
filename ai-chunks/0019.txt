@@ -1,3 +1,22 @@
+'reward'){
+      draft.rewards.push({ id: uid('r'), txt:'', cost:10 });
+      renderEditorRewards();
+    } else if(kind === 'schedule'){
+      draft.schedule.push({ id: uid('sc'), label:'', days:[], start:'09:00', end:'10:00', period:'tarde', pts:3 });
+      renderEditorSchedule();
+    }
+  });
+});
+
+document.getElementById('celebrationCloseBtn').addEventListener('click', closeEvolutionCelebration);
+document.getElementById('evolutionCelebration').addEventListener('click', e=>{
+  if(e.target.id === 'evolutionCelebration') closeEvolutionCelebration();
+});
+
+document.getElementById('editBtn').addEventListener('click', ()=>{
+  if(CONFIG.editorPin){
+    const entered = prompt('Digite o PIN pra editar:');
+    if(entered === null) return; // cancelou
     if(entered !== CONFIG.editorPin){
       alert('PIN incorreto.');
       return;
@@ -165,25 +184,4 @@ function doPost(e) {
     if (/^rotina-hector-backup-\d{4}-\d{2}-\d{2}[.]json$/.test(f.getName())) allBackups.push(f);
   }
   allBackups.sort(function(a,b){ return b.getDateCreated().getTime() - a.getDateCreated().getTime(); });
-  for (var i=30; i<allBackups.length; i++) allBackups[i].setTrashed(true);
-
-  return ContentService.createTextOutput(JSON.stringify({ok:true, revision:nextRevision})).setMimeType(ContentService.MimeType.JSON);
-}`;
-
-function renderDriveSync(){
-  const el = document.getElementById('driveSyncSection');
-  if(!el) return;
-  if(!adultUnlocked){ el.innerHTML=''; return; }
-
-  const configured = !!APPS_SCRIPT_URL;
-
-  let statusHtml, actionsHtml;
-
-  if(!configured){
-    statusHtml = `Ainda não configurado neste arquivo.`;
-    actionsHtml = `
-      <button class="icon-btn" id="driveSetupInfoBtn">como configurar</button>
-      <button class="icon-btn" id="driveCopyCodeBtn">📋 ver código do Apps Script</button>
-    `;
-  } else {
-    statusHtml = state.driveLastSyn
+  for (va

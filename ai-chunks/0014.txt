@@ -1,4 +1,30 @@
-tages[stage];
+ngth >= day;
+    return { label, day, date: reached ? sorted[day-1] : null, reached };
+  });
+}
+
+function renderAchievementMural(){
+  const el = document.getElementById('achievementMuralSection');
+  if(!el) return;
+  const milestones = getMilestoneDates();
+  const cardsHtml = milestones.map(m=>`
+    <div class="mural-card ${m.reached?'reached':''}">
+      <div class="mural-stage">${m.label}</div>
+      <div class="mural-date">${m.reached ? formatDateBR(m.date) : '—'}</div>
+    </div>
+  `).join('');
+  el.innerHTML = `
+    <div class="achievement-mural">
+      <div class="mural-grid">${cardsHtml}</div>
+    </div>
+  `;
+}
+
+function renderPet(){
+  const el = document.getElementById('petSection');
+  const data = computePetStage();
+  const { stage, stageFloat, daysEquivalent, cycleDays, maxStage, canGrowToday } = data;
+  const stageInfo = CONFIG.pet.stages[stage];
   const progressPct = Math.round((daysEquivalent/cycleDays)*100);
 
   renderMiniPacus(stageFloat);
@@ -173,21 +199,4 @@ function render(){
 
   const periodsEl = document.getElementById('periods');
   periodsEl.innerHTML = '';
-  Object.entries(getPeriodsFor(todayISO())).forEach(([key, period])=>{
-    const div = document.createElement('div');
-    div.className = 'period ' + key;
-
-    const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    const doneCount = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-    const remaining = applicable.length - doneCount;
-    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
-
-    let progressMsg;
-    if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
-    else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
-    else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
-    else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
-
-    const ul = document.createElement('ul');
-    ul.className = 'tasks';
-    const orderedTasks = getEffectiveTaskOrder(k
+  Object.entries(getPeriod

@@ -1,4 +1,18 @@
-<div class="hair-actions">
+>
+
+
+      <div id="familyGameNightAnnouncement"></div>
+
+      <section class="pet-section" id="petSection"></section>
+
+      <div id="weekendIndicator"></div>
+      <div class="periods" id="periods"></div>
+
+      <section class="hair-section" id="hairSection">
+        <div class="hair-head">
+          <div class="hair-title">🧴 Lavar o cabelo</div>
+        </div>
+        <div class="hair-actions">
           <button type="button" class="hair-btn" id="hairWashedBtn">💧 Lavei o cabelo</button>
           <button type="button" class="hair-btn" id="hairNotWashedBtn">○ Não lavei</button>
         </div>
@@ -7,40 +21,57 @@
 
       <section class="block" id="gameTimerSection"></section>
 
-      <section class="block" id="customTimersSection"></section>
+      <details class="block-collapsible">
+        <summary>⏱️ Timers</summary>
+        <section class="block-collapsible-body" id="customTimersSection"></section>
+      </details>
 
-      <section class="block">
-        <h3 class="block-title bad-title">✨ Pacus Points Extra</h3>
-        <div class="bad-habits" id="badHabits"></div>
-      </section>
-
-      <section class="block">
-        <h3 class="block-title reward-title">🎁 Loja de Recompensas</h3>
-        <div class="rewards" id="rewards"></div>
-        <div id="pointValueNote" style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;"></div>
-      </section>
-
-      <div class="log">
-        <div class="log-title">Histórico de hoje</div>
-        <div id="logList"></div>
-      </div>
-
-      <section class="block" id="achievementMuralSection"></section>
-
-      <section class="block" id="weeklyReviewSection"></section>
-
-      <section class="block">
-        <h3 class="block-title" style="color:var(--green);">📅 Histórico dos dias</h3>
-        <div class="history">
-          <table class="history-table" id="historyTable">
-            <thead>
-              <tr><th>Dia</th><th>Tarefas</th><th>Pacus Points</th><th>Cabelo</th><th></th></tr>
-            </thead>
-            <tbody id="historyBody"></tbody>
-          </table>
+      <details class="block-collapsible">
+        <summary>✨ Pacus Points Extra</summary>
+        <div class="block-collapsible-body">
+          <div class="bad-habits" id="badHabits"></div>
         </div>
-        <div id="historyToggle" style="text-align:center; margin-top:10px;"></div>
-      </section>
+      </details>
+
+      <details class="block-collapsible">
+        <summary>🎁 Loja de Recompensas</summary>
+        <div class="block-collapsible-body">
+          <div class="rewards" id="rewards"></div>
+          <div id="pointValueNote" style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;"></div>
+        </div>
+      </details>
+
+      <details class="block-collapsible">
+        <summary>📝 Histórico de hoje</summary>
+        <div class="block-collapsible-body">
+          <div id="logList"></div>
+        </div>
+      </details>
+
+      <details class="block-collapsible">
+        <summary>🏆 Mural de Conquistas do Pacus</summary>
+        <section class="block-collapsible-body" id="achievementMuralSection"></section>
+      </details>
+
+      <details class="block-collapsible">
+        <summary>🗓️ Resumo semanal em família</summary>
+        <section class="block-collapsible-body" id="weeklyReviewSection"></section>
+      </details>
+
+      <details class="block-collapsible">
+        <summary>📅 Histórico dos dias</summary>
+        <div class="block-collapsible-body">
+          <div class="history">
+            <table class="history-table" id="historyTable">
+              <thead>
+                <tr><th>Dia</th><th>Tarefas</th><th>Pacus Points</th><th>Cabelo</th><th></th></tr>
+              </thead>
+              <tbody id="historyBody"></tbody>
+            </table>
+          </div>
+          <div id="historyToggle" style="text-align:center; margin-top:10px;"></div>
+        </div>
+      </details>
 
       <section class="block" id="driveSyncSection"></section>
 
@@ -171,29 +202,4 @@
       <div class="hint">Cota diária de tempo de jogo.</div>
       <div class="edit-row">
         <label style="flex:1; font-size:.85rem;">Horas de jogo por dia</label>
-        <input type="number" min="0" step="0.5" id="gameLimitInput" style="width:70px;">
-      </div>
-    </div>
-
-    <div class="editor-section">
-      <h3>🔒 Segurança</h3>
-      <div class="hint">PIN pra pedir antes de abrir "Editar tudo" — protege de mudanças acidentais.</div>
-      <div class="edit-row">
-        <input type="text" inputmode="numeric" id="editorPinInput" placeholder="ex: 1234 (deixe vazio pra não pedir PIN)" maxlength="8">
-      </div>
-    </div>
-
-    <div class="editor-footer">
-      <button class="btn" id="adultTestBtn">🧪 modo teste</button>
-      <button class="btn" id="cancelBtn">fechar</button>
-      <button class="btn save" id="saveBtn">salvar tudo</button>
-    </div>
-  </div>
-</div>
-
-<script>
-/* =========================================================================
-   DEFAULT_CONFIG só é usado da primeira vez que o arquivo abre (sem nada
-   salvo ainda no navegador). Depois disso tudo é editado pela tela e fica
-   guardado em localStorage — o botão "Editar tudo" já resolve tudo.
-   ==================
+        <input type="number" min="0" step="0.5" id="

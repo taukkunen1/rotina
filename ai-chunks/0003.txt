@@ -1,3 +1,24 @@
+;
+    color:var(--chalk-dim);
+    cursor:not-allowed;
+  }
+
+  #logList{
+    font-size:.72rem;
+    color:var(--chalk-dim);
+    max-height:100px;
+    overflow-y:auto;
+  }
+  #logList div{ padding:2px 0; }
+
+
+  .hair-section{
+    margin-top:18px;
+    padding:14px 16px;
+    border:1px solid rgba(95,216,117,.3);
+    border-radius:12px;
+    background:rgba(255,255,255,.025);
+  }
   .hair-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
   .hair-title{font-size:1rem;color:var(--chalk);font-weight:bold;}
   .hair-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
@@ -279,20 +300,4 @@
     border:1px solid var(--line);
     color:var(--chalk);
     border-radius:6px;
-    padding:6px 8px;
-    font-size:.8rem;
-    font-family:inherit;
-  }
-
-  .confetti-piece{
-    position:fixed;
-    top:0; left:0;
-    width:8px; height:8px;
-    pointer-events:none;
-    z-index:200;
-    border-radius:2px;
-    animation:confetti-fall 900ms ease-out forwards;
-  }
-  @keyframes confetti-fall{
-    0%{ transform:translate(0,0) rotate(0deg); opacity:1; }
-    100%{ tr
+    pa

@@ -1,4 +1,35 @@
-ovana e Hector.
+ndIndex(t=>t.id === 'n6');
+        if(idx >= 0) tasks.splice(idx+1, 0, newTask);
+        else tasks.push(newTask);
+      }
+    }
+  });
+  cfg.creativeTaskV1Applied = true;
+  return cfg;
+}
+
+// Marca as tarefas que não dependem da iniciativa do Hector (refeições e
+// horário da escola são definidos pela família/instituição, não por ele)
+// pra ficarem "soltas" — fora do encadeamento de "próxima tarefa sugerida".
+const EXTERNAL_TASK_IDS = ["t2","t4","n1"];
+function markExternalTasksV1(cfg){
+  if(!cfg || cfg.externalTasksV1Applied) return cfg;
+  ['periods','periodsWeekend'].forEach(key=>{
+    const p = cfg[key];
+    if(!p) return;
+    ['manha','tarde','noite'].forEach(period=>{
+      if(p[period] && Array.isArray(p[period].tasks)){
+        p[period].tasks.forEach(t=>{
+          if(EXTERNAL_TASK_IDS.includes(t.id)) t.external = true;
+        });
+      }
+    });
+  });
+  cfg.externalTasksV1Applied = true;
+  return cfg;
+}
+
+// Tarde de Jogos em Família — toda quinta à tarde, com Pedro, Geovana e Hector.
 function addFamilyGameNightV1(cfg){
   if(!cfg || cfg.familyGameNightV1Applied) return cfg;
   if(!Array.isArray(cfg.schedule)) cfg.schedule = [];
@@ -183,33 +214,4 @@ function applyHistoryCorrection_v2(state){
 
   if(!state.history) state.history = {};
   if(!state.hairByDate) state.hairByDate = {};
-  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
-
-  Object.keys(hairByDay).forEach(iso => {
-    const tasks = allTasks(iso);
-    const total = tasks.length;
-    const rawPoints = tasks.reduce((sum, task) => sum + (Number(task.pts) || 0), 0);
-    const penalty = pointsPenaltyByDay[iso] || 0;
-    const netPoints = Math.max(0, rawPoints - penalty);
-
-    state.history[iso] = {
-      done: total,
-      total: total,
-      pointsEarnedThatDay: netPoints,
-      perfect: true,
-      screenMinutes: CONFIG.perfectDayBonusMinutes || 30,
-      periodsCompleted: 3,
-      hair: hairByDay[iso],
-    };
-    state.hairByDate[iso] = hairByDay[iso];
-
-    if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
-  });
-
-  state.petCompletedDays.sort();
-  state.petLastCompletionISO = state.petCompletedDays.length
-    ? state.petCompletedDays[state.petCompletedDays.length - 1]
-    : null;
-
-  // saldo confirmado até 12/08 — hoje (13/08) ainda não foi jogado
-  state
+  if

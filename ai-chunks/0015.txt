@@ -1,4 +1,21 @@
-ey, period.tasks);
+sFor(todayISO())).forEach(([key, period])=>{
+    const div = document.createElement('div');
+    div.className = 'period ' + key;
+
+    const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    const doneCount = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+    const remaining = applicable.length - doneCount;
+    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
+
+    let progressMsg;
+    if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
+    else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
+    else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
+    else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
+
+    const ul = document.createElement('ul');
+    ul.className = 'tasks';
+    const orderedTasks = getEffectiveTaskOrder(key, period.tasks);
     const nextSuggestedId = orderedTasks.find(t => !t.external && !state.checkedToday[t.id])?.id;
     orderedTasks.forEach((task, idx)=>{
       const li = document.createElement('li');
@@ -169,28 +186,4 @@ function renderTestPanel(){
   });
 
   document.getElementById('testPrevDayBtn').addEventListener('click', ()=>{
-    goToTestDate(shiftISODate(todayISO(), -1));
-  });
-  document.getElementById('testNextDayBtn').addEventListener('click', ()=>{
-    goToTestDate(shiftISODate(todayISO(), 1));
-  });
-  document.getElementById('testGoDateBtn').addEventListener('click', ()=>{
-    const val = document.getElementById('testDatePicker').value;
-    if(val) goToTestDate(val);
-  });
-  document.getElementById('testResetDateBtn').addEventListener('click', ()=>{
-    goToTestDate(realToday);
-    setTestDate(null);
-    state = loadState();
-    render();
-  });
-}
-
-// Aviso pontual pra contar a novidade dos Jogos em Família — some pra
-// sempre depois que ele der "combinado!" (fica guardado no estado).
-function renderFamilyGameNightAnnouncement(){
-  const el = document.getElementById('familyGameNightAnnouncement');
-  if(!el) return;
-  if(state.familyGameNightAnnouncementSeen){ el.innerHTML=''; return; }
-
-  el.
+    goToTestDate(shiftISODate(toda

@@ -1,4 +1,27 @@
-0:00:00").getDay()];
+/ com uma pista visual (útil pra leitura rápida / crianças ainda alfabetizando)
+const ICON_RULES = [
+  [/cama/i, "🛏️"], [/água/i, "💧"], [/dente/i, "🦷"], [/rosto|banho/i, "🧼"],
+  [/duolingo|inglês|idioma/i, "🗣️"], [/ler|livro|capítulo/i, "📖"],
+  [/uniforme|vestir/i, "👕"], [/mochila/i, "🎒"], [/almoç/i, "🍽️"],
+  [/escola/i, "🏫"], [/jantar/i, "🍲"], [/bagunça|arrumar/i, "🧹"],
+  [/toalha|cesto|roupa/i, "🧺"], [/tela|jogo|vídeo/i, "📺"],
+  [/dever|tarefa|estud/i, "✏️"], [/dormir|soneca/i, "😴"],
+];
+function taskIcon(txt){
+  for(const [re, icon] of ICON_RULES){ if(re.test(txt)) return icon; }
+  return "⭐";
+}
+
+function isWeekendISO(dateISO){
+  const day = new Date(dateISO+"T00:00:00").getDay();
+  return day === 0 || day === 6;
+}
+
+const WEEKDAY_KEYS = ['dom','seg','ter','qua','qui','sex','sab'];
+const WEEKDAY_LABELS = {dom:'Domingo', seg:'Segunda', ter:'Terça', qua:'Quarta', qui:'Quinta', sex:'Sexta', sab:'Sábado'};
+
+function weekdayKeyFor(dateISO){
+  return WEEKDAY_KEYS[new Date(dateISO+"T00:00:00").getDay()];
 }
 
 function getPeriodsFor(dateISO){
@@ -165,35 +188,4 @@ function addCreativeTaskV1(cfg){
       const tasks = p.noite.tasks;
       if(!tasks.some(t=>t.id === 'n7')){
         const newTask = { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" };
-        const idx = tasks.findIndex(t=>t.id === 'n6');
-        if(idx >= 0) tasks.splice(idx+1, 0, newTask);
-        else tasks.push(newTask);
-      }
-    }
-  });
-  cfg.creativeTaskV1Applied = true;
-  return cfg;
-}
-
-// Marca as tarefas que não dependem da iniciativa do Hector (refeições e
-// horário da escola são definidos pela família/instituição, não por ele)
-// pra ficarem "soltas" — fora do encadeamento de "próxima tarefa sugerida".
-const EXTERNAL_TASK_IDS = ["t2","t4","n1"];
-function markExternalTasksV1(cfg){
-  if(!cfg || cfg.externalTasksV1Applied) return cfg;
-  ['periods','periodsWeekend'].forEach(key=>{
-    const p = cfg[key];
-    if(!p) return;
-    ['manha','tarde','noite'].forEach(period=>{
-      if(p[period] && Array.isArray(p[period].tasks)){
-        p[period].tasks.forEach(t=>{
-          if(EXTERNAL_TASK_IDS.includes(t.id)) t.external = true;
-        });
-      }
-    });
-  });
-  cfg.externalTasksV1Applied = true;
-  return cfg;
-}
-
-// Tarde de Jogos em Família — toda quinta à tarde, com Pedro, Ge
+        const idx = tasks.fi

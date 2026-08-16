@@ -1,4 +1,25 @@
-ISO();
+, {method:'GET', cache:'no-store'});
+    if(res.ok){
+      const backup = await res.json();
+      if(backup && backup.config && backup.state){
+        const localRevision = Number(state.driveRevision)||0;
+        const localDirty = (Number(state.revision)||0) > localRevision;
+        const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
+        if(localDirty && remoteRevision !== localRevision){
+          const merged = mergeRemoteData(backup);
+          CONFIG = merged.config;
+          state = merged.state;
+          state.driveRevision = remoteRevision;
+          saveConfig(CONFIG);
+          saveState(state);
+          render();
+        } else if(remoteRevision >= localRevision){
+          const remoteConfig = sanitizeRemoteConfig(backup.config);
+          if(remoteConfig){
+            CONFIG = remoteConfig;
+            state = reconcileState(backup.state);
+            state.driveRevision = remoteRevision;
+            state.driveLastSyncISO = todayISO();
             try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(CONFIG)); }catch(e){}
             try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
             render();
@@ -200,39 +221,4 @@ function findCustomTimer(id){
 }
 
 function customTimerRemainingNow(t){
-  if(!t.runningSince) return t.remainingSeconds;
-  const elapsed = (Date.now() - t.runningSince)/1000;
-  return Math.max(0, t.remainingSeconds - elapsed);
-}
-
-function setCustomTimerMinutes(id, minutes){
-  const t = findCustomTimer(id);
-  if(!t || t.runningSince) return; // não dá pra mudar enquanto está rodando
-  const secs = Math.max(0, Math.round(minutes*60));
-  t.totalSeconds = secs;
-  t.remainingSeconds = secs;
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function startCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t || t.runningSince || t.remainingSeconds <= 0) return;
-  t.runningSince = Date.now();
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-  startCustomTimerTicking();
-}
-
-function pauseCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t || !t.runningSince) return;
-  t.remainingSeconds = customTimerRemainingNow(t);
-  t.runningSince = null;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function resetCustomTimer(id){
+  i

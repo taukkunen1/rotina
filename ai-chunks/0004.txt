@@ -1,4 +1,20 @@
-ansform:translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity:0; }
+dding:6px 8px;
+    font-size:.8rem;
+    font-family:inherit;
+  }
+
+  .confetti-piece{
+    position:fixed;
+    top:0; left:0;
+    width:8px; height:8px;
+    pointer-events:none;
+    z-index:200;
+    border-radius:2px;
+    animation:confetti-fall 900ms ease-out forwards;
+  }
+  @keyframes confetti-fall{
+    0%{ transform:translate(0,0) rotate(0deg); opacity:1; }
+    100%{ transform:translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity:0; }
   }
 
   .celebration-card{
@@ -305,18 +321,4 @@ ansform:translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity:0; }
 
     <section class="block" id="testPanel" style="display:none;"></section>
 
-    <div class="content">
-
-
-      <div id="familyGameNightAnnouncement"></div>
-
-      <section class="pet-section" id="petSection"></section>
-
-      <div id="weekendIndicator"></div>
-      <div class="periods" id="periods"></div>
-
-      <section class="hair-section" id="hairSection">
-        <div class="hair-head">
-          <div class="hair-title">🧴 Lavar o cabelo</div>
-        </div>
-        
+    <div class="content"

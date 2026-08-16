@@ -1,4 +1,28 @@
-innerHTML = `
+yISO(), -1));
+  });
+  document.getElementById('testNextDayBtn').addEventListener('click', ()=>{
+    goToTestDate(shiftISODate(todayISO(), 1));
+  });
+  document.getElementById('testGoDateBtn').addEventListener('click', ()=>{
+    const val = document.getElementById('testDatePicker').value;
+    if(val) goToTestDate(val);
+  });
+  document.getElementById('testResetDateBtn').addEventListener('click', ()=>{
+    goToTestDate(realToday);
+    setTestDate(null);
+    state = loadState();
+    render();
+  });
+}
+
+// Aviso pontual pra contar a novidade dos Jogos em Família — some pra
+// sempre depois que ele der "combinado!" (fica guardado no estado).
+function renderFamilyGameNightAnnouncement(){
+  const el = document.getElementById('familyGameNightAnnouncement');
+  if(!el) return;
+  if(state.familyGameNightAnnouncementSeen){ el.innerHTML=''; return; }
+
+  el.innerHTML = `
     <div class="family-announcement">
       <div class="title">🕹️ Novidade na família!</div>
       <div class="msg">A partir de agora, toda <b>quinta-feira à noite, das 21h às 23h</b>, é hora de <b>Jogos em Família</b> — Pedro, Geovana e Hector, todo mundo junto! 🎲🎉</div>
@@ -78,7 +102,6 @@ function renderWeeklyReview(){
   el.innerHTML = `
     <div class="weekly-review">
       <div class="wr-head">
-        <h3 class="block-title" style="margin:0; color:var(--green);">🗓️ Resumo semanal em família</h3>
         <span class="wr-range">${rangeLabel}</span>
       </div>
       <div class="wr-stats">
@@ -176,18 +199,4 @@ function renderRewards(){
   rEl.innerHTML = '';
   CONFIG.rewards.forEach(r=>{
     const canAfford = state.totalPoints >= r.cost;
-    const redeemedToday = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
-    const atDailyLimit = r.maxPerDay != null && redeemedToday >= r.maxPerDay;
-    const capNote = r.maxPerDay != null ? `<span class="cap-note">${redeemedToday}/${r.maxPerDay} hoje</span>` : '';
-    const div = document.createElement('div');
-    div.className = 'reward';
-    div.innerHTML = `
-      <div class="name">${r.txt}</div>
-      <span class="cost">${r.cost} PP</span>
-      ${capNote}
-      <button ${(canAfford && !atDailyLimit) ? '' : 'disabled'}>${atDailyLimit ? 'Limite hoje' : 'Resgatar'}</button>
-    `;
-    div.querySelector('button').addEventListener('click', (evt)=>{
-      if(state.totalPoints < r.cost) return;
-      const redeemed = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
-      if(r.maxPerDay
+    const redeemedToday = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 

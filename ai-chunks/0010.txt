@@ -1,4 +1,27 @@
-ontrolando o bônus de tela e o selo "dia perfeito"; esta função aqui
+yCompletion(dateISO){
+  const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
+  const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
+  if(dateISO < startISO || dateISO > endISO) return false;
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+  if(state.petCompletedDays.includes(dateISO)) return false;
+  state.petCompletedDays.push(dateISO);
+  state.petCompletedDays.sort();
+  state.petLastCompletionISO = dateISO;
+  return true;
+}
+
+function isDayPerfect(dateISO){
+  if(dateISO === todayISO()){
+    const tasks = allTasks(dateISO);
+    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    return applicable.length > 0 && applicable.every(t=>state.checkedToday[t.id] === 'done');
+  }
+  return !!(state.history[dateISO] && state.history[dateISO].perfect);
+}
+
+// O crescimento do Pacus NÃO exige o dia 100% perfeito — só que alguma
+// tarefa de verdade tenha sido feita naquele dia. "isDayPerfect" continua
+// controlando o bônus de tela e o selo "dia perfeito"; esta função aqui
 // é só pro crescimento.
 function hasDayProgress(dateISO){
   if(dateISO === todayISO()){
@@ -167,25 +190,4 @@ async function autoPullOnStartup(){
   if(!APPS_SCRIPT_URL) return;
   suppressAutoPush = true;
   try{
-    const res = await fetch(DATA_ENDPOINT, {method:'GET', cache:'no-store'});
-    if(res.ok){
-      const backup = await res.json();
-      if(backup && backup.config && backup.state){
-        const localRevision = Number(state.driveRevision)||0;
-        const localDirty = (Number(state.revision)||0) > localRevision;
-        const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
-        if(localDirty && remoteRevision !== localRevision){
-          const merged = mergeRemoteData(backup);
-          CONFIG = merged.config;
-          state = merged.state;
-          state.driveRevision = remoteRevision;
-          saveConfig(CONFIG);
-          saveState(state);
-          render();
-        } else if(remoteRevision >= localRevision){
-          const remoteConfig = sanitizeRemoteConfig(backup.config);
-          if(remoteConfig){
-            CONFIG = remoteConfig;
-            state = reconcileState(backup.state);
-            state.driveRevision = remoteRevision;
-            state.driveLastSyncISO = today
+    const res = await fetch(DATA_ENDPOINT
