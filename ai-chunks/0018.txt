@@ -1,4 +1,19 @@
-${field}">
+
+        const i = list.indexOf(task);
+        const swapWith = dir === 'up' ? i-1 : i+1;
+        if(swapWith < 0 || swapWith >= list.length) return;
+        [list[i], list[swapWith]] = [list[swapWith], list[i]];
+        renderEditorPeriod(key, elId, periodsObj);
+      });
+    });
+    el.appendChild(row);
+  });
+}
+
+function stepperHTML(field, value, allowNegative){
+  return `<span class="stepper">
+    <button type="button" class="step-btn" data-step="-1" title="menos">−</button>
+    <input type="number" ${allowNegative?'':'min="0"'} value="${value}" data-field="${field}">
     <button type="button" class="step-btn" data-step="1" title="mais">+</button>
   </span>`;
 }
@@ -173,16 +188,4 @@ document.getElementById('overlay').addEventListener('click', e=>{
   if(e.target.id === 'overlay') closeEditor();
 });
 
-document.getElementById('saveBtn').addEventListener('click', ()=>{
-  // limpa linhas vazias (sem nome) antes de salvar
-  ['manha','tarde','noite'].forEach(k=>{
-    draft.periods[k].tasks = draft.periods[k].tasks.filter(t=>t.txt.trim() !== '');
-  });
-  if(draft.periodsWeekend){
-    ['manha','tarde','noite'].forEach(k=>{
-      draft.periodsWeekend[k].tasks = draft.periodsWeekend[k].tasks.filter(t=>t.txt.trim() !== '');
-    });
-  }
-  draft.badHabits = draft.badHabits.filter(h=>h.txt.trim() !== '');
-  draft.rewards = draft.rewards.filter(r=>r.txt.trim() !== '');
-  draft.schedule = (dr
+document.getElementB

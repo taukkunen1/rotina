@@ -1,4 +1,11 @@
-pan class="mark-group" data-id="${task.id}">
++ (isSuggested ? ' suggested' : '')
+        + (late ? ' late-done' : '');
+      li.innerHTML = `
+        <span class="task-reorder">
+          <button type="button" class="mini-reorder-btn" data-dir="up" data-period="${key}" data-task="${task.id}" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
+          <button type="button" class="mini-reorder-btn" data-dir="down" data-period="${key}" data-task="${task.id}" ${idx===orderedTasks.length-1?'disabled':''} title="Mover pra baixo">▼</button>
+        </span>
+        <span class="mark-group" data-id="${task.id}">
           <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
           <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
           <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, perde metade dos pontos">✕</button>
@@ -168,8 +175,8 @@ function renderTestPanel(){
   });
 }
 
-// Aviso pontual pra contar a novidade da Tarde de Jogos em Família — some
-// pra sempre depois que ele der "combinado!" (fica guardado no estado).
+// Aviso pontual pra contar a novidade dos Jogos em Família — some pra
+// sempre depois que ele der "combinado!" (fica guardado no estado).
 function renderFamilyGameNightAnnouncement(){
   const el = document.getElementById('familyGameNightAnnouncement');
   if(!el) return;
@@ -177,30 +184,13 @@ function renderFamilyGameNightAnnouncement(){
 
   el.innerHTML = `
     <div class="family-announcement">
-      <div class="title">🎮🎉 Novidade!</div>
-      <div class="msg">Toda <b>quinta à tarde</b> agora é <b>Tarde de Jogos em Família</b> — Pedro, Geovana e Hector juntos! 🕹️✨</div>
-      <button class="dismiss-btn" id="familyGameNightDismissBtn">combinado! 🤝</button>
+      <div class="title">🕹️ Novidade na família!</div>
+      <div class="msg">A partir de agora, toda <b>quinta-feira, das 16h às 17h30</b>, é hora de <b>Jogos em Família</b> — Pedro, Geovana e Hector, todo mundo junto! 🎲🎉</div>
+      <button class="dismiss-btn" id="familyGameNightDismissBtn">bora! 🤝</button>
     </div>
   `;
   document.getElementById('familyGameNightDismissBtn').addEventListener('click', ()=>{
     state.familyGameNightAnnouncementSeen = true;
     saveState(state);
     renderFamilyGameNightAnnouncement();
-  });
-}
-
-function renderBackupReminder(){
-  const el = document.getElementById('backupReminder');
-  if(!el) return;
-
-  const today = todayISO();
-  const daysSinceBackup = state.lastBackupISO ? daysBetween(state.lastBackupISO, today) : Infinity;
-  const dismissed = state.backupReminderDismissedFor === today;
-
-  const shouldShow = daysSinceBackup >= 7 && !dismissed;
-
-  if(!shouldShow){ el.innerHTML=''; return; }
-
-  const msg = state.lastBackupISO
-    ? `Já faz ${daysSinceBackup} dias desde o último backup. Que tal exportar de novo?`
-    : `Vocês ainda não fizeram ne
+  }

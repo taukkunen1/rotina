@@ -1,4 +1,4 @@
-teISO+"T00:00:00").getDay()];
+0:00:00").getDay()];
 }
 
 function getPeriodsFor(dateISO){
@@ -78,7 +78,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))))));
+  return fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))))))));
 }
 
 // Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
@@ -197,4 +197,4 @@ function markExternalTasksV1(cfg){
 }
 
 // Tarde de Jogos em Família — toda quinta à tarde, com Pedro, Geovana e Hector.
-function addFamilyG
+functi

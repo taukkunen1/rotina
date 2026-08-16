@@ -1,8 +1,8 @@
-ameNightV1(cfg){
+on addFamilyGameNightV1(cfg){
   if(!cfg || cfg.familyGameNightV1Applied) return cfg;
   if(!Array.isArray(cfg.schedule)) cfg.schedule = [];
   if(!cfg.schedule.some(s=>s.id === 'sc4')){
-    cfg.schedule.push({ id:"sc4", label:"Tarde de Jogos em Família", days:["qui"], start:"16:00", end:"17:30", period:"tarde", pts:5 });
+    cfg.schedule.push({ id:"sc4", label:"Jogos em Família", days:["qui"], start:"16:00", end:"17:30", period:"tarde", pts:5 });
   }
   cfg.familyGameNightV1Applied = true;
   return cfg;
@@ -15,13 +15,25 @@ function fixFamilyGameNightV2(cfg){
   if(Array.isArray(cfg.schedule)){
     const item = cfg.schedule.find(s=>s.id === 'sc4');
     if(item){
-      item.label = "Tarde de Jogos em Família";
+      item.label = "Jogos em Família";
       item.period = "tarde";
       item.start = "16:00";
       item.end = "17:30";
     }
   }
   cfg.familyGameNightV2Applied = true;
+  return cfg;
+}
+
+// Nome mais simples — "Tarde de..." era redundante já que o bloco em si
+// já se chama Tarde.
+function fixFamilyGameNightV3(cfg){
+  if(!cfg || cfg.familyGameNightV3Applied) return cfg;
+  if(Array.isArray(cfg.schedule)){
+    const item = cfg.schedule.find(s=>s.id === 'sc4');
+    if(item) item.label = "Jogos em Família";
+  }
+  cfg.familyGameNightV3Applied = true;
   return cfg;
 }
 
@@ -194,15 +206,4 @@ function applyHistoryCorrection_v2(state){
 // (perde os 7 pontos, não a metade). Mesmo não sendo dia 100% perfeito,
 // o Pacus continua contando o dia pro crescimento (crescimento não exige
 // perfeição, só engajamento real). Roda só uma vez.
-function applyHistoryCorrection_v3(state){
-  if(state.historyCorrectionV3Applied) return;
-
-  const days = ["2026-08-13", "2026-08-14"];
-  if(!state.history) state.history = {};
-  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
-
-  let totalDelta = 0;
-  days.forEach(iso=>{
-    const tasks = allTasks(iso);
-    const total = tasks.length;
-    const bagunca = tasks.find(t=
+function applyHis

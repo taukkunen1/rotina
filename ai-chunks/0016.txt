@@ -1,4 +1,21 @@
-nhum backup. Vale exportar um agora pra não perder o progresso.`;
+);
+}
+
+function renderBackupReminder(){
+  const el = document.getElementById('backupReminder');
+  if(!el) return;
+
+  const today = todayISO();
+  const daysSinceBackup = state.lastBackupISO ? daysBetween(state.lastBackupISO, today) : Infinity;
+  const dismissed = state.backupReminderDismissedFor === today;
+
+  const shouldShow = daysSinceBackup >= 7 && !dismissed;
+
+  if(!shouldShow){ el.innerHTML=''; return; }
+
+  const msg = state.lastBackupISO
+    ? `Já faz ${daysSinceBackup} dias desde o último backup. Que tal exportar de novo?`
+    : `Vocês ainda não fizeram nenhum backup. Vale exportar um agora pra não perder o progresso.`;
 
   el.innerHTML = `
     <div class="backup-reminder">
@@ -179,22 +196,4 @@ function renderRewards(){
       renderLog();
       renderGameTimer();
     });
-    rEl.appendChild(div);
-  });
-
-  const noteEl = document.getElementById('pointValueNote');
-  if(noteEl){
-    const brlValue = POINT_VALUE_BRL.toFixed(2).replace('.', ',');
-    const maxBrl = Math.round(MAX_POINTS * POINT_VALUE_BRL);
-    noteEl.textContent = `1 Pacus Point ≈ R$${brlValue} · máximo: ${MAX_POINTS} pontos (~R$${maxBrl})`;
-  }
-}
-
-function renderLog(){
-  const logEl = document.getElementById('logList');
-  logEl.innerHTML = state.log.length
-    ? state.log.map(l=>`<div>${l}</div>`).join('')
-    : '<div>Nada ainda hoje — bora começar!</div>';
-}
-
-function fireConfetti(origin
+    rEl.appendChild(div)

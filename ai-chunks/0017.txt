@@ -1,4 +1,22 @@
-El, count){
+;
+  });
+
+  const noteEl = document.getElementById('pointValueNote');
+  if(noteEl){
+    const brlValue = POINT_VALUE_BRL.toFixed(2).replace('.', ',');
+    const maxBrl = Math.round(MAX_POINTS * POINT_VALUE_BRL);
+    noteEl.textContent = `1 Pacus Point ≈ R$${brlValue} · máximo: ${MAX_POINTS} pontos (~R$${maxBrl})`;
+  }
+}
+
+function renderLog(){
+  const logEl = document.getElementById('logList');
+  logEl.innerHTML = state.log.length
+    ? state.log.map(l=>`<div>${l}</div>`).join('')
+    : '<div>Nada ainda hoje — bora começar!</div>';
+}
+
+function fireConfetti(originEl, count){
   count = count || 14;
   const colors = ['#ffd93d','#ff7eb9','#4fc3f7','#ff9f43','#5fd875'];
   const rect = originEl && originEl.getBoundingClientRect
@@ -170,18 +188,3 @@ function renderEditorPeriod(key, elId, periodsObj){
     row.querySelectorAll('.reorder-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         const dir = btn.getAttribute('data-dir');
-        const i = list.indexOf(task);
-        const swapWith = dir === 'up' ? i-1 : i+1;
-        if(swapWith < 0 || swapWith >= list.length) return;
-        [list[i], list[swapWith]] = [list[swapWith], list[i]];
-        renderEditorPeriod(key, elId, periodsObj);
-      });
-    });
-    el.appendChild(row);
-  });
-}
-
-function stepperHTML(field, value, allowNegative){
-  return `<span class="stepper">
-    <button type="button" class="step-btn" data-step="-1" title="menos">−</button>
-    <input type="number" ${allowNegative?'':'min="0"'} value="${value}" data-field="

@@ -1,4 +1,15 @@
->t.id === 'n5');
+toryCorrection_v3(state){
+  if(state.historyCorrectionV3Applied) return;
+
+  const days = ["2026-08-13", "2026-08-14"];
+  if(!state.history) state.history = {};
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+
+  let totalDelta = 0;
+  days.forEach(iso=>{
+    const tasks = allTasks(iso);
+    const total = tasks.length;
+    const bagunca = tasks.find(t=>t.id === 'n5');
     const penalty = bagunca ? (bagunca.fullPenalty ? bagunca.pts : Math.ceil(bagunca.pts/2)) : 0;
     const rawPoints = tasks.reduce((sum, t) => sum + (Number(t.pts) || 0), 0);
     // pontos de todas as tarefas MENOS os pontos da bagunça (não feita) MENOS a penalidade dela
@@ -62,6 +73,10 @@ function reconcileState(state){
   if(!state.familyAnnouncementResetV2Applied){
     state.familyGameNightAnnouncementSeen = false;
     state.familyAnnouncementResetV2Applied = true;
+  }
+  if(!state.familyAnnouncementResetV3Applied){
+    state.familyGameNightAnnouncementSeen = false;
+    state.familyAnnouncementResetV3Applied = true;
   }
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
@@ -168,15 +183,4 @@ function syncPetCompletionFromDay(dateISO){
   return false;
 }
 
-function closeOutDay(state, dateISO){
-  if(!dateISO) return;
-  const tasks = allTasks(dateISO);
-  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  const total = applicable.length;
-  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-  const pointsEarnedThatDay = tasks
-    .filter(t=>state.checkedToday[t.id] === 'done')
-    .reduce((s,t)=>s+t.pts, 0);
-  const perfect = total > 0 && done === total;
-  if(done > 0) registerPetDayCompletion(dateISO);
-  const screenMinutes = perfect ? (CONFIG.perfectDay
+function closeOutDay(sta

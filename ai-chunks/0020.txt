@@ -1,4 +1,12 @@
-ova implantação".</li>
+guarda os dados, o histórico e uma cópia diária. O app continua funcionando offline e sincroniza quando a conexão volta.</div>
+      <div class="status">${statusHtml}</div>
+      <div class="drive-sync-row">${actionsHtml}</div>
+      <div id="driveSetupInfo" style="display:none;" class="drive-setup">
+        <b>Passo a passo:</b>
+        <ol>
+          <li>Acesse <code>script.google.com</code> → "Novo projeto".</li>
+          <li>Apague o código de exemplo e cole o código do Apps Script (botão "ver código" ao lado).</li>
+          <li>Clique em "Implantar" → "Nova implantação".</li>
           <li>Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer pessoa".</li>
           <li>Implante, autorize (é a sua própria conta), e copie a URL gerada (termina em <code>/exec</code>).</li>
           <li>Cole essa URL na constante <code>APPS_SCRIPT_URL</code> no início do arquivo HTML.</li>

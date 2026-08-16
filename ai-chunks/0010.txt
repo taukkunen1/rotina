@@ -1,4 +1,15 @@
-BonusMinutes || 30) : 0;
+te, dateISO){
+  if(!dateISO) return;
+  const tasks = allTasks(dateISO);
+  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+  const total = applicable.length;
+  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+  const pointsEarnedThatDay = tasks
+    .filter(t=>state.checkedToday[t.id] === 'done')
+    .reduce((s,t)=>s+t.pts, 0);
+  const perfect = total > 0 && done === total;
+  if(done > 0) registerPetDayCompletion(dateISO);
+  const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
   const periodsCompleted = periodsCompletedFrom(state.checkedToday, dateISO);
   state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
 }
@@ -179,19 +190,4 @@ async function autoPullOnStartup(){
 }
 
 function addLog(text){
-  const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-  state.log.unshift(time+" — "+text);
-  state.log = state.log.slice(0, 30);
-}
-function bumpTotal(delta, anchorEl){
-  const el = document.getElementById('totalPoints');
-  el.textContent = state.totalPoints;
-  el.classList.remove('bump');
-  void el.offsetWidth;
-  el.classList.add('bump');
-
-  if(delta){
-    const deltaEl = document.getElementById('pointsDelta');
-    if(deltaEl){
-      const rect = (anchorEl || el).getBoundingClientRect();
-      deltaEl.style.left = (re
+  const time = new Date().toLoc

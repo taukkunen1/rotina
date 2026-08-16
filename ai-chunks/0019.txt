@@ -1,4 +1,16 @@
-aft.schedule || []).filter(s=>s.label.trim() !== '' && s.days.length > 0);
+yId('saveBtn').addEventListener('click', ()=>{
+  // limpa linhas vazias (sem nome) antes de salvar
+  ['manha','tarde','noite'].forEach(k=>{
+    draft.periods[k].tasks = draft.periods[k].tasks.filter(t=>t.txt.trim() !== '');
+  });
+  if(draft.periodsWeekend){
+    ['manha','tarde','noite'].forEach(k=>{
+      draft.periodsWeekend[k].tasks = draft.periodsWeekend[k].tasks.filter(t=>t.txt.trim() !== '');
+    });
+  }
+  draft.badHabits = draft.badHabits.filter(h=>h.txt.trim() !== '');
+  draft.rewards = draft.rewards.filter(r=>r.txt.trim() !== '');
+  draft.schedule = (draft.schedule || []).filter(s=>s.label.trim() !== '' && s.days.length > 0);
 
   const pinVal = document.getElementById('editorPinInput').value.trim();
   draft.editorPin = pinVal;
@@ -166,12 +178,4 @@ function renderDriveSync(){
   el.innerHTML = `
     <div class="drive-sync">
       <h3>☁️ Sincronizado com Google Drive</h3>
-      <div class="hint">O Drive guarda os dados, o histórico e uma cópia diária. O app continua funcionando offline e sincroniza quando a conexão volta.</div>
-      <div class="status">${statusHtml}</div>
-      <div class="drive-sync-row">${actionsHtml}</div>
-      <div id="driveSetupInfo" style="display:none;" class="drive-setup">
-        <b>Passo a passo:</b>
-        <ol>
-          <li>Acesse <code>script.google.com</code> → "Novo projeto".</li>
-          <li>Apague o código de exemplo e cole o código do Apps Script (botão "ver código" ao lado).</li>
-          <li>Clique em "Implantar" → "N
+      <div class="hint">O Drive 
