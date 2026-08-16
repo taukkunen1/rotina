@@ -1,4 +1,13 @@
-   border-radius:10px;
+rgba(255,107,107,.4); }
+  .streak-cell.today{ box-shadow:0 0 0 2px var(--yellow); }
+
+  /* ---------- períodos ---------- */
+  .periods{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:0;
+    border:1px solid var(--line);
+    border-radius:10px;
     overflow:hidden;
   }
   @media (max-width:760px){
@@ -277,6 +286,4 @@
     background:rgba(255,255,255,.025);
   }
   .hair-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
-  .hair-title{font-size:1rem;color:var(--chalk);font-weight:bold;}
-  .hair-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-  .hair-btn{border:1px solid var(--line);background:rgba(255,255,255,.035);color:var(--chalk);border-radius:9px;padding:9px 10px;font:inherit;font-size:.78rem;curso
+  .hair-title{font-size:1rem;color:var(--chalk);font-weigh

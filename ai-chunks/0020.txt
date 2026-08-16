@@ -1,0 +1,91 @@
+
+  document.getElementById('driveSaveBtn').addEventListener('click', driveSave);
+  document.getElementById('driveLoadBtn').addEventListener('click', driveLoad);
+}
+
+async function driveSave(){
+  try{
+    const backup = { config: CONFIG, state: state, exportedAt: new Date().toISOString() };
+    const res = await fetch(DATA_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita pré-checagem CORS
+      body: JSON.stringify(backup),
+    });
+    if(!res.ok) throw new Error('Falha ao salvar');
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Falha ao salvar');
+
+    state.driveLastSyncISO = todayISO();
+    saveState(state);
+    renderDriveSync();
+    alert('Salvo no Google Drive!');
+  }catch(err){
+    alert('Não consegui salvar no Google Drive. Confira se a URL do Apps Script está certa e se a implantação está ativa.');
+  }
+}
+
+async function driveLoad(){
+  try{
+    const res = await fetch(DATA_ENDPOINT, { method: 'GET' });
+    if(!res.ok) throw new Error('Falha ao carregar');
+    const backup = await res.json();
+    if(backup.error === 'not_found'){ alert('Nenhum backup encontrado no Google Drive ainda.'); return; }
+
+    if(!confirm('Isso vai substituir os dados atuais pelos que estão salvos no Google Drive. Continuar?')) return;
+
+    if(backup.config){ CONFIG = backup.config; saveConfig(CONFIG); }
+    if(backup.state){ state = backup.state; saveState(state); }
+
+    render();
+    alert('Dados carregados do Google Drive!');
+  }catch(err){
+    alert('Não consegui carregar do Google Drive. Confira se a URL do Apps Script está certa e se a implantação está ativa.');
+  }
+}
+
+/* ===================== BACKUP LOCAL (exportar / importar) ===================== */
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const backup = { config: CONFIG, state: state, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'rotina-hector-backup-' + todayISO() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  state.lastBackupISO = todayISO();
+  state.backupReminderDismissedFor = null;
+  saveState(state);
+  renderBackupReminder();
+});
+
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const backup = JSON.parse(reader.result);
+      if(!confirm('Isso vai substituir os dados atuais pelos do arquivo importado. Continuar?')) return;
+      if(backup.config) { CONFIG = backup.config; saveConfig(CONFIG); }
+      if(backup.state) { state = backup.state; saveState(state); }
+      render();
+    }catch(err){
+      alert('Não consegui ler esse arquivo de backup.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+render();
+autoPullOnStartup();
+</script>
+</body>
+</html>

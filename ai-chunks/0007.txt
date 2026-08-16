@@ -1,4 +1,44 @@
-e.customTaskOrder = {};
+sSchedule.length === 0 && todaysExceptions.length === 0) return base;
+
+  // clona pra não mexer no CONFIG original, e injeta os compromissos fixos
+  // (e exceções pontuais) de hoje como tarefas de verdade no período certo
+  const merged = JSON.parse(JSON.stringify(base));
+  todaysSchedule.forEach(s=>{
+    const periodKey = s.period && merged[s.period] ? s.period : 'tarde';
+    merged[periodKey].tasks.push({
+      id: 'sched_' + s.id,
+      txt: s.label,
+      sub: `${s.start}–${s.end}`,
+      pts: s.pts != null ? s.pts : 3,
+    });
+  });
+  todaysExceptions.forEach(s=>{
+    const periodKey = s.period && merged[s.period] ? s.period : 'tarde';
+    merged[periodKey].tasks.push({
+      id: 'exc_' + s.id,
+      txt: s.label,
+      sub: `${s.start}–${s.end}`,
+      pts: s.pts != null ? s.pts : 3,
+    });
+  });
+  return merged;
+}
+
+function allTasks(dateISO){
+  const periods = getPeriodsFor(dateISO || todayISO());
+  return [
+    ...periods.manha.tasks,
+    ...periods.tarde.tasks,
+    ...periods.noite.tasks,
+  ];
+}
+
+// O Hector pode reordenar as tarefas do jeito que ele preferir (autonomia
+// ajuda mais que pontos, segundo os estudos) — essa ordem pessoal fica
+// guardada por período e é aplicada por cima da ordem sugerida/científica,
+// sem mexer na configuração dos pais.
+function getEffectiveTaskOrder(periodKey, tasks){
+  if(!state.customTaskOrder) state.customTaskOrder = {};
   const customOrder = state.customTaskOrder[periodKey];
   if(!customOrder || !customOrder.length) return tasks;
   const byId = new Map(tasks.map(t=>[t.id, t]));
@@ -30,7 +70,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))));
+  return addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))))));
 }
 
 // Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
@@ -148,54 +188,17 @@ function markExternalTasksV1(cfg){
   return cfg;
 }
 
+// Noite de Jogos em Família — toda quinta à noite, com a Geovana e o Hector.
+function addFamilyGameNightV1(cfg){
+  if(!cfg || cfg.familyGameNightV1Applied) return cfg;
+  if(!Array.isArray(cfg.schedule)) cfg.schedule = [];
+  if(!cfg.schedule.some(s=>s.id === 'sc4')){
+    cfg.schedule.push({ id:"sc4", label:"Noite de Jogos em Família", days:["qui"], start:"19:00", end:"20:30", period:"noite", pts:5 });
+  }
+  cfg.familyGameNightV1Applied = true;
+  return cfg;
+}
+
 function loadConfig(){
   try{
-    const raw = localStorage.getItem(STORAGE_CONFIG_KEY);
-    if(raw) return stripLegacyHairTask(JSON.parse(raw));
-  }catch(e){}
-  return stripLegacyHairTask(JSON.parse(JSON.stringify(DEFAULT_CONFIG)));
-}
-function saveConfig(cfg){
-  try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(cfg)); }catch(e){}
-  scheduleAutoPush();
-}
-
-let TEST_DATE_OVERRIDE = null; // string ISO "yyyy-mm-dd" ou null (usa a data real do sistema)
-// IMPORTANTE: o modo de teste nunca fica salvo entre aberturas do arquivo —
-// toda vez que a página abre, começa sempre na data real do sistema.
-try{ localStorage.removeItem('hector_rotina_testdate_v1'); }catch(e){}
-
-function todayISO(){
-  if(TEST_DATE_OVERRIDE) return TEST_DATE_OVERRIDE;
-  const d = new Date();
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const day = String(d.getDate()).padStart(2,'0');
-  return d.getFullYear()+"-"+m+"-"+day;
-}
-function setTestDate(iso){
-  TEST_DATE_OVERRIDE = iso; // só em memória — some sozinho ao recarregar a página
-}
-function formatDateBR(iso){
-  const [,m,d] = iso.split("-");
-  return d+"/"+m;
-}
-
-// Extrai a hora/minuto do horário final do período a partir do texto
-// "8:20 – 12:00" (ou similar) — usado tanto pro aviso de tempo restante
-// quanto pra detectar tarefa concluída atrasada.
-function periodEndTime(periodTimeStr){
-  const parts = periodTimeStr.split(/[–-]/).map(s=>s.trim());
-  const endStr = parts[parts.length-1];
-  const [h, m] = endStr.split(':').map(Number);
-  if(isNaN(h)) return null;
-  return { hour: h, minute: m||0 };
-}
-function periodStartTime(periodTimeStr){
-  const parts = periodTimeStr.split(/[–-]/).map(s=>s.trim());
-  const [h, m] = parts[0].split(':').map(Number);
-  if(isNaN(h)) return null;
-  return { hour: h, minute: m||0 };
-}
-
-// Verifica se uma tarefa marcada "feita" hoje foi concluída depois do
-// horário limite do período (comparando timestamps reais, não só a dat
+    const raw = localStorage.getItem(STORAG

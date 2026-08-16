@@ -1,4 +1,6 @@
-r:pointer;}
+t:bold;}
+  .hair-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .hair-btn{border:1px solid var(--line);background:rgba(255,255,255,.035);color:var(--chalk);border-radius:9px;padding:9px 10px;font:inherit;font-size:.78rem;cursor:pointer;}
   .hair-btn.active-washed{background:rgba(95,216,117,.22);border-color:var(--green);color:var(--green);font-weight:bold;}
   .hair-btn.active-notwashed{background:rgba(255,217,61,.12);border-color:rgba(255,217,61,.45);color:var(--yellow);font-weight:bold;}
   .hair-status{text-align:center;margin-top:8px;font-size:.72rem;color:var(--chalk-dim);}
@@ -172,6 +174,44 @@ r:pointer;}
     font-weight:normal;
   }
 
+  .family-announcement{
+    background:linear-gradient(135deg, rgba(255,126,185,.15), rgba(79,195,247,.12));
+    border:2px dashed var(--pink);
+    border-radius:14px;
+    padding:16px 18px;
+    margin-bottom:18px;
+    text-align:center;
+    position:relative;
+    animation:announcePop .4s cubic-bezier(.2,1.4,.4,1);
+  }
+  @keyframes announcePop{
+    0%{ transform:scale(.9); opacity:0; }
+    100%{ transform:scale(1); opacity:1; }
+  }
+  .family-announcement .title{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:1.15rem;
+    color:var(--pink);
+    margin-bottom:6px;
+  }
+  .family-announcement .msg{
+    font-size:.88rem;
+    color:var(--chalk);
+    line-height:1.5;
+  }
+  .family-announcement .dismiss-btn{
+    margin-top:12px;
+    background:var(--pink);
+    color:#2a1420;
+    border:none;
+    padding:7px 18px;
+    border-radius:8px;
+    font-size:.78rem;
+    font-weight:bold;
+    cursor:pointer;
+    font-family:inherit;
+  }
+
   .test-mode-banner{
     background:var(--red);
     color:#2a1414;
@@ -258,55 +298,4 @@ r:pointer;}
     box-shadow:0 0 60px rgba(255,217,61,.35), 0 20px 60px rgba(0,0,0,.6);
     animation:celebrationPop .5s cubic-bezier(.2,1.4,.4,1);
   }
-  @keyframes celebrationPop{
-    0%{ transform:scale(.6); opacity:0; }
-    70%{ transform:scale(1.06); opacity:1; }
-    100%{ transform:scale(1); }
-  }
-  .celebration-mascot{
-    width:150px;
-    height:150px;
-    margin:0 auto 10px;
-  }
-  .celebration-mascot .pet-mascot{ width:100%; height:100%; }
-  .celebration-title{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-size:1.5rem;
-    color:var(--yellow);
-    margin-bottom:6px;
-  }
-  .celebration-stage{
-    font-size:1rem;
-    color:var(--chalk);
-    margin-bottom:18px;
-  }
-  .celebration-stage b{ color:var(--green); }
-
-  footer{
-    text-align:center;
-    margin-top:22px;
-    font-size:.68rem;
-    color:rgba(242,237,225,.28);
-  }
-
-  /* ---------- editor (modal) ---------- */
-  .overlay{
-    position:fixed; inset:0;
-    background:rgba(10,16,13,.72);
-    display:none;
-    align-items:flex-start;
-    justify-content:center;
-    padding:30px 14px;
-    overflow-y:auto;
-    z-index:100;
-  }
-  .overlay.open{ display:flex; }
-
-  .editor{
-    width:100%;
-    max-width:720px;
-    background:var(--board);
-    border:3px solid var(--wood);
-    border-radius:10px;
-    padding:20px 20px 24px;
-    box-shadow:0 20px 60px rgba(0,0,0,.6);
+  @keyf

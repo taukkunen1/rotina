@@ -1,4 +1,51 @@
-nst totalDays = Math.max(1, Math.round((end-start)/86400000)+1);
+<input type="text" class="custom-timer-label" id="customTimerLabel_${t.id}" value="${escapeAttr(t.label)}" maxlength="20">
+        <div class="custom-timer-display" id="customTimerDisplay_${t.id}">${formatHMS(remaining)}</div>
+        <div class="custom-timer-setrow">
+          <input type="number" min="0" step="1" id="customTimerMin_${t.id}" value="${totalMin}" ${running?'disabled':''}>
+          <span>min</span>
+          <button class="custom-timer-btn secondary" id="customTimerSetBtn_${t.id}" ${running?'disabled':''}>definir</button>
+        </div>
+        <div class="custom-timer-btns">
+          <button class="custom-timer-btn" id="customTimerStartBtn_${t.id}" ${(running||remaining<=0)?'disabled':''}>▶️ Iniciar</button>
+          <button class="custom-timer-btn secondary" id="customTimerPauseBtn_${t.id}" ${running?'':'disabled'}>⏸️ Pausar</button>
+          <button class="custom-timer-btn secondary" id="customTimerResetBtn_${t.id}">↺ Reiniciar</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="custom-timers-wrap">
+      <h3>⏱️ Timers</h3>
+      <div class="custom-timers">${cardsHtml}</div>
+    </div>
+  `;
+
+  state.customTimers.forEach(t=>{
+    document.getElementById('customTimerLabel_'+t.id).addEventListener('change', e=>{
+      t.label = e.target.value.trim() || t.label;
+      saveState(state);
+    });
+    document.getElementById('customTimerSetBtn_'+t.id).addEventListener('click', ()=>{
+      const val = parseFloat(document.getElementById('customTimerMin_'+t.id).value);
+      setCustomTimerMinutes(t.id, isNaN(val) ? 0 : val);
+    });
+    document.getElementById('customTimerStartBtn_'+t.id).addEventListener('click', ()=> startCustomTimer(t.id));
+    document.getElementById('customTimerPauseBtn_'+t.id).addEventListener('click', ()=> pauseCustomTimer(t.id));
+    document.getElementById('customTimerResetBtn_'+t.id).addEventListener('click', ()=> resetCustomTimer(t.id));
+  });
+
+  if(anyCustomTimerRunning()) startCustomTimerTicking(); else stopCustomTimerTicking();
+}
+
+/* ---------------- render principal ---------------- */
+/* ===================== PACUS, O AXOLOTE ===================== */
+function getPetCycle(){
+  const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
+  const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
+  const start = new Date(startISO+"T00:00:00");
+  const end = new Date(endISO+"T00:00:00");
+  const totalDays = Math.max(1, Math.round((end-start)/86400000)+1);
   return { startISO, endISO, start, end, totalDays };
 }
 
@@ -102,39 +149,4 @@ function buildPacusSVG(stageFloat){
     </g>
     <g class="pacus-gill" style="animation-delay:${delay}s; transform-origin:${146+i*2}px ${y}px;">
       <path d="M${146+i*2} ${y} Q ${160+len*0.6} ${y-len*0.5} ${170+len/2} ${y-len*0.15}" stroke="#ef8fb3" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <path d="M${146+i*2} ${y} Q ${162+len*0.5} ${y+len*0.15} ${172+len/2} ${y+len*0.35}" stroke="#f3a7c6" stroke-width="2.3" fill="none" stroke-linecap="round"/>
-    </g>`;
-  }
-
-  // pernocas curtinhas, aparecem gradualmente a partir da eclosão
-  const legOpacity = Math.min(1, hatch*1.6).toFixed(2);
-  const legs = `
-    <ellipse cx="${110-bodyW*0.72}" cy="${bodyY+bodyH*0.55}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity}" transform="rotate(-20 ${110-bodyW*0.72} ${bodyY+bodyH*0.55})"/>
-    <ellipse cx="${110+bodyW*0.72}" cy="${bodyY+bodyH*0.55}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity}" transform="rotate(20 ${110+bodyW*0.72} ${bodyY+bodyH*0.55})"/>
-    <ellipse cx="${110-bodyW*0.5}" cy="${bodyY+bodyH*0.92}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity}" transform="rotate(-15 ${110-bodyW*0.5} ${bodyY+bodyH*0.92})"/>
-    <ellipse cx="${110+bodyW*0.5}" cy="${bodyY+bodyH*0.92}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity}" transform="rotate(15 ${110+bodyW*0.5} ${bodyY+bodyH*0.92})"/>
-  `;
-
-  const sparkle = adult > .8 ? `<text x="35" y="64" font-size="18">✨</text><text x="166" y="75" font-size="16">✨</text>` : '';
-
-  return `<svg class="pet-mascot pet-hatch-crack" ${svgAttrs()}>
-    <defs>
-      <radialGradient id="${gid}-body" cx="42%" cy="34%" r="72%">
-        <stop offset="0%" stop-color="#ffe3ef"/>
-        <stop offset="60%" stop-color="#f6c7dc"/>
-        <stop offset="100%" stop-color="#eeaecb"/>
-      </radialGradient>
-    </defs>
-    ${shell}
-    <g transform="translate(110 115) scale(${scale.toFixed(3)}) translate(-110 -115)">
-      <g class="pacus-idle">
-        ${sparkle}
-        ${legs}
-        <ellipse cx="110" cy="${bodyY+bodyH+4}" rx="${18+growth*9}" ry="${7+growth*3}" fill="url(#${gid}-body)"/>
-        <ellipse cx="110" cy="${bodyY}" rx="${bodyW}" ry="${bodyH}" fill="url(#${gid}-body)"/>
-        <ellipse cx="110" cy="${bodyY+8}" rx="${bodyW*.68}" ry="${bodyH*.52}" fill="#fff" opacity=".3"/>
-        ${gills}
-        <circle cx="110" cy="${faceY}" r="32" fill="url(#${gid}-body)"/>
-        <g class="pacus-eye" style="transform-origin:97px ${faceY-4}px;"><circle cx="97" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="98" cy="${faceY-5.5}" r="1.4" fill="#fff"/></g>
-        <g class="pacus-eye" style="transform-origin:123px ${faceY-4}px; animation-delay:.08s;"><circle cx="123" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="124" cy="${faceY-5.5}" r="1.4" fill="#fff"/></g>
-        <path d="M96 ${faceY+12} Q110 ${faceY+18+growth*2} 124 ${faceY+12}" stroke="#b9607f" stroke-width
+      <path d="M${146+i*2} ${y} Q ${162+len*0.5} ${y+len*0.15} ${172+len/2} ${y+len*0.35}" stroke="#f3a7c6" stroke-width=

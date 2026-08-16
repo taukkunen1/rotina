@@ -1,4 +1,28 @@
-txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" },
+", pts:1, sub:"até às 12h" },
+        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:5 },
+        { id:"m8", txt:"Arrumar a mochila", pts:2, sub:"até às 12h" },
+        { id:"t_djf7hbb", txt:"Levar Lixo", pts:4, sub:"até às 12h" },
+        { id:"m2", txt:"Beber 1 copo de água", pts:1, sub:"até às 12h" },
+      ]
+    },
+    tarde: {
+      label: "Tarde", time: "12:00 – 18:00",
+      tasks: [
+        { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h", external:true },
+        { id:"t3", txt:"Escovar os dentes", pts:2, sub:"até às 18h" },
+        { id:"t5", txt:"Arrumar a mochila", pts:2, sub:"até às 18h" },
+        { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h", external:true },
+        { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h" },
+      ]
+    },
+    noite: {
+      label: "Noite", time: "18:00 – 22:00",
+      tasks: [
+        { id:"n5", txt:"Arrumar a bagunça", pts:7, fullPenalty:true, sub:"até às 22h" },
+        { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h", external:true },
+        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4 },
+        { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h" },
+        { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" },
         { id:"t_ci3brlt", txt:"Ler Livro", pts:4, sub:"3 capítulo do livro de casa (até às 22h)" },
         { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h" },
       ]
@@ -25,6 +49,7 @@ txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 mi
   schedule: [
     { id:"sc1", label:"Inglês", days:["ter","qui"], start:"09:00", end:"10:00", period:"manha", pts:5 },
     { id:"sc3", label:"Escoteiros", days:["sab"], start:"13:00", end:"17:30", period:"tarde", pts:5 },
+    { id:"sc4", label:"Noite de Jogos em Família", days:["qui"], start:"19:00", end:"20:30", period:"noite", pts:5 },
   ],
 
   // exceções pontuais: um compromisso só naquele dia específico, sem mexer
@@ -137,44 +162,4 @@ function getPeriodsFor(dateISO){
   const weekday = weekdayKeyFor(dateISO);
   const todaysSchedule = (CONFIG.schedule || []).filter(s => s.days && s.days.includes(weekday));
   const todaysExceptions = (CONFIG.scheduleExceptions || []).filter(s => s.date === dateISO);
-  if(todaysSchedule.length === 0 && todaysExceptions.length === 0) return base;
-
-  // clona pra não mexer no CONFIG original, e injeta os compromissos fixos
-  // (e exceções pontuais) de hoje como tarefas de verdade no período certo
-  const merged = JSON.parse(JSON.stringify(base));
-  todaysSchedule.forEach(s=>{
-    const periodKey = s.period && merged[s.period] ? s.period : 'tarde';
-    merged[periodKey].tasks.push({
-      id: 'sched_' + s.id,
-      txt: s.label,
-      sub: `${s.start}–${s.end}`,
-      pts: s.pts != null ? s.pts : 3,
-    });
-  });
-  todaysExceptions.forEach(s=>{
-    const periodKey = s.period && merged[s.period] ? s.period : 'tarde';
-    merged[periodKey].tasks.push({
-      id: 'exc_' + s.id,
-      txt: s.label,
-      sub: `${s.start}–${s.end}`,
-      pts: s.pts != null ? s.pts : 3,
-    });
-  });
-  return merged;
-}
-
-function allTasks(dateISO){
-  const periods = getPeriodsFor(dateISO || todayISO());
-  return [
-    ...periods.manha.tasks,
-    ...periods.tarde.tasks,
-    ...periods.noite.tasks,
-  ];
-}
-
-// O Hector pode reordenar as tarefas do jeito que ele preferir (autonomia
-// ajuda mais que pontos, segundo os estudos) — essa ordem pessoal fica
-// guardada por período e é aplicada por cima da ordem sugerida/científica,
-// sem mexer na configuração dos pais.
-function getEffectiveTaskOrder(periodKey, tasks){
-  if(!state.customTaskOrder) stat
+  if(today

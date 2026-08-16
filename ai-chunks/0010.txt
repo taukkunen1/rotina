@@ -1,4 +1,71 @@
-Array.isArray(safe.scheduleExceptions)) safe.scheduleExceptions = [];
+PushTimer = setTimeout(doAutoPush, 2000);
+}
+
+async function doAutoPush(){
+  if(!APPS_SCRIPT_URL) return;
+  try{
+    const payload = {
+      appVersion: APP_VERSION,
+      config: CONFIG,
+      state: state,
+      baseRevision: Number(state.driveRevision)||0,
+      clientRevision: Number(state.revision)||0,
+      clientUpdatedAt: state.updatedAt || new Date().toISOString(),
+      exportedAt: new Date().toISOString()
+    };
+    const res = await fetch(DATA_ENDPOINT, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if(result.ok){
+      state.driveRevision = Number(result.revision)||state.driveRevision;
+      state.driveLastSyncISO = todayISO();
+      state.driveConflictCount = 0;
+      try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+      renderDriveSync();
+      return;
+    }
+    if(result.conflict && result.data){
+      state.driveConflictCount = (Number(state.driveConflictCount)||0)+1;
+      const server = result.data;
+      const merged = mergeRemoteData(server);
+      CONFIG = merged.config;
+      state = merged.state;
+      state.driveRevision = Number(result.revision)||Number(server.state?.driveRevision)||0;
+      state.driveLastSyncISO = todayISO();
+      saveState(state);
+      saveConfig(CONFIG);
+      render();
+    }
+  }catch(err){
+    renderDriveSync();
+  }
+}
+
+function isValidPeriodsConfig(cfg){
+  try{
+    const p = cfg && cfg.periods;
+    return !!(
+      p &&
+      p.manha && Array.isArray(p.manha.tasks) && p.manha.tasks.length > 0 &&
+      p.tarde && Array.isArray(p.tarde.tasks) && p.tarde.tasks.length > 0 &&
+      p.noite && Array.isArray(p.noite.tasks) && p.noite.tasks.length > 0
+    );
+  }catch(e){
+    return false;
+  }
+}
+
+function sanitizeRemoteConfig(remoteConfig){
+  if(!isValidPeriodsConfig(remoteConfig)) return null;
+  const safe = JSON.parse(JSON.stringify(remoteConfig));
+  if(!safe.periodsWeekend) safe.periodsWeekend = null;
+  if(!Array.isArray(safe.badHabits)) safe.badHabits = [];
+  if(!Array.isArray(safe.rewards)) safe.rewards = [];
+  if(!Array.isArray(safe.schedule)) safe.schedule = [];
+  if(!Array.isArray(safe.scheduleExceptions)) safe.scheduleExceptions = [];
   if(!safe.pet || !Array.isArray(safe.pet.stages) || safe.pet.stages.length < 2) {
     safe.pet = JSON.parse(JSON.stringify(DEFAULT_CONFIG.pet));
   }
@@ -134,79 +201,4 @@ function taskNotDonePenalty(task){
 let gameTimerTickHandle = null;
 
 function gameTimerDailyLimitSeconds(){
-  const base = Math.round((CONFIG.screenDailyLimitHours || 2) * 3600);
-  const bonus = Math.round((state.gameTimer.bonusSeconds || 0));
-  return base + bonus;
-}
-
-function addGameTimerBonusHours(hours){
-  if(!state.gameTimer.bonusSeconds) state.gameTimer.bonusSeconds = 0;
-  state.gameTimer.bonusSeconds += Math.round(hours * 3600);
-}
-
-function gameTimerSecondsUsedNow(){
-  const gt = state.gameTimer;
-  const running = gt.runningSince ? (Date.now() - gt.runningSince)/1000 : 0;
-  return gt.usedSeconds + running;
-}
-
-function gameTimerIsRunning(){
-  return !!state.gameTimer.runningSince;
-}
-
-function startGameTimer(){
-  if(gameTimerIsRunning()) return;
-  state.gameTimer.runningSince = Date.now();
-  addLog('🎮 começou a jogar');
-  saveState(state);
-  renderGameTimer();
-  startGameTimerTicking();
-}
-
-function stopGameTimer(){
-  if(!gameTimerIsRunning()) return;
-  const elapsed = (Date.now() - state.gameTimer.runningSince)/1000;
-  state.gameTimer.usedSeconds += elapsed;
-  state.gameTimer.runningSince = null;
-  addLog('⏸️ parou de jogar');
-  saveState(state);
-  renderGameTimer();
-  stopGameTimerTicking();
-}
-
-// enquanto está rodando, "descarrega" o tempo periodicamente pro estado
-// salvo — assim não perde o progresso se a página fechar sem clicar em parar
-function flushGameTimer(){
-  if(!gameTimerIsRunning()) return;
-  const elapsed = (Date.now() - state.gameTimer.runningSince)/1000;
-  state.gameTimer.usedSeconds += elapsed;
-  state.gameTimer.runningSince = Date.now();
-  saveState(state);
-}
-
-function formatMinSec(totalSeconds){
-  const s = Math.max(0, Math.round(totalSeconds));
-  const h = Math.floor(s/3600);
-  const m = Math.floor((s%3600)/60);
-  if(h > 0) return `${h}h ${String(m).padStart(2,'0')}min`;
-  return `${m} min`;
-}
-
-function startGameTimerTicking(){
-  if(gameTimerTickHandle) return;
-  let flushCounter = 0;
-  gameTimerTickHandle = setInterval(()=>{
-    updateGameTimerDisplay();
-    flushCounter++;
-    if(flushCounter >= 20){ // ~20s, descarrega pro estado salvo
-      flushCounter = 0;
-      flushGameTimer();
-    }
-  }, 1000);
-}
-function stopGameTimerTicking(){
-  if(gameTimerTickHandle){ clearInterval(gameTimerTickHandle); gameTimerTickHandle = null; }
-}
-
-function updateGameTimerDisplay(){
-  const usedEl = document.getElementBy
+  const base = Math.round((CONFIG.screenDailyLimitHours || 2) 

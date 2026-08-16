@@ -1,4 +1,43 @@
-yISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
+ hair,
+    };
+
+    // crescimento do Pacus não exige dia perfeito — só engajamento real
+    if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
+  });
+
+  state.petCompletedDays.sort();
+  state.petLastCompletionISO = state.petCompletedDays.length
+    ? state.petCompletedDays[state.petCompletedDays.length - 1]
+    : null;
+
+  state.totalPoints = Math.max(0, (Number(state.totalPoints)||0) + totalDelta);
+  state.historyCorrectionV3Applied = true;
+}
+
+function seedKnownPerfectDays(state){
+  applyHistoryCorrection_v2(state);
+  applyHistoryCorrection_v3(state);
+}
+
+function reconcileState(state){
+  if(state.driveFileId === undefined) state.driveFileId = null;
+  if(state.driveLastSyncISO === undefined) state.driveLastSyncISO = null;
+  if(state.lastSeenPetStage === undefined) state.lastSeenPetStage = 0;
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+  if(state.petLastCompletionISO === undefined) state.petLastCompletionISO = null;
+  if(typeof state.revision !== 'number') state.revision = 0;
+  if(typeof state.driveRevision !== 'number') state.driveRevision = 0;
+  if(typeof state.driveConflictCount !== 'number') state.driveConflictCount = 0;
+  if(state.lastBackupISO === undefined) state.lastBackupISO = null;
+  if(state.backupReminderDismissedFor === undefined) state.backupReminderDismissedFor = null;
+  if(!state.checkedToday) state.checkedToday = {};
+  if(!state.log) state.log = [];
+  if(!state.history) state.history = {};
+  if(!state.hairByDate || typeof state.hairByDate !== "object") state.hairByDate = {};
+  if(!state.taskDoneAt || typeof state.taskDoneAt !== "object") state.taskDoneAt = {};
+  if(!state.customTaskOrder || typeof state.customTaskOrder !== "object") state.customTaskOrder = {};
+  if(!state.gameTimer || typeof state.gameTimer !== "object"){
+    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
   }
   if(state.gameTimer.bonusSeconds === undefined) state.gameTimer.bonusSeconds = 0;
   if(!state.gameTimer.redemptions || typeof state.gameTimer.redemptions !== "object") state.gameTimer.redemptions = {};
@@ -53,6 +92,13 @@ function periodsCompletedFrom(checkedMap, dateISO){
     if(applicable.length>0 && applicable.every(t=>checkedMap[t.id]==='done')) count++;
   });
   return count;
+}
+
+// Tempo de tela só desbloqueia depois que a Manhã inteira estiver feita.
+function isManhaComplete(dateISO){
+  const periods = getPeriodsFor(dateISO || todayISO());
+  const applicable = periods.manha.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+  return applicable.length > 0 && applicable.every(t=>state.checkedToday[t.id] === 'done');
 }
 
 function registerPetDayCompletion(dateISO){
@@ -136,71 +182,4 @@ let autoPushTimer = null;
 function scheduleAutoPush(){
   if(!APPS_SCRIPT_URL || suppressAutoPush) return;
   clearTimeout(autoPushTimer);
-  autoPushTimer = setTimeout(doAutoPush, 2000);
-}
-
-async function doAutoPush(){
-  if(!APPS_SCRIPT_URL) return;
-  try{
-    const payload = {
-      appVersion: APP_VERSION,
-      config: CONFIG,
-      state: state,
-      baseRevision: Number(state.driveRevision)||0,
-      clientRevision: Number(state.revision)||0,
-      clientUpdatedAt: state.updatedAt || new Date().toISOString(),
-      exportedAt: new Date().toISOString()
-    };
-    const res = await fetch(DATA_ENDPOINT, {
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify(payload)
-    });
-    const result = await res.json();
-    if(result.ok){
-      state.driveRevision = Number(result.revision)||state.driveRevision;
-      state.driveLastSyncISO = todayISO();
-      state.driveConflictCount = 0;
-      try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
-      renderDriveSync();
-      return;
-    }
-    if(result.conflict && result.data){
-      state.driveConflictCount = (Number(state.driveConflictCount)||0)+1;
-      const server = result.data;
-      const merged = mergeRemoteData(server);
-      CONFIG = merged.config;
-      state = merged.state;
-      state.driveRevision = Number(result.revision)||Number(server.state?.driveRevision)||0;
-      state.driveLastSyncISO = todayISO();
-      saveState(state);
-      saveConfig(CONFIG);
-      render();
-    }
-  }catch(err){
-    renderDriveSync();
-  }
-}
-
-function isValidPeriodsConfig(cfg){
-  try{
-    const p = cfg && cfg.periods;
-    return !!(
-      p &&
-      p.manha && Array.isArray(p.manha.tasks) && p.manha.tasks.length > 0 &&
-      p.tarde && Array.isArray(p.tarde.tasks) && p.tarde.tasks.length > 0 &&
-      p.noite && Array.isArray(p.noite.tasks) && p.noite.tasks.length > 0
-    );
-  }catch(e){
-    return false;
-  }
-}
-
-function sanitizeRemoteConfig(remoteConfig){
-  if(!isValidPeriodsConfig(remoteConfig)) return null;
-  const safe = JSON.parse(JSON.stringify(remoteConfig));
-  if(!safe.periodsWeekend) safe.periodsWeekend = null;
-  if(!Array.isArray(safe.badHabits)) safe.badHabits = [];
-  if(!Array.isArray(safe.rewards)) safe.rewards = [];
-  if(!Array.isArray(safe.schedule)) safe.schedule = [];
-  if(!
+  auto

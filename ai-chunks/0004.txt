@@ -1,3 +1,55 @@
+rames celebrationPop{
+    0%{ transform:scale(.6); opacity:0; }
+    70%{ transform:scale(1.06); opacity:1; }
+    100%{ transform:scale(1); }
+  }
+  .celebration-mascot{
+    width:150px;
+    height:150px;
+    margin:0 auto 10px;
+  }
+  .celebration-mascot .pet-mascot{ width:100%; height:100%; }
+  .celebration-title{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:1.5rem;
+    color:var(--yellow);
+    margin-bottom:6px;
+  }
+  .celebration-stage{
+    font-size:1rem;
+    color:var(--chalk);
+    margin-bottom:18px;
+  }
+  .celebration-stage b{ color:var(--green); }
+
+  footer{
+    text-align:center;
+    margin-top:22px;
+    font-size:.68rem;
+    color:rgba(242,237,225,.28);
+  }
+
+  /* ---------- editor (modal) ---------- */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(10,16,13,.72);
+    display:none;
+    align-items:flex-start;
+    justify-content:center;
+    padding:30px 14px;
+    overflow-y:auto;
+    z-index:100;
+  }
+  .overlay.open{ display:flex; }
+
+  .editor{
+    width:100%;
+    max-width:720px;
+    background:var(--board);
+    border:3px solid var(--wood);
+    border-radius:10px;
+    padding:20px 20px 24px;
+    box-shadow:0 20px 60px rgba(0,0,0,.6);
   }
 
   .editor-head{
@@ -242,6 +294,8 @@
     <div class="content">
 
 
+      <div id="familyGameNightAnnouncement"></div>
+
       <section class="pet-section" id="petSection"></section>
 
       <div id="weekendIndicator"></div>
@@ -260,36 +314,4 @@
 
       <section class="block" id="gameTimerSection"></section>
 
-      <section class="block" id="customTimersSection"></section>
-
-      <section class="block">
-        <h3 class="block-title bad-title">✨ Pacus Points Extra</h3>
-        <div class="bad-habits" id="badHabits"></div>
-      </section>
-
-      <section class="block">
-        <h3 class="block-title reward-title">🎁 Loja de Recompensas</h3>
-        <div class="rewards" id="rewards"></div>
-        <div id="pointValueNote" style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;"></div>
-      </section>
-
-      <div class="log">
-        <div class="log-title">Histórico de hoje</div>
-        <div id="logList"></div>
-      </div>
-
-      <section class="block" id="achievementMuralSection"></section>
-
-      <section class="block" id="weeklyReviewSection"></section>
-
-      <section class="block">
-        <h3 class="block-title" style="color:var(--green);">📅 Histórico dos dias</h3>
-        <div class="history">
-          <table class="history-table" id="historyTable">
-            <thead>
-              <tr><th>Dia</th><th>Tarefas</th><th>Pacus Points</th><th>Cabelo</th><th></th></tr>
-            </thead>
-            <tbody id="historyBody"></tbody>
-          </table>
-        </div>
-        <div id="historyToggle" style="text-align:center; mar
+      <section class="blo

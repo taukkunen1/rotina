@@ -252,6 +252,16 @@
     font-size:1.05rem;
   }
   .game-timer .hint{ font-size:.7rem; color:var(--chalk-dim); margin-bottom:10px; }
+  .game-timer-locked{
+    background:rgba(255,107,107,.1);
+    border:1px solid rgba(255,107,107,.35);
+    color:var(--red);
+    font-size:.78rem;
+    font-weight:bold;
+    padding:8px 10px;
+    border-radius:8px;
+    margin-bottom:10px;
+  }
   .game-timer-used{ font-size:.95rem; margin-bottom:8px; }
   .game-timer-used b{ color:var(--pink); }
   .game-timer-track{
@@ -282,12 +292,4 @@
     font-family:inherit;
   }
   .game-timer-btn.running{
-    background:rgba(255,255,255,.08);
-    color:var(--chalk);
-    border:1px solid var(--line);
-  }
-
-  /* ---------- timers avulsos (tempo livre pra qualquer coisa) ---------- */
-  .custom-timers-wrap h3{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-we
+    background:rgba(255,255,
