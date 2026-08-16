@@ -1769,7 +1769,7 @@ const DEFAULT_CONFIG = {
   schedule: [
     { id:"sc1", label:"Inglês", days:["ter","qui"], start:"09:00", end:"10:00", period:"manha", pts:5 },
     { id:"sc3", label:"Escoteiros", days:["sab"], start:"13:00", end:"17:30", period:"tarde", pts:5 },
-    { id:"sc4", label:"Jogos em Família", days:["qui"], start:"16:00", end:"17:30", period:"tarde", pts:5 },
+    { id:"sc4", label:"Jogos em Família", days:["qui"], start:"21:00", end:"23:00", period:"noite", pts:5 },
   ],
 
   // exceções pontuais: um compromisso só naquele dia específico, sem mexer
@@ -1954,7 +1954,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))))))));
+  return fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))))))));
 }
 
 // Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
@@ -2109,6 +2109,21 @@ function fixFamilyGameNightV3(cfg){
     if(item) item.label = "Jogos em Família";
   }
   cfg.familyGameNightV3Applied = true;
+  return cfg;
+}
+
+// Correção final: é de NOITE mesmo, das 21h às 23h de quinta.
+function fixFamilyGameNightV4(cfg){
+  if(!cfg || cfg.familyGameNightV4Applied) return cfg;
+  if(Array.isArray(cfg.schedule)){
+    const item = cfg.schedule.find(s=>s.id === 'sc4');
+    if(item){
+      item.period = "noite";
+      item.start = "21:00";
+      item.end = "23:00";
+    }
+  }
+  cfg.familyGameNightV4Applied = true;
   return cfg;
 }
 
@@ -2360,6 +2375,10 @@ function reconcileState(state){
   if(!state.familyAnnouncementResetV3Applied){
     state.familyGameNightAnnouncementSeen = false;
     state.familyAnnouncementResetV3Applied = true;
+  }
+  if(!state.familyAnnouncementResetV4Applied){
+    state.familyGameNightAnnouncementSeen = false;
+    state.familyAnnouncementResetV4Applied = true;
   }
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
@@ -3614,7 +3633,7 @@ function renderFamilyGameNightAnnouncement(){
   el.innerHTML = `
     <div class="family-announcement">
       <div class="title">🕹️ Novidade na família!</div>
-      <div class="msg">A partir de agora, toda <b>quinta-feira, das 16h às 17h30</b>, é hora de <b>Jogos em Família</b> — Pedro, Geovana e Hector, todo mundo junto! 🎲🎉</div>
+      <div class="msg">A partir de agora, toda <b>quinta-feira à noite, das 21h às 23h</b>, é hora de <b>Jogos em Família</b> — Pedro, Geovana e Hector, todo mundo junto! 🎲🎉</div>
       <button class="dismiss-btn" id="familyGameNightDismissBtn">bora! 🤝</button>
     </div>
   `;
