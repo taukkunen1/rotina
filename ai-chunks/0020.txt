@@ -1,3 +1,13 @@
+' : 'none';
+    });
+    document.getElementById('driveCopyCodeBtn').addEventListener('click', ()=>{
+      const box = document.getElementById('driveCodeBox');
+      box.value = APPS_SCRIPT_CODE;
+      box.style.display = box.style.display === 'none' ? 'block' : 'none';
+      if(box.style.display === 'block'){ box.focus(); box.select(); }
+    });
+    return;
+  }
 
   document.getElementById('driveSaveBtn').addEventListener('click', driveSave);
   document.getElementById('driveLoadBtn').addEventListener('click', driveLoad);

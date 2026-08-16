@@ -1,4 +1,14 @@
-ass="pet-evolved-banner">Pacus avançou para <b>${stageInfo.label}</b>.</div>`;
+rySelector('.pet-mascot');
+    if(mascotEl){
+      mascotEl.classList.remove('pet-growth-burst');
+      void mascotEl.offsetWidth;
+      mascotEl.classList.add('pet-growth-burst');
+      if(stage < 9){ mascotEl.classList.add('pet-hatch-crack'); }
+    }
+  }
+
+  if(stage > state.lastSeenPetStage){
+    document.getElementById('petEvolvedBanner').innerHTML = `<div class="pet-evolved-banner">Pacus avançou para <b>${stageInfo.label}</b>.</div>`;
     state.lastSeenPetStage = stage;
     saveState(state);
     showEvolutionCelebration(stageInfo, stage, maxStage);
@@ -162,18 +172,4 @@ function render(){
       <div class="period-head"><h2>${period.label}</h2><span class="time">${period.time}</span></div>
       <span class="time-remaining" id="timeRemaining_${key}"></span>
       <span class="progress-txt">${progressMsg}</span>
-      <div class="progress-bar"><div style="width:${pct}%"></div></div>
-    `;
-    div.dataset.periodTime = period.time;
-    div.appendChild(ul);
-    periodsEl.appendChild(div);
-  });
-
-  updateTimeRemainingDisplays();
-  startTimeRemainingTicking();
-
-  periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
-    btn.addEventListener('click', onMarkClick);
-  });
-
-  periodsEl.q
+      <div 

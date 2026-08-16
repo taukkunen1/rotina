@@ -1,4 +1,6 @@
-"2.3" fill="none" stroke-linecap="round"/>
+s-gill" style="animation-delay:${delay}s; transform-origin:${146+i*2}px ${y}px;">
+      <path d="M${146+i*2} ${y} Q ${160+len*0.6} ${y-len*0.5} ${170+len/2} ${y-len*0.15}" stroke="#ef8fb3" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M${146+i*2} ${y} Q ${162+len*0.5} ${y+len*0.15} ${172+len/2} ${y+len*0.35}" stroke="#f3a7c6" stroke-width="2.3" fill="none" stroke-linecap="round"/>
     </g>`;
   }
 
@@ -161,14 +163,4 @@ function renderPet(){
   `;
 
   if(grewNow){
-    const mascotEl = el.querySelector('.pet-mascot');
-    if(mascotEl){
-      mascotEl.classList.remove('pet-growth-burst');
-      void mascotEl.offsetWidth;
-      mascotEl.classList.add('pet-growth-burst');
-      if(stage < 9){ mascotEl.classList.add('pet-hatch-crack'); }
-    }
-  }
-
-  if(stage > state.lastSeenPetStage){
-    document.getElementById('petEvolvedBanner').innerHTML = `<div cl
+    const mascotEl = el.que

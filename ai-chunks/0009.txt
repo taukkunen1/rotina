@@ -36,6 +36,10 @@ function reconcileState(state){
   if(!state.hairByDate || typeof state.hairByDate !== "object") state.hairByDate = {};
   if(!state.taskDoneAt || typeof state.taskDoneAt !== "object") state.taskDoneAt = {};
   if(!state.customTaskOrder || typeof state.customTaskOrder !== "object") state.customTaskOrder = {};
+  if(!state.familyAnnouncementResetV1Applied){
+    state.familyGameNightAnnouncementSeen = false;
+    state.familyAnnouncementResetV1Applied = true;
+  }
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
   }
@@ -166,20 +170,12 @@ function saveState(state, options={}){
   scheduleAutoPush();
 }
 
-let CONFIG = loadConfig();
-let state = loadState();
-
 /* ---------- sincronização automática com o Google Drive ----------
    Sempre que o arquivo abre, ele tenta buscar a versão mais nova salva
    no Drive (via Apps Script) e usa ela — assim, não importa em qual
    aparelho vocês abrirem, todos mostram a mesma coisa. Sempre que algo
    muda aqui, ele também manda a atualização pro Drive sozinho, alguns
    segundos depois (sem precisar clicar em nada). Se estiver offline, o
-   arquivo continua funcionando normal com os dados salvos localmente. */
-let suppressAutoPush = false;
-let autoPushTimer = null;
-
-function scheduleAutoPush(){
-  if(!APPS_SCRIPT_URL || suppressAutoPush) return;
-  clearTimeout(autoPushTimer);
-  auto
+   arquivo continua funcionando normal com os dados salvos localmente.
+   IMPORTANTE: essas duas variáveis precisam existir ANTES de carregar
+   CON

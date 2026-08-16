@@ -1,4 +1,14 @@
-<input type="text" class="custom-timer-label" id="customTimerLabel_${t.id}" value="${escapeAttr(t.label)}" maxlength="20">
+stomTimers(){
+  const el = document.getElementById('customTimersSection');
+  if(!el) return;
+
+  const cardsHtml = state.customTimers.map(t=>{
+    const running = !!t.runningSince;
+    const remaining = customTimerRemainingNow(t);
+    const totalMin = Math.round(t.totalSeconds/60);
+    return `
+      <div class="custom-timer ${t.finished?'finished':''}">
+        <input type="text" class="custom-timer-label" id="customTimerLabel_${t.id}" value="${escapeAttr(t.label)}" maxlength="20">
         <div class="custom-timer-display" id="customTimerDisplay_${t.id}">${formatHMS(remaining)}</div>
         <div class="custom-timer-setrow">
           <input type="number" min="0" step="1" id="customTimerMin_${t.id}" value="${totalMin}" ${running?'disabled':''}>
@@ -147,6 +157,4 @@ function buildPacusSVG(stageFloat){
       <path d="M${74-i*2} ${y} Q ${60-len*0.6} ${y-len*0.5} ${50-len/2} ${y-len*0.15}" stroke="#ef8fb3" stroke-width="3" fill="none" stroke-linecap="round"/>
       <path d="M${74-i*2} ${y} Q ${58-len*0.5} ${y+len*0.15} ${48-len/2} ${y+len*0.35}" stroke="#f3a7c6" stroke-width="2.3" fill="none" stroke-linecap="round"/>
     </g>
-    <g class="pacus-gill" style="animation-delay:${delay}s; transform-origin:${146+i*2}px ${y}px;">
-      <path d="M${146+i*2} ${y} Q ${160+len*0.6} ${y-len*0.5} ${170+len/2} ${y-len*0.15}" stroke="#ef8fb3" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <path d="M${146+i*2} ${y} Q ${162+len*0.5} ${y+len*0.15} ${172+len/2} ${y+len*0.35}" stroke="#f3a7c6" stroke-width=
+    <g class="pacu

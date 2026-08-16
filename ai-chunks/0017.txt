@@ -1,4 +1,13 @@
-estado: volta pra pendente
+; // undefined | 'done' | 'na' | 'x'
+  let totalDelta = 0;
+  if(!state.taskDoneAt) state.taskDoneAt = {};
+
+  // desfazer o efeito do estado anterior nos pontos
+  if(current === 'done') totalDelta += addPoints(-task.pts);
+  else if(current === 'x') totalDelta += addPoints(taskNotDonePenalty(task));
+
+  if(current === clickedStatus){
+    // clicou de novo no mesmo estado: volta pra pendente
     delete state.checkedToday[id];
     delete state.taskDoneAt[id];
     addLog(`(desmarcado) ${task.txt}`);
@@ -176,16 +185,4 @@ function renderEditorBad(){
     `;
     row.querySelector('[data-field=txt]').addEventListener('input', e=>{ h.txt = e.target.value; });
     wireStepper(row, h, 'pts', true);
-    row.querySelector('.del').addEventListener('click', ()=>{
-      draft.badHabits = draft.badHabits.filter(x=>x!==h);
-      renderEditorBad();
-    });
-    el.appendChild(row);
-  });
-}
-
-function renderEditorSchedule(){
-  const el = document.getElementById('editSchedule');
-  el.innerHTML = '';
-  const dayOrder = ['seg','ter','qua','qui','sex','sab','dom'];
-  const dayShort = {seg:'S',ter:'T',qua:'Q',qui:
+    row.querySelector('.del').addEventListe

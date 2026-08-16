@@ -1,4 +1,18 @@
-uerySelectorAll('.mini-reorder-btn').forEach(btn=>{
+class="progress-bar"><div style="width:${pct}%"></div></div>
+    `;
+    div.dataset.periodTime = period.time;
+    div.appendChild(ul);
+    periodsEl.appendChild(div);
+  });
+
+  updateTimeRemainingDisplays();
+  startTimeRemainingTicking();
+
+  periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
+    btn.addEventListener('click', onMarkClick);
+  });
+
+  periodsEl.querySelectorAll('.mini-reorder-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const periodKey = btn.getAttribute('data-period');
       const taskId = btn.getAttribute('data-task');
@@ -209,16 +223,4 @@ function renderWeeklyReview(){
   let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0;
   days.forEach(iso=>{
     const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
-    if(!entry) return;
-    if(iso !== todayISO()){
-      // dias fechados já têm pointsEarnedThatDay e screenMinutes calculados
-      const full = state.history[iso];
-      if(full){
-        totalPointsWeek += full.pointsEarnedThatDay || 0;
-        totalScreenMin += full.screenMinutes || 0;
-      }
-    }
-    if(entry.total > 0 && entry.perfect) perfectDays++;
-  });
-
-  con
+    if(!en

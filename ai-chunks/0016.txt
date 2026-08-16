@@ -1,4 +1,16 @@
-st rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
+try) return;
+    if(iso !== todayISO()){
+      // dias fechados já têm pointsEarnedThatDay e screenMinutes calculados
+      const full = state.history[iso];
+      if(full){
+        totalPointsWeek += full.pointsEarnedThatDay || 0;
+        totalScreenMin += full.screenMinutes || 0;
+      }
+    }
+    if(entry.total > 0 && entry.perfect) perfectDays++;
+  });
+
+  const rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
 
   el.innerHTML = `
     <div class="weekly-review">
@@ -180,13 +192,4 @@ function onMarkClick(e){
   const task = allTasks().find(t=>t.id===id);
   if(!task) return;
 
-  const current = state.checkedToday[id]; // undefined | 'done' | 'na' | 'x'
-  let totalDelta = 0;
-  if(!state.taskDoneAt) state.taskDoneAt = {};
-
-  // desfazer o efeito do estado anterior nos pontos
-  if(current === 'done') totalDelta += addPoints(-task.pts);
-  else if(current === 'x') totalDelta += addPoints(taskNotDonePenalty(task));
-
-  if(current === clickedStatus){
-    // clicou de novo no mesmo 
+  const current = state.checkedToday[id]
