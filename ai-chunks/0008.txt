@@ -1,4 +1,15 @@
-E_CONFIG_KEY);
+g || cfg.familyGameNightV1Applied) return cfg;
+  if(!Array.isArray(cfg.schedule)) cfg.schedule = [];
+  if(!cfg.schedule.some(s=>s.id === 'sc4')){
+    cfg.schedule.push({ id:"sc4", label:"Noite de Jogos em Família", days:["qui"], start:"19:00", end:"20:30", period:"noite", pts:5 });
+  }
+  cfg.familyGameNightV1Applied = true;
+  return cfg;
+}
+
+function loadConfig(){
+  try{
+    const raw = localStorage.getItem(STORAGE_CONFIG_KEY);
     if(raw) return stripLegacyHairTask(JSON.parse(raw));
   }catch(e){}
   return stripLegacyHairTask(JSON.parse(JSON.stringify(DEFAULT_CONFIG)));
@@ -184,15 +195,4 @@ function applyHistoryCorrection_v3(state){
     const done = bagunca ? total - 1 : total;
 
     const oldPoints = (state.history[iso] && state.history[iso].pointsEarnedThatDay) || 0;
-    totalDelta += pointsEarnedThatDay - oldPoints;
-
-    const hair = (state.history[iso] && state.history[iso].hair) || (state.hairByDate && state.hairByDate[iso]) || null;
-
-    state.history[iso] = {
-      done,
-      total,
-      pointsEarnedThatDay,
-      perfect: false, // "Arrumar a bagunça" ficou de fora
-      screenMinutes: 0,
-      periodsCompleted: 2, // manhã e tarde completos; noite não (faltou a bagunça)
-     
+    total

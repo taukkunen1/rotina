@@ -1,4 +1,18 @@
-rames celebrationPop{
+ansform:translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity:0; }
+  }
+
+  .celebration-card{
+    background:var(--board);
+    border:3px solid var(--yellow);
+    border-radius:16px;
+    padding:28px 24px;
+    max-width:340px;
+    width:100%;
+    text-align:center;
+    box-shadow:0 0 60px rgba(255,217,61,.35), 0 20px 60px rgba(0,0,0,.6);
+    animation:celebrationPop .5s cubic-bezier(.2,1.4,.4,1);
+  }
+  @keyframes celebrationPop{
     0%{ transform:scale(.6); opacity:0; }
     70%{ transform:scale(1.06); opacity:1; }
     100%{ transform:scale(1); }
@@ -305,13 +319,4 @@ rames celebrationPop{
         <div class="hair-head">
           <div class="hair-title">🧴 Lavar o cabelo</div>
         </div>
-        <div class="hair-actions">
-          <button type="button" class="hair-btn" id="hairWashedBtn">💧 Lavei o cabelo</button>
-          <button type="button" class="hair-btn" id="hairNotWashedBtn">○ Não lavei</button>
-        </div>
-        <div class="hair-status" id="hairStatus">Hoje: ainda não registrado</div>
-      </section>
-
-      <section class="block" id="gameTimerSection"></section>
-
-      <section class="blo
+        

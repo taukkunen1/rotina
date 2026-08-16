@@ -1,4 +1,21 @@
-; // undefined | 'done' | 'na' | 'x'
+h.sin(angle)*dist - 40)+'px');
+    piece.style.setProperty('--rot', (Math.random()*360)+'deg');
+    piece.style.left = originX+'px';
+    piece.style.top = originY+'px';
+    piece.style.background = colors[i % colors.length];
+    document.body.appendChild(piece);
+    setTimeout(()=>piece.remove(), 950);
+  }
+}
+
+function onMarkClick(e){
+  const btn = e.currentTarget;
+  const id = btn.closest('.mark-group').getAttribute('data-id');
+  const clickedStatus = btn.getAttribute('data-status'); // 'done', 'na', or 'x'
+  const task = allTasks().find(t=>t.id===id);
+  if(!task) return;
+
+  const current = state.checkedToday[id]; // undefined | 'done' | 'na' | 'x'
   let totalDelta = 0;
   if(!state.taskDoneAt) state.taskDoneAt = {};
 
@@ -172,17 +189,4 @@ function wireStepper(row, obj, field, allowNegative){
   });
 }
 
-function renderEditorBad(){
-  const el = document.getElementById('editBad');
-  el.innerHTML = '';
-  draft.badHabits.forEach(h=>{
-    const row = document.createElement('div');
-    row.className = 'edit-row';
-    row.innerHTML = `
-      <input type="text" value="${escapeAttr(h.txt)}" data-field="txt" placeholder="hábito (ex: brigou -10, ajudou +5)">
-      ${stepperHTML('pts', h.pts, true)}
-      <button class="del" title="remover">🗑</button>
-    `;
-    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ h.txt = e.target.value; });
-    wireStepper(row, h, 'pts', true);
-    row.querySelector('.del').addEventListe
+function rende

@@ -297,7 +297,7 @@
   }
   .streak-row{ display:flex; gap:6px; justify-content:center; }
   .streak-cell{
-    width:26px; height:26px;
+    width:38px; height:30px;
     border-radius:7px;
     display:flex;
     align-items:center;
@@ -305,9 +305,9 @@
     border:1px solid var(--line);
     background:rgba(255,255,255,.03);
   }
-  .streak-letter{ font-size:.62rem; color:var(--chalk-dim); }
+  .streak-letter{ font-size:.56rem; color:var(--chalk-dim); letter-spacing:.2px; }
   .streak-cell.perfect{ background:var(--green); border-color:var(--green); }
   .streak-cell.perfect .streak-letter{ color:#132015; font-weight:bold; }
-  .streak-cell.partial{ background:rgba(255,217,61,.35); border-color:var(--yellow); }
-  .streak-cell.partial .streak-letter{ color:#2a2410; font-weight:bold; }
-  .streak-cell.none{ background:rgba(255,107,107,.18); border-color:
+  .streak-cell.almost{ background:rgba(79,195,247,.32); border-color:var(--blue); }
+  .streak-cell.almost .streak-letter{ color:#0f2733; font-weight:bold; }
+  .streak-cell.partial{ background:rgba(255,217,61,

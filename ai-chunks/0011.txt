@@ -1,4 +1,17 @@
-o maior pras tarefas mais chatas/resistidas.
+
+}
+
+// Pra "✕ não realizado": perde metade dos pontos daquela tarefa. A metade
+// é sempre arredondada pra cima, e nunca fica em número ímpar (se o
+// arredondamento der ímpar, sobe mais 1 pra virar par).
+function notDonePenalty(pts){
+  let half = Math.ceil(pts/2);
+  if(half % 2 !== 0) half += 1;
+  return half;
+}
+
+// Algumas tarefas (marcadas com fullPenalty:true) perdem o valor CHEIO em
+// vez de metade — reforço maior pras tarefas mais chatas/resistidas.
 function taskNotDonePenalty(task){
   return task.fullPenalty ? task.pts : notDonePenalty(task.pts);
 }
@@ -231,17 +244,4 @@ function stopCustomTimerTicking(){
 function updateCustomTimerDisplays(){
   state.customTimers.forEach(t=>{
     const el = document.getElementById('customTimerDisplay_'+t.id);
-    if(el) el.textContent = formatHMS(customTimerRemainingNow(t));
-  });
-}
-
-function formatHMS(totalSeconds){
-  const s = Math.max(0, Math.round(totalSeconds));
-  const h = Math.floor(s/3600);
-  const m = Math.floor((s%3600)/60);
-  const sec = s%60;
-  if(h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-}
-
-function renderCu
+    if(el) el

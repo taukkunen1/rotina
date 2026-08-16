@@ -1,4 +1,13 @@
-ck" id="customTimersSection"></section>
+<div class="hair-actions">
+          <button type="button" class="hair-btn" id="hairWashedBtn">💧 Lavei o cabelo</button>
+          <button type="button" class="hair-btn" id="hairNotWashedBtn">○ Não lavei</button>
+        </div>
+        <div class="hair-status" id="hairStatus">Hoje: ainda não registrado</div>
+      </section>
+
+      <section class="block" id="gameTimerSection"></section>
+
+      <section class="block" id="customTimersSection"></section>
 
       <section class="block">
         <h3 class="block-title bad-title">✨ Pacus Points Extra</h3>
@@ -187,13 +196,4 @@ ck" id="customTimersSection"></section>
    DEFAULT_CONFIG só é usado da primeira vez que o arquivo abre (sem nada
    salvo ainda no navegador). Depois disso tudo é editado pela tela e fica
    guardado em localStorage — o botão "Editar tudo" já resolve tudo.
-   ========================================================================= */
-const DEFAULT_CONFIG = {
-  periods: {
-    manha: {
-      label: "Manhã", time: "8:20 – 12:00",
-      tasks: [
-        { id:"m1", txt:"Arrumar a cama", pts:2, sub:"até às 12h" },
-        { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h" },
-        { id:"m3", txt:"Escovar os dentes", pts:2, sub:"até às 12h" },
-        { id:"m7", txt:"Vestir o uniforme
+   ==================

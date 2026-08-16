@@ -1,4 +1,12 @@
-sSchedule.length === 0 && todaysExceptions.length === 0) return base;
+teISO+"T00:00:00").getDay()];
+}
+
+function getPeriodsFor(dateISO){
+  const base = (CONFIG.periodsWeekend && isWeekendISO(dateISO)) ? CONFIG.periodsWeekend : CONFIG.periods;
+  const weekday = weekdayKeyFor(dateISO);
+  const todaysSchedule = (CONFIG.schedule || []).filter(s => s.days && s.days.includes(weekday));
+  const todaysExceptions = (CONFIG.scheduleExceptions || []).filter(s => s.date === dateISO);
+  if(todaysSchedule.length === 0 && todaysExceptions.length === 0) return base;
 
   // clona pra não mexer no CONFIG original, e injeta os compromissos fixos
   // (e exceções pontuais) de hoje como tarefas de verdade no período certo
@@ -190,15 +198,4 @@ function markExternalTasksV1(cfg){
 
 // Noite de Jogos em Família — toda quinta à noite, com a Geovana e o Hector.
 function addFamilyGameNightV1(cfg){
-  if(!cfg || cfg.familyGameNightV1Applied) return cfg;
-  if(!Array.isArray(cfg.schedule)) cfg.schedule = [];
-  if(!cfg.schedule.some(s=>s.id === 'sc4')){
-    cfg.schedule.push({ id:"sc4", label:"Noite de Jogos em Família", days:["qui"], start:"19:00", end:"20:30", period:"noite", pts:5 });
-  }
-  cfg.familyGameNightV1Applied = true;
-  return cfg;
-}
-
-function loadConfig(){
-  try{
-    const raw = localStorage.getItem(STORAG
+  if(!cf

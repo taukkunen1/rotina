@@ -1,4 +1,15 @@
- hair,
+Delta += pointsEarnedThatDay - oldPoints;
+
+    const hair = (state.history[iso] && state.history[iso].hair) || (state.hairByDate && state.hairByDate[iso]) || null;
+
+    state.history[iso] = {
+      done,
+      total,
+      pointsEarnedThatDay,
+      perfect: false, // "Arrumar a bagunça" ficou de fora
+      screenMinutes: 0,
+      periodsCompleted: 2, // manhã e tarde completos; noite não (faltou a bagunça)
+      hair,
     };
 
     // crescimento do Pacus não exige dia perfeito — só engajamento real
@@ -172,10 +183,4 @@ function saveState(state, options={}){
 
 /* ---------- sincronização automática com o Google Drive ----------
    Sempre que o arquivo abre, ele tenta buscar a versão mais nova salva
-   no Drive (via Apps Script) e usa ela — assim, não importa em qual
-   aparelho vocês abrirem, todos mostram a mesma coisa. Sempre que algo
-   muda aqui, ele também manda a atualização pro Drive sozinho, alguns
-   segundos depois (sem precisar clicar em nada). Se estiver offline, o
-   arquivo continua funcionando normal com os dados salvos localmente.
-   IMPORTANTE: essas duas variáveis precisam existir ANTES de carregar
-   CON
+   no Drive (via

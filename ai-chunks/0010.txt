@@ -1,4 +1,10 @@
-FIG/state, porque o carregamento pode precisar salvar de volta
+ Apps Script) e usa ela — assim, não importa em qual
+   aparelho vocês abrirem, todos mostram a mesma coisa. Sempre que algo
+   muda aqui, ele também manda a atualização pro Drive sozinho, alguns
+   segundos depois (sem precisar clicar em nada). Se estiver offline, o
+   arquivo continua funcionando normal com os dados salvos localmente.
+   IMPORTANTE: essas duas variáveis precisam existir ANTES de carregar
+   CONFIG/state, porque o carregamento pode precisar salvar de volta
    (limpezas, correções automáticas) e isso já chama scheduleAutoPush. */
 let suppressAutoPush = false;
 let autoPushTimer = null;
@@ -191,16 +197,3 @@ function addPoints(delta){
   const before = state.totalPoints;
   state.totalPoints = Math.max(0, Math.min(MAX_POINTS, state.totalPoints + delta));
   return state.totalPoints - before;
-}
-
-// Pra "✕ não realizado": perde metade dos pontos daquela tarefa. A metade
-// é sempre arredondada pra cima, e nunca fica em número ímpar (se o
-// arredondamento der ímpar, sobe mais 1 pra virar par).
-function notDonePenalty(pts){
-  let half = Math.ceil(pts/2);
-  if(half % 2 !== 0) half += 1;
-  return half;
-}
-
-// Algumas tarefas (marcadas com fullPenalty:true) perdem o valor CHEIO em
-// vez de metade — reforç

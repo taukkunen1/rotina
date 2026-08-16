@@ -1,4 +1,5 @@
-t:bold;}
+  .hair-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .hair-title{font-size:1rem;color:var(--chalk);font-weight:bold;}
   .hair-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   .hair-btn{border:1px solid var(--line);background:rgba(255,255,255,.035);color:var(--chalk);border-radius:9px;padding:9px 10px;font:inherit;font-size:.78rem;cursor:pointer;}
   .hair-btn.active-washed{background:rgba(95,216,117,.22);border-color:var(--green);color:var(--green);font-weight:bold;}
@@ -33,6 +34,16 @@ t:bold;}
     background:rgba(255,217,61,.15);
     color:var(--yellow);
     border:1px solid rgba(255,217,61,.4);
+    border-radius:999px;
+    padding:1px 8px;
+    font-size:.68rem;
+    margin-left:6px;
+  }
+  .badge-almost{
+    display:inline-block;
+    background:rgba(79,195,247,.15);
+    color:var(--blue);
+    border:1px solid rgba(79,195,247,.4);
     border-radius:999px;
     padding:1px 8px;
     font-size:.68rem;
@@ -284,18 +295,4 @@ t:bold;}
   }
   @keyframes confetti-fall{
     0%{ transform:translate(0,0) rotate(0deg); opacity:1; }
-    100%{ transform:translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity:0; }
-  }
-
-  .celebration-card{
-    background:var(--board);
-    border:3px solid var(--yellow);
-    border-radius:16px;
-    padding:28px 24px;
-    max-width:340px;
-    width:100%;
-    text-align:center;
-    box-shadow:0 0 60px rgba(255,217,61,.35), 0 20px 60px rgba(0,0,0,.6);
-    animation:celebrationPop .5s cubic-bezier(.2,1.4,.4,1);
-  }
-  @keyf
+    100%{ tr

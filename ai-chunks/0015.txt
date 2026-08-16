@@ -1,4 +1,14 @@
-class="progress-bar"><div style="width:${pct}%"></div></div>
+b}</span>` : ''}${late ? '<span class="late-flag">⏰ atrasado</span>' : ''}</span>
+        <span class="pts">${status==='na' ? 'n/a' : status==='x' ? '−'+taskNotDonePenalty(task) : '+'+task.pts}</span>
+      `;
+      ul.appendChild(li);
+    });
+
+    div.innerHTML = `
+      <div class="period-head"><h2>${period.label}</h2><span class="time">${period.time}</span></div>
+      <span class="time-remaining" id="timeRemaining_${key}"></span>
+      <span class="progress-txt">${progressMsg}</span>
+      <div class="progress-bar"><div style="width:${pct}%"></div></div>
     `;
     div.dataset.periodTime = period.time;
     div.appendChild(ul);
@@ -209,18 +219,4 @@ function renderBackupReminder(){
   });
 }
 
-function renderWeeklyReview(){
-  const el = document.getElementById('weeklyReviewSection');
-  if(!el) return;
-
-  const days = [];
-  for(let i=6; i>=0; i--){
-    const d = new Date();
-    d.setDate(d.getDate()-i);
-    days.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'));
-  }
-
-  let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0;
-  days.forEach(iso=>{
-    const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
-    if(!en
+fun

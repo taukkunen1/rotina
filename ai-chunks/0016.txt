@@ -1,4 +1,18 @@
-try) return;
+ction renderWeeklyReview(){
+  const el = document.getElementById('weeklyReviewSection');
+  if(!el) return;
+
+  const days = [];
+  for(let i=6; i>=0; i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    days.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'));
+  }
+
+  let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0;
+  days.forEach(iso=>{
+    const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
+    if(!entry) return;
     if(iso !== todayISO()){
       // dias fechados já têm pointsEarnedThatDay e screenMinutes calculados
       const full = state.history[iso];
@@ -75,7 +89,9 @@ function renderHistory(){
         <td>${(isToday||!adultUnlocked)?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
       </tr>`;
     }
-    const perfectBadge = entry.perfect ? '<span class="badge-perfect">dia perfeito</span>' : '';
+    const perfectBadge = entry.perfect
+      ? '<span class="badge-perfect">dia perfeito</span>'
+      : (entry.total > 0 && entry.done === entry.total - 1 ? '<span class="badge-almost">quase lá! 🌟</span>' : '');
     const editCell = (isToday||!adultUnlocked) ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
     return `<tr${isToday?' class="today-row"':''}>
       <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
@@ -175,21 +191,4 @@ function fireConfetti(originEl, count){
     const angle = Math.random()*Math.PI*2;
     const dist = 60 + Math.random()*90;
     piece.style.setProperty('--dx', (Math.cos(angle)*dist)+'px');
-    piece.style.setProperty('--dy', (Math.sin(angle)*dist - 40)+'px');
-    piece.style.setProperty('--rot', (Math.random()*360)+'deg');
-    piece.style.left = originX+'px';
-    piece.style.top = originY+'px';
-    piece.style.background = colors[i % colors.length];
-    document.body.appendChild(piece);
-    setTimeout(()=>piece.remove(), 950);
-  }
-}
-
-function onMarkClick(e){
-  const btn = e.currentTarget;
-  const id = btn.closest('.mark-group').getAttribute('data-id');
-  const clickedStatus = btn.getAttribute('data-status'); // 'done', 'na', or 'x'
-  const task = allTasks().find(t=>t.id===id);
-  if(!task) return;
-
-  const current = state.checkedToday[id]
+    piece.style.setProperty('--dy', (Mat

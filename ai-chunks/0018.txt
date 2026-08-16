@@ -1,4 +1,17 @@
-ner('click', ()=>{
+rEditorBad(){
+  const el = document.getElementById('editBad');
+  el.innerHTML = '';
+  draft.badHabits.forEach(h=>{
+    const row = document.createElement('div');
+    row.className = 'edit-row';
+    row.innerHTML = `
+      <input type="text" value="${escapeAttr(h.txt)}" data-field="txt" placeholder="hábito (ex: brigou -10, ajudou +5)">
+      ${stepperHTML('pts', h.pts, true)}
+      <button class="del" title="remover">🗑</button>
+    `;
+    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ h.txt = e.target.value; });
+    wireStepper(row, h, 'pts', true);
+    row.querySelector('.del').addEventListener('click', ()=>{
       draft.badHabits = draft.badHabits.filter(x=>x!==h);
       renderEditorBad();
     });
@@ -167,21 +180,4 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   // na rotina ativa de hoje (dia de escola ou fim de semana)
   const validIds = new Set(allTasks().map(t=>t.id));
   Object.keys(state.checkedToday).forEach(id=>{
-    if(!validIds.has(id)) delete state.checkedToday[id];
-  });
-  saveState(state);
-
-  closeEditor();
-  render();
-});
-
-/* ===================== EDITOR DE DIA ANTERIOR ===================== */
-let editingDate = null;
-
-function openDayEditor(dateISO){
-  editingDate = dateISO;
-  const entry = state.history[dateISO] || { done:0, total:0, pointsEarnedThatDay:0, perfect:false, screenMinutes:0 };
-  document.getElementById('dayEditorTitle').textContent = 'Editar ' + formatDateBR(dateISO);
-  document.getElementById('dayDone').value = entry.done;
-  document.getElementById('dayTotal').value = entry.total;
-  document.getElementById('dayPoints').value = entry.pointsEarnedTh
+    if(!validIds.has(id)) delete state.checkedTo

@@ -1,4 +1,6 @@
-rgba(255,107,107,.4); }
+.35); border-color:var(--yellow); }
+  .streak-cell.partial .streak-letter{ color:#2a2410; font-weight:bold; }
+  .streak-cell.none{ background:rgba(255,107,107,.18); border-color:rgba(255,107,107,.4); }
   .streak-cell.today{ box-shadow:0 0 0 2px var(--yellow); }
 
   /* ---------- períodos ---------- */
@@ -285,5 +287,3 @@ rgba(255,107,107,.4); }
     border-radius:12px;
     background:rgba(255,255,255,.025);
   }
-  .hair-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
-  .hair-title{font-size:1rem;color:var(--chalk);font-weigh

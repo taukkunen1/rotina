@@ -1,4 +1,13 @@
-", pts:1, sub:"até às 12h" },
+======================================================= */
+const DEFAULT_CONFIG = {
+  periods: {
+    manha: {
+      label: "Manhã", time: "8:20 – 12:00",
+      tasks: [
+        { id:"m1", txt:"Arrumar a cama", pts:2, sub:"até às 12h" },
+        { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h" },
+        { id:"m3", txt:"Escovar os dentes", pts:2, sub:"até às 12h" },
+        { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 12h" },
         { id:"m5", txt:"Duolingo", sub:"5 lições", pts:5 },
         { id:"m8", txt:"Arrumar a mochila", pts:2, sub:"até às 12h" },
         { id:"t_djf7hbb", txt:"Levar Lixo", pts:4, sub:"até às 12h" },
@@ -154,12 +163,4 @@ const WEEKDAY_KEYS = ['dom','seg','ter','qua','qui','sex','sab'];
 const WEEKDAY_LABELS = {dom:'Domingo', seg:'Segunda', ter:'Terça', qua:'Quarta', qui:'Quinta', sex:'Sexta', sab:'Sábado'};
 
 function weekdayKeyFor(dateISO){
-  return WEEKDAY_KEYS[new Date(dateISO+"T00:00:00").getDay()];
-}
-
-function getPeriodsFor(dateISO){
-  const base = (CONFIG.periodsWeekend && isWeekendISO(dateISO)) ? CONFIG.periodsWeekend : CONFIG.periods;
-  const weekday = weekdayKeyFor(dateISO);
-  const todaysSchedule = (CONFIG.schedule || []).filter(s => s.days && s.days.includes(weekday));
-  const todaysExceptions = (CONFIG.scheduleExceptions || []).filter(s => s.date === dateISO);
-  if(today
+  return WEEKDAY_KEYS[new Date(da
