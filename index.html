@@ -1514,6 +1514,8 @@
     <div class="content">
 
 
+      <div id="weeklyNewsAnnouncement"></div>
+
       <div id="familyGameNightAnnouncement"></div>
 
       <section class="pet-section" id="petSection"></section>
@@ -2410,6 +2412,12 @@ function reconcileState(state){
   if(!state.familyAnnouncementResetV4Applied){
     state.familyGameNightAnnouncementSeen = false;
     state.familyAnnouncementResetV4Applied = true;
+  }
+  if(!state.waldaBetBonusApplied){
+    state.totalPoints = Math.max(0, Math.min(1000, (Number(state.totalPoints)||0) + 5));
+    if(!state.log) state.log = [];
+    state.log.unshift('🏆 +5 · acertou a aposta com a Walda (pessoa autêntica)');
+    state.waldaBetBonusApplied = true;
   }
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
@@ -3545,6 +3553,7 @@ function render(){
   renderAchievementMural();
   renderWeeklyReview();
   renderFamilyGameNightAnnouncement();
+  renderWeeklyNewsAnnouncement();
   renderBackupReminder();
   renderTestPanel();
   renderTestModeBanner();
@@ -3662,7 +3671,7 @@ function renderFamilyGameNightAnnouncement(){
   el.innerHTML = `
     <div class="family-announcement">
       <div class="title">🕹️ Novidade na família!</div>
-      <div class="msg">A partir de agora, toda <b>quinta-feira à noite, das 21h às 23h</b>, é hora de <b>Jogos em Família</b> — Pedro, Geovana e Hector, todo mundo junto! 🎲🎉</div>
+      <div class="msg">A partir de agora, toda <b>quinta-feira à noite, das 21h às 23h</b>, é hora de <b>Jogos em Família</b>! 🎲🎉</div>
       <button class="dismiss-btn" id="familyGameNightDismissBtn">bora! 🤝</button>
     </div>
   `;
@@ -3670,6 +3679,26 @@ function renderFamilyGameNightAnnouncement(){
     state.familyGameNightAnnouncementSeen = true;
     saveState(state);
     renderFamilyGameNightAnnouncement();
+  });
+}
+
+// Notícia da semana — aviso único (some pra sempre depois de visto).
+function renderWeeklyNewsAnnouncement(){
+  const el = document.getElementById('weeklyNewsAnnouncement');
+  if(!el) return;
+  if(state.weeklyNewsSeen){ el.innerHTML=''; return; }
+
+  el.innerHTML = `
+    <div class="family-announcement">
+      <div class="title">🏆 Notícia da semana!</div>
+      <div class="msg">Você acertou a aposta com a Walda — respondeu certinho o que é ser uma <b>pessoa autêntica</b>! <b>+5 Pacus Points</b> de bônus! 🎉</div>
+      <button class="dismiss-btn" id="weeklyNewsDismissBtn">demais! 🌟</button>
+    </div>
+  `;
+  document.getElementById('weeklyNewsDismissBtn').addEventListener('click', ()=>{
+    state.weeklyNewsSeen = true;
+    saveState(state);
+    renderWeeklyNewsAnnouncement();
   });
 }
 
