@@ -1769,7 +1769,7 @@ const DEFAULT_CONFIG = {
   schedule: [
     { id:"sc1", label:"Inglês", days:["ter","qui"], start:"09:00", end:"10:00", period:"manha", pts:5 },
     { id:"sc3", label:"Escoteiros", days:["sab"], start:"13:00", end:"17:30", period:"tarde", pts:5 },
-    { id:"sc4", label:"Noite de Jogos em Família", days:["qui"], start:"19:00", end:"20:30", period:"noite", pts:5 },
+    { id:"sc4", label:"Tarde de Jogos em Família", days:["qui"], start:"16:00", end:"17:30", period:"tarde", pts:5 },
   ],
 
   // exceções pontuais: um compromisso só naquele dia específico, sem mexer
@@ -1954,7 +1954,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))))));
+  return fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))))));
 }
 
 // Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
@@ -2072,14 +2072,31 @@ function markExternalTasksV1(cfg){
   return cfg;
 }
 
-// Noite de Jogos em Família — toda quinta à noite, com a Geovana e o Hector.
+// Tarde de Jogos em Família — toda quinta à tarde, com Pedro, Geovana e Hector.
 function addFamilyGameNightV1(cfg){
   if(!cfg || cfg.familyGameNightV1Applied) return cfg;
   if(!Array.isArray(cfg.schedule)) cfg.schedule = [];
   if(!cfg.schedule.some(s=>s.id === 'sc4')){
-    cfg.schedule.push({ id:"sc4", label:"Noite de Jogos em Família", days:["qui"], start:"19:00", end:"20:30", period:"noite", pts:5 });
+    cfg.schedule.push({ id:"sc4", label:"Tarde de Jogos em Família", days:["qui"], start:"16:00", end:"17:30", period:"tarde", pts:5 });
   }
   cfg.familyGameNightV1Applied = true;
+  return cfg;
+}
+
+// Correção: era pra ser de TARDE, não de noite — ajusta quem já tinha
+// recebido a versão antiga (noite, 19h-20h30).
+function fixFamilyGameNightV2(cfg){
+  if(!cfg || cfg.familyGameNightV2Applied) return cfg;
+  if(Array.isArray(cfg.schedule)){
+    const item = cfg.schedule.find(s=>s.id === 'sc4');
+    if(item){
+      item.label = "Tarde de Jogos em Família";
+      item.period = "tarde";
+      item.start = "16:00";
+      item.end = "17:30";
+    }
+  }
+  cfg.familyGameNightV2Applied = true;
   return cfg;
 }
 
@@ -2323,6 +2340,10 @@ function reconcileState(state){
   if(!state.familyAnnouncementResetV1Applied){
     state.familyGameNightAnnouncementSeen = false;
     state.familyAnnouncementResetV1Applied = true;
+  }
+  if(!state.familyAnnouncementResetV2Applied){
+    state.familyGameNightAnnouncementSeen = false;
+    state.familyAnnouncementResetV2Applied = true;
   }
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
@@ -3567,7 +3588,7 @@ function renderTestPanel(){
   });
 }
 
-// Aviso pontual pra contar a novidade da Noite de Jogos em Família — some
+// Aviso pontual pra contar a novidade da Tarde de Jogos em Família — some
 // pra sempre depois que ele der "combinado!" (fica guardado no estado).
 function renderFamilyGameNightAnnouncement(){
   const el = document.getElementById('familyGameNightAnnouncement');
@@ -3577,7 +3598,7 @@ function renderFamilyGameNightAnnouncement(){
   el.innerHTML = `
     <div class="family-announcement">
       <div class="title">🎮🎉 Novidade!</div>
-      <div class="msg">Toda <b>quinta à noite</b> agora é <b>Noite de Jogos em Família</b> — você, a Geovana e o papai/mamãe juntos! 🕹️✨</div>
+      <div class="msg">Toda <b>quinta à tarde</b> agora é <b>Tarde de Jogos em Família</b> — Pedro, Geovana e Hector juntos! 🕹️✨</div>
       <button class="dismiss-btn" id="familyGameNightDismissBtn">combinado! 🤝</button>
     </div>
   `;
