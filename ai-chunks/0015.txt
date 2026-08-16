@@ -1,4 +1,9 @@
-b}</span>` : ''}${late ? '<span class="late-flag">⏰ atrasado</span>' : ''}</span>
+pan class="mark-group" data-id="${task.id}">
+          <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
+          <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
+          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, perde metade dos pontos">✕</button>
+        </span>
+        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}${late ? '<span class="late-flag">⏰ atrasado</span>' : ''}</span>
         <span class="pts">${status==='na' ? 'n/a' : status==='x' ? '−'+taskNotDonePenalty(task) : '+'+task.pts}</span>
       `;
       ul.appendChild(li);
@@ -163,7 +168,7 @@ function renderTestPanel(){
   });
 }
 
-// Aviso pontual pra contar a novidade da Noite de Jogos em Família — some
+// Aviso pontual pra contar a novidade da Tarde de Jogos em Família — some
 // pra sempre depois que ele der "combinado!" (fica guardado no estado).
 function renderFamilyGameNightAnnouncement(){
   const el = document.getElementById('familyGameNightAnnouncement');
@@ -173,7 +178,7 @@ function renderFamilyGameNightAnnouncement(){
   el.innerHTML = `
     <div class="family-announcement">
       <div class="title">🎮🎉 Novidade!</div>
-      <div class="msg">Toda <b>quinta à noite</b> agora é <b>Noite de Jogos em Família</b> — você, a Geovana e o papai/mamãe juntos! 🕹️✨</div>
+      <div class="msg">Toda <b>quinta à tarde</b> agora é <b>Tarde de Jogos em Família</b> — Pedro, Geovana e Hector juntos! 🕹️✨</div>
       <button class="dismiss-btn" id="familyGameNightDismissBtn">combinado! 🤝</button>
     </div>
   `;
@@ -198,25 +203,4 @@ function renderBackupReminder(){
 
   const msg = state.lastBackupISO
     ? `Já faz ${daysSinceBackup} dias desde o último backup. Que tal exportar de novo?`
-    : `Vocês ainda não fizeram nenhum backup. Vale exportar um agora pra não perder o progresso.`;
-
-  el.innerHTML = `
-    <div class="backup-reminder">
-      <span>💾 ${msg}</span>
-      <span>
-        <button id="backupReminderExportBtn">exportar agora</button>
-        <button class="dismiss" id="backupReminderDismissBtn">lembrar depois</button>
-      </span>
-    </div>
-  `;
-  document.getElementById('backupReminderExportBtn').addEventListener('click', ()=>{
-    document.getElementById('exportBtn').click();
-  });
-  document.getElementById('backupReminderDismissBtn').addEventListener('click', ()=>{
-    state.backupReminderDismissedFor = today;
-    saveState(state);
-    renderBackupReminder();
-  });
-}
-
-fun
+    : `Vocês ainda não fizeram ne

@@ -1,4 +1,19 @@
-day[id];
+aft.schedule || []).filter(s=>s.label.trim() !== '' && s.days.length > 0);
+
+  const pinVal = document.getElementById('editorPinInput').value.trim();
+  draft.editorPin = pinVal;
+
+  const gameLimitVal = parseFloat(document.getElementById('gameLimitInput').value);
+  draft.screenDailyLimitHours = isNaN(gameLimitVal) || gameLimitVal < 0 ? 2 : gameLimitVal;
+
+  CONFIG = draft;
+  saveConfig(CONFIG);
+
+  // remove do estado marcado de hoje qualquer tarefa que não existe mais
+  // na rotina ativa de hoje (dia de escola ou fim de semana)
+  const validIds = new Set(allTasks().map(t=>t.id));
+  Object.keys(state.checkedToday).forEach(id=>{
+    if(!validIds.has(id)) delete state.checkedToday[id];
   });
   saveState(state);
 
@@ -159,9 +174,4 @@ function renderDriveSync(){
         <ol>
           <li>Acesse <code>script.google.com</code> → "Novo projeto".</li>
           <li>Apague o código de exemplo e cole o código do Apps Script (botão "ver código" ao lado).</li>
-          <li>Clique em "Implantar" → "Nova implantação".</li>
-          <li>Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer pessoa".</li>
-          <li>Implante, autorize (é a sua própria conta), e copie a URL gerada (termina em <code>/exec</code>).</li>
-          <li>Cole essa URL na constante <code>APPS_SCRIPT_URL</code> no início do arquivo HTML.</li>
-          <li>No seu Google Drive, salve o arquivo do app com o nome exato <code>rotina-hector.html</code>.</li>
-          <li>Em todos os aparelhos, abra e salve como favorito essa <b>mesma URL do Apps Script</b> (a que termina em <code>/exec</code>) — não o arquivo local. A partir daí, atualizar é só substituir o conteúdo do <code>rotina-h
+          <li>Clique em "Implantar" → "N

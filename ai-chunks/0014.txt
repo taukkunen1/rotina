@@ -1,4 +1,20 @@
-  <div class="pet-day-track" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
+':'dias'}</b> para virar <b>${nextMilestone[1]}</b>.`;
+    } else {
+      caption = `Quase lá! O Pacus está quase adulto.`;
+    }
+  }
+
+  const previousProgress = Number(el.dataset.pacusProgress ?? daysEquivalent);
+  const grewNow = daysEquivalent > previousProgress;
+  el.dataset.pacusProgress = String(daysEquivalent);
+
+  el.innerHTML = `
+    ${buildPetVisual(stageFloat)}
+    <div class="pet-name">${CONFIG.pet.name}</div>
+    <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
+    <div class="pet-day-progress">
+      <div class="pet-day-progress-head"><span>Progresso do Pacus</span><b>${progressPct}%</b></div>
+      <div class="pet-day-track" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
     </div>
     <div class="pet-milestones">${milestoneHtml}</div>
     <div class="pet-caption">${caption}</div>
@@ -167,9 +183,4 @@ function render(){
           <button type="button" class="mini-reorder-btn" data-dir="up" data-period="${key}" data-task="${task.id}" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
           <button type="button" class="mini-reorder-btn" data-dir="down" data-period="${key}" data-task="${task.id}" ${idx===orderedTasks.length-1?'disabled':''} title="Mover pra baixo">▼</button>
         </span>
-        <span class="mark-group" data-id="${task.id}">
-          <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
-          <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
-          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, perde metade dos pontos">✕</button>
-        </span>
-        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.su
+        <s

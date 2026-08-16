@@ -1,4 +1,24 @@
-rEditorBad(){
+${field}">
+    <button type="button" class="step-btn" data-step="1" title="mais">+</button>
+  </span>`;
+}
+function wireStepper(row, obj, field, allowNegative){
+  const input = row.querySelector(`[data-field=${field}]`);
+  input.addEventListener('input', e=>{
+    const v = parseInt(e.target.value)||0;
+    obj[field] = allowNegative ? v : Math.max(0, v);
+  });
+  row.querySelectorAll('.step-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const delta = parseInt(btn.getAttribute('data-step'));
+      const next = (obj[field]||0) + delta;
+      obj[field] = allowNegative ? next : Math.max(0, next);
+      input.value = obj[field];
+    });
+  });
+}
+
+function renderEditorBad(){
   const el = document.getElementById('editBad');
   el.innerHTML = '';
   draft.badHabits.forEach(h=>{
@@ -165,19 +185,4 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   }
   draft.badHabits = draft.badHabits.filter(h=>h.txt.trim() !== '');
   draft.rewards = draft.rewards.filter(r=>r.txt.trim() !== '');
-  draft.schedule = (draft.schedule || []).filter(s=>s.label.trim() !== '' && s.days.length > 0);
-
-  const pinVal = document.getElementById('editorPinInput').value.trim();
-  draft.editorPin = pinVal;
-
-  const gameLimitVal = parseFloat(document.getElementById('gameLimitInput').value);
-  draft.screenDailyLimitHours = isNaN(gameLimitVal) || gameLimitVal < 0 ? 2 : gameLimitVal;
-
-  CONFIG = draft;
-  saveConfig(CONFIG);
-
-  // remove do estado marcado de hoje qualquer tarefa que não existe mais
-  // na rotina ativa de hoje (dia de escola ou fim de semana)
-  const validIds = new Set(allTasks().map(t=>t.id));
-  Object.keys(state.checkedToday).forEach(id=>{
-    if(!validIds.has(id)) delete state.checkedTo
+  draft.schedule = (dr

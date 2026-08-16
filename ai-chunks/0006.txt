@@ -58,7 +58,7 @@ const DEFAULT_CONFIG = {
   schedule: [
     { id:"sc1", label:"Inglês", days:["ter","qui"], start:"09:00", end:"10:00", period:"manha", pts:5 },
     { id:"sc3", label:"Escoteiros", days:["sab"], start:"13:00", end:"17:30", period:"tarde", pts:5 },
-    { id:"sc4", label:"Noite de Jogos em Família", days:["qui"], start:"19:00", end:"20:30", period:"noite", pts:5 },
+    { id:"sc4", label:"Tarde de Jogos em Família", days:["qui"], start:"16:00", end:"17:30", period:"tarde", pts:5 },
   ],
 
   // exceções pontuais: um compromisso só naquele dia específico, sem mexer

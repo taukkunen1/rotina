@@ -1,9 +1,27 @@
-g || cfg.familyGameNightV1Applied) return cfg;
+ameNightV1(cfg){
+  if(!cfg || cfg.familyGameNightV1Applied) return cfg;
   if(!Array.isArray(cfg.schedule)) cfg.schedule = [];
   if(!cfg.schedule.some(s=>s.id === 'sc4')){
-    cfg.schedule.push({ id:"sc4", label:"Noite de Jogos em Família", days:["qui"], start:"19:00", end:"20:30", period:"noite", pts:5 });
+    cfg.schedule.push({ id:"sc4", label:"Tarde de Jogos em Família", days:["qui"], start:"16:00", end:"17:30", period:"tarde", pts:5 });
   }
   cfg.familyGameNightV1Applied = true;
+  return cfg;
+}
+
+// Correção: era pra ser de TARDE, não de noite — ajusta quem já tinha
+// recebido a versão antiga (noite, 19h-20h30).
+function fixFamilyGameNightV2(cfg){
+  if(!cfg || cfg.familyGameNightV2Applied) return cfg;
+  if(Array.isArray(cfg.schedule)){
+    const item = cfg.schedule.find(s=>s.id === 'sc4');
+    if(item){
+      item.label = "Tarde de Jogos em Família";
+      item.period = "tarde";
+      item.start = "16:00";
+      item.end = "17:30";
+    }
+  }
+  cfg.familyGameNightV2Applied = true;
   return cfg;
 }
 
@@ -187,12 +205,4 @@ function applyHistoryCorrection_v3(state){
   days.forEach(iso=>{
     const tasks = allTasks(iso);
     const total = tasks.length;
-    const bagunca = tasks.find(t=>t.id === 'n5');
-    const penalty = bagunca ? (bagunca.fullPenalty ? bagunca.pts : Math.ceil(bagunca.pts/2)) : 0;
-    const rawPoints = tasks.reduce((sum, t) => sum + (Number(t.pts) || 0), 0);
-    // pontos de todas as tarefas MENOS os pontos da bagunça (não feita) MENOS a penalidade dela
-    const pointsEarnedThatDay = Math.max(0, (rawPoints - (bagunca ? bagunca.pts : 0)) - penalty);
-    const done = bagunca ? total - 1 : total;
-
-    const oldPoints = (state.history[iso] && state.history[iso].pointsEarnedThatDay) || 0;
-    total
+    const bagunca = tasks.find(t=

@@ -1,4 +1,19 @@
-h.sin(angle)*dist - 40)+'px');
+El, count){
+  count = count || 14;
+  const colors = ['#ffd93d','#ff7eb9','#4fc3f7','#ff9f43','#5fd875'];
+  const rect = originEl && originEl.getBoundingClientRect
+    ? originEl.getBoundingClientRect()
+    : { left: window.innerWidth/2, top: window.innerHeight/2, width:0, height:0 };
+  const originX = rect.left + rect.width/2;
+  const originY = rect.top + rect.height/2;
+
+  for(let i=0;i<count;i++){
+    const piece = document.createElement('span');
+    piece.className = 'confetti-piece';
+    const angle = Math.random()*Math.PI*2;
+    const dist = 60 + Math.random()*90;
+    piece.style.setProperty('--dx', (Math.cos(angle)*dist)+'px');
+    piece.style.setProperty('--dy', (Math.sin(angle)*dist - 40)+'px');
     piece.style.setProperty('--rot', (Math.random()*360)+'deg');
     piece.style.left = originX+'px';
     piece.style.top = originY+'px';
@@ -169,24 +184,4 @@ function renderEditorPeriod(key, elId, periodsObj){
 function stepperHTML(field, value, allowNegative){
   return `<span class="stepper">
     <button type="button" class="step-btn" data-step="-1" title="menos">−</button>
-    <input type="number" ${allowNegative?'':'min="0"'} value="${value}" data-field="${field}">
-    <button type="button" class="step-btn" data-step="1" title="mais">+</button>
-  </span>`;
-}
-function wireStepper(row, obj, field, allowNegative){
-  const input = row.querySelector(`[data-field=${field}]`);
-  input.addEventListener('input', e=>{
-    const v = parseInt(e.target.value)||0;
-    obj[field] = allowNegative ? v : Math.max(0, v);
-  });
-  row.querySelectorAll('.step-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const delta = parseInt(btn.getAttribute('data-step'));
-      const next = (obj[field]||0) + delta;
-      obj[field] = allowNegative ? next : Math.max(0, next);
-      input.value = obj[field];
-    });
-  });
-}
-
-function rende
+    <input type="number" ${allowNegative?'':'min="0"'} value="${value}" data-field="

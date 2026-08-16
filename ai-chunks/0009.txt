@@ -1,4 +1,12 @@
-Delta += pointsEarnedThatDay - oldPoints;
+>t.id === 'n5');
+    const penalty = bagunca ? (bagunca.fullPenalty ? bagunca.pts : Math.ceil(bagunca.pts/2)) : 0;
+    const rawPoints = tasks.reduce((sum, t) => sum + (Number(t.pts) || 0), 0);
+    // pontos de todas as tarefas MENOS os pontos da bagunça (não feita) MENOS a penalidade dela
+    const pointsEarnedThatDay = Math.max(0, (rawPoints - (bagunca ? bagunca.pts : 0)) - penalty);
+    const done = bagunca ? total - 1 : total;
+
+    const oldPoints = (state.history[iso] && state.history[iso].pointsEarnedThatDay) || 0;
+    totalDelta += pointsEarnedThatDay - oldPoints;
 
     const hair = (state.history[iso] && state.history[iso].hair) || (state.hairByDate && state.hairByDate[iso]) || null;
 
@@ -50,6 +58,10 @@ function reconcileState(state){
   if(!state.familyAnnouncementResetV1Applied){
     state.familyGameNightAnnouncementSeen = false;
     state.familyAnnouncementResetV1Applied = true;
+  }
+  if(!state.familyAnnouncementResetV2Applied){
+    state.familyGameNightAnnouncementSeen = false;
+    state.familyAnnouncementResetV2Applied = true;
   }
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
@@ -167,20 +179,4 @@ function closeOutDay(state, dateISO){
     .reduce((s,t)=>s+t.pts, 0);
   const perfect = total > 0 && done === total;
   if(done > 0) registerPetDayCompletion(dateISO);
-  const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
-  const periodsCompleted = periodsCompletedFrom(state.checkedToday, dateISO);
-  state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
-}
-
-function saveState(state, options={}){
-  if(!options.remote){
-    state.revision = (Number(state.revision)||0) + 1;
-    state.updatedAt = new Date().toISOString();
-  }
-  try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
-  scheduleAutoPush();
-}
-
-/* ---------- sincronização automática com o Google Drive ----------
-   Sempre que o arquivo abre, ele tenta buscar a versão mais nova salva
-   no Drive (via
+  const screenMinutes = perfect ? (CONFIG.perfectDay
