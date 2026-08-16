@@ -1,4 +1,21 @@
-;
+ != null && redeemed >= r.maxPerDay) return;
+
+      const delta = addPoints(-r.cost);
+      addLog(`🎁 Resgatou: ${r.txt} (−${r.cost})`);
+      if(r.grantsHours){
+        addGameTimerBonusHours(r.grantsHours);
+        addLog(`🎮 +${r.grantsHours}h de jogo hoje (bônus da recompensa)`);
+      }
+      if(!state.gameTimer.redemptions) state.gameTimer.redemptions = {};
+      state.gameTimer.redemptions[r.id] = redeemed + 1;
+
+      saveState(state);
+      bumpTotal(delta, evt.currentTarget);
+      renderRewards();
+      renderLog();
+      renderGameTimer();
+    });
+    rEl.appendChild(div);
   });
 
   const noteEl = document.getElementById('pointValueNote');
@@ -177,14 +194,4 @@ function renderEditorPeriod(key, elId, periodsObj){
         <button class="del" title="remover">🗑</button>
       </div>
       <input type="text" class="sub-input" value="${escapeAttr(task.sub||'')}" data-field="sub" placeholder="descrição (opcional)">
-    `;
-    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ task.txt = e.target.value; });
-    wireStepper(row, task, 'pts');
-    row.querySelector('[data-field=sub]').addEventListener('input', e=>{ task.sub = e.target.value; });
-    row.querySelector('.del').addEventListener('click', ()=>{
-      periodsObj[key].tasks = periodsObj[key].tasks.filter(t=>t!==task);
-      renderEditorPeriod(key, elId, periodsObj);
-    });
-    row.querySelectorAll('.reorder-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const dir = btn.getAttribute('data-dir');
+ 

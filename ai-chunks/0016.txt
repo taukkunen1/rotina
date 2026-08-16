@@ -1,4 +1,15 @@
-);
+innerHTML = `
+    <div class="family-announcement">
+      <div class="title">🕹️ Novidade na família!</div>
+      <div class="msg">A partir de agora, toda <b>quinta-feira à noite, das 21h às 23h</b>, é hora de <b>Jogos em Família</b> — Pedro, Geovana e Hector, todo mundo junto! 🎲🎉</div>
+      <button class="dismiss-btn" id="familyGameNightDismissBtn">bora! 🤝</button>
+    </div>
+  `;
+  document.getElementById('familyGameNightDismissBtn').addEventListener('click', ()=>{
+    state.familyGameNightAnnouncementSeen = true;
+    saveState(state);
+    renderFamilyGameNightAnnouncement();
+  });
 }
 
 function renderBackupReminder(){
@@ -179,21 +190,4 @@ function renderRewards(){
     div.querySelector('button').addEventListener('click', (evt)=>{
       if(state.totalPoints < r.cost) return;
       const redeemed = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
-      if(r.maxPerDay != null && redeemed >= r.maxPerDay) return;
-
-      const delta = addPoints(-r.cost);
-      addLog(`🎁 Resgatou: ${r.txt} (−${r.cost})`);
-      if(r.grantsHours){
-        addGameTimerBonusHours(r.grantsHours);
-        addLog(`🎮 +${r.grantsHours}h de jogo hoje (bônus da recompensa)`);
-      }
-      if(!state.gameTimer.redemptions) state.gameTimer.redemptions = {};
-      state.gameTimer.redemptions[r.id] = redeemed + 1;
-
-      saveState(state);
-      bumpTotal(delta, evt.currentTarget);
-      renderRewards();
-      renderLog();
-      renderGameTimer();
-    });
-    rEl.appendChild(div)
+      if(r.maxPerDay

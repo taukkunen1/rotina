@@ -1,4 +1,19 @@
-=== maxStage){
+tages[stage];
+  const progressPct = Math.round((daysEquivalent/cycleDays)*100);
+
+  renderMiniPacus(stageFloat);
+
+  const milestones = [
+    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
+  ];
+  const milestoneHtml = milestones.map(([day,label])=>{
+    const active = daysEquivalent >= day;
+    const current = stage >= day && (stage === day || (stage > day && day === 23));
+    return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label} <small>dia ${day}</small></span>`;
+  }).join('');
+
+  let caption;
+  if(stage === maxStage){
     caption = `Pacus adulto! <b>Ciclo concluído em 31/08.</b> 🎉`;
   } else if(canGrowToday){
     caption = `<b>Boa!</b> O Pacus vai evoluir mais um pouco hoje.`;
@@ -175,15 +190,4 @@ function render(){
 
     const ul = document.createElement('ul');
     ul.className = 'tasks';
-    const orderedTasks = getEffectiveTaskOrder(key, period.tasks);
-    const nextSuggestedId = orderedTasks.find(t => !t.external && !state.checkedToday[t.id])?.id;
-    orderedTasks.forEach((task, idx)=>{
-      const li = document.createElement('li');
-      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
-      const isSuggested = task.id === nextSuggestedId;
-      const late = status === 'done' && isTaskLate(task, period.time);
-      li.className = 'task'
-        + (status === 'done' ? ' done' : '')
-        + (status === 'na' ? ' na' : '')
-        + (status === 'x' ? ' notdone' : '')
-        
+    const orderedTasks = getEffectiveTaskOrder(k

@@ -1,4 +1,5 @@
-on addFamilyGameNightV1(cfg){
+ovana e Hector.
+function addFamilyGameNightV1(cfg){
   if(!cfg || cfg.familyGameNightV1Applied) return cfg;
   if(!Array.isArray(cfg.schedule)) cfg.schedule = [];
   if(!cfg.schedule.some(s=>s.id === 'sc4')){
@@ -34,6 +35,21 @@ function fixFamilyGameNightV3(cfg){
     if(item) item.label = "Jogos em Família";
   }
   cfg.familyGameNightV3Applied = true;
+  return cfg;
+}
+
+// Correção final: é de NOITE mesmo, das 21h às 23h de quinta.
+function fixFamilyGameNightV4(cfg){
+  if(!cfg || cfg.familyGameNightV4Applied) return cfg;
+  if(Array.isArray(cfg.schedule)){
+    const item = cfg.schedule.find(s=>s.id === 'sc4');
+    if(item){
+      item.period = "noite";
+      item.start = "21:00";
+      item.end = "23:00";
+    }
+  }
+  cfg.familyGameNightV4Applied = true;
   return cfg;
 }
 
@@ -196,14 +212,4 @@ function applyHistoryCorrection_v2(state){
     : null;
 
   // saldo confirmado até 12/08 — hoje (13/08) ainda não foi jogado
-  state.totalPoints = 170;
-
-  state.historyCorrectionV2Applied = true;
-}
-
-// Correção pontual pra 13/08 e 14/08: tudo foi feito EXCETO "Arrumar a
-// bagunça" (não fez em nenhum dos dois dias) — que tem penalidade cheia
-// (perde os 7 pontos, não a metade). Mesmo não sendo dia 100% perfeito,
-// o Pacus continua contando o dia pro crescimento (crescimento não exige
-// perfeição, só engajamento real). Roda só uma vez.
-function applyHis
+  state

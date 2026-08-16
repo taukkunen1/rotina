@@ -1,4 +1,15 @@
-+ (isSuggested ? ' suggested' : '')
+ey, period.tasks);
+    const nextSuggestedId = orderedTasks.find(t => !t.external && !state.checkedToday[t.id])?.id;
+    orderedTasks.forEach((task, idx)=>{
+      const li = document.createElement('li');
+      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
+      const isSuggested = task.id === nextSuggestedId;
+      const late = status === 'done' && isTaskLate(task, period.time);
+      li.className = 'task'
+        + (status === 'done' ? ' done' : '')
+        + (status === 'na' ? ' na' : '')
+        + (status === 'x' ? ' notdone' : '')
+        + (isSuggested ? ' suggested' : '')
         + (late ? ' late-done' : '');
       li.innerHTML = `
         <span class="task-reorder">
@@ -182,15 +193,4 @@ function renderFamilyGameNightAnnouncement(){
   if(!el) return;
   if(state.familyGameNightAnnouncementSeen){ el.innerHTML=''; return; }
 
-  el.innerHTML = `
-    <div class="family-announcement">
-      <div class="title">🕹️ Novidade na família!</div>
-      <div class="msg">A partir de agora, toda <b>quinta-feira, das 16h às 17h30</b>, é hora de <b>Jogos em Família</b> — Pedro, Geovana e Hector, todo mundo junto! 🎲🎉</div>
-      <button class="dismiss-btn" id="familyGameNightDismissBtn">bora! 🤝</button>
-    </div>
-  `;
-  document.getElementById('familyGameNightDismissBtn').addEventListener('click', ()=>{
-    state.familyGameNightAnnouncementSeen = true;
-    saveState(state);
-    renderFamilyGameNightAnnouncement();
-  }
+  el.

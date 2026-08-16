@@ -1,4 +1,14 @@
-toryCorrection_v3(state){
+.totalPoints = 170;
+
+  state.historyCorrectionV2Applied = true;
+}
+
+// Correção pontual pra 13/08 e 14/08: tudo foi feito EXCETO "Arrumar a
+// bagunça" (não fez em nenhum dos dois dias) — que tem penalidade cheia
+// (perde os 7 pontos, não a metade). Mesmo não sendo dia 100% perfeito,
+// o Pacus continua contando o dia pro crescimento (crescimento não exige
+// perfeição, só engajamento real). Roda só uma vez.
+function applyHistoryCorrection_v3(state){
   if(state.historyCorrectionV3Applied) return;
 
   const days = ["2026-08-13", "2026-08-14"];
@@ -77,6 +87,10 @@ function reconcileState(state){
   if(!state.familyAnnouncementResetV3Applied){
     state.familyGameNightAnnouncementSeen = false;
     state.familyAnnouncementResetV3Applied = true;
+  }
+  if(!state.familyAnnouncementResetV4Applied){
+    state.familyGameNightAnnouncementSeen = false;
+    state.familyAnnouncementResetV4Applied = true;
   }
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
@@ -166,21 +180,4 @@ function isDayPerfect(dateISO){
 
 // O crescimento do Pacus NÃO exige o dia 100% perfeito — só que alguma
 // tarefa de verdade tenha sido feita naquele dia. "isDayPerfect" continua
-// controlando o bônus de tela e o selo "dia perfeito"; esta função aqui
-// é só pro crescimento.
-function hasDayProgress(dateISO){
-  if(dateISO === todayISO()){
-    const tasks = allTasks(dateISO);
-    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    return applicable.some(t=>state.checkedToday[t.id] === 'done');
-  }
-  const entry = state.history[dateISO];
-  return !!(entry && entry.done > 0);
-}
-
-function syncPetCompletionFromDay(dateISO){
-  if(hasDayProgress(dateISO)) return registerPetDayCompletion(dateISO);
-  return false;
-}
-
-function closeOutDay(sta
+// c

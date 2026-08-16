@@ -1,4 +1,14 @@
-="182" r="2.4" fill="#e8a3c0" opacity=".4" style="animation-delay:1.9s;"/>
+"/>
+        <g transform="translate(110 138) scale(${embryoScale.toFixed(2)}) translate(-110 -138)" opacity="${embryoOpacity.toFixed(2)}">
+          <ellipse cx="110" cy="138" rx="26" ry="20" fill="#f6c7dc"/>
+          <circle cx="110" cy="122" r="15" fill="#f6c7dc"/>
+        </g>
+        ${crackSvg}${shellBreak}
+      </g>
+    </g>
+    <circle class="pacus-bubble" cx="72" cy="169" r="4" fill="#e8a3c0" opacity=".55"/>
+    <circle class="pacus-bubble" cx="151" cy="165" r="3" fill="#e8a3c0" opacity=".45" style="animation-delay:1s;"/>
+    <circle class="pacus-bubble" cx="118" cy="182" r="2.4" fill="#e8a3c0" opacity=".4" style="animation-delay:1.9s;"/>
   </svg>`;
 }
 
@@ -144,19 +154,4 @@ function renderPet(){
   const el = document.getElementById('petSection');
   const data = computePetStage();
   const { stage, stageFloat, daysEquivalent, cycleDays, maxStage, canGrowToday } = data;
-  const stageInfo = CONFIG.pet.stages[stage];
-  const progressPct = Math.round((daysEquivalent/cycleDays)*100);
-
-  renderMiniPacus(stageFloat);
-
-  const milestones = [
-    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
-  ];
-  const milestoneHtml = milestones.map(([day,label])=>{
-    const active = daysEquivalent >= day;
-    const current = stage >= day && (stage === day || (stage > day && day === 23));
-    return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label} <small>dia ${day}</small></span>`;
-  }).join('');
-
-  let caption;
-  if(stage 
+  const stageInfo = CONFIG.pet.s
