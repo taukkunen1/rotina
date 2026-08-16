@@ -252,6 +252,16 @@
     font-size:1.05rem;
   }
   .game-timer .hint{ font-size:.7rem; color:var(--chalk-dim); margin-bottom:10px; }
+  .game-timer-locked{
+    background:rgba(255,107,107,.1);
+    border:1px solid rgba(255,107,107,.35);
+    color:var(--red);
+    font-size:.78rem;
+    font-weight:bold;
+    padding:8px 10px;
+    border-radius:8px;
+    margin-bottom:10px;
+  }
   .game-timer-used{ font-size:.95rem; margin-bottom:8px; }
   .game-timer-used b{ color:var(--pink); }
   .game-timer-track{
@@ -1058,6 +1068,44 @@
     font-weight:normal;
   }
 
+  .family-announcement{
+    background:linear-gradient(135deg, rgba(255,126,185,.15), rgba(79,195,247,.12));
+    border:2px dashed var(--pink);
+    border-radius:14px;
+    padding:16px 18px;
+    margin-bottom:18px;
+    text-align:center;
+    position:relative;
+    animation:announcePop .4s cubic-bezier(.2,1.4,.4,1);
+  }
+  @keyframes announcePop{
+    0%{ transform:scale(.9); opacity:0; }
+    100%{ transform:scale(1); opacity:1; }
+  }
+  .family-announcement .title{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:1.15rem;
+    color:var(--pink);
+    margin-bottom:6px;
+  }
+  .family-announcement .msg{
+    font-size:.88rem;
+    color:var(--chalk);
+    line-height:1.5;
+  }
+  .family-announcement .dismiss-btn{
+    margin-top:12px;
+    background:var(--pink);
+    color:#2a1420;
+    border:none;
+    padding:7px 18px;
+    border-radius:8px;
+    font-size:.78rem;
+    font-weight:bold;
+    cursor:pointer;
+    font-family:inherit;
+  }
+
   .test-mode-banner{
     background:var(--red);
     color:#2a1414;
@@ -1440,6 +1488,8 @@
     <div class="content">
 
 
+      <div id="familyGameNightAnnouncement"></div>
+
       <section class="pet-section" id="petSection"></section>
 
       <div id="weekendIndicator"></div>
@@ -1707,6 +1757,7 @@ const DEFAULT_CONFIG = {
   schedule: [
     { id:"sc1", label:"Inglês", days:["ter","qui"], start:"09:00", end:"10:00", period:"manha", pts:5 },
     { id:"sc3", label:"Escoteiros", days:["sab"], start:"13:00", end:"17:30", period:"tarde", pts:5 },
+    { id:"sc4", label:"Noite de Jogos em Família", days:["qui"], start:"19:00", end:"20:30", period:"noite", pts:5 },
   ],
 
   // exceções pontuais: um compromisso só naquele dia específico, sem mexer
@@ -1891,7 +1942,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))));
+  return addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))))));
 }
 
 // Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
@@ -2006,6 +2057,17 @@ function markExternalTasksV1(cfg){
     });
   });
   cfg.externalTasksV1Applied = true;
+  return cfg;
+}
+
+// Noite de Jogos em Família — toda quinta à noite, com a Geovana e o Hector.
+function addFamilyGameNightV1(cfg){
+  if(!cfg || cfg.familyGameNightV1Applied) return cfg;
+  if(!Array.isArray(cfg.schedule)) cfg.schedule = [];
+  if(!cfg.schedule.some(s=>s.id === 'sc4')){
+    cfg.schedule.push({ id:"sc4", label:"Noite de Jogos em Família", days:["qui"], start:"19:00", end:"20:30", period:"noite", pts:5 });
+  }
+  cfg.familyGameNightV1Applied = true;
   return cfg;
 }
 
@@ -2302,6 +2364,13 @@ function periodsCompletedFrom(checkedMap, dateISO){
     if(applicable.length>0 && applicable.every(t=>checkedMap[t.id]==='done')) count++;
   });
   return count;
+}
+
+// Tempo de tela só desbloqueia depois que a Manhã inteira estiver feita.
+function isManhaComplete(dateISO){
+  const periods = getPeriodsFor(dateISO || todayISO());
+  const applicable = periods.manha.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+  return applicable.length > 0 && applicable.every(t=>state.checkedToday[t.id] === 'done');
 }
 
 function registerPetDayCompletion(dateISO){
@@ -2610,6 +2679,7 @@ function gameTimerIsRunning(){
 
 function startGameTimer(){
   if(gameTimerIsRunning()) return;
+  if(!isManhaComplete()) return;
   state.gameTimer.runningSince = Date.now();
   addLog('🎮 começou a jogar');
   saveState(state);
@@ -2685,14 +2755,17 @@ function renderGameTimer(){
   const used = gameTimerSecondsUsedNow();
   const remaining = limit - used;
   const pct = Math.min(100, Math.round((used/limit)*100));
+  const manhaOk = isManhaComplete();
+  const locked = !manhaOk && !running;
 
   el.innerHTML = `
     <div class="game-timer">
       <h3>🎮 Tempo de Jogo</h3>
       <div class="hint">Cota de ${CONFIG.screenDailyLimitHours || 2}h por dia.</div>
+      ${locked ? `<div class="game-timer-locked">🔒 Termine as tarefas da Manhã pra desbloquear</div>` : ''}
       <div class="game-timer-used" id="gameTimerUsed">${remaining > 0 ? `<b>${formatMinSec(remaining)}</b> restantes hoje` : `<b>tempo de hoje acabou</b>`}</div>
       <div class="game-timer-track"><div class="game-timer-fill ${used>=limit?'over-limit':''}" id="gameTimerBarFill" style="width:${pct}%"></div></div>
-      <button class="game-timer-btn ${running?'running':''}" id="gameTimerToggleBtn">
+      <button class="game-timer-btn ${running?'running':''}" id="gameTimerToggleBtn" ${locked?'disabled':''}>
         ${running ? '⏸️ Parar de jogar' : '▶️ Começar a jogar'}
       </button>
     </div>
@@ -3366,6 +3439,7 @@ function render(){
   renderHistory();
   renderAchievementMural();
   renderWeeklyReview();
+  renderFamilyGameNightAnnouncement();
   renderBackupReminder();
   renderTestPanel();
   renderTestModeBanner();
@@ -3470,6 +3544,27 @@ function renderTestPanel(){
     setTestDate(null);
     state = loadState();
     render();
+  });
+}
+
+// Aviso pontual pra contar a novidade da Noite de Jogos em Família — some
+// pra sempre depois que ele der "combinado!" (fica guardado no estado).
+function renderFamilyGameNightAnnouncement(){
+  const el = document.getElementById('familyGameNightAnnouncement');
+  if(!el) return;
+  if(state.familyGameNightAnnouncementSeen){ el.innerHTML=''; return; }
+
+  el.innerHTML = `
+    <div class="family-announcement">
+      <div class="title">🎮🎉 Novidade!</div>
+      <div class="msg">Toda <b>quinta à noite</b> agora é <b>Noite de Jogos em Família</b> — você, a Geovana e o papai/mamãe juntos! 🕹️✨</div>
+      <button class="dismiss-btn" id="familyGameNightDismissBtn">combinado! 🤝</button>
+    </div>
+  `;
+  document.getElementById('familyGameNightDismissBtn').addEventListener('click', ()=>{
+    state.familyGameNightAnnouncementSeen = true;
+    saveState(state);
+    renderFamilyGameNightAnnouncement();
   });
 }
 
