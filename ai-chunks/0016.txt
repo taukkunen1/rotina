@@ -1,4 +1,16 @@
-yISO(), -1));
+] !== 'done'){
+        addPoints(t.pts);
+      }
+      state.checkedToday[t.id] = 'done';
+    });
+    syncPetCompletionFromDay(todayISO());
+    addLog('🧪 (teste) todas as tarefas de hoje marcadas como feitas');
+    saveState(state);
+    render();
+  });
+
+  document.getElementById('testPrevDayBtn').addEventListener('click', ()=>{
+    goToTestDate(shiftISODate(todayISO(), -1));
   });
   document.getElementById('testNextDayBtn').addEventListener('click', ()=>{
     goToTestDate(shiftISODate(todayISO(), 1));
@@ -25,7 +37,7 @@ function renderFamilyGameNightAnnouncement(){
   el.innerHTML = `
     <div class="family-announcement">
       <div class="title">🕹️ Novidade na família!</div>
-      <div class="msg">A partir de agora, toda <b>quinta-feira à noite, das 21h às 23h</b>, é hora de <b>Jogos em Família</b> — Pedro, Geovana e Hector, todo mundo junto! 🎲🎉</div>
+      <div class="msg">A partir de agora, toda <b>quinta-feira à noite, das 21h às 23h</b>, é hora de <b>Jogos em Família</b>! 🎲🎉</div>
       <button class="dismiss-btn" id="familyGameNightDismissBtn">bora! 🤝</button>
     </div>
   `;
@@ -33,6 +45,26 @@ function renderFamilyGameNightAnnouncement(){
     state.familyGameNightAnnouncementSeen = true;
     saveState(state);
     renderFamilyGameNightAnnouncement();
+  });
+}
+
+// Notícia da semana — aviso único (some pra sempre depois de visto).
+function renderWeeklyNewsAnnouncement(){
+  const el = document.getElementById('weeklyNewsAnnouncement');
+  if(!el) return;
+  if(state.weeklyNewsSeen){ el.innerHTML=''; return; }
+
+  el.innerHTML = `
+    <div class="family-announcement">
+      <div class="title">🏆 Notícia da semana!</div>
+      <div class="msg">Você acertou a aposta com a Walda — respondeu certinho o que é ser uma <b>pessoa autêntica</b>! <b>+5 Pacus Points</b> de bônus! 🎉</div>
+      <button class="dismiss-btn" id="weeklyNewsDismissBtn">demais! 🌟</button>
+    </div>
+  `;
+  document.getElementById('weeklyNewsDismissBtn').addEventListener('click', ()=>{
+    state.weeklyNewsSeen = true;
+    saveState(state);
+    renderWeeklyNewsAnnouncement();
   });
 }
 
@@ -168,35 +200,4 @@ function renderHistory(){
     return `<tr${isToday?' class="today-row"':''}>
       <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
       <td>${entry.done}/${entry.total}${perfectBadge}</td>
-      <td class="pts-cell">${entry.pointsEarnedThatDay}</td>
-      <td>${hairLabel(hair)}</td>
-      <td>${editCell}</td>
-    </tr>`;
-  }).join('');
-
-  body.querySelectorAll('.edit-day-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=> openDayEditor(btn.getAttribute('data-date')));
-  });
-
-  const toggleEl = document.getElementById('historyToggle');
-  if(toggleEl){
-    if(hiddenCount > 0){
-      toggleEl.innerHTML = historyShowAll
-        ? `<button class="icon-btn" id="historyToggleBtn">mostrar só os últimos ${HISTORY_VISIBLE_DAYS} dias</button>`
-        : `<button class="icon-btn" id="historyToggleBtn">mostrar histórico completo (+${hiddenCount} dias)</button>`;
-      document.getElementById('historyToggleBtn').addEventListener('click', ()=>{
-        historyShowAll = !historyShowAll;
-        renderHistory();
-      });
-    } else {
-      toggleEl.innerHTML = '';
-    }
-  }
-}
-
-function renderRewards(){
-  const rEl = document.getElementById('rewards');
-  rEl.innerHTML = '';
-  CONFIG.rewards.forEach(r=>{
-    const canAfford = state.totalPoints >= r.cost;
-    const redeemedToday = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 
+      <td class="pts-cell">${entry.pointsEarnedThatDay}</

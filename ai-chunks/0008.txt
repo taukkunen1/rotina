@@ -1,4 +1,5 @@
-ndIndex(t=>t.id === 'n6');
+.. (30–40 min)" };
+        const idx = tasks.findIndex(t=>t.id === 'n6');
         if(idx >= 0) tasks.splice(idx+1, 0, newTask);
         else tasks.push(newTask);
       }
@@ -213,5 +214,4 @@ function applyHistoryCorrection_v2(state){
   };
 
   if(!state.history) state.history = {};
-  if(!state.hairByDate) state.hairByDate = {};
   if

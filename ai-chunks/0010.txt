@@ -1,4 +1,11 @@
-yCompletion(dateISO){
+que a Manhã inteira estiver feita.
+function isManhaComplete(dateISO){
+  const periods = getPeriodsFor(dateISO || todayISO());
+  const applicable = periods.manha.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+  return applicable.length > 0 && applicable.every(t=>state.checkedToday[t.id] === 'done');
+}
+
+function registerPetDayCompletion(dateISO){
   const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
   const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
   if(dateISO < startISO || dateISO > endISO) return false;
@@ -179,15 +186,4 @@ function mergeRemoteData(remote){
   merged.updatedAt = new Date().toISOString();
   const remoteConfig = sanitizeRemoteConfig(remote.config);
   const localConfigValid = isValidPeriodsConfig(CONFIG);
-  const useRemoteConfig = remoteConfig && (!localConfigValid || localState.updatedAt < (remoteState.updatedAt||''));
-  return {
-    config: useRemoteConfig ? remoteConfig : (localConfigValid ? CONFIG : JSON.parse(JSON.stringify(DEFAULT_CONFIG))),
-    state: merged
-  };
-}
-
-async function autoPullOnStartup(){
-  if(!APPS_SCRIPT_URL) return;
-  suppressAutoPush = true;
-  try{
-    const res = await fetch(DATA_ENDPOINT
+  const useRemoteConfig = remoteConfig && (!localConfigValid || localState.updatedAt 

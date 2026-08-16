@@ -1,4 +1,5 @@
-(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+(!state.hairByDate) state.hairByDate = {};
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
 
   Object.keys(hairByDay).forEach(iso => {
     const tasks = allTasks(iso);
@@ -121,6 +122,12 @@ function reconcileState(state){
     state.familyGameNightAnnouncementSeen = false;
     state.familyAnnouncementResetV4Applied = true;
   }
+  if(!state.waldaBetBonusApplied){
+    state.totalPoints = Math.max(0, Math.min(1000, (Number(state.totalPoints)||0) + 5));
+    if(!state.log) state.log = [];
+    state.log.unshift('🏆 +5 · acertou a aposta com a Walda (pessoa autêntica)');
+    state.waldaBetBonusApplied = true;
+  }
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
   }
@@ -179,11 +186,4 @@ function periodsCompletedFrom(checkedMap, dateISO){
   return count;
 }
 
-// Tempo de tela só desbloqueia depois que a Manhã inteira estiver feita.
-function isManhaComplete(dateISO){
-  const periods = getPeriodsFor(dateISO || todayISO());
-  const applicable = periods.manha.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  return applicable.length > 0 && applicable.every(t=>state.checkedToday[t.id] === 'done');
-}
-
-function registerPetDa
+// Tempo de tela só desbloqueia depois 

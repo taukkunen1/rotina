@@ -1,4 +1,5 @@
-/ com uma pista visual (útil pra leitura rápida / crianças ainda alfabetizando)
+nome da tarefa pra um emoji — reforça o texto
+// com uma pista visual (útil pra leitura rápida / crianças ainda alfabetizando)
 const ICON_RULES = [
   [/cama/i, "🛏️"], [/água/i, "💧"], [/dente/i, "🦷"], [/rosto|banho/i, "🧼"],
   [/duolingo|inglês|idioma/i, "🗣️"], [/ler|livro|capítulo/i, "📖"],
@@ -187,5 +188,4 @@ function addCreativeTaskV1(cfg){
     if(p && p.noite && Array.isArray(p.noite.tasks)){
       const tasks = p.noite.tasks;
       if(!tasks.some(t=>t.id === 'n7')){
-        const newTask = { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" };
-        const idx = tasks.fi
+        const newTask = { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar.

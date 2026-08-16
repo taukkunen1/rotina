@@ -1,4 +1,17 @@
-f(!t.runningSince) return t.remainingSeconds;
+});
+
+  if(running) startGameTimerTicking(); else stopGameTimerTicking();
+}
+
+/* ===================== TIMERS AVULSOS (tempo livre pra qualquer coisa) ===================== */
+let customTimerTickHandle = null;
+
+function findCustomTimer(id){
+  return state.customTimers.find(t=>t.id===id);
+}
+
+function customTimerRemainingNow(t){
+  if(!t.runningSince) return t.remainingSeconds;
   const elapsed = (Date.now() - t.runningSince)/1000;
   return Math.max(0, t.remainingSeconds - elapsed);
 }
@@ -201,10 +214,4 @@ function buildEggSVG(progress){
   const cracks = [
     ["M94 80 L106 96 L98 109 L112 125 L103 142", 0.12],
     ["M80 96 L92 108 L84 122 L96 136", 0.32],
-    ["M124 90 L113 105 L126 117 L116 132 L123 147", 0.52],
-    ["M76 124 L89 131 L82 147", 0.72],
-    ["M132 119 L122 128 L134 141", 0.88]
-  ];
-  const crackSvg = cracks.map(([d,start],i)=>{
-    const opacity = p < start ? 0 : Math.min(1,(p-start)/0.16);
-    return `<path d="${d}" class="egg-crack" stroke="#c9506f" stroke-width="${2+i*.25}" fill="none" stroke-linecap
+    ["M124 90 L113 105 L126 117 L116 13

@@ -1,4 +1,13 @@
-sFor(todayISO())).forEach(([key, period])=>{
+tById('weekendIndicator');
+  if(weekendEl){
+    weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
+      ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
+      : '';
+  }
+
+  const periodsEl = document.getElementById('periods');
+  periodsEl.innerHTML = '';
+  Object.entries(getPeriodsFor(todayISO())).forEach(([key, period])=>{
     const div = document.createElement('div');
     div.className = 'period ' + key;
 
@@ -96,6 +105,7 @@ sFor(todayISO())).forEach(([key, period])=>{
   renderAchievementMural();
   renderWeeklyReview();
   renderFamilyGameNightAnnouncement();
+  renderWeeklyNewsAnnouncement();
   renderBackupReminder();
   renderTestPanel();
   renderTestModeBanner();
@@ -174,16 +184,4 @@ function renderTestPanel(){
 
   document.getElementById('testCompleteDayBtn').addEventListener('click', ()=>{
     allTasks().forEach(t=>{
-      if(state.checkedToday[t.id] !== 'done'){
-        addPoints(t.pts);
-      }
-      state.checkedToday[t.id] = 'done';
-    });
-    syncPetCompletionFromDay(todayISO());
-    addLog('🧪 (teste) todas as tarefas de hoje marcadas como feitas');
-    saveState(state);
-    render();
-  });
-
-  document.getElementById('testPrevDayBtn').addEventListener('click', ()=>{
-    goToTestDate(shiftISODate(toda
+      if(state.checkedToday[t.id

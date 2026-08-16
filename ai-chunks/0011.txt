@@ -1,4 +1,15 @@
-, {method:'GET', cache:'no-store'});
+< (remoteState.updatedAt||''));
+  return {
+    config: useRemoteConfig ? remoteConfig : (localConfigValid ? CONFIG : JSON.parse(JSON.stringify(DEFAULT_CONFIG))),
+    state: merged
+  };
+}
+
+async function autoPullOnStartup(){
+  if(!APPS_SCRIPT_URL) return;
+  suppressAutoPush = true;
+  try{
+    const res = await fetch(DATA_ENDPOINT, {method:'GET', cache:'no-store'});
     if(res.ok){
       const backup = await res.json();
       if(backup && backup.config && backup.state){
@@ -208,17 +219,4 @@ function renderGameTimer(){
   `;
   document.getElementById('gameTimerToggleBtn').addEventListener('click', ()=>{
     if(gameTimerIsRunning()) stopGameTimer(); else startGameTimer();
-  });
-
-  if(running) startGameTimerTicking(); else stopGameTimerTicking();
-}
-
-/* ===================== TIMERS AVULSOS (tempo livre pra qualquer coisa) ===================== */
-let customTimerTickHandle = null;
-
-function findCustomTimer(id){
-  return state.customTimers.find(t=>t.id===id);
-}
-
-function customTimerRemainingNow(t){
-  i
+  

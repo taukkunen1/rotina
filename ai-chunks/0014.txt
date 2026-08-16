@@ -1,4 +1,11 @@
-ngth >= day;
+filter(d => d >= cycle.startISO && d <= cycle.endISO)
+    .sort();
+  const milestones = [
+    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
+  ];
+  return milestones.map(([day,label])=>{
+    if(day === 0) return { label, day, date: cycle.startISO, reached: true };
+    const reached = sorted.length >= day;
     return { label, day, date: reached ? sorted[day-1] : null, reached };
   });
 }
@@ -190,13 +197,4 @@ function render(){
   renderGameTimer();
   renderCustomTimers();
 
-  const weekendEl = document.getElementById('weekendIndicator');
-  if(weekendEl){
-    weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
-      ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
-      : '';
-  }
-
-  const periodsEl = document.getElementById('periods');
-  periodsEl.innerHTML = '';
-  Object.entries(getPeriod
+  const weekendEl = document.getElemen

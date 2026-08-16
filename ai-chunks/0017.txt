@@ -1,4 +1,35 @@
-0;
+td>
+      <td>${hairLabel(hair)}</td>
+      <td>${editCell}</td>
+    </tr>`;
+  }).join('');
+
+  body.querySelectorAll('.edit-day-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> openDayEditor(btn.getAttribute('data-date')));
+  });
+
+  const toggleEl = document.getElementById('historyToggle');
+  if(toggleEl){
+    if(hiddenCount > 0){
+      toggleEl.innerHTML = historyShowAll
+        ? `<button class="icon-btn" id="historyToggleBtn">mostrar só os últimos ${HISTORY_VISIBLE_DAYS} dias</button>`
+        : `<button class="icon-btn" id="historyToggleBtn">mostrar histórico completo (+${hiddenCount} dias)</button>`;
+      document.getElementById('historyToggleBtn').addEventListener('click', ()=>{
+        historyShowAll = !historyShowAll;
+        renderHistory();
+      });
+    } else {
+      toggleEl.innerHTML = '';
+    }
+  }
+}
+
+function renderRewards(){
+  const rEl = document.getElementById('rewards');
+  rEl.innerHTML = '';
+  CONFIG.rewards.forEach(r=>{
+    const canAfford = state.totalPoints >= r.cost;
+    const redeemedToday = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
     const atDailyLimit = r.maxPerDay != null && redeemedToday >= r.maxPerDay;
     const capNote = r.maxPerDay != null ? `<span class="cap-note">${redeemedToday}/${r.maxPerDay} hoje</span>` : '';
     const div = document.createElement('div');
@@ -167,33 +198,4 @@ function openEditor(){
       draft.periodsWeekend = JSON.parse(JSON.stringify(draft.periods));
       // gera ids novos pra não colidir com os da rotina de semana
       Object.values(draft.periodsWeekend).forEach(period=>{
-        period.tasks.forEach(t=>{ t.id = uid('we'); });
-      });
-      renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
-      renderEditorPeriod('tarde', 'editTardeWeekend', draft.periodsWeekend);
-      renderEditorPeriod('noite', 'editNoiteWeekend', draft.periodsWeekend);
-    }
-    weekendBody.style.display = weekendToggle.checked ? 'block' : 'none';
-    if(!weekendToggle.checked) draft.periodsWeekend = null;
-  };
-
-  document.getElementById('editorPinInput').value = draft.editorPin || '';
-  document.getElementById('gameLimitInput').value = draft.screenDailyLimitHours ?? 2;
-  if(!Array.isArray(draft.schedule)) draft.schedule = [];
-  renderEditorSchedule();
-
-  document.getElementById('overlay').classList.add('open');
-}
-function closeEditor(){
-  document.getElementById('overlay').classList.remove('open');
-  draft = null;
-}
-
-function renderEditorPeriod(key, elId, periodsObj){
-  periodsObj = periodsObj || draft.periods;
-  const el = document.getElementById(elId);
-  el.innerHTML = '';
-  const list = periodsObj[key].tasks;
-  list.forEach((task, idx)=>{
-    const row = document.createElement('div');
-    row.classNam
+        period.tasks.forEach(t=>{ 
