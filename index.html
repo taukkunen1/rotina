@@ -1769,7 +1769,7 @@ const DEFAULT_CONFIG = {
   schedule: [
     { id:"sc1", label:"Inglês", days:["ter","qui"], start:"09:00", end:"10:00", period:"manha", pts:5 },
     { id:"sc3", label:"Escoteiros", days:["sab"], start:"13:00", end:"17:30", period:"tarde", pts:5 },
-    { id:"sc4", label:"Tarde de Jogos em Família", days:["qui"], start:"16:00", end:"17:30", period:"tarde", pts:5 },
+    { id:"sc4", label:"Jogos em Família", days:["qui"], start:"16:00", end:"17:30", period:"tarde", pts:5 },
   ],
 
   // exceções pontuais: um compromisso só naquele dia específico, sem mexer
@@ -1954,7 +1954,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))))));
+  return fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))))))));
 }
 
 // Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
@@ -2077,7 +2077,7 @@ function addFamilyGameNightV1(cfg){
   if(!cfg || cfg.familyGameNightV1Applied) return cfg;
   if(!Array.isArray(cfg.schedule)) cfg.schedule = [];
   if(!cfg.schedule.some(s=>s.id === 'sc4')){
-    cfg.schedule.push({ id:"sc4", label:"Tarde de Jogos em Família", days:["qui"], start:"16:00", end:"17:30", period:"tarde", pts:5 });
+    cfg.schedule.push({ id:"sc4", label:"Jogos em Família", days:["qui"], start:"16:00", end:"17:30", period:"tarde", pts:5 });
   }
   cfg.familyGameNightV1Applied = true;
   return cfg;
@@ -2090,13 +2090,25 @@ function fixFamilyGameNightV2(cfg){
   if(Array.isArray(cfg.schedule)){
     const item = cfg.schedule.find(s=>s.id === 'sc4');
     if(item){
-      item.label = "Tarde de Jogos em Família";
+      item.label = "Jogos em Família";
       item.period = "tarde";
       item.start = "16:00";
       item.end = "17:30";
     }
   }
   cfg.familyGameNightV2Applied = true;
+  return cfg;
+}
+
+// Nome mais simples — "Tarde de..." era redundante já que o bloco em si
+// já se chama Tarde.
+function fixFamilyGameNightV3(cfg){
+  if(!cfg || cfg.familyGameNightV3Applied) return cfg;
+  if(Array.isArray(cfg.schedule)){
+    const item = cfg.schedule.find(s=>s.id === 'sc4');
+    if(item) item.label = "Jogos em Família";
+  }
+  cfg.familyGameNightV3Applied = true;
   return cfg;
 }
 
@@ -2344,6 +2356,10 @@ function reconcileState(state){
   if(!state.familyAnnouncementResetV2Applied){
     state.familyGameNightAnnouncementSeen = false;
     state.familyAnnouncementResetV2Applied = true;
+  }
+  if(!state.familyAnnouncementResetV3Applied){
+    state.familyGameNightAnnouncementSeen = false;
+    state.familyAnnouncementResetV3Applied = true;
   }
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
@@ -3588,8 +3604,8 @@ function renderTestPanel(){
   });
 }
 
-// Aviso pontual pra contar a novidade da Tarde de Jogos em Família — some
-// pra sempre depois que ele der "combinado!" (fica guardado no estado).
+// Aviso pontual pra contar a novidade dos Jogos em Família — some pra
+// sempre depois que ele der "combinado!" (fica guardado no estado).
 function renderFamilyGameNightAnnouncement(){
   const el = document.getElementById('familyGameNightAnnouncement');
   if(!el) return;
@@ -3597,9 +3613,9 @@ function renderFamilyGameNightAnnouncement(){
 
   el.innerHTML = `
     <div class="family-announcement">
-      <div class="title">🎮🎉 Novidade!</div>
-      <div class="msg">Toda <b>quinta à tarde</b> agora é <b>Tarde de Jogos em Família</b> — Pedro, Geovana e Hector juntos! 🕹️✨</div>
-      <button class="dismiss-btn" id="familyGameNightDismissBtn">combinado! 🤝</button>
+      <div class="title">🕹️ Novidade na família!</div>
+      <div class="msg">A partir de agora, toda <b>quinta-feira, das 16h às 17h30</b>, é hora de <b>Jogos em Família</b> — Pedro, Geovana e Hector, todo mundo junto! 🎲🎉</div>
+      <button class="dismiss-btn" id="familyGameNightDismissBtn">bora! 🤝</button>
     </div>
   `;
   document.getElementById('familyGameNightDismissBtn').addEventListener('click', ()=>{
