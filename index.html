@@ -2604,19 +2604,22 @@ function saveState(state, options={}){
    CONFIG/state, porque o carregamento pode precisar salvar de volta
    (limpezas, correções automáticas) e isso já chama scheduleAutoPush. */
 let suppressAutoPush = false;
-let autoPushTimer = null;
 
 let CONFIG = loadConfig();
 let state = loadState();
 
+let pushInFlight = false;
+let pushPending = false;
+
 function scheduleAutoPush(){
   if(!APPS_SCRIPT_URL || suppressAutoPush) return;
-  clearTimeout(autoPushTimer);
-  autoPushTimer = setTimeout(doAutoPush, 2000);
+  if(pushInFlight){ pushPending = true; return; }
+  doAutoPush();
 }
 
 async function doAutoPush(){
   if(!APPS_SCRIPT_URL) return;
+  pushInFlight = true;
   try{
     const payload = {
       appVersion: APP_VERSION,
@@ -2639,9 +2642,7 @@ async function doAutoPush(){
       state.driveConflictCount = 0;
       try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
       renderDriveSync();
-      return;
-    }
-    if(result.conflict && result.data){
+    } else if(result.conflict && result.data){
       state.driveConflictCount = (Number(state.driveConflictCount)||0)+1;
       const server = result.data;
       const merged = mergeRemoteData(server);
@@ -2655,6 +2656,12 @@ async function doAutoPush(){
     }
   }catch(err){
     renderDriveSync();
+  } finally {
+    pushInFlight = false;
+    if(pushPending){
+      pushPending = false;
+      doAutoPush();
+    }
   }
 }
 
