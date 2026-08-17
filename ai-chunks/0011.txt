@@ -152,7 +152,7 @@ let gameTimerTickHandle = null;
 function gameTimerDailyLimitSeconds(){
   const base = Math.round((CONFIG.screenDailyLimitHours || 2) * 3600);
   const bonus = Math.round((state.gameTimer.bonusSeconds || 0));
-  return base + bonus;
+  return Math.max(0, base + bonus);
 }
 
 function addGameTimerBonusHours(hours){
@@ -203,4 +203,3 @@ function flushGameTimer(){
 
 function formatMinSec(totalSeconds){
   const s = Math.max(0, Math.round(totalSeconds));
-  const h = 

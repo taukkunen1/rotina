@@ -1,4 +1,25 @@
-('Não consegui salvar no Google Drive. Confira se a URL do Apps Script está certa e se a implantação está ativa.');
+.getElementById('driveSaveBtn').addEventListener('click', driveSave);
+  document.getElementById('driveLoadBtn').addEventListener('click', driveLoad);
+}
+
+async function driveSave(){
+  try{
+    const backup = { config: CONFIG, state: state, exportedAt: new Date().toISOString() };
+    const res = await fetch(DATA_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita pré-checagem CORS
+      body: JSON.stringify(backup),
+    });
+    if(!res.ok) throw new Error('Falha ao salvar');
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Falha ao salvar');
+
+    state.driveLastSyncISO = todayISO();
+    saveState(state);
+    renderDriveSync();
+    alert('Salvo no Google Drive!');
+  }catch(err){
+    alert('Não consegui salvar no Google Drive. Confira se a URL do Apps Script está certa e se a implantação está ativa.');
   }
 }
 

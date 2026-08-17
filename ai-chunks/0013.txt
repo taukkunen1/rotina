@@ -1,4 +1,24 @@
-al);
+customTimerPauseBtn_${t.id}" ${running?'':'disabled'}>⏸️ Pausar</button>
+          <button class="custom-timer-btn secondary" id="customTimerResetBtn_${t.id}">↺ Reiniciar</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="custom-timers-wrap">
+      <div class="custom-timers">${cardsHtml}</div>
+    </div>
+  `;
+
+  state.customTimers.forEach(t=>{
+    document.getElementById('customTimerLabel_'+t.id).addEventListener('change', e=>{
+      t.label = e.target.value.trim() || t.label;
+      saveState(state);
+    });
+    document.getElementById('customTimerSetBtn_'+t.id).addEventListener('click', ()=>{
+      const val = parseFloat(document.getElementById('customTimerMin_'+t.id).value);
+      setCustomTimerMinutes(t.id, isNaN(val) ? 0 : val);
     });
     document.getElementById('customTimerStartBtn_'+t.id).addEventListener('click', ()=> startCustomTimer(t.id));
     document.getElementById('customTimerPauseBtn_'+t.id).addEventListener('click', ()=> pauseCustomTimer(t.id));
@@ -129,22 +149,4 @@ function buildPacusSVG(stageFloat){
     <ellipse cx="${110-bodyW*0.72}" cy="${bodyY+bodyH*0.55}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity}" transform="rotate(-20 ${110-bodyW*0.72} ${bodyY+bodyH*0.55})"/>
     <ellipse cx="${110+bodyW*0.72}" cy="${bodyY+bodyH*0.55}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity}" transform="rotate(20 ${110+bodyW*0.72} ${bodyY+bodyH*0.55})"/>
     <ellipse cx="${110-bodyW*0.5}" cy="${bodyY+bodyH*0.92}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity}" transform="rotate(-15 ${110-bodyW*0.5} ${bodyY+bodyH*0.92})"/>
-    <ellipse cx="${110+bodyW*0.5}" cy="${bodyY+bodyH*0.92}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity}" transform="rotate(15 ${110+bodyW*0.5} ${bodyY+bodyH*0.92})"/>
-  `;
-
-  const sparkle = adult > .8 ? `<text x="35" y="64" font-size="18">✨</text><text x="166" y="75" font-size="16">✨</text>` : '';
-
-  return `<svg class="pet-mascot pet-hatch-crack" ${svgAttrs()}>
-    <defs>
-      <radialGradient id="${gid}-body" cx="42%" cy="34%" r="72%">
-        <stop offset="0%" stop-color="#ffe3ef"/>
-        <stop offset="60%" stop-color="#f6c7dc"/>
-        <stop offset="100%" stop-color="#eeaecb"/>
-      </radialGradient>
-    </defs>
-    ${shell}
-    <g transform="translate(110 115) scale(${scale.toFixed(3)}) translate(-110 -115)">
-      <g class="pacus-idle">
-        ${sparkle}
-        ${legs}
-        <ellipse cx="110" cy="${bodyY+bodyH+4}" rx="${18+growth*9}" r
+    <ellipse cx="${110+bodyW*0.5}" cy="${bodyY+bodyH*0.92}" rx="7" ry="5" fill="#eeaecb"

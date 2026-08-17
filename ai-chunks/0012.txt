@@ -1,4 +1,5 @@
-Math.floor(s/3600);
+
+  const h = Math.floor(s/3600);
   const m = Math.floor((s%3600)/60);
   if(h > 0) return `${h}h ${String(m).padStart(2,'0')}min`;
   return `${m} min`;
@@ -27,7 +28,7 @@ function updateGameTimerDisplay(){
   const limit = gameTimerDailyLimitSeconds();
   const used = gameTimerSecondsUsedNow();
   const remaining = limit - used;
-  const pct = Math.min(100, Math.round((used/limit)*100));
+  const pct = limit > 0 ? Math.min(100, Math.round((used/limit)*100)) : 100;
   usedEl.innerHTML = remaining > 0
     ? `<b>${formatMinSec(remaining)}</b> restantes hoje`
     : `<b>tempo de hoje acabou</b>`;
@@ -42,7 +43,7 @@ function renderGameTimer(){
   const limit = gameTimerDailyLimitSeconds();
   const used = gameTimerSecondsUsedNow();
   const remaining = limit - used;
-  const pct = Math.min(100, Math.round((used/limit)*100));
+  const pct = limit > 0 ? Math.min(100, Math.round((used/limit)*100)) : 100;
   const manhaOk = isManhaComplete();
   const locked = !manhaOk && !running;
 
@@ -56,11 +57,26 @@ function renderGameTimer(){
       <button class="game-timer-btn ${running?'running':''}" id="gameTimerToggleBtn" ${locked?'disabled':''}>
         ${running ? '⏸️ Parar de jogar' : '▶️ Começar a jogar'}
       </button>
+      ${adultUnlocked ? `<button class="icon-btn" id="gameTimerAdjustBtn" style="margin-top:8px;" title="Ajuste manual do tempo de hoje">⚙️ ajustar tempo de hoje</button>` : ''}
     </div>
   `;
   document.getElementById('gameTimerToggleBtn').addEventListener('click', ()=>{
     if(gameTimerIsRunning()) stopGameTimer(); else startGameTimer();
   });
+
+  const adjustBtn = document.getElementById('gameTimerAdjustBtn');
+  if(adjustBtn){
+    adjustBtn.addEventListener('click', ()=>{
+      const raw = prompt('Quantos minutos ajustar no tempo de hoje?\nPositivo soma (ex: 30), negativo tira (ex: -15).', '15');
+      if(raw === null) return;
+      const minutes = parseInt(raw, 10);
+      if(!minutes || minutes === 0) return;
+      addGameTimerBonusHours(minutes/60);
+      addLog(`⚙️ ${minutes>0?'+':''}${minutes} min de tela · ajuste manual`);
+      saveState(state);
+      renderGameTimer();
+    });
+  }
 
   if(running) startGameTimerTicking(); else stopGameTimerTicking();
 }
@@ -201,24 +217,4 @@ function renderCustomTimers(){
         </div>
         <div class="custom-timer-btns">
           <button class="custom-timer-btn" id="customTimerStartBtn_${t.id}" ${(running||remaining<=0)?'disabled':''}>▶️ Iniciar</button>
-          <button class="custom-timer-btn secondary" id="customTimerPauseBtn_${t.id}" ${running?'':'disabled'}>⏸️ Pausar</button>
-          <button class="custom-timer-btn secondary" id="customTimerResetBtn_${t.id}">↺ Reiniciar</button>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  el.innerHTML = `
-    <div class="custom-timers-wrap">
-      <div class="custom-timers">${cardsHtml}</div>
-    </div>
-  `;
-
-  state.customTimers.forEach(t=>{
-    document.getElementById('customTimerLabel_'+t.id).addEventListener('change', e=>{
-      t.label = e.target.value.trim() || t.label;
-      saveState(state);
-    });
-    document.getElementById('customTimerSetBtn_'+t.id).addEventListener('click', ()=>{
-      const val = parseFloat(document.getElementById('customTimerMin_'+t.id).value);
-      setCustomTimerMinutes(t.id, isNaN(val) ? 0 : v
+          <button class="custom-timer-btn secondary" id="

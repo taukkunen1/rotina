@@ -1,4 +1,22 @@
-hed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
+atDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
+
+  el.innerHTML = `
+    <div class="weekly-review">
+      <div class="wr-head">
+        <span class="wr-range">${rangeLabel}</span>
+      </div>
+      <div class="wr-stats">
+        <div class="wr-stat"><span class="wr-num">${perfectDays}/7</span><span class="wr-label">dias completos</span></div>
+        <div class="wr-stat"><span class="wr-num">${totalPointsWeek}</span><span class="wr-label">Pacus Points ganhos</span></div>
+        <div class="wr-stat"><span class="wr-num">${totalScreenMin}</span><span class="wr-label">min de tela ganhos</span></div>
+      </div>
+    </div>
+  `;
+}
+
+function hairLabel(status){
+  if(status === 'washed') return '<span class="hair-history-washed">💧 Lavou</span>';
+  if(status === 'not-washed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
   return '<span class="hair-history-unknown">— Não registrado</span>';
 }
 
@@ -172,28 +190,4 @@ function onMarkClick(e){
   else if(current === 'x') totalDelta += addPoints(taskNotDonePenalty(task));
 
   if(current === clickedStatus){
-    // clicou de novo no mesmo estado: volta pra pendente
-    delete state.checkedToday[id];
-    delete state.taskDoneAt[id];
-    addLog(`(desmarcado) ${task.txt}`);
-  } else {
-    state.checkedToday[id] = clickedStatus;
-    if(clickedStatus === 'done'){
-      totalDelta += addPoints(task.pts);
-      state.taskDoneAt[id] = new Date().toISOString();
-      addLog(`+${task.pts} · ${task.txt}`);
-      fireConfetti(btn);
-    } else if(clickedStatus === 'na'){
-      delete state.taskDoneAt[id];
-      addLog(`n/a · ${task.txt}`);
-    } else {
-      delete state.taskDoneAt[id];
-      const penalty = taskNotDonePenalty(task);
-      totalDelta += addPoints(-penalty);
-      addLog(`✕ não realizado · ${task.txt} (−${penalty})`);
-    }
-  }
-
-  const completedNow = syncPetCompletionFromDay(todayISO());
-  if(completedNow){
-    a
+    // clicou de novo no mesmo estado: vol

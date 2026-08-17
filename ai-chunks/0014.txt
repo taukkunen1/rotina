@@ -1,4 +1,22 @@
-y="${7+growth*3}" fill="url(#${gid}-body)"/>
+ opacity="${legOpacity}" transform="rotate(15 ${110+bodyW*0.5} ${bodyY+bodyH*0.92})"/>
+  `;
+
+  const sparkle = adult > .8 ? `<text x="35" y="64" font-size="18">✨</text><text x="166" y="75" font-size="16">✨</text>` : '';
+
+  return `<svg class="pet-mascot pet-hatch-crack" ${svgAttrs()}>
+    <defs>
+      <radialGradient id="${gid}-body" cx="42%" cy="34%" r="72%">
+        <stop offset="0%" stop-color="#ffe3ef"/>
+        <stop offset="60%" stop-color="#f6c7dc"/>
+        <stop offset="100%" stop-color="#eeaecb"/>
+      </radialGradient>
+    </defs>
+    ${shell}
+    <g transform="translate(110 115) scale(${scale.toFixed(3)}) translate(-110 -115)">
+      <g class="pacus-idle">
+        ${sparkle}
+        ${legs}
+        <ellipse cx="110" cy="${bodyY+bodyH+4}" rx="${18+growth*9}" ry="${7+growth*3}" fill="url(#${gid}-body)"/>
         <ellipse cx="110" cy="${bodyY}" rx="${bodyW}" ry="${bodyH}" fill="url(#${gid}-body)"/>
         <ellipse cx="110" cy="${bodyY+8}" rx="${bodyW*.68}" ry="${bodyH*.52}" fill="#fff" opacity=".3"/>
         ${gills}
@@ -162,23 +180,4 @@ function showEvolutionCelebration(stageInfo, stage, maxStage){
   // confete espalhado pela tela toda, não só perto do Pacus
   fireConfetti(null, 40);
   setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.2, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 200);
-  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.8, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 350);
-
-  const autoClose = setTimeout(closeEvolutionCelebration, 4500);
-  overlay.dataset.autoCloseId = autoClose;
-}
-function closeEvolutionCelebration(){
-  const overlay = document.getElementById('evolutionCelebration');
-  if(overlay.dataset.autoCloseId) clearTimeout(Number(overlay.dataset.autoCloseId));
-  overlay.classList.remove('open');
-}
-
-function buildStreakStrip(){
-  const days = [];
-  for(let i=6; i>=0; i--){
-    const d = new Date();
-    d.setDate(d.getDate()-i);
-    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-    days.push(iso);
-  }
-  const weekdayLetter
+  

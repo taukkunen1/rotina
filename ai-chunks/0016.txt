@@ -1,4 +1,35 @@
-adStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+);
+      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
+      saveState(state);
+      bumpTotal(delta, btn);
+      renderLog();
+    });
+    badEl.appendChild(btn);
+  });
+
+  renderRewards();
+  renderLog();
+  renderHistory();
+  renderAchievementMural();
+  renderWeeklyReview();
+  renderFamilyGameNightAnnouncement();
+  renderWeeklyNewsAnnouncement();
+  renderBackupReminder();
+  renderTestPanel();
+  renderTestModeBanner();
+  renderDriveSync();
+}
+
+function daysBetween(isoA, isoB){
+  const a = new Date(isoA+"T00:00:00");
+  const b = new Date(isoB+"T00:00:00");
+  return Math.round((b-a)/86400000);
+}
+
+function shiftISODate(iso, deltaDays){
+  const d = new Date(iso+"T00:00:00");
+  d.setDate(d.getDate()+deltaDays);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
 }
 
 function goToTestDate(iso){
@@ -192,22 +223,4 @@ function renderWeeklyReview(){
     if(entry.total > 0 && entry.perfect) perfectDays++;
   });
 
-  const rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
-
-  el.innerHTML = `
-    <div class="weekly-review">
-      <div class="wr-head">
-        <span class="wr-range">${rangeLabel}</span>
-      </div>
-      <div class="wr-stats">
-        <div class="wr-stat"><span class="wr-num">${perfectDays}/7</span><span class="wr-label">dias completos</span></div>
-        <div class="wr-stat"><span class="wr-num">${totalPointsWeek}</span><span class="wr-label">Pacus Points ganhos</span></div>
-        <div class="wr-stat"><span class="wr-num">${totalScreenMin}</span><span class="wr-label">min de tela ganhos</span></div>
-      </div>
-    </div>
-  `;
-}
-
-function hairLabel(status){
-  if(status === 'washed') return '<span class="hair-history-washed">💧 Lavou</span>';
-  if(status === 'not-was
+  const rangeLabel = `${form

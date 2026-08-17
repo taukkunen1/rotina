@@ -1,4 +1,19 @@
-ld="label" placeholder="nome (ex: Inglês)">
+,sab:'S',dom:'D'};
+  const periodLabels = {manha:'Manhã', tarde:'Tarde', noite:'Noite'};
+  draft.schedule.forEach(item=>{
+    if(item.pts == null) item.pts = 3;
+    if(!item.period) item.period = 'tarde';
+    const row = document.createElement('div');
+    row.className = 'edit-row-task';
+    const dayChips = dayOrder.map(d=>
+      `<button type="button" class="day-chip ${item.days.includes(d)?'active':''}" data-day="${d}" title="${WEEKDAY_LABELS[d]}">${dayShort[d]}</button>`
+    ).join('');
+    const periodOptions = Object.entries(periodLabels).map(([k,l])=>
+      `<option value="${k}" ${item.period===k?'selected':''}>${l}</option>`
+    ).join('');
+    row.innerHTML = `
+      <div class="edit-row-main">
+        <input type="text" value="${escapeAttr(item.label)}" data-field="label" placeholder="nome (ex: Inglês)">
         <button class="del" title="remover">🗑</button>
       </div>
       <div class="day-chip-row">${dayChips}</div>
@@ -166,18 +181,4 @@ function closeDayEditor(){
   editingDate = null;
 }
 document.getElementById('dayCloseBtn').addEventListener('click', closeDayEditor);
-document.getElementById('dayCancelBtn').addEventListener('click', closeDayEditor);
-document.getElementById('dayOverlay').addEventListener('click', e=>{
-  if(e.target.id === 'dayOverlay') closeDayEditor();
-});
-
-document.getElementById('daySaveBtn').addEventListener('click', ()=>{
-  if(!editingDate) return;
-  const oldEntry = state.history[editingDate];
-  const oldPoints = oldEntry ? oldEntry.pointsEarnedThatDay : 0;
-
-  const done = Math.max(0, parseInt(document.getElementById('dayDone').value,10) || 0);
-  const total = Math.max(0, parseInt(document.getElementById('dayTotal').value,10) || 0);
-  const pointsEarnedThatDay = Math.max(0, parseInt(document.getElementById('dayPoints').value,10) || 0);
-  const hair = document.getElementById('dayHair').value || null;
-  const perfect = total > 0 &
+document.getEle
