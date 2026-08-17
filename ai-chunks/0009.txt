@@ -1,4 +1,45 @@
+our).padStart(2,'0')}:${String(start.minute).padStart(2,'0')}`, urgency: 'none' };
+  }
+  if(now > endDate){
+    return { text: `período encerrado`, urgency: 'over' };
+  }
+  const diffMin = Math.max(0, Math.round((endDate - now)/60000));
+  const h = Math.floor(diffMin/60);
+  const m = diffMin%60;
+  const text = h > 0 ? `⏳ faltam ${h}h ${String(m).padStart(2,'0')}min` : `⏳ faltam ${m}min`;
+  const urgency = diffMin <= 30 ? 'high' : diffMin <= 60 ? 'medium' : 'low';
+  return { text, urgency };
+}
 
+let timeRemainingTickHandle = null;
+function updateTimeRemainingDisplays(){
+  document.querySelectorAll('.period').forEach(div=>{
+    const el = div.querySelector('.time-remaining');
+    const periodTime = div.dataset.periodTime;
+    if(!el || !periodTime) return;
+    const info = formatTimeRemaining(periodTime);
+    if(!info){ el.textContent = ''; el.className = 'time-remaining'; return; }
+    el.textContent = info.text;
+    el.className = 'time-remaining urgency-' + info.urgency;
+  });
+}
+function startTimeRemainingTicking(){
+  if(timeRemainingTickHandle) return;
+  timeRemainingTickHandle = setInterval(updateTimeRemainingDisplays, 30000);
+}
+
+function loadState(){
+  let raw = null;
+  try{ raw = localStorage.getItem(STORAGE_STATE_KEY); }catch(e){}
+  let state = raw ? JSON.parse(raw) : null;
+  if(!state) state = { totalPoints:120, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveLastSyncISO:null, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, hairByDate:{} };
+  return reconcileState(state);
+}
+
+function applyHistoryCorrection_v2(state){
+  // Correção pontual, aplicada só UMA VEZ (por causa da flag abaixo) —
+  // depois disso nunca mais mexe sozinha nesses dias, pra não apagar
+  // edições feitas manualmente depois. Cobre 09/08 a 12/08: todos os
   // dias foram completos; dia 12 teve -10 Pacus Points por causa de uma
   // briga na escola; saldo final confirmado até 12/08: 170 Pacus Points.
   if(state.historyCorrectionV2Applied) return;
@@ -145,44 +186,4 @@ function reconcileState(state){
     state.waldaBetBonusApplied = true;
   }
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
-    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
-  }
-  if(state.gameTimer.bonusSeconds === undefined) state.gameTimer.bonusSeconds = 0;
-  if(!state.gameTimer.redemptions || typeof state.gameTimer.redemptions !== "object") state.gameTimer.redemptions = {};
-  if(!Array.isArray(state.customTimers) || state.customTimers.length !== 2){
-    state.customTimers = [
-      { id:"ct1", label:"Timer 1", totalSeconds:300, remainingSeconds:300, runningSince:null, finished:false },
-      { id:"ct2", label:"Timer 2", totalSeconds:300, remainingSeconds:300, runningSince:null, finished:false },
-    ];
-  }
-  state.customTimers.forEach(t=>{
-    if(t.totalSeconds === undefined) t.totalSeconds = 300;
-    if(t.remainingSeconds === undefined) t.remainingSeconds = t.totalSeconds;
-    if(t.runningSince === undefined) t.runningSince = null;
-    if(t.finished === undefined) t.finished = false;
-  });
-  if(state.historyCorrectionV2Applied === undefined) state.historyCorrectionV2Applied = false;
-
-  seedKnownPerfectDays(state);
-
-  // limpeza: remove qualquer registro de histórico com data no futuro (só pode
-  // ter vindo de uma sessão anterior de teste de data) — evita que isso
-  // inflacione o crescimento do Pacus ou bagunce as tabelas depois
-  let cleaned = false;
-  if(!TEST_DATE_OVERRIDE){
-    const realToday = todayISO();
-    Object.keys(state.history).forEach(iso=>{
-      if(iso > realToday){ delete state.history[iso]; cleaned = true; }
-    });
-    if(state.lastDate > realToday){ state.lastDate = realToday; cleaned = true; }
-  }
-
-  if(state.lastDate !== todayISO()){
-    // fecha o dia anterior no histórico antes de zerar o checklist
-    closeOutDay(state, state.lastDate);
-    state.checkedToday = {};
-    state.taskDoneAt = {};
-    state.log = [];
-    state.lastDate = todayISO();
-    // zera o tempo de jogo usado — é uma cota que renova todo dia
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redempt

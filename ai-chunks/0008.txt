@@ -1,4 +1,18 @@
-wTask = { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" };
+derV1Applied = true;
+  return cfg;
+}
+
+// Nova tarefa fixa da noite — "Momento Criativo" (desenhar, montar Lego,
+// pintar...). Insere logo depois de "Escovar os dentes" e antes de "Ler
+// Livro" pra quem já tinha a rotina sincronizada. Roda só uma vez.
+function addCreativeTaskV1(cfg){
+  if(!cfg || cfg.creativeTaskV1Applied) return cfg;
+  ['periods','periodsWeekend'].forEach(key=>{
+    const p = cfg[key];
+    if(p && p.noite && Array.isArray(p.noite.tasks)){
+      const tasks = p.noite.tasks;
+      if(!tasks.some(t=>t.id === 'n7')){
+        const newTask = { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" };
         const idx = tasks.findIndex(t=>t.id === 'n6');
         if(idx >= 0) tasks.splice(idx+1, 0, newTask);
         else tasks.push(newTask);
@@ -96,6 +110,34 @@ function addOutingRewardV1(cfg){
   return cfg;
 }
 
+// "Arrumar a bagunça" era vaga demais — quebrada em 5 tarefas pequenas e
+// concretas (cada uma com começo e fim bem claros), pro que o Hector
+// realmente deixa espalhado na sala: cartas de bafo, carrinhos, bolinhas
+// de gude, caixas — e uma conferência final da sala.
+function splitBagunçaV1(cfg){
+  if(!cfg || cfg.splitBagunçaV1Applied) return cfg;
+  const newTasks = [
+    { id:"n5_cartas", txt:"Guardar as cartas de bafo", pts:1, fullPenalty:true, sub:"na caixinha delas" },
+    { id:"n5_carrinhos", txt:"Guardar os carrinhos", pts:1, fullPenalty:true, sub:"na caixa/prateleira" },
+    { id:"n5_bolinhas", txt:"Guardar as bolinhas de gude", pts:1, fullPenalty:true, sub:"no potinho" },
+    { id:"n5_caixas", txt:"Guardar as caixas", pts:1, fullPenalty:true, sub:"no lugar certo ou no lixo" },
+    { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:3, fullPenalty:true, sub:"conferência final — nada espalhado" },
+  ];
+  ['periods','periodsWeekend'].forEach(key=>{
+    const p = cfg[key];
+    if(p && p.noite && Array.isArray(p.noite.tasks)){
+      const idx = p.noite.tasks.findIndex(t=>t.id === 'n5');
+      if(idx >= 0){
+        p.noite.tasks.splice(idx, 1, ...newTasks);
+      } else if(!p.noite.tasks.some(t=>t.id === 'n5_sala')){
+        p.noite.tasks.unshift(...newTasks);
+      }
+    }
+  });
+  cfg.splitBagunçaV1Applied = true;
+  return cfg;
+}
+
 function loadConfig(){
   try{
     const raw = localStorage.getItem(STORAGE_CONFIG_KEY);
@@ -168,45 +210,4 @@ function formatTimeRemaining(periodTimeStr){
   const startDate = new Date(now); startDate.setHours(start.hour, start.minute, 0, 0);
   const endDate = new Date(now); endDate.setHours(end.hour, end.minute, 0, 0);
   if(now < startDate){
-    return { text: `começa às ${String(start.hour).padStart(2,'0')}:${String(start.minute).padStart(2,'0')}`, urgency: 'none' };
-  }
-  if(now > endDate){
-    return { text: `período encerrado`, urgency: 'over' };
-  }
-  const diffMin = Math.max(0, Math.round((endDate - now)/60000));
-  const h = Math.floor(diffMin/60);
-  const m = diffMin%60;
-  const text = h > 0 ? `⏳ faltam ${h}h ${String(m).padStart(2,'0')}min` : `⏳ faltam ${m}min`;
-  const urgency = diffMin <= 30 ? 'high' : diffMin <= 60 ? 'medium' : 'low';
-  return { text, urgency };
-}
-
-let timeRemainingTickHandle = null;
-function updateTimeRemainingDisplays(){
-  document.querySelectorAll('.period').forEach(div=>{
-    const el = div.querySelector('.time-remaining');
-    const periodTime = div.dataset.periodTime;
-    if(!el || !periodTime) return;
-    const info = formatTimeRemaining(periodTime);
-    if(!info){ el.textContent = ''; el.className = 'time-remaining'; return; }
-    el.textContent = info.text;
-    el.className = 'time-remaining urgency-' + info.urgency;
-  });
-}
-function startTimeRemainingTicking(){
-  if(timeRemainingTickHandle) return;
-  timeRemainingTickHandle = setInterval(updateTimeRemainingDisplays, 30000);
-}
-
-function loadState(){
-  let raw = null;
-  try{ raw = localStorage.getItem(STORAGE_STATE_KEY); }catch(e){}
-  let state = raw ? JSON.parse(raw) : null;
-  if(!state) state = { totalPoints:120, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveLastSyncISO:null, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, hairByDate:{} };
-  return reconcileState(state);
-}
-
-function applyHistoryCorrection_v2(state){
-  // Correção pontual, aplicada só UMA VEZ (por causa da flag abaixo) —
-  // depois disso nunca mais mexe sozinha nesses dias, pra não apagar
-  // edições feitas manualmente depois. Cobre 09/08 a 12/08: todos os
+    return { text: `começa às ${String(start.h

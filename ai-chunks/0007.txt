@@ -1,4 +1,11 @@
-.random().toString(36).slice(2,9); }
+ em todos os aparelhos.
+   ========================================================================= */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec";
+// A mesma URL agora também serve o próprio app (HTML) quando aberta sem
+// parâmetro — pra pedir só os dados (backup), usamos ?data=1.
+const DATA_ENDPOINT = APPS_SCRIPT_URL + "?data=1";
+
+function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9); }
 
 // mapeia palavras-chave do nome da tarefa pra um emoji — reforça o texto
 // com uma pista visual (útil pra leitura rápida / crianças ainda alfabetizando)
@@ -104,7 +111,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))))))))));
+  return splitBagunçaV1(addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))))))))));
 }
 
 // Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
@@ -159,7 +166,7 @@ function applyPointRebalanceV2(cfg){
 const TASK_ORDER_V1 = {
   manha: ["m1","m4","m3","m7","m5","m8","t_djf7hbb","m2"],
   tarde: ["t2","t3","t5","t4","t1"],
-  noite: ["n5","n1","n4","n6","n7","t_ci3brlt","n2"],
+  noite: ["n5_cartas","n5_carrinhos","n5_bolinhas","n5_caixas","n5_sala","n1","n4","n6","n7","t_ci3brlt","n2"],
 };
 function applyTaskOrderV1(cfg){
   if(!cfg || cfg.taskOrderV1Applied) return cfg;
@@ -176,18 +183,4 @@ function applyTaskOrderV1(cfg){
       }
     });
   });
-  cfg.taskOrderV1Applied = true;
-  return cfg;
-}
-
-// Nova tarefa fixa da noite — "Momento Criativo" (desenhar, montar Lego,
-// pintar...). Insere logo depois de "Escovar os dentes" e antes de "Ler
-// Livro" pra quem já tinha a rotina sincronizada. Roda só uma vez.
-function addCreativeTaskV1(cfg){
-  if(!cfg || cfg.creativeTaskV1Applied) return cfg;
-  ['periods','periodsWeekend'].forEach(key=>{
-    const p = cfg[key];
-    if(p && p.noite && Array.isArray(p.noite.tasks)){
-      const tasks = p.noite.tasks;
-      if(!tasks.some(t=>t.id === 'n7')){
-        const ne
+  cfg.taskOr

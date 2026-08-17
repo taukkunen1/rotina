@@ -1,4 +1,44 @@
 ions: {} };
+  }
+  if(state.gameTimer.bonusSeconds === undefined) state.gameTimer.bonusSeconds = 0;
+  if(!state.gameTimer.redemptions || typeof state.gameTimer.redemptions !== "object") state.gameTimer.redemptions = {};
+  if(!Array.isArray(state.customTimers) || state.customTimers.length !== 2){
+    state.customTimers = [
+      { id:"ct1", label:"Timer 1", totalSeconds:300, remainingSeconds:300, runningSince:null, finished:false },
+      { id:"ct2", label:"Timer 2", totalSeconds:300, remainingSeconds:300, runningSince:null, finished:false },
+    ];
+  }
+  state.customTimers.forEach(t=>{
+    if(t.totalSeconds === undefined) t.totalSeconds = 300;
+    if(t.remainingSeconds === undefined) t.remainingSeconds = t.totalSeconds;
+    if(t.runningSince === undefined) t.runningSince = null;
+    if(t.finished === undefined) t.finished = false;
+  });
+  if(state.historyCorrectionV2Applied === undefined) state.historyCorrectionV2Applied = false;
+
+  seedKnownPerfectDays(state);
+
+  // limpeza: remove qualquer registro de histórico com data no futuro (só pode
+  // ter vindo de uma sessão anterior de teste de data) — evita que isso
+  // inflacione o crescimento do Pacus ou bagunce as tabelas depois
+  let cleaned = false;
+  if(!TEST_DATE_OVERRIDE){
+    const realToday = todayISO();
+    Object.keys(state.history).forEach(iso=>{
+      if(iso > realToday){ delete state.history[iso]; cleaned = true; }
+    });
+    if(state.lastDate > realToday){ state.lastDate = realToday; cleaned = true; }
+  }
+
+  if(state.lastDate !== todayISO()){
+    // fecha o dia anterior no histórico antes de zerar o checklist
+    closeOutDay(state, state.lastDate);
+    state.checkedToday = {};
+    state.taskDoneAt = {};
+    state.log = [];
+    state.lastDate = todayISO();
+    // zera o tempo de jogo usado — é uma cota que renova todo dia
+    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
     saveState(state);
   } else if(cleaned){
     saveState(state);
@@ -159,42 +199,4 @@ function isValidPeriodsConfig(cfg){
       p &&
       p.manha && Array.isArray(p.manha.tasks) && p.manha.tasks.length > 0 &&
       p.tarde && Array.isArray(p.tarde.tasks) && p.tarde.tasks.length > 0 &&
-      p.noite && Array.isArray(p.noite.tasks) && p.noite.tasks.length > 0
-    );
-  }catch(e){
-    return false;
-  }
-}
-
-function sanitizeRemoteConfig(remoteConfig){
-  if(!isValidPeriodsConfig(remoteConfig)) return null;
-  const safe = JSON.parse(JSON.stringify(remoteConfig));
-  if(!safe.periodsWeekend) safe.periodsWeekend = null;
-  if(!Array.isArray(safe.badHabits)) safe.badHabits = [];
-  if(!Array.isArray(safe.rewards)) safe.rewards = [];
-  if(!Array.isArray(safe.schedule)) safe.schedule = [];
-  if(!Array.isArray(safe.scheduleExceptions)) safe.scheduleExceptions = [];
-  if(!safe.pet || !Array.isArray(safe.pet.stages) || safe.pet.stages.length < 2) {
-    safe.pet = JSON.parse(JSON.stringify(DEFAULT_CONFIG.pet));
-  }
-  return stripLegacyHairTask(safe);
-}
-
-function mergeRemoteData(remote){
-  const remoteState = remote.state || {};
-  const localState = state || {};
-  const merged = JSON.parse(JSON.stringify(remoteState));
-  merged.history = {...(remoteState.history||{})};
-  Object.entries(localState.history||{}).forEach(([iso,entry])=>{
-    const remoteEntry = merged.history[iso];
-    if(!remoteEntry || JSON.stringify(entry) !== JSON.stringify(remoteEntry)){
-      const localUpdated = entry.updatedAt || localState.updatedAt || '';
-      const remoteUpdated = remoteEntry.updatedAt || remoteState.updatedAt || '';
-      if(localUpdated >= remoteUpdated) merged.history[iso] = entry;
-    }
-  });
-  merged.petCompletedDays = [...new Set([...(remoteState.petCompletedDays||[]), ...(localState.petCompletedDays||[])])].sort();
-  merged.historyCorrectionV2Applied = !!(remoteState.historyCorrectionV2Applied || localState.historyCorrectionV2Applied);
-  merged.hairByDate = {...(remoteState.hairByDate||{}), ...(localState.hairByDate||{})};
-  merged.totalPoints = Math.max(Number(remoteState.totalPoints)||0, Number(localState.totalPoints)||0);
-  merged.lastSeenPetStage = Math.max(Number(remoteState.lastSeenPetStage)||0, 
+      p.noite &

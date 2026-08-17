@@ -1,4 +1,52 @@
-ot-washed');
+w Date(iso+"T00:00:00");
+    const letter = weekdayLetters[d.getDay()];
+    let entry = isToday ? liveTodayEntry() : state.history[iso];
+    let cls = 'streak-cell empty';
+    if(entry && entry.total > 0){
+      if(entry.perfect) cls = 'streak-cell perfect';
+      else if(entry.done === entry.total - 1) cls = 'streak-cell almost';
+      else if(entry.done > 0) cls = 'streak-cell partial';
+      else cls = 'streak-cell none';
+    }
+    if(isToday) cls += ' today';
+    return `<span class="${cls}" title="${formatDateBR(iso)}"><span class="streak-letter">${letter}</span></span>`;
+  }).join('');
+  return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${cells}</div>`;
+}
+
+function liveTodayEntry(){
+  const tasks = allTasks();
+  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+  const total = applicable.length;
+  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+  const perfect = total>0 && done===total;
+  return { total, done, perfect };
+}
+
+function getHairStatus(dateISO){
+  return state.hairByDate && state.hairByDate[dateISO] ? state.hairByDate[dateISO] : null;
+}
+
+function setHairStatus(status){
+  const iso = todayISO();
+  if(!state.hairByDate) state.hairByDate = {};
+  state.hairByDate[iso] = status;
+  if(!state.history) state.history = {};
+  if(state.history[iso]) state.history[iso].hair = status;
+  saveState(state);
+  renderHair();
+  renderHistory();
+}
+
+function renderHair(){
+  const section = document.getElementById('hairSection');
+  if(!section) return;
+  const status = getHairStatus(todayISO());
+  const washedBtn = document.getElementById('hairWashedBtn');
+  const notWashedBtn = document.getElementById('hairNotWashedBtn');
+  const statusEl = document.getElementById('hairStatus');
+  washedBtn.classList.toggle('active-washed', status === 'washed');
+  notWashedBtn.classList.toggle('active-notwashed', status === 'not-washed');
   statusEl.innerHTML = status === 'washed'
     ? 'Hoje: <b class="hair-history-washed">💧 cabelo lavado</b>'
     : status === 'not-washed'
@@ -143,51 +191,4 @@ function shiftISODate(iso, deltaDays){
 function goToTestDate(iso){
   setTestDate(iso);
   state = loadState();
-  render();
-}
-
-let testPanelOpen = false;
-// Painéis de "adulto" (sincronização com Drive, editar dia anterior, modo
-// teste) ficam escondidos da tela principal até alguém abrir a "Área dos
-// adultos" com sucesso — assim o Hector só vê o que usa no dia a dia.
-// Reseta sozinho ao recarregar a página.
-let adultUnlocked = false;
-
-function renderTestModeBanner(){
-  const el = document.getElementById('testModeBanner');
-  if(!el) return;
-  if(!TEST_DATE_OVERRIDE){ el.innerHTML=''; return; }
-  el.innerHTML = `
-    <div class="test-mode-banner">
-      🧪 MODO TESTE ATIVO — data simulada: ${formatDateBR(TEST_DATE_OVERRIDE)}
-      <button id="bannerRealDateBtn">voltar pra data real</button>
-    </div>
-  `;
-  document.getElementById('bannerRealDateBtn').addEventListener('click', ()=>{
-    setTestDate(null);
-    state = loadState();
-    render();
-  });
-}
-
-function renderTestPanel(){
-  const el = document.getElementById('testPanel');
-  if(!el) return;
-  if(!testPanelOpen){ el.style.display='none'; el.innerHTML=''; return; }
-  el.style.display='block';
-
-  const realToday = (()=>{
-    const d = new Date();
-    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-  })();
-  const usingOverride = !!TEST_DATE_OVERRIDE;
-
-  el.innerHTML = `
-    <div class="test-panel">
-      <h3>🧪 Modo de teste</h3>
-      <div class="hint">Ferramentas só pra conferir se o crescimento do Pacus e o histórico estão funcionando. Não mexe nas tarefas de verdade — só simula dias.</div>
-      <div class="test-date">Data simulada agora: <b>${formatDateBR(todayISO())}/${todayISO().split('-')[0]}</b>${usingOverride ? ' (modo teste ativo)' : ' (data real do sistema)'}</div>
-      <div class="test-row">
-        <button class="icon-btn" id="testCompleteDayBtn">✅ completar tudo hoje</button>
-        <button class="icon-btn" id="testPrevDayBtn">◀ dia anterior</button>
-        <button clas
+  rende

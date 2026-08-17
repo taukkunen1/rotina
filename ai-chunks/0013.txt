@@ -1,4 +1,41 @@
-ays:validDays
+t.getElementById('customTimerPauseBtn_'+t.id).addEventListener('click', ()=> pauseCustomTimer(t.id));
+    document.getElementById('customTimerResetBtn_'+t.id).addEventListener('click', ()=> resetCustomTimer(t.id));
+  });
+
+  if(anyCustomTimerRunning()) startCustomTimerTicking(); else stopCustomTimerTicking();
+}
+
+/* ---------------- render principal ---------------- */
+/* ===================== PACUS, O AXOLOTE ===================== */
+function getPetCycle(){
+  const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
+  const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
+  const start = new Date(startISO+"T00:00:00");
+  const end = new Date(endISO+"T00:00:00");
+  const totalDays = Math.max(1, Math.round((end-start)/86400000)+1);
+  return { startISO, endISO, start, end, totalDays };
+}
+
+function computePetStage(){
+  const cycle = getPetCycle();
+  const maxStage = CONFIG.pet.stages.length - 1;
+  const completed = new Set(Array.isArray(state.petCompletedDays) ? state.petCompletedDays : []);
+  const validDays = [];
+  for(let i=0;i<cycle.totalDays;i++){
+    const d = new Date(cycle.start);
+    d.setDate(d.getDate()+i);
+    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+    if(completed.has(iso)) validDays.push(iso);
+  }
+  const completedDays = Math.min(cycle.totalDays, validDays.length);
+  const stageFloat = Math.min(maxStage, completedDays);
+  const stage = Math.min(maxStage, completedDays);
+  const todayHasProgress = hasDayProgress(todayISO());
+  const canGrowToday = todayISO() >= cycle.startISO && todayISO() <= cycle.endISO && todayHasProgress && !completed.has(todayISO());
+  return {
+    stage, stageFloat, unitsCompleted:completedDays, totalUnits:cycle.totalDays,
+    maxStage, daysEquivalent:completedDays, cycleDays:cycle.totalDays,
+    todayPerfect:todayHasProgress, canGrowToday, completedDays:validDays
   };
 }
 
@@ -108,41 +145,4 @@ function buildPacusSVG(stageFloat){
         ${sparkle}
         ${legs}
         <ellipse cx="110" cy="${bodyY+bodyH+4}" rx="${18+growth*9}" ry="${7+growth*3}" fill="url(#${gid}-body)"/>
-        <ellipse cx="110" cy="${bodyY}" rx="${bodyW}" ry="${bodyH}" fill="url(#${gid}-body)"/>
-        <ellipse cx="110" cy="${bodyY+8}" rx="${bodyW*.68}" ry="${bodyH*.52}" fill="#fff" opacity=".3"/>
-        ${gills}
-        <circle cx="110" cy="${faceY}" r="32" fill="url(#${gid}-body)"/>
-        <g class="pacus-eye" style="transform-origin:97px ${faceY-4}px;"><circle cx="97" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="98" cy="${faceY-5.5}" r="1.4" fill="#fff"/></g>
-        <g class="pacus-eye" style="transform-origin:123px ${faceY-4}px; animation-delay:.08s;"><circle cx="123" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="124" cy="${faceY-5.5}" r="1.4" fill="#fff"/></g>
-        <path d="M96 ${faceY+12} Q110 ${faceY+18+growth*2} 124 ${faceY+12}" stroke="#b9607f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <circle cx="89" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/><circle cx="131" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/>
-      </g>
-    </g>
-  </svg>`;
-}
-
-function buildPetVisual(stageFloat){
-  if(stageFloat < 9) return buildEggSVG(stageFloat/8);
-  return buildPacusSVG(stageFloat);
-}
-
-// Miniatura do Pacus fixa no canto — fica visível quando a seção principal
-// dele sai da tela (ex: rolando pra baixo pra marcar tarefas), assim ele
-// nunca some de vista de verdade. Um toque nela rola de volta pro topo.
-let miniPacusObserverStarted = false;
-function renderMiniPacus(stageFloat){
-  const el = document.getElementById('miniPacus');
-  if(!el) return;
-  el.innerHTML = buildPetVisual(stageFloat);
-  startMiniPacusObserver();
-}
-function startMiniPacusObserver(){
-  if(miniPacusObserverStarted) return;
-  const target = document.getElementById('petSection');
-  const mini = document.getElementById('miniPacus');
-  if(!target || !mini || !('IntersectionObserver' in window)) return;
-  const observer = new IntersectionObserver((entries)=>{
-    entries.forEach(entry=>{
-      mini.classList.toggle('visible', !entry.isIntersecting);
-    });
-  }
+        <ellipse cx="110" cy="${bodyY}" rx="${bodyW}" ry="${bodyH}" fill="url(#${gid}-body)"

@@ -52,7 +52,11 @@ const DEFAULT_CONFIG = {
     noite: {
       label: "Noite", time: "18:00 – 22:00",
       tasks: [
-        { id:"n5", txt:"Arrumar a bagunça", pts:7, fullPenalty:true, sub:"até às 22h" },
+        { id:"n5_cartas", txt:"Guardar as cartas de bafo", pts:1, fullPenalty:true, sub:"na caixinha delas" },
+        { id:"n5_carrinhos", txt:"Guardar os carrinhos", pts:1, fullPenalty:true, sub:"na caixa/prateleira" },
+        { id:"n5_bolinhas", txt:"Guardar as bolinhas de gude", pts:1, fullPenalty:true, sub:"no potinho" },
+        { id:"n5_caixas", txt:"Guardar as caixas", pts:1, fullPenalty:true, sub:"no lugar certo ou no lixo" },
+        { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:3, fullPenalty:true, sub:"conferência final — nada espalhado" },
         { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h", external:true },
         { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4 },
         { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h" },
@@ -156,11 +160,4 @@ const APP_VERSION = "2026.08.11-pacus-v4";
    6. Cole essa URL na constante abaixo, entre aspas.
    7. No Google Drive, salve o código deste arquivo com o nome exato
       "rotina-hector.html". A partir daí, abram sempre a URL do Apps
-      Script (não o arquivo local) em todos os aparelhos.
-   ========================================================================= */
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec";
-// A mesma URL agora também serve o próprio app (HTML) quando aberta sem
-// parâmetro — pra pedir só os dados (backup), usamos ?data=1.
-const DATA_ENDPOINT = APPS_SCRIPT_URL + "?data=1";
-
-function uid(prefix){ return prefix + "_" + Math
+      Script (não o arquivo local)

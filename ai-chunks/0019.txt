@@ -1,4 +1,43 @@
-aceholder="recompensa">
+p-row">${dayChips}</div>
+      <div class="edit-row-main">
+        <input type="time" value="${item.start}" data-field="start" style="flex:1;">
+        <span style="color:var(--chalk-dim); font-size:.8rem;">até</span>
+        <input type="time" value="${item.end}" data-field="end" style="flex:1;">
+      </div>
+      <div class="edit-row-main">
+        <select data-field="period" style="flex:1; background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--chalk); border-radius:6px; padding:6px; font-family:inherit; font-size:.8rem;">${periodOptions}</select>
+        ${stepperHTML('pts', item.pts)}
+      </div>
+    `;
+    row.querySelector('[data-field=label]').addEventListener('input', e=>{ item.label = e.target.value; });
+    row.querySelector('[data-field=start]').addEventListener('input', e=>{ item.start = e.target.value; });
+    row.querySelector('[data-field=end]').addEventListener('input', e=>{ item.end = e.target.value; });
+    row.querySelector('[data-field=period]').addEventListener('change', e=>{ item.period = e.target.value; });
+    wireStepper(row, item, 'pts');
+    row.querySelectorAll('.day-chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        const d = chip.getAttribute('data-day');
+        if(item.days.includes(d)) item.days = item.days.filter(x=>x!==d);
+        else item.days.push(d);
+        chip.classList.toggle('active');
+      });
+    });
+    row.querySelector('.del').addEventListener('click', ()=>{
+      draft.schedule = draft.schedule.filter(x=>x!==item);
+      renderEditorSchedule();
+    });
+    el.appendChild(row);
+  });
+}
+
+function renderEditorRewards(){
+  const el = document.getElementById('editRewards');
+  el.innerHTML = '';
+  draft.rewards.forEach(r=>{
+    const row = document.createElement('div');
+    row.className = 'edit-row';
+    row.innerHTML = `
+      <input type="text" value="${escapeAttr(r.txt)}" data-field="txt" placeholder="recompensa">
       ${stepperHTML('cost', r.cost)}
       <button class="del" title="remover">🗑</button>
     `;
@@ -141,50 +180,4 @@ document.getElementById('daySaveBtn').addEventListener('click', ()=>{
   const perfect = total > 0 && done >= total;
 
   if(!state.hairByDate) state.hairByDate = {};
-  if(hair) state.hairByDate[editingDate] = hair; else delete state.hairByDate[editingDate];
-  state.history[editingDate] = { done, total, pointsEarnedThatDay, perfect, screenMinutes: perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0, hair };
-  if(perfect) registerPetDayCompletion(editingDate);
-
-  // ajusta o saldo total pela diferença de pontos daquele dia
-  const delta = pointsEarnedThatDay - oldPoints;
-  let appliedDelta = 0;
-  if(delta !== 0){
-    appliedDelta = addPoints(delta);
-    addLog(`✏️ ajuste em ${formatDateBR(editingDate)}: ${delta>0?'+':''}${delta}`);
-  }
-
-  saveState(state);
-  closeDayEditor();
-  bumpTotal(appliedDelta);
-  render();
-});
-
-/* ===================== SINCRONIZAÇÃO COM GOOGLE DRIVE (via Apps Script) ===================== */
-
-const APPS_SCRIPT_CODE = `function doGet(e) {
-  if (e.parameter.data === '1') {
-    var files = DriveApp.getFilesByName('rotina-hector-backup.json');
-    if (files.hasNext()) {
-      var file = files.next();
-      var raw = file.getBlob().getDataAsString();
-      try {
-        var data = JSON.parse(raw);
-        return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
-      } catch(err) {}
-    }
-    return ContentService.createTextOutput(JSON.stringify({error:'not_found'})).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  var appFiles = DriveApp.getFilesByName('rotina-hector.html');
-  if (!appFiles.hasNext()) appFiles = DriveApp.getFilesByName('rotina-hector-app.html');
-  if (appFiles.hasNext()) {
-    return HtmlService.createHtmlOutput(appFiles.next().getBlob().getDataAsString())
-      .setTitle('Rotina do Hector')
-      .addMetaTag('viewport','width=device-width, initial-scale=1');
-  }
-  return HtmlService.createHtmlOutput('Ainda não encontrei o arquivo rotina-hector.html (nem o arquivo legado rotina-hector-app.html) no seu Drive.');
-}
-
-function doPost(e) {
-  var incoming = JSON.parse(e.postData.contents || '{}');
-  var files = DriveApp.getFilesByName('rotin
+  if(hair) state.hairByDate[editingDate] = hair; else delete state.hairB

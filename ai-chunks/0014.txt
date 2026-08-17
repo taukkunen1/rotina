@@ -1,4 +1,41 @@
-, { threshold: 0 });
+/>
+        <ellipse cx="110" cy="${bodyY+8}" rx="${bodyW*.68}" ry="${bodyH*.52}" fill="#fff" opacity=".3"/>
+        ${gills}
+        <circle cx="110" cy="${faceY}" r="32" fill="url(#${gid}-body)"/>
+        <g class="pacus-eye" style="transform-origin:97px ${faceY-4}px;"><circle cx="97" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="98" cy="${faceY-5.5}" r="1.4" fill="#fff"/></g>
+        <g class="pacus-eye" style="transform-origin:123px ${faceY-4}px; animation-delay:.08s;"><circle cx="123" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="124" cy="${faceY-5.5}" r="1.4" fill="#fff"/></g>
+        <path d="M96 ${faceY+12} Q110 ${faceY+18+growth*2} 124 ${faceY+12}" stroke="#b9607f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <circle cx="89" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/><circle cx="131" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/>
+      </g>
+    </g>
+  </svg>`;
+}
+
+function buildPetVisual(stageFloat){
+  if(stageFloat < 9) return buildEggSVG(stageFloat/8);
+  return buildPacusSVG(stageFloat);
+}
+
+// Miniatura do Pacus fixa no canto — fica visível quando a seção principal
+// dele sai da tela (ex: rolando pra baixo pra marcar tarefas), assim ele
+// nunca some de vista de verdade. Um toque nela rola de volta pro topo.
+let miniPacusObserverStarted = false;
+function renderMiniPacus(stageFloat){
+  const el = document.getElementById('miniPacus');
+  if(!el) return;
+  el.innerHTML = buildPetVisual(stageFloat);
+  startMiniPacusObserver();
+}
+function startMiniPacusObserver(){
+  if(miniPacusObserverStarted) return;
+  const target = document.getElementById('petSection');
+  const mini = document.getElementById('miniPacus');
+  if(!target || !mini || !('IntersectionObserver' in window)) return;
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      mini.classList.toggle('visible', !entry.isIntersecting);
+    });
+  }, { threshold: 0 });
   observer.observe(target);
   mini.addEventListener('click', ()=>{
     target.scrollIntoView({ behavior:'smooth', block:'center' });
@@ -146,52 +183,4 @@ function buildStreakStrip(){
   const weekdayLetters = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   const cells = days.map(iso=>{
     const isToday = iso === todayISO();
-    const d = new Date(iso+"T00:00:00");
-    const letter = weekdayLetters[d.getDay()];
-    let entry = isToday ? liveTodayEntry() : state.history[iso];
-    let cls = 'streak-cell empty';
-    if(entry && entry.total > 0){
-      if(entry.perfect) cls = 'streak-cell perfect';
-      else if(entry.done === entry.total - 1) cls = 'streak-cell almost';
-      else if(entry.done > 0) cls = 'streak-cell partial';
-      else cls = 'streak-cell none';
-    }
-    if(isToday) cls += ' today';
-    return `<span class="${cls}" title="${formatDateBR(iso)}"><span class="streak-letter">${letter}</span></span>`;
-  }).join('');
-  return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${cells}</div>`;
-}
-
-function liveTodayEntry(){
-  const tasks = allTasks();
-  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  const total = applicable.length;
-  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-  const perfect = total>0 && done===total;
-  return { total, done, perfect };
-}
-
-function getHairStatus(dateISO){
-  return state.hairByDate && state.hairByDate[dateISO] ? state.hairByDate[dateISO] : null;
-}
-
-function setHairStatus(status){
-  const iso = todayISO();
-  if(!state.hairByDate) state.hairByDate = {};
-  state.hairByDate[iso] = status;
-  if(!state.history) state.history = {};
-  if(state.history[iso]) state.history[iso].hair = status;
-  saveState(state);
-  renderHair();
-  renderHistory();
-}
-
-function renderHair(){
-  const section = document.getElementById('hairSection');
-  if(!section) return;
-  const status = getHairStatus(todayISO());
-  const washedBtn = document.getElementById('hairWashedBtn');
-  const notWashedBtn = document.getElementById('hairNotWashedBtn');
-  const statusEl = document.getElementById('hairStatus');
-  washedBtn.classList.toggle('active-washed', status === 'washed');
-  notWashedBtn.classList.toggle('active-notwashed', status === 'n
+    const d = ne
