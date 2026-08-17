@@ -1,4 +1,21 @@
-que a Manhã inteira estiver feita.
+ions: {} };
+    saveState(state);
+  } else if(cleaned){
+    saveState(state);
+  }
+  return state;
+}
+
+function periodsCompletedFrom(checkedMap, dateISO){
+  let count = 0;
+  Object.values(getPeriodsFor(dateISO || todayISO())).forEach(period=>{
+    const applicable = period.tasks.filter(t=>checkedMap[t.id] !== 'na');
+    if(applicable.length>0 && applicable.every(t=>checkedMap[t.id]==='done')) count++;
+  });
+  return count;
+}
+
+// Tempo de tela só desbloqueia depois que a Manhã inteira estiver feita.
 function isManhaComplete(dateISO){
   const periods = getPeriodsFor(dateISO || todayISO());
   const applicable = periods.manha.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
@@ -180,10 +197,4 @@ function mergeRemoteData(remote){
   merged.historyCorrectionV2Applied = !!(remoteState.historyCorrectionV2Applied || localState.historyCorrectionV2Applied);
   merged.hairByDate = {...(remoteState.hairByDate||{}), ...(localState.hairByDate||{})};
   merged.totalPoints = Math.max(Number(remoteState.totalPoints)||0, Number(localState.totalPoints)||0);
-  merged.lastSeenPetStage = Math.max(Number(remoteState.lastSeenPetStage)||0, Number(localState.lastSeenPetStage)||0);
-  merged.log = [...(localState.log||[]), ...(remoteState.log||[])].slice(0,30);
-  merged.revision = Math.max(Number(localState.revision)||0, Number(remoteState.revision)||0)+1;
-  merged.updatedAt = new Date().toISOString();
-  const remoteConfig = sanitizeRemoteConfig(remote.config);
-  const localConfigValid = isValidPeriodsConfig(CONFIG);
-  const useRemoteConfig = remoteConfig && (!localConfigValid || localState.updatedAt 
+  merged.lastSeenPetStage = Math.max(Number(remoteState.lastSeenPetStage)||0, 

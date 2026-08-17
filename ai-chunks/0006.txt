@@ -71,6 +71,7 @@ const DEFAULT_CONFIG = {
   rewards: [
     { id:"r1", txt:"1 hora de tela", cost:90, grantsHours:1, maxPerDay:2 },
     { id:"r2", txt:"Hot Wheels (brinquedo)", cost:300 },
+    { id:"r3", txt:"Passeio Especial (você escolhe)", cost:500 },
   ],
   screenDailyLimitHours: 2, // usado pelo timer de jogo diário abaixo
   perfectDayBonusMinutes: 30,
@@ -162,6 +163,4 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwd
 // parâmetro — pra pedir só os dados (backup), usamos ?data=1.
 const DATA_ENDPOINT = APPS_SCRIPT_URL + "?data=1";
 
-function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9); }
-
-// mapeia palavras-chave do 
+function uid(prefix){ return prefix + "_" + Math

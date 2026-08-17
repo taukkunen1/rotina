@@ -1,4 +1,17 @@
-filter(d => d >= cycle.startISO && d <= cycle.endISO)
+, { threshold: 0 });
+  observer.observe(target);
+  mini.addEventListener('click', ()=>{
+    target.scrollIntoView({ behavior:'smooth', block:'center' });
+  });
+  miniPacusObserverStarted = true;
+}
+
+// Pra cada marco de evolução, descobre em que dia ele foi alcançado (com
+// base na lista de dias completos, em ordem) — usado no mural de conquistas.
+function getMilestoneDates(){
+  const cycle = getPetCycle();
+  const sorted = [...(state.petCompletedDays||[])]
+    .filter(d => d >= cycle.startISO && d <= cycle.endISO)
     .sort();
   const milestones = [
     [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
@@ -181,20 +194,4 @@ function renderHair(){
   const notWashedBtn = document.getElementById('hairNotWashedBtn');
   const statusEl = document.getElementById('hairStatus');
   washedBtn.classList.toggle('active-washed', status === 'washed');
-  notWashedBtn.classList.toggle('active-notwashed', status === 'not-washed');
-  statusEl.innerHTML = status === 'washed'
-    ? 'Hoje: <b class="hair-history-washed">💧 cabelo lavado</b>'
-    : status === 'not-washed'
-      ? 'Hoje: <b class="hair-history-notwashed">○ não lavou</b>'
-      : 'Hoje: ainda não registrado';
-}
-
-function render(){
-  document.getElementById('totalPoints').textContent = state.totalPoints;
-
-  renderPet();
-  renderHair();
-  renderGameTimer();
-  renderCustomTimers();
-
-  const weekendEl = document.getElemen
+  notWashedBtn.classList.toggle('active-notwashed', status === 'n

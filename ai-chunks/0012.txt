@@ -1,4 +1,12 @@
-});
+ass="game-timer-fill ${used>=limit?'over-limit':''}" id="gameTimerBarFill" style="width:${pct}%"></div></div>
+      <button class="game-timer-btn ${running?'running':''}" id="gameTimerToggleBtn" ${locked?'disabled':''}>
+        ${running ? '⏸️ Parar de jogar' : '▶️ Começar a jogar'}
+      </button>
+    </div>
+  `;
+  document.getElementById('gameTimerToggleBtn').addEventListener('click', ()=>{
+    if(gameTimerIsRunning()) stopGameTimer(); else startGameTimer();
+  });
 
   if(running) startGameTimerTicking(); else stopGameTimerTicking();
 }
@@ -199,19 +207,4 @@ function computePetStage(){
   return {
     stage, stageFloat, unitsCompleted:completedDays, totalUnits:cycle.totalDays,
     maxStage, daysEquivalent:completedDays, cycleDays:cycle.totalDays,
-    todayPerfect:todayHasProgress, canGrowToday, completedDays:validDays
-  };
-}
-
-function svgAttrs(){
-  return 'viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Evolução do Pacus"';
-}
-
-function buildEggSVG(progress){
-  const p = Math.max(0, Math.min(1, progress));
-  const wobble = Math.sin(p*Math.PI*3)*1.4;
-  const gid = uid('egg');
-  const cracks = [
-    ["M94 80 L106 96 L98 109 L112 125 L103 142", 0.12],
-    ["M80 96 L92 108 L84 122 L96 136", 0.32],
-    ["M124 90 L113 105 L126 117 L116 13
+    todayPerfect:todayHasProgress, canGrowToday, completedD

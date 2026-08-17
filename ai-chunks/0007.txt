@@ -1,4 +1,6 @@
-nome da tarefa pra um emoji — reforça o texto
+.random().toString(36).slice(2,9); }
+
+// mapeia palavras-chave do nome da tarefa pra um emoji — reforça o texto
 // com uma pista visual (útil pra leitura rápida / crianças ainda alfabetizando)
 const ICON_RULES = [
   [/cama/i, "🛏️"], [/água/i, "💧"], [/dente/i, "🦷"], [/rosto|banho/i, "🧼"],
@@ -102,7 +104,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))))))));
+  return addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))))))))));
 }
 
 // Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
@@ -188,4 +190,4 @@ function addCreativeTaskV1(cfg){
     if(p && p.noite && Array.isArray(p.noite.tasks)){
       const tasks = p.noite.tasks;
       if(!tasks.some(t=>t.id === 'n7')){
-        const newTask = { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar.
+        const ne

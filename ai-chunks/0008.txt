@@ -1,4 +1,4 @@
-.. (30–40 min)" };
+wTask = { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" };
         const idx = tasks.findIndex(t=>t.id === 'n6');
         if(idx >= 0) tasks.splice(idx+1, 0, newTask);
         else tasks.push(newTask);
@@ -82,6 +82,17 @@ function fixFamilyGameNightV4(cfg){
     }
   }
   cfg.familyGameNightV4Applied = true;
+  return cfg;
+}
+
+// Nova recompensa: Passeio Especial, escolhido pelo Hector.
+function addOutingRewardV1(cfg){
+  if(!cfg || cfg.outingRewardV1Applied) return cfg;
+  if(!Array.isArray(cfg.rewards)) cfg.rewards = [];
+  if(!cfg.rewards.some(r=>r.id === 'r3')){
+    cfg.rewards.push({ id:"r3", txt:"Passeio Especial (você escolhe)", cost:500 });
+  }
+  cfg.outingRewardV1Applied = true;
   return cfg;
 }
 
@@ -199,19 +210,3 @@ function applyHistoryCorrection_v2(state){
   // Correção pontual, aplicada só UMA VEZ (por causa da flag abaixo) —
   // depois disso nunca mais mexe sozinha nesses dias, pra não apagar
   // edições feitas manualmente depois. Cobre 09/08 a 12/08: todos os
-  // dias foram completos; dia 12 teve -10 Pacus Points por causa de uma
-  // briga na escola; saldo final confirmado até 12/08: 170 Pacus Points.
-  if(state.historyCorrectionV2Applied) return;
-
-  const hairByDay = {
-    "2026-08-09": "not-washed",
-    "2026-08-10": "washed",
-    "2026-08-11": "not-washed",
-    "2026-08-12": "washed",
-  };
-  const pointsPenaltyByDay = {
-    "2026-08-12": 10, // brigou na escola
-  };
-
-  if(!state.history) state.history = {};
-  if

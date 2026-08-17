@@ -1,4 +1,20 @@
-tById('weekendIndicator');
+ot-washed');
+  statusEl.innerHTML = status === 'washed'
+    ? 'Hoje: <b class="hair-history-washed">💧 cabelo lavado</b>'
+    : status === 'not-washed'
+      ? 'Hoje: <b class="hair-history-notwashed">○ não lavou</b>'
+      : 'Hoje: ainda não registrado';
+}
+
+function render(){
+  document.getElementById('totalPoints').textContent = state.totalPoints;
+
+  renderPet();
+  renderHair();
+  renderGameTimer();
+  renderCustomTimers();
+
+  const weekendEl = document.getElementById('weekendIndicator');
   if(weekendEl){
     weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
       ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
@@ -174,14 +190,4 @@ function renderTestPanel(){
       <div class="test-row">
         <button class="icon-btn" id="testCompleteDayBtn">✅ completar tudo hoje</button>
         <button class="icon-btn" id="testPrevDayBtn">◀ dia anterior</button>
-        <button class="icon-btn" id="testNextDayBtn">dia seguinte ▶</button>
-        <input type="date" id="testDatePicker" value="${todayISO()}">
-        <button class="icon-btn" id="testGoDateBtn">ir pra essa data</button>
-        <button class="icon-btn danger" id="testResetDateBtn">voltar pra data real</button>
-      </div>
-    </div>
-  `;
-
-  document.getElementById('testCompleteDayBtn').addEventListener('click', ()=>{
-    allTasks().forEach(t=>{
-      if(state.checkedToday[t.id
+        <button clas

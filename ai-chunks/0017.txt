@@ -1,4 +1,9 @@
-td>
+&& entry.done === entry.total - 1 ? '<span class="badge-almost">quase lá! 🌟</span>' : '');
+    const editCell = (isToday||!adultUnlocked) ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
+    return `<tr${isToday?' class="today-row"':''}>
+      <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
+      <td>${entry.done}/${entry.total}${perfectBadge}</td>
+      <td class="pts-cell">${entry.pointsEarnedThatDay}</td>
       <td>${hairLabel(hair)}</td>
       <td>${editCell}</td>
     </tr>`;
@@ -189,13 +194,4 @@ function openEditor(){
   weekendBody.style.display = draft.periodsWeekend ? 'block' : 'none';
   if(draft.periodsWeekend){
     renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
-    renderEditorPeriod('tarde', 'editTardeWeekend', draft.periodsWeekend);
-    renderEditorPeriod('noite', 'editNoiteWeekend', draft.periodsWeekend);
-  }
-  weekendToggle.onchange = ()=>{
-    if(weekendToggle.checked && !draft.periodsWeekend){
-      // clona a rotina de dia de escola como ponto de partida
-      draft.periodsWeekend = JSON.parse(JSON.stringify(draft.periods));
-      // gera ids novos pra não colidir com os da rotina de semana
-      Object.values(draft.periodsWeekend).forEach(period=>{
-        period.tasks.forEach(t=>{ 
+    renderEditorPeriod('tarde', 'editTardeWeekend', draft.periodsWeekend
