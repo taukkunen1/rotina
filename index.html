@@ -1790,6 +1790,7 @@ const DEFAULT_CONFIG = {
   rewards: [
     { id:"r1", txt:"1 hora de tela", cost:90, grantsHours:1, maxPerDay:2 },
     { id:"r2", txt:"Hot Wheels (brinquedo)", cost:300 },
+    { id:"r3", txt:"Passeio Especial (você escolhe)", cost:500 },
   ],
   screenDailyLimitHours: 2, // usado pelo timer de jogo diário abaixo
   perfectDayBonusMinutes: 30,
@@ -1987,7 +1988,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))))))));
+  return addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))))))))));
 }
 
 // Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
@@ -2157,6 +2158,17 @@ function fixFamilyGameNightV4(cfg){
     }
   }
   cfg.familyGameNightV4Applied = true;
+  return cfg;
+}
+
+// Nova recompensa: Passeio Especial, escolhido pelo Hector.
+function addOutingRewardV1(cfg){
+  if(!cfg || cfg.outingRewardV1Applied) return cfg;
+  if(!Array.isArray(cfg.rewards)) cfg.rewards = [];
+  if(!cfg.rewards.some(r=>r.id === 'r3')){
+    cfg.rewards.push({ id:"r3", txt:"Passeio Especial (você escolhe)", cost:500 });
+  }
+  cfg.outingRewardV1Applied = true;
   return cfg;
 }
 
