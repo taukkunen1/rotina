@@ -1,4 +1,7 @@
-
+Math.floor(s/3600);
+  const m = Math.floor((s%3600)/60);
+  if(h > 0) return `${h}h ${String(m).padStart(2,'0')}min`;
+  return `${m} min`;
 }
 
 function startGameTimerTicking(){
@@ -218,7 +221,4 @@ function renderCustomTimers(){
     });
     document.getElementById('customTimerSetBtn_'+t.id).addEventListener('click', ()=>{
       const val = parseFloat(document.getElementById('customTimerMin_'+t.id).value);
-      setCustomTimerMinutes(t.id, isNaN(val) ? 0 : val);
-    });
-    document.getElementById('customTimerStartBtn_'+t.id).addEventListener('click', ()=> startCustomTimer(t.id));
-    documen
+      setCustomTimerMinutes(t.id, isNaN(val) ? 0 : v

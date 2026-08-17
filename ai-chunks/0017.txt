@@ -1,4 +1,5 @@
-an>';
+hed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
+  return '<span class="hair-history-unknown">— Não registrado</span>';
 }
 
 let historyShowAll = false;
@@ -195,11 +196,4 @@ function onMarkClick(e){
 
   const completedNow = syncPetCompletionFromDay(todayISO());
   if(completedNow){
-    addLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
-  }
-  saveState(state);
-  bumpTotal(totalDelta, btn);
-  render();
-}
-
-document.getEle
+    a

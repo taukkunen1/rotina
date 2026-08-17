@@ -1,4 +1,7 @@
-p-row">${dayChips}</div>
+ld="label" placeholder="nome (ex: Inglês)">
+        <button class="del" title="remover">🗑</button>
+      </div>
+      <div class="day-chip-row">${dayChips}</div>
       <div class="edit-row-main">
         <input type="time" value="${item.start}" data-field="start" style="flex:1;">
         <span style="color:var(--chalk-dim); font-size:.8rem;">até</span>
@@ -177,7 +180,4 @@ document.getElementById('daySaveBtn').addEventListener('click', ()=>{
   const total = Math.max(0, parseInt(document.getElementById('dayTotal').value,10) || 0);
   const pointsEarnedThatDay = Math.max(0, parseInt(document.getElementById('dayPoints').value,10) || 0);
   const hair = document.getElementById('dayHair').value || null;
-  const perfect = total > 0 && done >= total;
-
-  if(!state.hairByDate) state.hairByDate = {};
-  if(hair) state.hairByDate[editingDate] = hair; else delete state.hairB
+  const perfect = total > 0 &

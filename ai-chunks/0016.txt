@@ -1,4 +1,10 @@
-r();
+adStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+}
+
+function goToTestDate(iso){
+  setTestDate(iso);
+  state = loadState();
+  render();
 }
 
 let testPanelOpen = false;
@@ -204,5 +210,4 @@ function renderWeeklyReview(){
 
 function hairLabel(status){
   if(status === 'washed') return '<span class="hair-history-washed">💧 Lavou</span>';
-  if(status === 'not-washed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
-  return '<span class="hair-history-unknown">— Não registrado</sp
+  if(status === 'not-was

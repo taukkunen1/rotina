@@ -1,4 +1,6 @@
-& Array.isArray(p.noite.tasks) && p.noite.tasks.length > 0
+.manha.tasks) && p.manha.tasks.length > 0 &&
+      p.tarde && Array.isArray(p.tarde.tasks) && p.tarde.tasks.length > 0 &&
+      p.noite && Array.isArray(p.noite.tasks) && p.noite.tasks.length > 0
     );
   }catch(e){
     return false;
@@ -201,7 +203,4 @@ function flushGameTimer(){
 
 function formatMinSec(totalSeconds){
   const s = Math.max(0, Math.round(totalSeconds));
-  const h = Math.floor(s/3600);
-  const m = Math.floor((s%3600)/60);
-  if(h > 0) return `${h}h ${String(m).padStart(2,'0')}min`;
-  return `${m} min`;
+  const h = 

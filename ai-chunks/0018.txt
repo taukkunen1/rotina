@@ -1,4 +1,11 @@
-mentById('hairWashedBtn').addEventListener('click', ()=> setHairStatus('washed'));
+ddLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
+  }
+  saveState(state);
+  bumpTotal(totalDelta, btn);
+  render();
+}
+
+document.getElementById('hairWashedBtn').addEventListener('click', ()=> setHairStatus('washed'));
 document.getElementById('hairNotWashedBtn').addEventListener('click', ()=> setHairStatus('not-washed'));
 
 document.getElementById('addPointsBtn').addEventListener('click', ()=>{
@@ -172,7 +179,4 @@ function renderEditorSchedule(){
     ).join('');
     row.innerHTML = `
       <div class="edit-row-main">
-        <input type="text" value="${escapeAttr(item.label)}" data-field="label" placeholder="nome (ex: Inglês)">
-        <button class="del" title="remover">🗑</button>
-      </div>
-      <div class="day-chi
+        <input type="text" value="${escapeAttr(item.label)}" data-fie

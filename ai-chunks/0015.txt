@@ -1,4 +1,7 @@
-w Date(iso+"T00:00:00");
+s = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const cells = days.map(iso=>{
+    const isToday = iso === todayISO();
+    const d = new Date(iso+"T00:00:00");
     const letter = weekdayLetters[d.getDay()];
     let entry = isToday ? liveTodayEntry() : state.history[iso];
     let cls = 'streak-cell empty';
@@ -185,10 +188,4 @@ function daysBetween(isoA, isoB){
 function shiftISODate(iso, deltaDays){
   const d = new Date(iso+"T00:00:00");
   d.setDate(d.getDate()+deltaDays);
-  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-}
-
-function goToTestDate(iso){
-  setTestDate(iso);
-  state = loadState();
-  rende
+  return d.getFullYear()+"-"+String(d.getMonth()+1).p

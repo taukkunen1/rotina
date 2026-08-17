@@ -1,4 +1,7 @@
-yDate[editingDate];
+& done >= total;
+
+  if(!state.hairByDate) state.hairByDate = {};
+  if(hair) state.hairByDate[editingDate] = hair; else delete state.hairByDate[editingDate];
   state.history[editingDate] = { done, total, pointsEarnedThatDay, perfect, screenMinutes: perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0, hair };
   if(perfect) registerPetDayCompletion(editingDate);
 
@@ -163,8 +166,4 @@ async function driveSave(){
     renderDriveSync();
     alert('Salvo no Google Drive!');
   }catch(err){
-    alert('Não consegui salvar no Google Drive. Confira se a URL do Apps Script está certa e se a implantação está ativa.');
-  }
-}
-
-async function
+    alert

@@ -1,4 +1,7 @@
-t.getElementById('customTimerPauseBtn_'+t.id).addEventListener('click', ()=> pauseCustomTimer(t.id));
+al);
+    });
+    document.getElementById('customTimerStartBtn_'+t.id).addEventListener('click', ()=> startCustomTimer(t.id));
+    document.getElementById('customTimerPauseBtn_'+t.id).addEventListener('click', ()=> pauseCustomTimer(t.id));
     document.getElementById('customTimerResetBtn_'+t.id).addEventListener('click', ()=> resetCustomTimer(t.id));
   });
 
@@ -144,5 +147,4 @@ function buildPacusSVG(stageFloat){
       <g class="pacus-idle">
         ${sparkle}
         ${legs}
-        <ellipse cx="110" cy="${bodyY+bodyH+4}" rx="${18+growth*9}" ry="${7+growth*3}" fill="url(#${gid}-body)"/>
-        <ellipse cx="110" cy="${bodyY}" rx="${bodyW}" ry="${bodyH}" fill="url(#${gid}-body)"
+        <ellipse cx="110" cy="${bodyY+bodyH+4}" rx="${18+growth*9}" r
