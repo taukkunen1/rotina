@@ -2463,6 +2463,10 @@ function reconcileState(state){
     state.log.unshift('🏆 +5 · acertou a aposta com a Walda (pessoa autêntica)');
     state.waldaBetBonusApplied = true;
   }
+  if(!state.celebrationReplayV1Applied){
+    state.lastSeenPetStage = 0;
+    state.celebrationReplayV1Applied = true;
+  }
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
   }
@@ -2597,19 +2601,24 @@ function saveState(state, options={}){
    Sempre que o arquivo abre, ele tenta buscar a versão mais nova salva
    no Drive (via Apps Script) e usa ela — assim, não importa em qual
    aparelho vocês abrirem, todos mostram a mesma coisa. Sempre que algo
-   muda aqui, ele também manda a atualização pro Drive sozinho, alguns
-   segundos depois (sem precisar clicar em nada). Se estiver offline, o
-   arquivo continua funcionando normal com os dados salvos localmente.
-   IMPORTANTE: essas duas variáveis precisam existir ANTES de carregar
+   muda aqui, ele também manda a atualização pro Drive sozinho, na hora
+   (sem precisar clicar em nada). Se estiver offline, o arquivo continua
+   funcionando normal com os dados salvos localmente.
+   IMPORTANTE: essas variáveis precisam existir ANTES de carregar
    CONFIG/state, porque o carregamento pode precisar salvar de volta
-   (limpezas, correções automáticas) e isso já chama scheduleAutoPush. */
-let suppressAutoPush = false;
+   (limpezas, correções automáticas) e isso já chama scheduleAutoPush.
+   E a sincronização fica SUSPENSA durante esse carregamento inicial —
+   nesse momento ainda nem todo o resto do código rodou, então tentar
+   sincronizar/renderizar tão cedo pode travar. Ela é reativada logo
+   depois, uma vez que CONFIG e state já estão prontos. */
+let suppressAutoPush = true;
+let pushInFlight = false;
+let pushPending = false;
 
 let CONFIG = loadConfig();
 let state = loadState();
 
-let pushInFlight = false;
-let pushPending = false;
+suppressAutoPush = false;
 
 function scheduleAutoPush(){
   if(!APPS_SCRIPT_URL || suppressAutoPush) return;
