@@ -412,6 +412,54 @@
     display:block;
   }
 
+  .pet-mascot-wrap{
+    position:relative;
+    display:inline-block;
+    perspective:800px;
+    cursor:pointer;
+  }
+  .pet-mascot-wrap .pet-mascot{
+    backface-visibility:visible;
+  }
+  .pet-mascot-wrap.spinning .pet-mascot{
+    animation:pacusSpin3D .9s ease-in-out;
+  }
+  @keyframes pacusSpin3D{
+    0%{ transform:rotateY(0deg) scale(1); }
+    45%{ transform:rotateY(170deg) scale(1.06); }
+    55%{ transform:rotateY(190deg) scale(1.06); }
+    100%{ transform:rotateY(360deg) scale(1); }
+  }
+  .pet-accessory{
+    position:absolute;
+    bottom:2px;
+    right:-6px;
+    font-size:1.9rem;
+    transform-origin:bottom center;
+    animation:accessorySway 3.2s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes accessorySway{
+    0%,100%{ transform:rotate(-7deg); }
+    50%{ transform:rotate(7deg); }
+  }
+  .pet-reaction-bubble{
+    position:absolute;
+    top:-6px;
+    left:50%;
+    font-size:1.7rem;
+    opacity:0;
+    pointer-events:none;
+  }
+  .pet-reaction-bubble.show{
+    animation:petReactionPop 1.3s ease-out forwards;
+  }
+  @keyframes petReactionPop{
+    0%{ opacity:0; transform:translate(-50%,6px) scale(.6); }
+    22%{ opacity:1; transform:translate(-50%,-10px) scale(1.2); }
+    100%{ opacity:0; transform:translate(-50%,-34px) scale(1); }
+  }
+
   .pet-name{
     font-family:"Segoe Print","Bradley Hand",cursive;
     font-size:1.35rem;
@@ -3386,6 +3434,29 @@ function renderAchievementMural(){
   `;
 }
 
+// Toque no Pacus: gira em 3D e mostra uma reaçãozinha fofa — pura
+// diversão, não mexe em pontos nem no formato/crescimento dele.
+const PACUS_REACTIONS = ['💕','😊','🥰','✨','👋','🫧','😄','💗'];
+function wirePacusInteraction(){
+  const wrap = document.getElementById('pacusInteractive');
+  if(!wrap) return;
+  wrap.addEventListener('click', ()=>{
+    wrap.classList.remove('spinning');
+    void wrap.offsetWidth;
+    wrap.classList.add('spinning');
+
+    const bubble = document.getElementById('petReactionBubble');
+    if(bubble){
+      const pick = PACUS_REACTIONS[Math.floor(Math.random()*PACUS_REACTIONS.length)];
+      bubble.textContent = pick;
+      bubble.classList.remove('show');
+      void bubble.offsetWidth;
+      bubble.classList.add('show');
+    }
+    if(Math.random() < 0.25) fireConfetti(wrap, 10);
+  });
+}
+
 function renderPet(){
   const el = document.getElementById('petSection');
   const data = computePetStage();
@@ -3428,7 +3499,11 @@ function renderPet(){
   el.dataset.pacusProgress = String(daysEquivalent);
 
   el.innerHTML = `
-    ${buildPetVisual(stageFloat)}
+    <div class="pet-mascot-wrap" id="pacusInteractive" title="Toque no Pacus!">
+      ${buildPetVisual(stageFloat)}
+      <span class="pet-accessory">🌿</span>
+      <span class="pet-reaction-bubble" id="petReactionBubble"></span>
+    </div>
     <div class="pet-name">${CONFIG.pet.name}</div>
     <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
     <div class="pet-day-progress">
@@ -3440,6 +3515,8 @@ function renderPet(){
     <div id="petEvolvedBanner"></div>
     <div class="streak-strip">${buildStreakStrip()}</div>
   `;
+
+  wirePacusInteraction();
 
   if(grewNow){
     const mascotEl = el.querySelector('.pet-mascot');
