@@ -1,4 +1,14 @@
+sim não perde o progresso se a página fechar sem clicar em parar
+function flushGameTimer(){
+  if(!gameTimerIsRunning()) return;
+  const elapsed = (Date.now() - state.gameTimer.runningSince)/1000;
+  state.gameTimer.usedSeconds += elapsed;
+  state.gameTimer.runningSince = Date.now();
+  saveState(state);
+}
 
+function formatMinSec(totalSeconds){
+  const s = Math.max(0, Math.round(totalSeconds));
   const h = Math.floor(s/3600);
   const m = Math.floor((s%3600)/60);
   if(h > 0) return `${h}h ${String(m).padStart(2,'0')}min`;
@@ -213,9 +223,4 @@ function renderCustomTimers(){
         <input type="text" class="custom-timer-label" id="customTimerLabel_${t.id}" value="${escapeAttr(t.label)}" maxlength="20">
         <div class="custom-timer-display" id="customTimerDisplay_${t.id}">${formatHMS(remaining)}</div>
         <div class="custom-timer-setrow">
-          <input type="number" min="0" step="1" id="customTimerMin_${t.id}" value="${totalMin}" ${running?'disabled':''}>
-          <span>min</span>
-          <button class="custom-timer-btn secondary" id="customTimerSetBtn_${t.id}" ${running?'disabled':''}>definir</button>
-        </div>
-        <div class="custom-timer-btns">
-          <button class="custom-timer-btn" id="customTimerStartBtn_${t.id}" ${(
+          <input

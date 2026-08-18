@@ -1,4 +1,13 @@
-tes || 0;
+enMin = 0;
+  days.forEach(iso=>{
+    const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
+    if(!entry) return;
+    if(iso !== todayISO()){
+      // dias fechados já têm pointsEarnedThatDay e screenMinutes calculados
+      const full = state.history[iso];
+      if(full){
+        totalPointsWeek += full.pointsEarnedThatDay || 0;
+        totalScreenMin += full.screenMinutes || 0;
       }
     }
     if(entry.total > 0 && entry.perfect) perfectDays++;
@@ -183,14 +192,4 @@ function fireConfetti(originEl, count){
 function onMarkClick(e){
   const btn = e.currentTarget;
   const id = btn.closest('.mark-group').getAttribute('data-id');
-  const clickedStatus = btn.getAttribute('data-status'); // 'done', 'na', or 'x'
-  const task = allTasks().find(t=>t.id===id);
-  if(!task) return;
-
-  const current = state.checkedToday[id]; // undefined | 'done' | 'na' | 'x'
-  let totalDelta = 0;
-  if(!state.taskDoneAt) state.taskDoneAt = {};
-
-  // desfazer o efeito do estado anterior nos pontos
-  if(current === 'done') totalDelta += addPoints(-task.pts);
-  else if(current === 'x') totalDelta +
+  const clickedStatus = btn.getAttribute('data-status')

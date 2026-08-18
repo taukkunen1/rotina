@@ -1,4 +1,25 @@
-.manha.tasks) && p.manha.tasks.length > 0 &&
+eLastSyncISO = todayISO();
+      saveState(state);
+      saveConfig(CONFIG);
+      render();
+    }
+  }catch(err){
+    renderDriveSync();
+  } finally {
+    pushInFlight = false;
+    if(pushPending){
+      pushPending = false;
+      doAutoPush();
+    }
+  }
+}
+
+function isValidPeriodsConfig(cfg){
+  try{
+    const p = cfg && cfg.periods;
+    return !!(
+      p &&
+      p.manha && Array.isArray(p.manha.tasks) && p.manha.tasks.length > 0 &&
       p.tarde && Array.isArray(p.tarde.tasks) && p.tarde.tasks.length > 0 &&
       p.noite && Array.isArray(p.noite.tasks) && p.noite.tasks.length > 0
     );
@@ -192,14 +213,4 @@ function stopGameTimer(){
 }
 
 // enquanto está rodando, "descarrega" o tempo periodicamente pro estado
-// salvo — assim não perde o progresso se a página fechar sem clicar em parar
-function flushGameTimer(){
-  if(!gameTimerIsRunning()) return;
-  const elapsed = (Date.now() - state.gameTimer.runningSince)/1000;
-  state.gameTimer.usedSeconds += elapsed;
-  state.gameTimer.runningSince = Date.now();
-  saveState(state);
-}
-
-function formatMinSec(totalSeconds){
-  const s = Math.max(0, Math.round(totalSeconds));
+// salvo — as

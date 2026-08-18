@@ -1,4 +1,5 @@
-ions: {} };
+imer !== "object"){
+    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
   }
   if(state.gameTimer.bonusSeconds === undefined) state.gameTimer.bonusSeconds = 0;
   if(!state.gameTimer.redemptions || typeof state.gameTimer.redemptions !== "object") state.gameTimer.redemptions = {};
@@ -131,19 +132,24 @@ function saveState(state, options={}){
    Sempre que o arquivo abre, ele tenta buscar a versão mais nova salva
    no Drive (via Apps Script) e usa ela — assim, não importa em qual
    aparelho vocês abrirem, todos mostram a mesma coisa. Sempre que algo
-   muda aqui, ele também manda a atualização pro Drive sozinho, alguns
-   segundos depois (sem precisar clicar em nada). Se estiver offline, o
-   arquivo continua funcionando normal com os dados salvos localmente.
-   IMPORTANTE: essas duas variáveis precisam existir ANTES de carregar
+   muda aqui, ele também manda a atualização pro Drive sozinho, na hora
+   (sem precisar clicar em nada). Se estiver offline, o arquivo continua
+   funcionando normal com os dados salvos localmente.
+   IMPORTANTE: essas variáveis precisam existir ANTES de carregar
    CONFIG/state, porque o carregamento pode precisar salvar de volta
-   (limpezas, correções automáticas) e isso já chama scheduleAutoPush. */
-let suppressAutoPush = false;
+   (limpezas, correções automáticas) e isso já chama scheduleAutoPush.
+   E a sincronização fica SUSPENSA durante esse carregamento inicial —
+   nesse momento ainda nem todo o resto do código rodou, então tentar
+   sincronizar/renderizar tão cedo pode travar. Ela é reativada logo
+   depois, uma vez que CONFIG e state já estão prontos. */
+let suppressAutoPush = true;
+let pushInFlight = false;
+let pushPending = false;
 
 let CONFIG = loadConfig();
 let state = loadState();
 
-let pushInFlight = false;
-let pushPending = false;
+suppressAutoPush = false;
 
 function scheduleAutoPush(){
   if(!APPS_SCRIPT_URL || suppressAutoPush) return;
@@ -183,25 +189,4 @@ async function doAutoPush(){
       CONFIG = merged.config;
       state = merged.state;
       state.driveRevision = Number(result.revision)||Number(server.state?.driveRevision)||0;
-      state.driveLastSyncISO = todayISO();
-      saveState(state);
-      saveConfig(CONFIG);
-      render();
-    }
-  }catch(err){
-    renderDriveSync();
-  } finally {
-    pushInFlight = false;
-    if(pushPending){
-      pushPending = false;
-      doAutoPush();
-    }
-  }
-}
-
-function isValidPeriodsConfig(cfg){
-  try{
-    const p = cfg && cfg.periods;
-    return !!(
-      p &&
-      p.manha && Array.isArray(p
+      state.driv

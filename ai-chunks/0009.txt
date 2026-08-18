@@ -185,5 +185,8 @@ function reconcileState(state){
     state.log.unshift('🏆 +5 · acertou a aposta com a Walda (pessoa autêntica)');
     state.waldaBetBonusApplied = true;
   }
-  if(!state.gameTimer || typeof state.gameTimer !== "object"){
-    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redempt
+  if(!state.celebrationReplayV1Applied){
+    state.lastSeenPetStage = 0;
+    state.celebrationReplayV1Applied = true;
+  }
+  if(!state.gameTimer || typeof state.gameT

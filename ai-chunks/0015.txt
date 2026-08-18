@@ -1,4 +1,13 @@
-ndingClientRect: ()=>({left:window.innerWidth*0.2, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 200);
+ldPetVisual(stage);
+  document.getElementById('celebrationStage').innerHTML =
+    stage === maxStage
+      ? `O Pacus chegou em <b>${stageInfo.label}</b> — crescimento completo! 🏆`
+      : `O Pacus virou <b>${stageInfo.label}</b>!`;
+  overlay.classList.add('open');
+
+  // confete espalhado pela tela toda, não só perto do Pacus
+  fireConfetti(null, 40);
+  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.2, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 200);
   setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.8, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 350);
 
   const autoClose = setTimeout(closeEvolutionCelebration, 4500);
@@ -164,15 +173,4 @@ function render(){
       const taskId = btn.getAttribute('data-task');
       const dir = btn.getAttribute('data-dir');
       const periodTasks = getPeriodsFor(todayISO())[periodKey].tasks;
-      moveTaskInOrder(periodKey, periodTasks, taskId, dir);
-      render();
-    });
-  });
-
-  const badEl = document.getElementById('badHabits');
-  badEl.innerHTML = '';
-  CONFIG.badHabits.forEach(h=>{
-    const isPositive = h.pts >= 0;
-    const btn = document.createElement('button');
-    btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
-    btn.innerHTML = `${h.txt}<span class="minus">${isPosit
+      moveTaskIn

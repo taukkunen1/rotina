@@ -1,4 +1,12 @@
-ingDate = null;
+.done;
+  document.getElementById('dayTotal').value = entry.total;
+  document.getElementById('dayPoints').value = entry.pointsEarnedThatDay;
+  document.getElementById('dayHair').value = getHairStatus(dateISO) || entry.hair || '';
+  document.getElementById('dayOverlay').classList.add('open');
+}
+function closeDayEditor(){
+  document.getElementById('dayOverlay').classList.remove('open');
+  editingDate = null;
 }
 document.getElementById('dayCloseBtn').addEventListener('click', closeDayEditor);
 document.getElementById('dayCancelBtn').addEventListener('click', closeDayEditor);
@@ -149,11 +157,4 @@ function renderDriveSync(){
   `;
 
   if(!configured){
-    document.getElementById('driveSetupInfoBtn').addEventListener('click', ()=>{
-      const info = document.getElementById('driveSetupInfo');
-      info.style.display = info.style.display === 'none' ? 'block' : 'none';
-    });
-    document.getElementById('driveCopyCodeBtn').addEventListener('click', ()=>{
-      const box = document.getElementById('driveCodeBox');
-      box.value = APPS_SCRIPT_CODE;
-      box.style.display = box.style.display === 'none' ? 'block' 
+    document.getElementById('driveSetupInfoBtn').addEventListener('click', 

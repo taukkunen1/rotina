@@ -1,4 +1,14 @@
-= addPoints(taskNotDonePenalty(task));
+; // 'done', 'na', or 'x'
+  const task = allTasks().find(t=>t.id===id);
+  if(!task) return;
+
+  const current = state.checkedToday[id]; // undefined | 'done' | 'na' | 'x'
+  let totalDelta = 0;
+  if(!state.taskDoneAt) state.taskDoneAt = {};
+
+  // desfazer o efeito do estado anterior nos pontos
+  if(current === 'done') totalDelta += addPoints(-task.pts);
+  else if(current === 'x') totalDelta += addPoints(taskNotDonePenalty(task));
 
   if(current === clickedStatus){
     // clicou de novo no mesmo estado: volta pra pendente
@@ -177,17 +187,4 @@ function renderEditorBad(){
       ${stepperHTML('pts', h.pts, true)}
       <button class="del" title="remover">🗑</button>
     `;
-    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ h.txt = e.target.value; });
-    wireStepper(row, h, 'pts', true);
-    row.querySelector('.del').addEventListener('click', ()=>{
-      draft.badHabits = draft.badHabits.filter(x=>x!==h);
-      renderEditorBad();
-    });
-    el.appendChild(row);
-  });
-}
-
-function renderEditorSchedule(){
-  const el = document.getElementById('editSchedule');
-  el.innerHTML = '';
-  const 
+    row.querySelector('[data-field=txt]').addEven

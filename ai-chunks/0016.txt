@@ -1,4 +1,15 @@
-ive?'+':'−'}${Math.abs(h.pts)}</span>`;
+Order(periodKey, periodTasks, taskId, dir);
+      render();
+    });
+  });
+
+  const badEl = document.getElementById('badHabits');
+  badEl.innerHTML = '';
+  CONFIG.badHabits.forEach(h=>{
+    const isPositive = h.pts >= 0;
+    const btn = document.createElement('button');
+    btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
+    btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
     btn.addEventListener('click', ()=>{
       const delta = addPoints(h.pts);
       addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
@@ -210,13 +221,4 @@ function renderWeeklyReview(){
     days.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'));
   }
 
-  let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0;
-  days.forEach(iso=>{
-    const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
-    if(!entry) return;
-    if(iso !== todayISO()){
-      // dias fechados já têm pointsEarnedThatDay e screenMinutes calculados
-      const full = state.history[iso];
-      if(full){
-        totalPointsWeek += full.pointsEarnedThatDay || 0;
-        totalScreenMin += full.screenMinu
+  let perfectDays = 0, totalPointsWeek = 0, totalScre

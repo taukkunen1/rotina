@@ -1,4 +1,9 @@
-running||remaining<=0)?'disabled':''}>▶️ Iniciar</button>
+ type="number" min="0" step="1" id="customTimerMin_${t.id}" value="${totalMin}" ${running?'disabled':''}>
+          <span>min</span>
+          <button class="custom-timer-btn secondary" id="customTimerSetBtn_${t.id}" ${running?'disabled':''}>definir</button>
+        </div>
+        <div class="custom-timer-btns">
+          <button class="custom-timer-btn" id="customTimerStartBtn_${t.id}" ${(running||remaining<=0)?'disabled':''}>▶️ Iniciar</button>
           <button class="custom-timer-btn secondary" id="customTimerPauseBtn_${t.id}" ${running?'':'disabled'}>⏸️ Pausar</button>
           <button class="custom-timer-btn secondary" id="customTimerResetBtn_${t.id}">↺ Reiniciar</button>
         </div>
@@ -147,6 +152,4 @@ function buildPacusSVG(stageFloat){
   // pernocas curtinhas, aparecem gradualmente a partir da eclosão
   const legOpacity = Math.min(1, hatch*1.6).toFixed(2);
   const legs = `
-    <ellipse cx="${110-bodyW*0.72}" cy="${bodyY+bodyH*0.55}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity}" transform="rotate(-20 ${110-bodyW*0.72} ${bodyY+bodyH*0.55})"/>
-    <ellipse cx="${110+bodyW*0.72}" cy="${bodyY+bodyH*0.55}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity}" transform="rotate(20 ${110+bodyW*0.72} ${bodyY+bodyH*0.55})"/>
-    <ellipse cx="${110-bodyW*0.5}" cy="${bodyY+bodyH*0.92}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity}" transform="rotate(-15 ${110-bodyW*0.
+    <ellipse cx="${110-bodyW*0.72}" cy="${bodyY+bodyH*0.55}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity
