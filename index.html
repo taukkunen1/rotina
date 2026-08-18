@@ -460,6 +460,47 @@
     100%{ opacity:0; transform:translate(-50%,-34px) scale(1); }
   }
 
+  .pacus-dialogue{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:var(--board);
+    border:2px solid var(--blue);
+    border-radius:14px;
+    padding:8px 10px 8px 14px;
+    margin-top:8px;
+    max-width:300px;
+    font-size:.8rem;
+    color:var(--chalk);
+    position:relative;
+    animation:dialoguePop .35s cubic-bezier(.2,1.4,.4,1);
+  }
+  .pacus-dialogue::before{
+    content:"";
+    position:absolute;
+    top:-9px;
+    left:50%;
+    transform:translateX(-50%);
+    border-left:8px solid transparent;
+    border-right:8px solid transparent;
+    border-bottom:9px solid var(--blue);
+  }
+  @keyframes dialoguePop{
+    0%{ transform:scale(.85); opacity:0; }
+    100%{ transform:scale(1); opacity:1; }
+  }
+  .pacus-dialogue-text{ text-align:left; line-height:1.35; }
+  .pacus-dialogue-close{
+    background:none;
+    border:none;
+    color:var(--chalk-dim);
+    font-size:.85rem;
+    cursor:pointer;
+    flex-shrink:0;
+    padding:2px 4px;
+  }
+  .pacus-dialogue-close:hover{ color:var(--chalk); }
+
   .pet-name{
     font-family:"Segoe Print","Bradley Hand",cursive;
     font-size:1.35rem;
@@ -3457,6 +3498,41 @@ function wirePacusInteraction(){
   });
 }
 
+// Fala do Pacus, toda noite — um lembrete fofo, aparece sozinho quando
+// a Noite começa (com base no horário real do dispositivo) e pode ser
+// dispensado só por hoje (volta amanhã à noite de novo, sozinho).
+const PACUS_NIGHT_MESSAGE = "Não esqueça de desenhar na lousa hoje! 🎨";
+let pacusDialogueTickHandle = null;
+function isEveningNow(){
+  const start = periodStartTime(CONFIG.periods.noite.time);
+  if(!start) return false;
+  const now = new Date();
+  const startToday = new Date(now);
+  startToday.setHours(start.hour, start.minute, 0, 0);
+  return now >= startToday;
+}
+function renderPacusDialogue(){
+  const el = document.getElementById('pacusDialogue');
+  if(!el) return;
+  const dismissedToday = state.pacusDialogueDismissedDate === todayISO();
+  if(!isEveningNow() || dismissedToday){ el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="pacus-dialogue">
+      <span class="pacus-dialogue-text">💬 ${PACUS_NIGHT_MESSAGE}</span>
+      <button class="pacus-dialogue-close" id="pacusDialogueCloseBtn" title="Ok, entendi!">✕</button>
+    </div>
+  `;
+  document.getElementById('pacusDialogueCloseBtn').addEventListener('click', ()=>{
+    state.pacusDialogueDismissedDate = todayISO();
+    saveState(state);
+    renderPacusDialogue();
+  });
+}
+function startPacusDialogueTicking(){
+  if(pacusDialogueTickHandle) return;
+  pacusDialogueTickHandle = setInterval(renderPacusDialogue, 30000);
+}
+
 function renderPet(){
   const el = document.getElementById('petSection');
   const data = computePetStage();
@@ -3504,6 +3580,7 @@ function renderPet(){
       <span class="pet-accessory">🌿</span>
       <span class="pet-reaction-bubble" id="petReactionBubble"></span>
     </div>
+    <div id="pacusDialogue"></div>
     <div class="pet-name">${CONFIG.pet.name}</div>
     <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
     <div class="pet-day-progress">
@@ -3517,6 +3594,8 @@ function renderPet(){
   `;
 
   wirePacusInteraction();
+  renderPacusDialogue();
+  startPacusDialogueTicking();
 
   if(grewNow){
     const mascotEl = el.querySelector('.pet-mascot');
