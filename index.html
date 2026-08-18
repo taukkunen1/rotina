@@ -2355,6 +2355,8 @@ function applyHistoryCorrection_v2(state){
     state.hairByDate[iso] = hairByDay[iso];
 
     if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
+    if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
+    if(!state.petPerfectBonusDays.includes(iso)) state.petPerfectBonusDays.push(iso);
   });
 
   state.petCompletedDays.sort();
@@ -2429,6 +2431,7 @@ function reconcileState(state){
   if(state.driveLastSyncISO === undefined) state.driveLastSyncISO = null;
   if(state.lastSeenPetStage === undefined) state.lastSeenPetStage = 0;
   if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+  if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
   if(state.petLastCompletionISO === undefined) state.petLastCompletionISO = null;
   if(typeof state.revision !== 'number') state.revision = 0;
   if(typeof state.driveRevision !== 'number') state.driveRevision = 0;
@@ -2466,6 +2469,16 @@ function reconcileState(state){
   if(!state.celebrationReplayV1Applied){
     state.lastSeenPetStage = 0;
     state.celebrationReplayV1Applied = true;
+  }
+  if(!state.perfectBonusBackfillV1Applied){
+    if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
+    Object.keys(state.history || {}).forEach(iso=>{
+      if(state.history[iso] && state.history[iso].perfect && !state.petPerfectBonusDays.includes(iso)){
+        state.petPerfectBonusDays.push(iso);
+      }
+    });
+    state.petPerfectBonusDays.sort();
+    state.perfectBonusBackfillV1Applied = true;
   }
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
@@ -2544,6 +2557,19 @@ function registerPetDayCompletion(dateISO){
   return true;
 }
 
+// Dia 100% perfeito dá um empurrãozinho A MAIS no crescimento do Pacus,
+// além do dia normal que ele já ganha por ter feito alguma coisa.
+function registerPetPerfectBonus(dateISO){
+  const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
+  const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
+  if(dateISO < startISO || dateISO > endISO) return false;
+  if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
+  if(state.petPerfectBonusDays.includes(dateISO)) return false;
+  state.petPerfectBonusDays.push(dateISO);
+  state.petPerfectBonusDays.sort();
+  return true;
+}
+
 function isDayPerfect(dateISO){
   if(dateISO === todayISO()){
     const tasks = allTasks(dateISO);
@@ -2568,8 +2594,10 @@ function hasDayProgress(dateISO){
 }
 
 function syncPetCompletionFromDay(dateISO){
-  if(hasDayProgress(dateISO)) return registerPetDayCompletion(dateISO);
-  return false;
+  let grew = false;
+  if(hasDayProgress(dateISO)) grew = registerPetDayCompletion(dateISO) || grew;
+  if(isDayPerfect(dateISO)) grew = registerPetPerfectBonus(dateISO) || grew;
+  return grew;
 }
 
 function closeOutDay(state, dateISO){
@@ -2583,6 +2611,7 @@ function closeOutDay(state, dateISO){
     .reduce((s,t)=>s+t.pts, 0);
   const perfect = total > 0 && done === total;
   if(done > 0) registerPetDayCompletion(dateISO);
+  if(perfect) registerPetPerfectBonus(dateISO);
   const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
   const periodsCompleted = periodsCompletedFrom(state.checkedToday, dateISO);
   state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
@@ -2716,6 +2745,7 @@ function mergeRemoteData(remote){
     }
   });
   merged.petCompletedDays = [...new Set([...(remoteState.petCompletedDays||[]), ...(localState.petCompletedDays||[])])].sort();
+  merged.petPerfectBonusDays = [...new Set([...(remoteState.petPerfectBonusDays||[]), ...(localState.petPerfectBonusDays||[])])].sort();
   merged.historyCorrectionV2Applied = !!(remoteState.historyCorrectionV2Applied || localState.historyCorrectionV2Applied);
   merged.hairByDate = {...(remoteState.hairByDate||{}), ...(localState.hairByDate||{})};
   merged.totalPoints = Math.max(Number(remoteState.totalPoints)||0, Number(localState.totalPoints)||0);
@@ -3149,14 +3179,17 @@ function computePetStage(){
   const cycle = getPetCycle();
   const maxStage = CONFIG.pet.stages.length - 1;
   const completed = new Set(Array.isArray(state.petCompletedDays) ? state.petCompletedDays : []);
+  const perfectBonus = new Set(Array.isArray(state.petPerfectBonusDays) ? state.petPerfectBonusDays : []);
   const validDays = [];
+  let bonusDays = 0;
   for(let i=0;i<cycle.totalDays;i++){
     const d = new Date(cycle.start);
     d.setDate(d.getDate()+i);
     const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
     if(completed.has(iso)) validDays.push(iso);
+    if(perfectBonus.has(iso)) bonusDays++;
   }
-  const completedDays = Math.min(cycle.totalDays, validDays.length);
+  const completedDays = Math.min(cycle.totalDays, validDays.length + bonusDays);
   const stageFloat = Math.min(maxStage, completedDays);
   const stage = Math.min(maxStage, completedDays);
   const todayHasProgress = hasDayProgress(todayISO());
@@ -3374,6 +3407,8 @@ function renderPet(){
   let caption;
   if(stage === maxStage){
     caption = `Pacus adulto! <b>Ciclo concluído em 31/08.</b> 🎉`;
+  } else if(canGrowToday && isDayPerfect(todayISO())){
+    caption = `<b>Dia perfeito!</b> O Pacus ganha um empurrãozinho <b>extra</b> de crescimento hoje! ✨`;
   } else if(canGrowToday){
     caption = `<b>Boa!</b> O Pacus vai evoluir mais um pouco hoje.`;
   } else if(daysEquivalent === 0){
