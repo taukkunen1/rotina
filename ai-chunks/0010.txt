@@ -1,4 +1,21 @@
-imer !== "object"){
+posta com a Walda (pessoa autêntica)');
+    state.waldaBetBonusApplied = true;
+  }
+  if(!state.celebrationReplayV1Applied){
+    state.lastSeenPetStage = 0;
+    state.celebrationReplayV1Applied = true;
+  }
+  if(!state.perfectBonusBackfillV1Applied){
+    if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
+    Object.keys(state.history || {}).forEach(iso=>{
+      if(state.history[iso] && state.history[iso].perfect && !state.petPerfectBonusDays.includes(iso)){
+        state.petPerfectBonusDays.push(iso);
+      }
+    });
+    state.petPerfectBonusDays.sort();
+    state.perfectBonusBackfillV1Applied = true;
+  }
+  if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
   }
   if(state.gameTimer.bonusSeconds === undefined) state.gameTimer.bonusSeconds = 0;
@@ -75,6 +92,19 @@ function registerPetDayCompletion(dateISO){
   return true;
 }
 
+// Dia 100% perfeito dá um empurrãozinho A MAIS no crescimento do Pacus,
+// além do dia normal que ele já ganha por ter feito alguma coisa.
+function registerPetPerfectBonus(dateISO){
+  const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
+  const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
+  if(dateISO < startISO || dateISO > endISO) return false;
+  if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
+  if(state.petPerfectBonusDays.includes(dateISO)) return false;
+  state.petPerfectBonusDays.push(dateISO);
+  state.petPerfectBonusDays.sort();
+  return true;
+}
+
 function isDayPerfect(dateISO){
   if(dateISO === todayISO()){
     const tasks = allTasks(dateISO);
@@ -99,8 +129,10 @@ function hasDayProgress(dateISO){
 }
 
 function syncPetCompletionFromDay(dateISO){
-  if(hasDayProgress(dateISO)) return registerPetDayCompletion(dateISO);
-  return false;
+  let grew = false;
+  if(hasDayProgress(dateISO)) grew = registerPetDayCompletion(dateISO) || grew;
+  if(isDayPerfect(dateISO)) grew = registerPetPerfectBonus(dateISO) || grew;
+  return grew;
 }
 
 function closeOutDay(state, dateISO){
@@ -114,6 +146,7 @@ function closeOutDay(state, dateISO){
     .reduce((s,t)=>s+t.pts, 0);
   const perfect = total > 0 && done === total;
   if(done > 0) registerPetDayCompletion(dateISO);
+  if(perfect) registerPetPerfectBonus(dateISO);
   const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
   const periodsCompleted = periodsCompletedFrom(state.checkedToday, dateISO);
   state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
@@ -146,47 +179,4 @@ let suppressAutoPush = true;
 let pushInFlight = false;
 let pushPending = false;
 
-let CONFIG = loadConfig();
-let state = loadState();
-
-suppressAutoPush = false;
-
-function scheduleAutoPush(){
-  if(!APPS_SCRIPT_URL || suppressAutoPush) return;
-  if(pushInFlight){ pushPending = true; return; }
-  doAutoPush();
-}
-
-async function doAutoPush(){
-  if(!APPS_SCRIPT_URL) return;
-  pushInFlight = true;
-  try{
-    const payload = {
-      appVersion: APP_VERSION,
-      config: CONFIG,
-      state: state,
-      baseRevision: Number(state.driveRevision)||0,
-      clientRevision: Number(state.revision)||0,
-      clientUpdatedAt: state.updatedAt || new Date().toISOString(),
-      exportedAt: new Date().toISOString()
-    };
-    const res = await fetch(DATA_ENDPOINT, {
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify(payload)
-    });
-    const result = await res.json();
-    if(result.ok){
-      state.driveRevision = Number(result.revision)||state.driveRevision;
-      state.driveLastSyncISO = todayISO();
-      state.driveConflictCount = 0;
-      try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
-      renderDriveSync();
-    } else if(result.conflict && result.data){
-      state.driveConflictCount = (Number(state.driveConflictCount)||0)+1;
-      const server = result.data;
-      const merged = mergeRemoteData(server);
-      CONFIG = merged.config;
-      state = merged.state;
-      state.driveRevision = Number(result.revision)||Number(server.state?.driveRevision)||0;
-      state.driv
+let CONFIG = loadConfig()

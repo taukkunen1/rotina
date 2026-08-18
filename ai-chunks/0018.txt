@@ -1,4 +1,58 @@
-; // 'done', 'na', or 'x'
+ameTimer.redemptions[r.id] = redeemed + 1;
+
+      saveState(state);
+      bumpTotal(delta, evt.currentTarget);
+      renderRewards();
+      renderLog();
+      renderGameTimer();
+    });
+    rEl.appendChild(div);
+  });
+
+  const noteEl = document.getElementById('pointValueNote');
+  if(noteEl){
+    const brlValue = POINT_VALUE_BRL.toFixed(2).replace('.', ',');
+    const maxBrl = Math.round(MAX_POINTS * POINT_VALUE_BRL);
+    noteEl.textContent = `1 Pacus Point ≈ R$${brlValue} · máximo: ${MAX_POINTS} pontos (~R$${maxBrl})`;
+  }
+}
+
+function renderLog(){
+  const logEl = document.getElementById('logList');
+  logEl.innerHTML = state.log.length
+    ? state.log.map(l=>`<div>${l}</div>`).join('')
+    : '<div>Nada ainda hoje — bora começar!</div>';
+}
+
+function fireConfetti(originEl, count){
+  count = count || 14;
+  const colors = ['#ffd93d','#ff7eb9','#4fc3f7','#ff9f43','#5fd875'];
+  const rect = originEl && originEl.getBoundingClientRect
+    ? originEl.getBoundingClientRect()
+    : { left: window.innerWidth/2, top: window.innerHeight/2, width:0, height:0 };
+  const originX = rect.left + rect.width/2;
+  const originY = rect.top + rect.height/2;
+
+  for(let i=0;i<count;i++){
+    const piece = document.createElement('span');
+    piece.className = 'confetti-piece';
+    const angle = Math.random()*Math.PI*2;
+    const dist = 60 + Math.random()*90;
+    piece.style.setProperty('--dx', (Math.cos(angle)*dist)+'px');
+    piece.style.setProperty('--dy', (Math.sin(angle)*dist - 40)+'px');
+    piece.style.setProperty('--rot', (Math.random()*360)+'deg');
+    piece.style.left = originX+'px';
+    piece.style.top = originY+'px';
+    piece.style.background = colors[i % colors.length];
+    document.body.appendChild(piece);
+    setTimeout(()=>piece.remove(), 950);
+  }
+}
+
+function onMarkClick(e){
+  const btn = e.currentTarget;
+  const id = btn.closest('.mark-group').getAttribute('data-id');
+  const clickedStatus = btn.getAttribute('data-status'); // 'done', 'na', or 'x'
   const task = allTasks().find(t=>t.id===id);
   if(!task) return;
 
@@ -136,55 +190,4 @@ function renderEditorPeriod(key, elId, periodsObj){
     wireStepper(row, task, 'pts');
     row.querySelector('[data-field=sub]').addEventListener('input', e=>{ task.sub = e.target.value; });
     row.querySelector('.del').addEventListener('click', ()=>{
-      periodsObj[key].tasks = periodsObj[key].tasks.filter(t=>t!==task);
-      renderEditorPeriod(key, elId, periodsObj);
-    });
-    row.querySelectorAll('.reorder-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const dir = btn.getAttribute('data-dir');
-        const i = list.indexOf(task);
-        const swapWith = dir === 'up' ? i-1 : i+1;
-        if(swapWith < 0 || swapWith >= list.length) return;
-        [list[i], list[swapWith]] = [list[swapWith], list[i]];
-        renderEditorPeriod(key, elId, periodsObj);
-      });
-    });
-    el.appendChild(row);
-  });
-}
-
-function stepperHTML(field, value, allowNegative){
-  return `<span class="stepper">
-    <button type="button" class="step-btn" data-step="-1" title="menos">−</button>
-    <input type="number" ${allowNegative?'':'min="0"'} value="${value}" data-field="${field}">
-    <button type="button" class="step-btn" data-step="1" title="mais">+</button>
-  </span>`;
-}
-function wireStepper(row, obj, field, allowNegative){
-  const input = row.querySelector(`[data-field=${field}]`);
-  input.addEventListener('input', e=>{
-    const v = parseInt(e.target.value)||0;
-    obj[field] = allowNegative ? v : Math.max(0, v);
-  });
-  row.querySelectorAll('.step-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const delta = parseInt(btn.getAttribute('data-step'));
-      const next = (obj[field]||0) + delta;
-      obj[field] = allowNegative ? next : Math.max(0, next);
-      input.value = obj[field];
-    });
-  });
-}
-
-function renderEditorBad(){
-  const el = document.getElementById('editBad');
-  el.innerHTML = '';
-  draft.badHabits.forEach(h=>{
-    const row = document.createElement('div');
-    row.className = 'edit-row';
-    row.innerHTML = `
-      <input type="text" value="${escapeAttr(h.txt)}" data-field="txt" placeholder="hábito (ex: brigou -10, ajudou +5)">
-      ${stepperHTML('pts', h.pts, true)}
-      <button class="del" title="remover">🗑</button>
-    `;
-    row.querySelector('[data-field=txt]').addEven
+      periodsObj[key].tasks = periodsObj[key].tasks.filter(t=>t!==t

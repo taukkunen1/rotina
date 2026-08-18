@@ -1,4 +1,56 @@
-sim não perde o progresso se a página fechar sem clicar em parar
+:true) perdem o valor CHEIO em
+// vez de metade — reforço maior pras tarefas mais chatas/resistidas.
+function taskNotDonePenalty(task){
+  return task.fullPenalty ? task.pts : notDonePenalty(task.pts);
+}
+
+/* ===================== TIMER DE TEMPO DE JOGO (diário) ===================== */
+let gameTimerTickHandle = null;
+
+function gameTimerDailyLimitSeconds(){
+  const base = Math.round((CONFIG.screenDailyLimitHours || 2) * 3600);
+  const bonus = Math.round((state.gameTimer.bonusSeconds || 0));
+  return Math.max(0, base + bonus);
+}
+
+function addGameTimerBonusHours(hours){
+  if(!state.gameTimer.bonusSeconds) state.gameTimer.bonusSeconds = 0;
+  state.gameTimer.bonusSeconds += Math.round(hours * 3600);
+}
+
+function gameTimerSecondsUsedNow(){
+  const gt = state.gameTimer;
+  const running = gt.runningSince ? (Date.now() - gt.runningSince)/1000 : 0;
+  return gt.usedSeconds + running;
+}
+
+function gameTimerIsRunning(){
+  return !!state.gameTimer.runningSince;
+}
+
+function startGameTimer(){
+  if(gameTimerIsRunning()) return;
+  if(!isManhaComplete()) return;
+  state.gameTimer.runningSince = Date.now();
+  addLog('🎮 começou a jogar');
+  saveState(state);
+  renderGameTimer();
+  startGameTimerTicking();
+}
+
+function stopGameTimer(){
+  if(!gameTimerIsRunning()) return;
+  const elapsed = (Date.now() - state.gameTimer.runningSince)/1000;
+  state.gameTimer.usedSeconds += elapsed;
+  state.gameTimer.runningSince = null;
+  addLog('⏸️ parou de jogar');
+  saveState(state);
+  renderGameTimer();
+  stopGameTimerTicking();
+}
+
+// enquanto está rodando, "descarrega" o tempo periodicamente pro estado
+// salvo — assim não perde o progresso se a página fechar sem clicar em parar
 function flushGameTimer(){
   if(!gameTimerIsRunning()) return;
   const elapsed = (Date.now() - state.gameTimer.runningSince)/1000;
@@ -181,46 +233,3 @@ function startCustomTimerTicking(){
         t.remainingSeconds = 0;
         t.runningSince = null;
         t.finished = true;
-        playBeep();
-        needsFullRender = true;
-      }
-    });
-    if(needsFullRender){ saveState(state); renderCustomTimers(); }
-    else updateCustomTimerDisplays();
-    if(!anyCustomTimerRunning()) stopCustomTimerTicking();
-  }, 1000);
-}
-function stopCustomTimerTicking(){
-  if(customTimerTickHandle){ clearInterval(customTimerTickHandle); customTimerTickHandle = null; }
-}
-
-function updateCustomTimerDisplays(){
-  state.customTimers.forEach(t=>{
-    const el = document.getElementById('customTimerDisplay_'+t.id);
-    if(el) el.textContent = formatHMS(customTimerRemainingNow(t));
-  });
-}
-
-function formatHMS(totalSeconds){
-  const s = Math.max(0, Math.round(totalSeconds));
-  const h = Math.floor(s/3600);
-  const m = Math.floor((s%3600)/60);
-  const sec = s%60;
-  if(h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-}
-
-function renderCustomTimers(){
-  const el = document.getElementById('customTimersSection');
-  if(!el) return;
-
-  const cardsHtml = state.customTimers.map(t=>{
-    const running = !!t.runningSince;
-    const remaining = customTimerRemainingNow(t);
-    const totalMin = Math.round(t.totalSeconds/60);
-    return `
-      <div class="custom-timer ${t.finished?'finished':''}">
-        <input type="text" class="custom-timer-label" id="customTimerLabel_${t.id}" value="${escapeAttr(t.label)}" maxlength="20">
-        <div class="custom-timer-display" id="customTimerDisplay_${t.id}">${formatHMS(remaining)}</div>
-        <div class="custom-timer-setrow">
-          <input

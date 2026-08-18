@@ -1,4 +1,55 @@
-tListener('input', e=>{ h.txt = e.target.value; });
+ask);
+      renderEditorPeriod(key, elId, periodsObj);
+    });
+    row.querySelectorAll('.reorder-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const dir = btn.getAttribute('data-dir');
+        const i = list.indexOf(task);
+        const swapWith = dir === 'up' ? i-1 : i+1;
+        if(swapWith < 0 || swapWith >= list.length) return;
+        [list[i], list[swapWith]] = [list[swapWith], list[i]];
+        renderEditorPeriod(key, elId, periodsObj);
+      });
+    });
+    el.appendChild(row);
+  });
+}
+
+function stepperHTML(field, value, allowNegative){
+  return `<span class="stepper">
+    <button type="button" class="step-btn" data-step="-1" title="menos">−</button>
+    <input type="number" ${allowNegative?'':'min="0"'} value="${value}" data-field="${field}">
+    <button type="button" class="step-btn" data-step="1" title="mais">+</button>
+  </span>`;
+}
+function wireStepper(row, obj, field, allowNegative){
+  const input = row.querySelector(`[data-field=${field}]`);
+  input.addEventListener('input', e=>{
+    const v = parseInt(e.target.value)||0;
+    obj[field] = allowNegative ? v : Math.max(0, v);
+  });
+  row.querySelectorAll('.step-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const delta = parseInt(btn.getAttribute('data-step'));
+      const next = (obj[field]||0) + delta;
+      obj[field] = allowNegative ? next : Math.max(0, next);
+      input.value = obj[field];
+    });
+  });
+}
+
+function renderEditorBad(){
+  const el = document.getElementById('editBad');
+  el.innerHTML = '';
+  draft.badHabits.forEach(h=>{
+    const row = document.createElement('div');
+    row.className = 'edit-row';
+    row.innerHTML = `
+      <input type="text" value="${escapeAttr(h.txt)}" data-field="txt" placeholder="hábito (ex: brigou -10, ajudou +5)">
+      ${stepperHTML('pts', h.pts, true)}
+      <button class="del" title="remover">🗑</button>
+    `;
+    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ h.txt = e.target.value; });
     wireStepper(row, h, 'pts', true);
     row.querySelector('.del').addEventListener('click', ()=>{
       draft.badHabits = draft.badHabits.filter(x=>x!==h);
@@ -137,51 +188,4 @@ document.getElementById('adultTestBtn').addEventListener('click', ()=>{
   renderTestPanel();
 });
 document.getElementById('closeBtn').addEventListener('click', closeEditor);
-document.getElementById('cancelBtn').addEventListener('click', closeEditor);
-document.getElementById('overlay').addEventListener('click', e=>{
-  if(e.target.id === 'overlay') closeEditor();
-});
-
-document.getElementById('saveBtn').addEventListener('click', ()=>{
-  // limpa linhas vazias (sem nome) antes de salvar
-  ['manha','tarde','noite'].forEach(k=>{
-    draft.periods[k].tasks = draft.periods[k].tasks.filter(t=>t.txt.trim() !== '');
-  });
-  if(draft.periodsWeekend){
-    ['manha','tarde','noite'].forEach(k=>{
-      draft.periodsWeekend[k].tasks = draft.periodsWeekend[k].tasks.filter(t=>t.txt.trim() !== '');
-    });
-  }
-  draft.badHabits = draft.badHabits.filter(h=>h.txt.trim() !== '');
-  draft.rewards = draft.rewards.filter(r=>r.txt.trim() !== '');
-  draft.schedule = (draft.schedule || []).filter(s=>s.label.trim() !== '' && s.days.length > 0);
-
-  const pinVal = document.getElementById('editorPinInput').value.trim();
-  draft.editorPin = pinVal;
-
-  const gameLimitVal = parseFloat(document.getElementById('gameLimitInput').value);
-  draft.screenDailyLimitHours = isNaN(gameLimitVal) || gameLimitVal < 0 ? 2 : gameLimitVal;
-
-  CONFIG = draft;
-  saveConfig(CONFIG);
-
-  // remove do estado marcado de hoje qualquer tarefa que não existe mais
-  // na rotina ativa de hoje (dia de escola ou fim de semana)
-  const validIds = new Set(allTasks().map(t=>t.id));
-  Object.keys(state.checkedToday).forEach(id=>{
-    if(!validIds.has(id)) delete state.checkedToday[id];
-  });
-  saveState(state);
-
-  closeEditor();
-  render();
-});
-
-/* ===================== EDITOR DE DIA ANTERIOR ===================== */
-let editingDate = null;
-
-function openDayEditor(dateISO){
-  editingDate = dateISO;
-  const entry = state.history[dateISO] || { done:0, total:0, pointsEarnedThatDay:0, perfect:false, screenMinutes:0 };
-  document.getElementById('dayEditorTitle').textContent = 'Editar ' + formatDateBR(dateISO);
-  document.getElementById('dayDone').value = entry
+docum

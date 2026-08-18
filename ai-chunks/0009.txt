@@ -77,6 +77,8 @@ function applyHistoryCorrection_v2(state){
     state.hairByDate[iso] = hairByDay[iso];
 
     if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
+    if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
+    if(!state.petPerfectBonusDays.includes(iso)) state.petPerfectBonusDays.push(iso);
   });
 
   state.petCompletedDays.sort();
@@ -151,6 +153,7 @@ function reconcileState(state){
   if(state.driveLastSyncISO === undefined) state.driveLastSyncISO = null;
   if(state.lastSeenPetStage === undefined) state.lastSeenPetStage = 0;
   if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+  if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
   if(state.petLastCompletionISO === undefined) state.petLastCompletionISO = null;
   if(typeof state.revision !== 'number') state.revision = 0;
   if(typeof state.driveRevision !== 'number') state.driveRevision = 0;
@@ -182,11 +185,4 @@ function reconcileState(state){
   if(!state.waldaBetBonusApplied){
     state.totalPoints = Math.max(0, Math.min(1000, (Number(state.totalPoints)||0) + 5));
     if(!state.log) state.log = [];
-    state.log.unshift('🏆 +5 · acertou a aposta com a Walda (pessoa autêntica)');
-    state.waldaBetBonusApplied = true;
-  }
-  if(!state.celebrationReplayV1Applied){
-    state.lastSeenPetStage = 0;
-    state.celebrationReplayV1Applied = true;
-  }
-  if(!state.gameTimer || typeof state.gameT
+    state.log.unshift('🏆 +5 · acertou a a
