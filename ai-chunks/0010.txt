@@ -1,4 +1,24 @@
-r === undefined) state.backupReminderDismissedFor = null;
+te.totalPoints = Math.max(0, (Number(state.totalPoints)||0) + totalDelta);
+  state.historyCorrectionV3Applied = true;
+}
+
+function seedKnownPerfectDays(state){
+  applyHistoryCorrection_v2(state);
+  applyHistoryCorrection_v3(state);
+}
+
+function reconcileState(state){
+  if(state.driveFileId === undefined) state.driveFileId = null;
+  if(state.driveLastSyncISO === undefined) state.driveLastSyncISO = null;
+  if(state.lastSeenPetStage === undefined) state.lastSeenPetStage = 0;
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+  if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
+  if(state.petLastCompletionISO === undefined) state.petLastCompletionISO = null;
+  if(typeof state.revision !== 'number') state.revision = 0;
+  if(typeof state.driveRevision !== 'number') state.driveRevision = 0;
+  if(typeof state.driveConflictCount !== 'number') state.driveConflictCount = 0;
+  if(state.lastBackupISO === undefined) state.lastBackupISO = null;
+  if(state.backupReminderDismissedFor === undefined) state.backupReminderDismissedFor = null;
   if(!state.checkedToday) state.checkedToday = {};
   if(!state.log) state.log = [];
   if(!state.history) state.history = {};
@@ -156,28 +176,4 @@ function hasDayProgress(dateISO){
 
 function syncPetCompletionFromDay(dateISO){
   let grew = false;
-  if(hasDayProgress(dateISO)) grew = registerPetDayCompletion(dateISO) || grew;
-  if(isDayPerfect(dateISO)) grew = registerPetPerfectBonus(dateISO) || grew;
-  return grew;
-}
-
-function closeOutDay(state, dateISO){
-  if(!dateISO) return;
-  const tasks = allTasks(dateISO);
-  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  const total = applicable.length;
-  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-  const pointsEarnedThatDay = tasks
-    .filter(t=>state.checkedToday[t.id] === 'done')
-    .reduce((s,t)=>s+t.pts, 0);
-  const perfect = total > 0 && done === total;
-  if(done > 0) registerPetDayCompletion(dateISO);
-  if(perfect) registerPetPerfectBonus(dateISO);
-  const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
-  const periodsCompleted = periodsCompletedFrom(state.checkedToday, dateISO);
-  state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
-}
-
-function saveState(state, options={}){
-  if(!options.remote){
-    s
+  if(hasDayProgress(dateISO)) grew = registerPetDayCompletion(dateISO) |

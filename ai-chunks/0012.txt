@@ -1,4 +1,31 @@
-alPoints;
+        state = reconcileState(backup.state);
+            state.driveRevision = remoteRevision;
+            state.driveLastSyncISO = todayISO();
+            try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(CONFIG)); }catch(e){}
+            try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+            render();
+          }else{
+            // Nunca substituir uma rotina válida por um backup remoto vazio/incompleto.
+            // O app continua com a configuração local que já funcionava.
+            render();
+          }
+        }
+      }
+    }
+  }catch(err){
+    renderDriveSync();
+  }
+  suppressAutoPush = false;
+}
+
+function addLog(text, isParentAction){
+  const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  state.log.unshift({ text: time+" — "+text, parent: !!isParentAction });
+  state.log = state.log.slice(0, 30);
+}
+function bumpTotal(delta, anchorEl){
+  const el = document.getElementById('totalPoints');
+  el.textContent = state.totalPoints;
   el.classList.remove('bump');
   void el.offsetWidth;
   el.classList.add('bump');
@@ -187,40 +214,4 @@ function renderGameTimer(){
 /* ===================== TIMERS AVULSOS (tempo livre pra qualquer coisa) ===================== */
 let customTimerTickHandle = null;
 
-function findCustomTimer(id){
-  return state.customTimers.find(t=>t.id===id);
-}
-
-function customTimerRemainingNow(t){
-  if(!t.runningSince) return t.remainingSeconds;
-  const elapsed = (Date.now() - t.runningSince)/1000;
-  return Math.max(0, t.remainingSeconds - elapsed);
-}
-
-function setCustomTimerMinutes(id, minutes){
-  const t = findCustomTimer(id);
-  if(!t || t.runningSince) return; // não dá pra mudar enquanto está rodando
-  const secs = Math.max(0, Math.round(minutes*60));
-  t.totalSeconds = secs;
-  t.remainingSeconds = secs;
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function startCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t || t.runningSince || t.remainingSeconds <= 0) return;
-  t.runningSince = Date.now();
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-  startCustomTimerTicking();
-}
-
-function pauseCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t || !t.runningSince) return;
-  t.remainingSeconds = customTimerRemainingNow(t);
-  t.runningSince = null;
-  saveState(
+function findCustomTi

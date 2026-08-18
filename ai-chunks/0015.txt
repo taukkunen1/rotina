@@ -1,4 +1,34 @@
-imento dele.
+ndISO)
+    .sort();
+  const milestones = [
+    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
+  ];
+  return milestones.map(([day,label])=>{
+    if(day === 0) return { label, day, date: cycle.startISO, reached: true };
+    const reached = sorted.length >= day;
+    return { label, day, date: reached ? sorted[day-1] : null, reached };
+  });
+}
+
+function renderAchievementMural(){
+  const el = document.getElementById('achievementMuralSection');
+  if(!el) return;
+  const milestones = getMilestoneDates();
+  const cardsHtml = milestones.map(m=>`
+    <div class="mural-card ${m.reached?'reached':''}">
+      <div class="mural-stage">${m.label}</div>
+      <div class="mural-date">${m.reached ? formatDateBR(m.date) : '—'}</div>
+    </div>
+  `).join('');
+  el.innerHTML = `
+    <div class="achievement-mural">
+      <div class="mural-grid">${cardsHtml}</div>
+    </div>
+  `;
+}
+
+// Toque no Pacus: gira em 3D e mostra uma reaçãozinha fofa — pura
+// diversão, não mexe em pontos nem no formato/crescimento dele.
 const PACUS_REACTIONS = ['💕','😊','🥰','✨','👋','🫧','😄','💗'];
 function wirePacusInteraction(){
   const wrap = document.getElementById('pacusInteractive');
@@ -18,6 +48,41 @@ function wirePacusInteraction(){
     }
     if(Math.random() < 0.25) fireConfetti(wrap, 10);
   });
+}
+
+// Fala do Pacus, toda noite — um lembrete fofo, aparece sozinho quando
+// a Noite começa (com base no horário real do dispositivo) e pode ser
+// dispensado só por hoje (volta amanhã à noite de novo, sozinho).
+const PACUS_NIGHT_MESSAGE = "Não esqueça de desenhar na lousa hoje! 🎨";
+let pacusDialogueTickHandle = null;
+function isEveningNow(){
+  const start = periodStartTime(CONFIG.periods.noite.time);
+  if(!start) return false;
+  const now = new Date();
+  const startToday = new Date(now);
+  startToday.setHours(start.hour, start.minute, 0, 0);
+  return now >= startToday;
+}
+function renderPacusDialogue(){
+  const el = document.getElementById('pacusDialogue');
+  if(!el) return;
+  const dismissedToday = state.pacusDialogueDismissedDate === todayISO();
+  if(!isEveningNow() || dismissedToday){ el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="pacus-dialogue">
+      <span class="pacus-dialogue-text">💬 ${PACUS_NIGHT_MESSAGE}</span>
+      <button class="pacus-dialogue-close" id="pacusDialogueCloseBtn" title="Ok, entendi!">✕</button>
+    </div>
+  `;
+  document.getElementById('pacusDialogueCloseBtn').addEventListener('click', ()=>{
+    state.pacusDialogueDismissedDate = todayISO();
+    saveState(state);
+    renderPacusDialogue();
+  });
+}
+function startPacusDialogueTicking(){
+  if(pacusDialogueTickHandle) return;
+  pacusDialogueTickHandle = setInterval(renderPacusDialogue, 30000);
 }
 
 function renderPet(){
@@ -67,6 +132,7 @@ function renderPet(){
       <span class="pet-accessory">🌿</span>
       <span class="pet-reaction-bubble" id="petReactionBubble"></span>
     </div>
+    <div id="pacusDialogue"></div>
     <div class="pet-name">${CONFIG.pet.name}</div>
     <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
     <div class="pet-day-progress">
@@ -80,6 +146,8 @@ function renderPet(){
   `;
 
   wirePacusInteraction();
+  renderPacusDialogue();
+  startPacusDialogueTicking();
 
   if(grewNow){
     const mascotEl = el.querySelector('.pet-mascot');
@@ -128,67 +196,4 @@ function buildStreakStrip(){
   for(let i=6; i>=0; i--){
     const d = new Date();
     d.setDate(d.getDate()-i);
-    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-    days.push(iso);
-  }
-  const weekdayLetters = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  const cells = days.map(iso=>{
-    const isToday = iso === todayISO();
-    const d = new Date(iso+"T00:00:00");
-    const letter = weekdayLetters[d.getDay()];
-    let entry = isToday ? liveTodayEntry() : state.history[iso];
-    let cls = 'streak-cell empty';
-    if(entry && entry.total > 0){
-      if(entry.perfect) cls = 'streak-cell perfect';
-      else if(entry.done === entry.total - 1) cls = 'streak-cell almost';
-      else if(entry.done > 0) cls = 'streak-cell partial';
-      else cls = 'streak-cell none';
-    }
-    if(isToday) cls += ' today';
-    return `<span class="${cls}" title="${formatDateBR(iso)}"><span class="streak-letter">${letter}</span></span>`;
-  }).join('');
-  return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${cells}</div>`;
-}
-
-function liveTodayEntry(){
-  const tasks = allTasks();
-  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  const total = applicable.length;
-  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-  const perfect = total>0 && done===total;
-  return { total, done, perfect };
-}
-
-function getHairStatus(dateISO){
-  return state.hairByDate && state.hairByDate[dateISO] ? state.hairByDate[dateISO] : null;
-}
-
-function setHairStatus(status){
-  const iso = todayISO();
-  if(!state.hairByDate) state.hairByDate = {};
-  state.hairByDate[iso] = status;
-  if(!state.history) state.history = {};
-  if(state.history[iso]) state.history[iso].hair = status;
-  saveState(state);
-  renderHair();
-  renderHistory();
-}
-
-function renderHair(){
-  const section = document.getElementById('hairSection');
-  if(!section) return;
-  const status = getHairStatus(todayISO());
-  const washedBtn = document.getElementById('hairWashedBtn');
-  const notWashedBtn = document.getElementById('hairNotWashedBtn');
-  const statusEl = document.getElementById('hairStatus');
-  washedBtn.classList.toggle('active-washed', status === 'washed');
-  notWashedBtn.classList.toggle('active-notwashed', status === 'not-washed');
-  statusEl.innerHTML = status === 'washed'
-    ? 'Hoje: <b class="hair-history-washed">💧 cabelo lavado</b>'
-    : status === 'not-washed'
-      ? 'Hoje: <b class="hair-history-notwashed">○ não lavou</b>'
-      : 'Hoje: ainda não registrado';
-}
-
-function render(){
-  document.getElementById('totalPoints').textConten
+    const iso = d

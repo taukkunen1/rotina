@@ -1,4 +1,61 @@
-(iso)}${isToday?' (hoje)':''}</td>
+    </div>
+  `;
+}
+
+function hairLabel(status){
+  if(status === 'washed') return '<span class="hair-history-washed">💧 Lavou</span>';
+  if(status === 'not-washed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
+  return '<span class="hair-history-unknown">— Não registrado</span>';
+}
+
+let historyShowAll = false;
+
+function renderHistory(){
+  const body = document.getElementById('historyBody');
+  const start = CONFIG.historyStartDate || todayISO();
+  const startDate = new Date(start+"T00:00:00");
+  const today = new Date(todayISO()+"T00:00:00");
+
+  const rows = [];
+  for(let d = new Date(startDate); d <= today; d.setDate(d.getDate()+1)){
+    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+    rows.push(iso);
+  }
+
+  const HISTORY_VISIBLE_DAYS = 30;
+  const hiddenCount = Math.max(0, rows.length - HISTORY_VISIBLE_DAYS);
+  const visibleRows = historyShowAll ? rows : rows.slice(-HISTORY_VISIBLE_DAYS);
+
+  body.innerHTML = visibleRows.map(iso=>{
+    const isToday = iso === todayISO();
+    let entry;
+    if(isToday){
+      const tasks = allTasks();
+      const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+      const total = applicable.length;
+      const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+      const pointsEarnedThatDay = tasks.filter(t=>state.checkedToday[t.id]==='done').reduce((s,t)=>s+t.pts,0);
+      const perfect = total>0 && done===total;
+      entry = { done, total, pointsEarnedThatDay, perfect, hair:getHairStatus(iso) };
+    } else {
+      entry = state.history[iso];
+    }
+    const hair = getHairStatus(iso) || (entry && entry.hair) || null;
+    if(!entry){
+      return `<tr${isToday?' class="today-row"':''}>
+        <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
+        <td>—</td>
+        <td class="pts-cell">—</td>
+        <td>${hairLabel(hair)}</td>
+        <td>${(isToday||!adultUnlocked)?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
+      </tr>`;
+    }
+    const perfectBadge = entry.perfect
+      ? '<span class="badge-perfect">dia perfeito</span>'
+      : (entry.total > 0 && entry.done === entry.total - 1 ? '<span class="badge-almost">quase lá! 🌟</span>' : '');
+    const editCell = (isToday||!adultUnlocked) ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
+    return `<tr${isToday?' class="today-row"':''}>
+      <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
       <td>${entry.done}/${entry.total}${perfectBadge}</td>
       <td class="pts-cell">${entry.pointsEarnedThatDay}</td>
       <td>${hairLabel(hair)}</td>
@@ -134,66 +191,4 @@ function onMarkClick(e){
     state.checkedToday[id] = clickedStatus;
     if(clickedStatus === 'done'){
       totalDelta += addPoints(task.pts);
-      state.taskDoneAt[id] = new Date().toISOString();
-      addLog(`+${task.pts} · ${task.txt}`);
-      fireConfetti(btn);
-    } else if(clickedStatus === 'na'){
-      delete state.taskDoneAt[id];
-      addLog(`n/a · ${task.txt}`);
-    } else {
-      delete state.taskDoneAt[id];
-      const penalty = taskNotDonePenalty(task);
-      totalDelta += addPoints(-penalty);
-      addLog(`✕ não realizado · ${task.txt} (−${penalty})`);
-    }
-  }
-
-  const completedNow = syncPetCompletionFromDay(todayISO());
-  if(completedNow){
-    addLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
-  }
-  saveState(state);
-  bumpTotal(totalDelta, btn);
-  render();
-}
-
-document.getElementById('hairWashedBtn').addEventListener('click', ()=> setHairStatus('washed'));
-document.getElementById('hairNotWashedBtn').addEventListener('click', ()=> setHairStatus('not-washed'));
-
-document.getElementById('addPointsBtn').addEventListener('click', ()=>{
-  const raw = prompt('Quantos Pacus Points adicionar?', '5');
-  if(raw === null) return;
-  const amount = parseInt(raw, 10);
-  if(!amount || amount === 0) return;
-  const delta = addPoints(amount);
-  addLog(`${amount>0?'+':''}${amount} · ajuste manual`, true);
-  saveState(state);
-  bumpTotal(delta);
-  render();
-});
-
-document.getElementById('resetBtn').addEventListener('click', ()=>{
-  if(!confirm('Isso apaga os Pacus Points, o histórico de hoje e o histórico de dias. Tem certeza?')) return;
-  state = { totalPoints:0, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, driveLastSyncISO:null, hairByDate:{} };
-  saveState(state);
-  render();
-});
-
-/* ===================== EDITOR ===================== */
-let draft = null; // cópia de trabalho do CONFIG enquanto o modal está aberto
-
-function openEditor(){
-  draft = JSON.parse(JSON.stringify(CONFIG));
-  renderEditorPeriod('manha', 'editManha');
-  renderEditorPeriod('tarde', 'editTarde');
-  renderEditorPeriod('noite', 'editNoite');
-  renderEditorBad();
-  renderEditorRewards();
-
-  const weekendToggle = document.getElementById('weekendToggle');
-  const weekendBody = document.getElementById('weekendEditorBody');
-  weekendToggle.checked = !!draft.periodsWeekend;
-  weekendBody.style.display = draft.periodsWeekend ? 'block' : 'none';
-  if(draft.periodsWeekend){
-    renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
-    renderEditorPeriod('tarde', 'editTa
+      state.taskDoneAt[id] = 

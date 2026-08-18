@@ -1,4 +1,33 @@
- = periodTimeStr.split(/[–-]/).map(s=>s.trim());
+ real do sistema.
+try{ localStorage.removeItem('hector_rotina_testdate_v1'); }catch(e){}
+
+function todayISO(){
+  if(TEST_DATE_OVERRIDE) return TEST_DATE_OVERRIDE;
+  const d = new Date();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return d.getFullYear()+"-"+m+"-"+day;
+}
+function setTestDate(iso){
+  TEST_DATE_OVERRIDE = iso; // só em memória — some sozinho ao recarregar a página
+}
+function formatDateBR(iso){
+  const [,m,d] = iso.split("-");
+  return d+"/"+m;
+}
+
+// Extrai a hora/minuto do horário final do período a partir do texto
+// "8:20 – 12:00" (ou similar) — usado tanto pro aviso de tempo restante
+// quanto pra detectar tarefa concluída atrasada.
+function periodEndTime(periodTimeStr){
+  const parts = periodTimeStr.split(/[–-]/).map(s=>s.trim());
+  const endStr = parts[parts.length-1];
+  const [h, m] = endStr.split(':').map(Number);
+  if(isNaN(h)) return null;
+  return { hour: h, minute: m||0 };
+}
+function periodStartTime(periodTimeStr){
+  const parts = periodTimeStr.split(/[–-]/).map(s=>s.trim());
   const [h, m] = parts[0].split(':').map(Number);
   if(isNaN(h)) return null;
   return { hour: h, minute: m||0 };
@@ -168,24 +197,4 @@ function applyHistoryCorrection_v3(state){
     ? state.petCompletedDays[state.petCompletedDays.length - 1]
     : null;
 
-  state.totalPoints = Math.max(0, (Number(state.totalPoints)||0) + totalDelta);
-  state.historyCorrectionV3Applied = true;
-}
-
-function seedKnownPerfectDays(state){
-  applyHistoryCorrection_v2(state);
-  applyHistoryCorrection_v3(state);
-}
-
-function reconcileState(state){
-  if(state.driveFileId === undefined) state.driveFileId = null;
-  if(state.driveLastSyncISO === undefined) state.driveLastSyncISO = null;
-  if(state.lastSeenPetStage === undefined) state.lastSeenPetStage = 0;
-  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
-  if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
-  if(state.petLastCompletionISO === undefined) state.petLastCompletionISO = null;
-  if(typeof state.revision !== 'number') state.revision = 0;
-  if(typeof state.driveRevision !== 'number') state.driveRevision = 0;
-  if(typeof state.driveConflictCount !== 'number') state.driveConflictCount = 0;
-  if(state.lastBackupISO === undefined) state.lastBackupISO = null;
-  if(state.backupReminderDismissedFo
+  sta

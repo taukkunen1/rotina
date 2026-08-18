@@ -1,4 +1,52 @@
-bar{ flex-wrap:wrap; }
+px 6px;
+    line-height:1;
+  }
+  .edit-row .del:hover{ opacity:.7; }
+
+  .add-row-btn{
+    background:none;
+    border:1px dashed var(--line);
+    color:var(--chalk-dim);
+    font-size:.78rem;
+    padding:7px 12px;
+    border-radius:6px;
+    cursor:pointer;
+    font-family:inherit;
+    width:100%;
+    margin-top:2px;
+  }
+  .add-row-btn:hover{ color:var(--green); border-color:var(--green); }
+
+  .editor-footer{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    border-top:2px dashed var(--line);
+    padding-top:16px;
+    margin-top:6px;
+  }
+
+  .btn{
+    font-family:inherit;
+    font-size:.85rem;
+    padding:9px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    border:1px solid var(--line);
+    background:none;
+    color:var(--chalk-dim);
+  }
+  .btn:hover{ color:var(--chalk); border-color:rgba(242,237,225,.4); }
+  .btn.save{
+    background:var(--yellow);
+    color:#2a2410;
+    border-color:var(--yellow);
+    font-weight:bold;
+  }
+  .btn.save:hover{ opacity:.9; }
+
+  @media (max-width:500px){
+    .topbar{ flex-wrap:wrap; }
     .topbar h1{ font-size:1.25rem; }
   }
 </style>
@@ -188,26 +236,4 @@ bar{ flex-wrap:wrap; }
     <div class="editor-section">
       <h3>☀️ Tarde</h3>
       <div id="editTarde"></div>
-      <button class="add-row-btn" data-add="tarde">+ adicionar tarefa</button>
-    </div>
-
-    <div class="editor-section">
-      <h3>🌙 Noite</h3>
-      <div id="editNoite"></div>
-      <button class="add-row-btn" data-add="noite">+ adicionar tarefa</button>
-    </div>
-
-    <div class="editor-section">
-      <h3>🏖️ Rotina de fim de semana</h3>
-      <div class="hint">Se ativado, sábado e domingo usam essa lista em vez da rotina de dia de escola.</div>
-      <label style="display:flex; align-items:center; gap:8px; font-size:.85rem; margin-bottom:12px;">
-        <input type="checkbox" id="weekendToggle" style="width:16px; height:16px;">
-        Usar rotina diferente no fim de semana
-      </label>
-      <div id="weekendEditorBody" style="display:none;">
-        <h3 style="font-size:.95rem; margin-top:14px;">🌅 Manhã (fim de semana)</h3>
-        <div id="editManhaWeekend"></div>
-        <button class="add-row-btn" data-add="manhaWeekend">+ adicionar tarefa</button>
-
-        <h3 style="font-size:.95rem; margin-top:14px;">☀️ Tarde (fim de semana)</h3>
-        <div id="edi
+      <button class="add-row-btn" data-add="tarde">+ a

@@ -1,4 +1,40 @@
-es pacusBubbleRise{
+ 50%{ transform:scale(.96) rotate(3deg); }
+    75%{ transform:scale(1.035) rotate(-1deg); }
+    100%{ transform:scale(1) rotate(0deg); }
+  }
+  .pet-hatch-crack{ animation:crackFlash .55s ease-out; }
+  @keyframes crackFlash{
+    0%{ filter:brightness(1); }
+    35%{ filter:brightness(1.28); }
+    100%{ filter:brightness(1); }
+  }
+
+  /* ---------- animações contínuas do Pacus (todo dia, o tempo todo) ---------- */
+  .pacus-idle{
+    animation:pacusBob 3.4s ease-in-out infinite;
+  }
+  @keyframes pacusBob{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-3px); }
+  }
+  .pacus-eye{
+    animation:pacusBlink 5.2s ease-in-out infinite;
+  }
+  @keyframes pacusBlink{
+    0%,90%,100%{ transform:scaleY(1); }
+    94%{ transform:scaleY(.12); }
+  }
+  .pacus-gill{
+    animation:pacusGillSway 2.4s ease-in-out infinite;
+  }
+  @keyframes pacusGillSway{
+    0%,100%{ transform:rotate(-5deg); }
+    50%{ transform:rotate(5deg); }
+  }
+  .pacus-bubble{
+    animation:pacusBubbleRise 3.2s ease-in infinite;
+  }
+  @keyframes pacusBubbleRise{
     0%{ transform:translateY(0); opacity:.55; }
     85%{ opacity:.25; }
     100%{ transform:translateY(-42px); opacity:0; }
@@ -237,40 +273,4 @@ es pacusBubbleRise{
     border-top:2px dashed var(--line);
   }
   .block-collapsible summary{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-weight:normal;
-    font-size:1.2rem;
-    text-align:center;
-    cursor:pointer;
-    list-style:none;
-    color:var(--chalk);
-    padding:4px 0;
-    position:relative;
-  }
-  .block-collapsible summary::-webkit-details-marker{ display:none; }
-  .block-collapsible summary::after{
-    content:"▾";
-    display:inline-block;
-    margin-left:8px;
-    font-size:.85rem;
-    color:var(--chalk-dim);
-    transition:transform .2s ease;
-  }
-  .block-collapsible[open] summary::after{ transform:rotate(180deg); }
-  .block-collapsible summary:hover{ color:var(--yellow); }
-  .block-collapsible-body{
-    margin-top:14px;
-    animation:detailsFadeIn .25s ease;
-  }
-  @keyframes detailsFadeIn{
-    0%{ opacity:0; transform:translateY(-4px); }
-    100%{ opacity:1; transform:translateY(0); }
-  }
-
-  .bad-habits{ display:flex; flex-wrap:wrap; gap:9px; justify-content:center; }
-
-  .bad-btn{
-    background:rgba(255,107,107,.08);
-    border:1px solid rgba(255,107,107,.4);
-    color:var(--chalk);
-    padding:7px 1
+    font-family:"Segoe Print","B

@@ -1,4 +1,40 @@
-3px;
+radley Hand",cursive;
+    font-weight:normal;
+    font-size:1.2rem;
+    text-align:center;
+    cursor:pointer;
+    list-style:none;
+    color:var(--chalk);
+    padding:4px 0;
+    position:relative;
+  }
+  .block-collapsible summary::-webkit-details-marker{ display:none; }
+  .block-collapsible summary::after{
+    content:"▾";
+    display:inline-block;
+    margin-left:8px;
+    font-size:.85rem;
+    color:var(--chalk-dim);
+    transition:transform .2s ease;
+  }
+  .block-collapsible[open] summary::after{ transform:rotate(180deg); }
+  .block-collapsible summary:hover{ color:var(--yellow); }
+  .block-collapsible-body{
+    margin-top:14px;
+    animation:detailsFadeIn .25s ease;
+  }
+  @keyframes detailsFadeIn{
+    0%{ opacity:0; transform:translateY(-4px); }
+    100%{ opacity:1; transform:translateY(0); }
+  }
+
+  .bad-habits{ display:flex; flex-wrap:wrap; gap:9px; justify-content:center; }
+
+  .bad-btn{
+    background:rgba(255,107,107,.08);
+    border:1px solid rgba(255,107,107,.4);
+    color:var(--chalk);
+    padding:7px 13px;
     border-radius:8px;
     font-size:.82rem;
     cursor:pointer;
@@ -245,47 +281,4 @@
   }
   .backup-reminder .dismiss{
     background:none;
-    color:var(--chalk-dim);
-    padding:4px 6px;
-    font-weight:normal;
-  }
-
-  .family-announcement{
-    background:linear-gradient(135deg, rgba(255,126,185,.15), rgba(79,195,247,.12));
-    border:2px dashed var(--pink);
-    border-radius:14px;
-    padding:16px 18px;
-    margin-bottom:18px;
-    text-align:center;
-    position:relative;
-    animation:announcePop .4s cubic-bezier(.2,1.4,.4,1);
-  }
-  @keyframes announcePop{
-    0%{ transform:scale(.9); opacity:0; }
-    100%{ transform:scale(1); opacity:1; }
-  }
-  .family-announcement .title{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-size:1.15rem;
-    color:var(--pink);
-    margin-bottom:6px;
-  }
-  .family-announcement .msg{
-    font-size:.88rem;
-    color:var(--chalk);
-    line-height:1.5;
-  }
-  .family-announcement .dismiss-btn{
-    margin-top:12px;
-    background:var(--pink);
-    color:#2a1420;
-    border:none;
-    padding:7px 18px;
-    border-radius:8px;
-    font-size:.78rem;
-    font-weight:bold;
-    cursor:pointer;
-    font-family:inherit;
-  }
-
-  .test-mode-b
+    color:var(--chal

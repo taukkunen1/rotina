@@ -1,4 +1,47 @@
-anner{
+k-dim);
+    padding:4px 6px;
+    font-weight:normal;
+  }
+
+  .family-announcement{
+    background:linear-gradient(135deg, rgba(255,126,185,.15), rgba(79,195,247,.12));
+    border:2px dashed var(--pink);
+    border-radius:14px;
+    padding:16px 18px;
+    margin-bottom:18px;
+    text-align:center;
+    position:relative;
+    animation:announcePop .4s cubic-bezier(.2,1.4,.4,1);
+  }
+  @keyframes announcePop{
+    0%{ transform:scale(.9); opacity:0; }
+    100%{ transform:scale(1); opacity:1; }
+  }
+  .family-announcement .title{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:1.15rem;
+    color:var(--pink);
+    margin-bottom:6px;
+  }
+  .family-announcement .msg{
+    font-size:.88rem;
+    color:var(--chalk);
+    line-height:1.5;
+  }
+  .family-announcement .dismiss-btn{
+    margin-top:12px;
+    background:var(--pink);
+    color:#2a1420;
+    border:none;
+    padding:7px 18px;
+    border-radius:8px;
+    font-size:.78rem;
+    font-weight:bold;
+    cursor:pointer;
+    font-family:inherit;
+  }
+
+  .test-mode-banner{
     background:var(--red);
     color:#2a1414;
     font-weight:bold;
@@ -290,52 +333,4 @@ anner{
     color:var(--red);
     font-size:1rem;
     cursor:pointer;
-    padding:2px 6px;
-    line-height:1;
-  }
-  .edit-row .del:hover{ opacity:.7; }
-
-  .add-row-btn{
-    background:none;
-    border:1px dashed var(--line);
-    color:var(--chalk-dim);
-    font-size:.78rem;
-    padding:7px 12px;
-    border-radius:6px;
-    cursor:pointer;
-    font-family:inherit;
-    width:100%;
-    margin-top:2px;
-  }
-  .add-row-btn:hover{ color:var(--green); border-color:var(--green); }
-
-  .editor-footer{
-    display:flex;
-    justify-content:flex-end;
-    gap:10px;
-    border-top:2px dashed var(--line);
-    padding-top:16px;
-    margin-top:6px;
-  }
-
-  .btn{
-    font-family:inherit;
-    font-size:.85rem;
-    padding:9px 18px;
-    border-radius:8px;
-    cursor:pointer;
-    border:1px solid var(--line);
-    background:none;
-    color:var(--chalk-dim);
-  }
-  .btn:hover{ color:var(--chalk); border-color:rgba(242,237,225,.4); }
-  .btn.save{
-    background:var(--yellow);
-    color:#2a2410;
-    border-color:var(--yellow);
-    font-weight:bold;
-  }
-  .btn.save:hover{ opacity:.9; }
-
-  @media (max-width:500px){
-    .top
+    padding:2

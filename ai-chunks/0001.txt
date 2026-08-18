@@ -166,6 +166,47 @@
     100%{ opacity:0; transform:translate(-50%,-34px) scale(1); }
   }
 
+  .pacus-dialogue{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:var(--board);
+    border:2px solid var(--blue);
+    border-radius:14px;
+    padding:8px 10px 8px 14px;
+    margin-top:8px;
+    max-width:300px;
+    font-size:.8rem;
+    color:var(--chalk);
+    position:relative;
+    animation:dialoguePop .35s cubic-bezier(.2,1.4,.4,1);
+  }
+  .pacus-dialogue::before{
+    content:"";
+    position:absolute;
+    top:-9px;
+    left:50%;
+    transform:translateX(-50%);
+    border-left:8px solid transparent;
+    border-right:8px solid transparent;
+    border-bottom:9px solid var(--blue);
+  }
+  @keyframes dialoguePop{
+    0%{ transform:scale(.85); opacity:0; }
+    100%{ transform:scale(1); opacity:1; }
+  }
+  .pacus-dialogue-text{ text-align:left; line-height:1.35; }
+  .pacus-dialogue-close{
+    background:none;
+    border:none;
+    color:var(--chalk-dim);
+    font-size:.85rem;
+    cursor:pointer;
+    flex-shrink:0;
+    padding:2px 4px;
+  }
+  .pacus-dialogue-close:hover{ color:var(--chalk); }
+
   .pet-name{
     font-family:"Segoe Print","Bradley Hand",cursive;
     font-size:1.35rem;
@@ -285,40 +326,4 @@
   @keyframes petGrowthBurst{
     0%{ transform:scale(1) rotate(0deg); }
     25%{ transform:scale(1.08) rotate(-3deg); }
-    50%{ transform:scale(.96) rotate(3deg); }
-    75%{ transform:scale(1.035) rotate(-1deg); }
-    100%{ transform:scale(1) rotate(0deg); }
-  }
-  .pet-hatch-crack{ animation:crackFlash .55s ease-out; }
-  @keyframes crackFlash{
-    0%{ filter:brightness(1); }
-    35%{ filter:brightness(1.28); }
-    100%{ filter:brightness(1); }
-  }
-
-  /* ---------- animações contínuas do Pacus (todo dia, o tempo todo) ---------- */
-  .pacus-idle{
-    animation:pacusBob 3.4s ease-in-out infinite;
-  }
-  @keyframes pacusBob{
-    0%,100%{ transform:translateY(0); }
-    50%{ transform:translateY(-3px); }
-  }
-  .pacus-eye{
-    animation:pacusBlink 5.2s ease-in-out infinite;
-  }
-  @keyframes pacusBlink{
-    0%,90%,100%{ transform:scaleY(1); }
-    94%{ transform:scaleY(.12); }
-  }
-  .pacus-gill{
-    animation:pacusGillSway 2.4s ease-in-out infinite;
-  }
-  @keyframes pacusGillSway{
-    0%,100%{ transform:rotate(-5deg); }
-    50%{ transform:rotate(5deg); }
-  }
-  .pacus-bubble{
-    animation:pacusBubbleRise 3.2s ease-in infinite;
-  }
-  @keyfram
+   
