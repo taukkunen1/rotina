@@ -1,4 +1,33 @@
-our).padStart(2,'0')}:${String(start.minute).padStart(2,'0')}`, urgency: 'none' };
+ = periodTimeStr.split(/[–-]/).map(s=>s.trim());
+  const [h, m] = parts[0].split(':').map(Number);
+  if(isNaN(h)) return null;
+  return { hour: h, minute: m||0 };
+}
+
+// Verifica se uma tarefa marcada "feita" hoje foi concluída depois do
+// horário limite do período (comparando timestamps reais, não só a data).
+function isTaskLate(task, periodTimeStr){
+  const doneAtIso = state.taskDoneAt && state.taskDoneAt[task.id];
+  if(!doneAtIso) return false;
+  const end = periodEndTime(periodTimeStr);
+  if(!end) return false;
+  const doneAt = new Date(doneAtIso);
+  const deadline = new Date(doneAt);
+  deadline.setHours(end.hour, end.minute, 0, 0);
+  return doneAt.getTime() > deadline.getTime();
+}
+
+// Calcula quanto tempo falta pra acabar o período (com base no horário
+// real do dispositivo) — usado no aviso visual ao lado de cada bloco.
+function formatTimeRemaining(periodTimeStr){
+  const start = periodStartTime(periodTimeStr);
+  const end = periodEndTime(periodTimeStr);
+  if(!start || !end) return null;
+  const now = new Date();
+  const startDate = new Date(now); startDate.setHours(start.hour, start.minute, 0, 0);
+  const endDate = new Date(now); endDate.setHours(end.hour, end.minute, 0, 0);
+  if(now < startDate){
+    return { text: `começa às ${String(start.hour).padStart(2,'0')}:${String(start.minute).padStart(2,'0')}`, urgency: 'none' };
   }
   if(now > endDate){
     return { text: `período encerrado`, urgency: 'over' };
@@ -159,30 +188,4 @@ function reconcileState(state){
   if(typeof state.driveRevision !== 'number') state.driveRevision = 0;
   if(typeof state.driveConflictCount !== 'number') state.driveConflictCount = 0;
   if(state.lastBackupISO === undefined) state.lastBackupISO = null;
-  if(state.backupReminderDismissedFor === undefined) state.backupReminderDismissedFor = null;
-  if(!state.checkedToday) state.checkedToday = {};
-  if(!state.log) state.log = [];
-  if(!state.history) state.history = {};
-  if(!state.hairByDate || typeof state.hairByDate !== "object") state.hairByDate = {};
-  if(!state.taskDoneAt || typeof state.taskDoneAt !== "object") state.taskDoneAt = {};
-  if(!state.customTaskOrder || typeof state.customTaskOrder !== "object") state.customTaskOrder = {};
-  if(!state.familyAnnouncementResetV1Applied){
-    state.familyGameNightAnnouncementSeen = false;
-    state.familyAnnouncementResetV1Applied = true;
-  }
-  if(!state.familyAnnouncementResetV2Applied){
-    state.familyGameNightAnnouncementSeen = false;
-    state.familyAnnouncementResetV2Applied = true;
-  }
-  if(!state.familyAnnouncementResetV3Applied){
-    state.familyGameNightAnnouncementSeen = false;
-    state.familyAnnouncementResetV3Applied = true;
-  }
-  if(!state.familyAnnouncementResetV4Applied){
-    state.familyGameNightAnnouncementSeen = false;
-    state.familyAnnouncementResetV4Applied = true;
-  }
-  if(!state.waldaBetBonusApplied){
-    state.totalPoints = Math.max(0, Math.min(1000, (Number(state.totalPoints)||0) + 5));
-    if(!state.log) state.log = [];
-    state.log.unshift('🏆 +5 · acertou a a
+  if(state.backupReminderDismissedFo

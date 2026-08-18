@@ -1,4 +1,60 @@
-dding:6px 8px;
+anner{
+    background:var(--red);
+    color:#2a1414;
+    font-weight:bold;
+    font-size:.8rem;
+    text-align:center;
+    padding:8px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .test-mode-banner button{
+    background:#2a1414;
+    color:#fff;
+    border:none;
+    padding:4px 10px;
+    border-radius:6px;
+    font-size:.72rem;
+    cursor:pointer;
+    font-family:inherit;
+  }
+
+  .test-panel{
+    margin:14px 18px 0;
+    background:rgba(255,107,107,.06);
+    border:1px dashed rgba(255,107,107,.5);
+    border-radius:10px;
+    padding:14px 16px;
+  }
+  .test-panel h3{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    color:var(--red);
+    margin:0 0 4px;
+    font-size:1.05rem;
+  }
+  .test-panel .hint{ font-size:.72rem; color:var(--chalk-dim); margin-bottom:10px; }
+  .test-panel .test-date{
+    font-size:.85rem;
+    color:var(--chalk);
+    margin-bottom:10px;
+  }
+  .test-panel .test-date b{ color:var(--yellow); }
+  .test-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+  }
+  .test-row input[type=date]{
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    border-radius:6px;
+    padding:6px 8px;
     font-size:.8rem;
     font-family:inherit;
   }
@@ -282,43 +338,4 @@ dding:6px 8px;
   .btn.save:hover{ opacity:.9; }
 
   @media (max-width:500px){
-    .topbar{ flex-wrap:wrap; }
-    .topbar h1{ font-size:1.25rem; }
-  }
-</style>
-</head>
-<body>
-
-<span class="points-delta" id="pointsDelta"></span>
-
-<div class="mini-pacus" id="miniPacus"></div>
-
-<div class="overlay" id="evolutionCelebration" style="z-index:700; align-items:center;">
-  <div class="celebration-card" id="celebrationCard">
-    <div class="celebration-mascot" id="celebrationMascot"></div>
-    <div class="celebration-title">🎉 Pacus evoluiu! 🎉</div>
-    <div class="celebration-stage" id="celebrationStage"></div>
-    <button class="btn save" id="celebrationCloseBtn">continuar</button>
-  </div>
-</div>
-
-<div class="board-frame">
-  <div class="board-inner">
-
-    <div id="testModeBanner"></div>
-
-    <div class="topbar">
-      <h1>🥚 Rotina do Hector</h1>
-      <div class="topbar-right">
-        <div class="pacus-total">
-          <span class="label">Pacus Points</span>
-          <span class="num" id="totalPoints">0</span>
-        </div>
-        <button class="icon-btn primary" id="addPointsBtn" title="Ajuste manual de Pacus Points">+ pontos</button>
-        <button class="icon-btn primary" id="editBtn">🔒 Área dos adultos</button>
-      </div>
-    </div>
-
-    <section class="block" id="testPanel" style="display:none;"></section>
-
-    <div class="content"
+    .top

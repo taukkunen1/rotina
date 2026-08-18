@@ -1,4 +1,43 @@
->
+bar{ flex-wrap:wrap; }
+    .topbar h1{ font-size:1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<span class="points-delta" id="pointsDelta"></span>
+
+<div class="mini-pacus" id="miniPacus"></div>
+
+<div class="overlay" id="evolutionCelebration" style="z-index:700; align-items:center;">
+  <div class="celebration-card" id="celebrationCard">
+    <div class="celebration-mascot" id="celebrationMascot"></div>
+    <div class="celebration-title">🎉 Pacus evoluiu! 🎉</div>
+    <div class="celebration-stage" id="celebrationStage"></div>
+    <button class="btn save" id="celebrationCloseBtn">continuar</button>
+  </div>
+</div>
+
+<div class="board-frame">
+  <div class="board-inner">
+
+    <div id="testModeBanner"></div>
+
+    <div class="topbar">
+      <h1>🥚 Rotina do Hector</h1>
+      <div class="topbar-right">
+        <div class="pacus-total">
+          <span class="label">Pacus Points</span>
+          <span class="num" id="totalPoints">0</span>
+        </div>
+        <button class="icon-btn primary" id="addPointsBtn" title="Ajuste manual de Pacus Points">+ pontos</button>
+        <button class="icon-btn primary" id="editBtn">🔒 Área dos adultos</button>
+      </div>
+    </div>
+
+    <section class="block" id="testPanel" style="display:none;"></section>
+
+    <div class="content">
 
 
       <div id="weeklyNewsAnnouncement"></div>
@@ -171,37 +210,4 @@
         <button class="add-row-btn" data-add="manhaWeekend">+ adicionar tarefa</button>
 
         <h3 style="font-size:.95rem; margin-top:14px;">☀️ Tarde (fim de semana)</h3>
-        <div id="editTardeWeekend"></div>
-        <button class="add-row-btn" data-add="tardeWeekend">+ adicionar tarefa</button>
-
-        <h3 style="font-size:.95rem; margin-top:14px;">🌙 Noite (fim de semana)</h3>
-        <div id="editNoiteWeekend"></div>
-        <button class="add-row-btn" data-add="noiteWeekend">+ adicionar tarefa</button>
-      </div>
-    </div>
-
-    <div class="editor-section">
-      <h3>✨ Pacus Points Extra</h3>
-      <div id="editBad"></div>
-      <button class="add-row-btn" data-add="bad">+ adicionar hábito</button>
-    </div>
-
-    <div class="editor-section">
-      <h3>🎁 Recompensas</h3>
-      <div id="editRewards"></div>
-      <button class="add-row-btn" data-add="reward">+ adicionar recompensa</button>
-    </div>
-
-    <div class="editor-section">
-      <h3>📅 Compromissos Fixos</h3>
-      <div class="hint">Aparecem na lista do dia certo e valem pontos como qualquer tarefa.</div>
-      <div id="editSchedule"></div>
-      <button class="add-row-btn" data-add="schedule">+ adicionar compromisso</button>
-    </div>
-
-    <div class="editor-section">
-      <h3>🎮 Tempo de Jogo</h3>
-      <div class="hint">Cota diária de tempo de jogo.</div>
-      <div class="edit-row">
-        <label style="flex:1; font-size:.85rem;">Horas de jogo por dia</label>
-     
+        <div id="edi

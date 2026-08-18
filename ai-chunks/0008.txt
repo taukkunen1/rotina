@@ -1,4 +1,31 @@
-derV1Applied = true;
+om base em princípios de ciência comportamental:
+// 1) tarefa mais chata primeiro ("eat the frog" — vontade está mais alta
+//    no início do bloco); 2) tarefas de higiene em sequência (menos troca
+//    de contexto); 3) tarefa de foco cognitivo com a mente ainda
+//    descansada; 4) tarefas de preparar-pra-sair por último; 5) tarefa
+//    fácil (beber água) fechando o bloco — "efeito do final" ajuda a
+//    criar associação positiva com a rotina.
+const TASK_ORDER_V1 = {
+  manha: ["m1","m4","m3","m7","m5","m8","t_djf7hbb","m2"],
+  tarde: ["t2","t3","t5","t4","t1"],
+  noite: ["n5_cartas","n5_carrinhos","n5_bolinhas","n5_caixas","n5_sala","n1","n4","n6","n7","t_ci3brlt","n2"],
+};
+function applyTaskOrderV1(cfg){
+  if(!cfg || cfg.taskOrderV1Applied) return cfg;
+  ['periods','periodsWeekend'].forEach(key=>{
+    const p = cfg[key];
+    if(!p) return;
+    ['manha','tarde','noite'].forEach(period=>{
+      if(p[period] && Array.isArray(p[period].tasks)){
+        const order = TASK_ORDER_V1[period];
+        const tasks = p[period].tasks;
+        const known = order.map(id => tasks.find(t=>t.id===id)).filter(Boolean);
+        const extra = tasks.filter(t => !order.includes(t.id));
+        p[period].tasks = [...known, ...extra];
+      }
+    });
+  });
+  cfg.taskOrderV1Applied = true;
   return cfg;
 }
 
@@ -181,33 +208,4 @@ function periodEndTime(periodTimeStr){
   return { hour: h, minute: m||0 };
 }
 function periodStartTime(periodTimeStr){
-  const parts = periodTimeStr.split(/[–-]/).map(s=>s.trim());
-  const [h, m] = parts[0].split(':').map(Number);
-  if(isNaN(h)) return null;
-  return { hour: h, minute: m||0 };
-}
-
-// Verifica se uma tarefa marcada "feita" hoje foi concluída depois do
-// horário limite do período (comparando timestamps reais, não só a data).
-function isTaskLate(task, periodTimeStr){
-  const doneAtIso = state.taskDoneAt && state.taskDoneAt[task.id];
-  if(!doneAtIso) return false;
-  const end = periodEndTime(periodTimeStr);
-  if(!end) return false;
-  const doneAt = new Date(doneAtIso);
-  const deadline = new Date(doneAt);
-  deadline.setHours(end.hour, end.minute, 0, 0);
-  return doneAt.getTime() > deadline.getTime();
-}
-
-// Calcula quanto tempo falta pra acabar o período (com base no horário
-// real do dispositivo) — usado no aviso visual ao lado de cada bloco.
-function formatTimeRemaining(periodTimeStr){
-  const start = periodStartTime(periodTimeStr);
-  const end = periodEndTime(periodTimeStr);
-  if(!start || !end) return null;
-  const now = new Date();
-  const startDate = new Date(now); startDate.setHours(start.hour, start.minute, 0, 0);
-  const endDate = new Date(now); endDate.setHours(end.hour, end.minute, 0, 0);
-  if(now < startDate){
-    return { text: `começa às ${String(start.h
+  const parts

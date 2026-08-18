@@ -1,0 +1,17 @@
+dados atuais pelos do arquivo importado. Continuar?')) return;
+      if(backup.config) { CONFIG = backup.config; saveConfig(CONFIG); }
+      if(backup.state) { state = backup.state; saveState(state); }
+      render();
+    }catch(err){
+      alert('Não consegui ler esse arquivo de backup.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+render();
+autoPullOnStartup();
+</script>
+</body>
+</html>

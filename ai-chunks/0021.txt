@@ -1,4 +1,54 @@
+ files = DriveApp.getFilesByName('rotina-hector-backup.json');
+  var file = files.hasNext() ? files.next() : DriveApp.createFile('rotina-hector-backup.json','{}',MimeType.PLAIN_TEXT);
+  var current = {};
+  try { current = JSON.parse(file.getBlob().getDataAsString() || '{}'); } catch(err) {}
+  var currentRevision = Number(current.revision || (current.state && current.state.driveRevision) || 0);
+  var baseRevision = Number(incoming.baseRevision || 0);
 
+  if (currentRevision > 0 && baseRevision !== currentRevision) {
+    return ContentService.createTextOutput(JSON.stringify({conflict:true, revision:currentRevision, data:current})).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  var nextRevision = currentRevision + 1;
+  incoming.revision = nextRevision;
+  incoming.serverUpdatedAt = new Date().toISOString();
+  if (incoming.state) incoming.state.driveRevision = nextRevision;
+  file.setContent(JSON.stringify(incoming, null, 2));
+
+  var backupDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'America/Sao_Paulo', 'yyyy-MM-dd');
+  var backupName = 'rotina-hector-backup-' + backupDate + '.json';
+  var backups = DriveApp.getFilesByName(backupName);
+  if (!backups.hasNext()) {
+    DriveApp.createFile(backupName, JSON.stringify(incoming, null, 2), MimeType.PLAIN_TEXT);
+  }
+
+  var allBackups = [];
+  var it = DriveApp.getFiles();
+  while(it.hasNext()) {
+    var f = it.next();
+    if (/^rotina-hector-backup-\d{4}-\d{2}-\d{2}[.]json$/.test(f.getName())) allBackups.push(f);
+  }
+  allBackups.sort(function(a,b){ return b.getDateCreated().getTime() - a.getDateCreated().getTime(); });
+  for (var i=30; i<allBackups.length; i++) allBackups[i].setTrashed(true);
+
+  return ContentService.createTextOutput(JSON.stringify({ok:true, revision:nextRevision})).setMimeType(ContentService.MimeType.JSON);
+}`;
+
+function renderDriveSync(){
+  const el = document.getElementById('driveSyncSection');
+  if(!el) return;
+  if(!adultUnlocked){ el.innerHTML=''; return; }
+
+  const configured = !!APPS_SCRIPT_URL;
+
+  let statusHtml, actionsHtml;
+
+  if(!configured){
+    statusHtml = `Ainda não configurado neste arquivo.`;
+    actionsHtml = `
+      <button class="icon-btn" id="driveSetupInfoBtn">como configurar</button>
+      <button class="icon-btn" id="driveCopyCodeBtn">📋 ver código do Apps Script</button>
+    `;
   } else {
     statusHtml = state.driveLastSyncISO
       ? `Sincronizado ✓ — ${formatDateBR(state.driveLastSyncISO)}${state.driveConflictCount ? ` · ${state.driveConflictCount} conflito(s) resolvido(s)` : ''}.`
@@ -119,20 +169,4 @@ document.getElementById('importFile').addEventListener('change', (e)=>{
   reader.onload = () => {
     try{
       const backup = JSON.parse(reader.result);
-      if(!confirm('Isso vai substituir os dados atuais pelos do arquivo importado. Continuar?')) return;
-      if(backup.config) { CONFIG = backup.config; saveConfig(CONFIG); }
-      if(backup.state) { state = backup.state; saveState(state); }
-      render();
-    }catch(err){
-      alert('Não consegui ler esse arquivo de backup.');
-    }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-});
-
-render();
-autoPullOnStartup();
-</script>
-</body>
-</html>
+      if(!confirm('Isso vai substituir os 

@@ -1,4 +1,37 @@
-   <input type="number" min="0" step="0.5" id="gameLimitInput" style="width:70px;">
+tTardeWeekend"></div>
+        <button class="add-row-btn" data-add="tardeWeekend">+ adicionar tarefa</button>
+
+        <h3 style="font-size:.95rem; margin-top:14px;">🌙 Noite (fim de semana)</h3>
+        <div id="editNoiteWeekend"></div>
+        <button class="add-row-btn" data-add="noiteWeekend">+ adicionar tarefa</button>
+      </div>
+    </div>
+
+    <div class="editor-section">
+      <h3>✨ Pacus Points Extra</h3>
+      <div id="editBad"></div>
+      <button class="add-row-btn" data-add="bad">+ adicionar hábito</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>🎁 Recompensas</h3>
+      <div id="editRewards"></div>
+      <button class="add-row-btn" data-add="reward">+ adicionar recompensa</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>📅 Compromissos Fixos</h3>
+      <div class="hint">Aparecem na lista do dia certo e valem pontos como qualquer tarefa.</div>
+      <div id="editSchedule"></div>
+      <button class="add-row-btn" data-add="schedule">+ adicionar compromisso</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>🎮 Tempo de Jogo</h3>
+      <div class="hint">Cota diária de tempo de jogo.</div>
+      <div class="edit-row">
+        <label style="flex:1; font-size:.85rem;">Horas de jogo por dia</label>
+        <input type="number" min="0" step="0.5" id="gameLimitInput" style="width:70px;">
       </div>
     </div>
 
@@ -138,26 +171,4 @@ const STORAGE_STATE_KEY  = "hector_rotina_state_v3";
 const APP_VERSION = "2026.08.11-pacus-v4";
 
 /* =========================================================================
-   SINCRONIZAÇÃO COM GOOGLE DRIVE (opcional) — via Google Apps Script
-   Não precisa hospedar esse arquivo em lugar nenhum: o próprio Apps Script
-   serve o app (essa URL abre o app direto) e guarda os dados no Drive.
-
-   Depois de configurado, o jeito certo de abrir em qualquer aparelho é
-   pela URL do Apps Script (a que termina em /exec) — não pelo arquivo
-   local. Assim, quando o app for atualizado, basta substituir o
-   conteúdo do arquivo "rotina-hector.html" no Drive uma vez, e todo
-   aparelho já abre a versão nova sozinho, sem copiar arquivo nenhum.
-
-   Passo a passo pra ativar:
-   1. Acesse https://script.google.com/ → "Novo projeto".
-   2. Apague o código de exemplo e cole o código que aparece no botão
-      "📋 ver código do Apps Script" logo abaixo, na seção de sincronização.
-   3. Clique em "Implantar" → "Nova implantação".
-   4. Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer
-      pessoa".
-   5. Clique em "Implantar", autorize o acesso (é a sua própria conta), e
-      copie a URL gerada (termina em /exec).
-   6. Cole essa URL na constante abaixo, entre aspas.
-   7. No Google Drive, salve o código deste arquivo com o nome exato
-      "rotina-hector.html". A partir daí, abram sempre a URL do Apps
-      Script (não o arquivo local)
+   SINCRONIZA

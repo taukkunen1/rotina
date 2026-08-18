@@ -1,4 +1,26 @@
- em todos os aparelhos.
+ÇÃO COM GOOGLE DRIVE (opcional) — via Google Apps Script
+   Não precisa hospedar esse arquivo em lugar nenhum: o próprio Apps Script
+   serve o app (essa URL abre o app direto) e guarda os dados no Drive.
+
+   Depois de configurado, o jeito certo de abrir em qualquer aparelho é
+   pela URL do Apps Script (a que termina em /exec) — não pelo arquivo
+   local. Assim, quando o app for atualizado, basta substituir o
+   conteúdo do arquivo "rotina-hector.html" no Drive uma vez, e todo
+   aparelho já abre a versão nova sozinho, sem copiar arquivo nenhum.
+
+   Passo a passo pra ativar:
+   1. Acesse https://script.google.com/ → "Novo projeto".
+   2. Apague o código de exemplo e cole o código que aparece no botão
+      "📋 ver código do Apps Script" logo abaixo, na seção de sincronização.
+   3. Clique em "Implantar" → "Nova implantação".
+   4. Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer
+      pessoa".
+   5. Clique em "Implantar", autorize o acesso (é a sua própria conta), e
+      copie a URL gerada (termina em /exec).
+   6. Cole essa URL na constante abaixo, entre aspas.
+   7. No Google Drive, salve o código deste arquivo com o nome exato
+      "rotina-hector.html". A partir daí, abram sempre a URL do Apps
+      Script (não o arquivo local) em todos os aparelhos.
    ========================================================================= */
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec";
 // A mesma URL agora também serve o próprio app (HTML) quando aberta sem
@@ -156,31 +178,4 @@ function applyPointRebalanceV2(cfg){
   return cfg;
 }
 
-// Reordena as tarefas com base em princípios de ciência comportamental:
-// 1) tarefa mais chata primeiro ("eat the frog" — vontade está mais alta
-//    no início do bloco); 2) tarefas de higiene em sequência (menos troca
-//    de contexto); 3) tarefa de foco cognitivo com a mente ainda
-//    descansada; 4) tarefas de preparar-pra-sair por último; 5) tarefa
-//    fácil (beber água) fechando o bloco — "efeito do final" ajuda a
-//    criar associação positiva com a rotina.
-const TASK_ORDER_V1 = {
-  manha: ["m1","m4","m3","m7","m5","m8","t_djf7hbb","m2"],
-  tarde: ["t2","t3","t5","t4","t1"],
-  noite: ["n5_cartas","n5_carrinhos","n5_bolinhas","n5_caixas","n5_sala","n1","n4","n6","n7","t_ci3brlt","n2"],
-};
-function applyTaskOrderV1(cfg){
-  if(!cfg || cfg.taskOrderV1Applied) return cfg;
-  ['periods','periodsWeekend'].forEach(key=>{
-    const p = cfg[key];
-    if(!p) return;
-    ['manha','tarde','noite'].forEach(period=>{
-      if(p[period] && Array.isArray(p[period].tasks)){
-        const order = TASK_ORDER_V1[period];
-        const tasks = p[period].tasks;
-        const known = order.map(id => tasks.find(t=>t.id===id)).filter(Boolean);
-        const extra = tasks.filter(t => !order.includes(t.id));
-        p[period].tasks = [...known, ...extra];
-      }
-    });
-  });
-  cfg.taskOr
+// Reordena as tarefas c

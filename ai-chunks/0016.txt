@@ -1,4 +1,53 @@
-id}" ${idx===orderedTasks.length-1?'disabled':''} title="Mover pra baixo">▼</button>
+t = state.totalPoints;
+
+  renderPet();
+  renderHair();
+  renderGameTimer();
+  renderCustomTimers();
+
+  const weekendEl = document.getElementById('weekendIndicator');
+  if(weekendEl){
+    weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
+      ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
+      : '';
+  }
+
+  const periodsEl = document.getElementById('periods');
+  periodsEl.innerHTML = '';
+  Object.entries(getPeriodsFor(todayISO())).forEach(([key, period])=>{
+    const div = document.createElement('div');
+    div.className = 'period ' + key;
+
+    const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    const doneCount = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+    const remaining = applicable.length - doneCount;
+    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
+
+    let progressMsg;
+    if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
+    else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
+    else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
+    else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
+
+    const ul = document.createElement('ul');
+    ul.className = 'tasks';
+    const orderedTasks = getEffectiveTaskOrder(key, period.tasks);
+    const nextSuggestedId = orderedTasks.find(t => !t.external && !state.checkedToday[t.id])?.id;
+    orderedTasks.forEach((task, idx)=>{
+      const li = document.createElement('li');
+      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
+      const isSuggested = task.id === nextSuggestedId;
+      const late = status === 'done' && isTaskLate(task, period.time);
+      li.className = 'task'
+        + (status === 'done' ? ' done' : '')
+        + (status === 'na' ? ' na' : '')
+        + (status === 'x' ? ' notdone' : '')
+        + (isSuggested ? ' suggested' : '')
+        + (late ? ' late-done' : '');
+      li.innerHTML = `
+        <span class="task-reorder">
+          <button type="button" class="mini-reorder-btn" data-dir="up" data-period="${key}" data-task="${task.id}" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
+          <button type="button" class="mini-reorder-btn" data-dir="down" data-period="${key}" data-task="${task.id}" ${idx===orderedTasks.length-1?'disabled':''} title="Mover pra baixo">▼</button>
         </span>
         <span class="mark-group" data-id="${task.id}">
           <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
@@ -138,67 +187,4 @@ function renderTestPanel(){
         <button class="icon-btn danger" id="testResetDateBtn">voltar pra data real</button>
       </div>
     </div>
-  `;
-
-  document.getElementById('testCompleteDayBtn').addEventListener('click', ()=>{
-    allTasks().forEach(t=>{
-      if(state.checkedToday[t.id] !== 'done'){
-        addPoints(t.pts);
-      }
-      state.checkedToday[t.id] = 'done';
-    });
-    syncPetCompletionFromDay(todayISO());
-    addLog('🧪 (teste) todas as tarefas de hoje marcadas como feitas', true);
-    saveState(state);
-    render();
-  });
-
-  document.getElementById('testPrevDayBtn').addEventListener('click', ()=>{
-    goToTestDate(shiftISODate(todayISO(), -1));
-  });
-  document.getElementById('testNextDayBtn').addEventListener('click', ()=>{
-    goToTestDate(shiftISODate(todayISO(), 1));
-  });
-  document.getElementById('testGoDateBtn').addEventListener('click', ()=>{
-    const val = document.getElementById('testDatePicker').value;
-    if(val) goToTestDate(val);
-  });
-  document.getElementById('testResetDateBtn').addEventListener('click', ()=>{
-    goToTestDate(realToday);
-    setTestDate(null);
-    state = loadState();
-    render();
-  });
-}
-
-// Aviso pontual pra contar a novidade dos Jogos em Família — some pra
-// sempre depois que ele der "combinado!" (fica guardado no estado).
-function renderFamilyGameNightAnnouncement(){
-  const el = document.getElementById('familyGameNightAnnouncement');
-  if(!el) return;
-  if(state.familyGameNightAnnouncementSeen){ el.innerHTML=''; return; }
-
-  el.innerHTML = `
-    <div class="family-announcement">
-      <div class="title">🕹️ Novidade na família!</div>
-      <div class="msg">A partir de agora, toda <b>quinta-feira à noite, das 21h às 23h</b>, é hora de <b>Jogos em Família</b>! 🎲🎉</div>
-      <button class="dismiss-btn" id="familyGameNightDismissBtn">bora! 🤝</button>
-    </div>
-  `;
-  document.getElementById('familyGameNightDismissBtn').addEventListener('click', ()=>{
-    state.familyGameNightAnnouncementSeen = true;
-    saveState(state);
-    renderFamilyGameNightAnnouncement();
-  });
-}
-
-// Notícia da semana — aviso único (some pra sempre depois de visto).
-function renderWeeklyNewsAnnouncement(){
-  const el = document.getElementById('weeklyNewsAnnouncement');
-  if(!el) return;
-  if(state.weeklyNewsSeen){ el.innerHTML=''; return; }
-
-  el.innerHTML = `
-    <div class="family-announcement">
-      <div class="title">🏆 Notícia da semana!</div>
-      <div class="msg">Você acertou a aposta co
+ 

@@ -1,4 +1,30 @@
-posta com a Walda (pessoa autêntica)');
+r === undefined) state.backupReminderDismissedFor = null;
+  if(!state.checkedToday) state.checkedToday = {};
+  if(!state.log) state.log = [];
+  if(!state.history) state.history = {};
+  if(!state.hairByDate || typeof state.hairByDate !== "object") state.hairByDate = {};
+  if(!state.taskDoneAt || typeof state.taskDoneAt !== "object") state.taskDoneAt = {};
+  if(!state.customTaskOrder || typeof state.customTaskOrder !== "object") state.customTaskOrder = {};
+  if(!state.familyAnnouncementResetV1Applied){
+    state.familyGameNightAnnouncementSeen = false;
+    state.familyAnnouncementResetV1Applied = true;
+  }
+  if(!state.familyAnnouncementResetV2Applied){
+    state.familyGameNightAnnouncementSeen = false;
+    state.familyAnnouncementResetV2Applied = true;
+  }
+  if(!state.familyAnnouncementResetV3Applied){
+    state.familyGameNightAnnouncementSeen = false;
+    state.familyAnnouncementResetV3Applied = true;
+  }
+  if(!state.familyAnnouncementResetV4Applied){
+    state.familyGameNightAnnouncementSeen = false;
+    state.familyAnnouncementResetV4Applied = true;
+  }
+  if(!state.waldaBetBonusApplied){
+    state.totalPoints = Math.max(0, Math.min(1000, (Number(state.totalPoints)||0) + 5));
+    if(!state.log) state.log = [];
+    state.log.unshift('🏆 +5 · acertou a aposta com a Walda (pessoa autêntica)');
     state.waldaBetBonusApplied = true;
   }
   if(!state.celebrationReplayV1Applied){
@@ -154,29 +180,4 @@ function closeOutDay(state, dateISO){
 
 function saveState(state, options={}){
   if(!options.remote){
-    state.revision = (Number(state.revision)||0) + 1;
-    state.updatedAt = new Date().toISOString();
-  }
-  try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
-  scheduleAutoPush();
-}
-
-/* ---------- sincronização automática com o Google Drive ----------
-   Sempre que o arquivo abre, ele tenta buscar a versão mais nova salva
-   no Drive (via Apps Script) e usa ela — assim, não importa em qual
-   aparelho vocês abrirem, todos mostram a mesma coisa. Sempre que algo
-   muda aqui, ele também manda a atualização pro Drive sozinho, na hora
-   (sem precisar clicar em nada). Se estiver offline, o arquivo continua
-   funcionando normal com os dados salvos localmente.
-   IMPORTANTE: essas variáveis precisam existir ANTES de carregar
-   CONFIG/state, porque o carregamento pode precisar salvar de volta
-   (limpezas, correções automáticas) e isso já chama scheduleAutoPush.
-   E a sincronização fica SUSPENSA durante esse carregamento inicial —
-   nesse momento ainda nem todo o resto do código rodou, então tentar
-   sincronizar/renderizar tão cedo pode travar. Ela é reativada logo
-   depois, uma vez que CONFIG e state já estão prontos. */
-let suppressAutoPush = true;
-let pushInFlight = false;
-let pushPending = false;
-
-let CONFIG = loadConfig()
+    s

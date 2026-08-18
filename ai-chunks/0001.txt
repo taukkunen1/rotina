@@ -118,6 +118,54 @@
     display:block;
   }
 
+  .pet-mascot-wrap{
+    position:relative;
+    display:inline-block;
+    perspective:800px;
+    cursor:pointer;
+  }
+  .pet-mascot-wrap .pet-mascot{
+    backface-visibility:visible;
+  }
+  .pet-mascot-wrap.spinning .pet-mascot{
+    animation:pacusSpin3D .9s ease-in-out;
+  }
+  @keyframes pacusSpin3D{
+    0%{ transform:rotateY(0deg) scale(1); }
+    45%{ transform:rotateY(170deg) scale(1.06); }
+    55%{ transform:rotateY(190deg) scale(1.06); }
+    100%{ transform:rotateY(360deg) scale(1); }
+  }
+  .pet-accessory{
+    position:absolute;
+    bottom:2px;
+    right:-6px;
+    font-size:1.9rem;
+    transform-origin:bottom center;
+    animation:accessorySway 3.2s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes accessorySway{
+    0%,100%{ transform:rotate(-7deg); }
+    50%{ transform:rotate(7deg); }
+  }
+  .pet-reaction-bubble{
+    position:absolute;
+    top:-6px;
+    left:50%;
+    font-size:1.7rem;
+    opacity:0;
+    pointer-events:none;
+  }
+  .pet-reaction-bubble.show{
+    animation:petReactionPop 1.3s ease-out forwards;
+  }
+  @keyframes petReactionPop{
+    0%{ opacity:0; transform:translate(-50%,6px) scale(.6); }
+    22%{ opacity:1; transform:translate(-50%,-10px) scale(1.2); }
+    100%{ opacity:0; transform:translate(-50%,-34px) scale(1); }
+  }
+
   .pet-name{
     font-family:"Segoe Print","Bradley Hand",cursive;
     font-size:1.35rem;
@@ -273,35 +321,4 @@
   .pacus-bubble{
     animation:pacusBubbleRise 3.2s ease-in infinite;
   }
-  @keyframes pacusBubbleRise{
-    0%{ transform:translateY(0); opacity:.55; }
-    85%{ opacity:.25; }
-    100%{ transform:translateY(-42px); opacity:0; }
-  }
-
-  .streak-strip{ margin-top:14px; text-align:center; }
-  .streak-title{
-    font-size:.65rem;
-    text-transform:uppercase;
-    letter-spacing:1px;
-    color:var(--chalk-dim);
-    margin-bottom:6px;
-  }
-  .streak-row{ display:flex; gap:6px; justify-content:center; }
-  .streak-cell{
-    width:38px; height:30px;
-    border-radius:7px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border:1px solid var(--line);
-    background:rgba(255,255,255,.03);
-  }
-  .streak-letter{ font-size:.56rem; color:var(--chalk-dim); letter-spacing:.2px; }
-  .streak-cell.perfect{ background:var(--green); border-color:var(--green); }
-  .streak-cell.perfect .streak-letter{ color:#132015; font-weight:bold; }
-  .streak-cell.almost{ background:rgba(79,195,247,.32); border-color:var(--blue); }
-  .streak-cell.almost .streak-letter{ color:#0f2733; font-weight:bold; }
-  .streak-cell.partial{ background:rgba(255,217,61,.35); border-color:var(--yellow); }
-  .streak-cell.partial .streak-letter{ color:#2a2410; font-weight:bold; }
-  .streak-cell.none{ background:rgba(255,107,107,.18); border-color:rgba(255,107,107,.4)
+  @keyfram
