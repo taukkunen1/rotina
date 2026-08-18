@@ -1,4 +1,5 @@
-,sab:'S',dom:'D'};
+dayOrder = ['seg','ter','qua','qui','sex','sab','dom'];
+  const dayShort = {seg:'S',ter:'T',qua:'Q',qui:'Q',sex:'S',sab:'S',dom:'D'};
   const periodLabels = {manha:'Manhã', tarde:'Tarde', noite:'Noite'};
   draft.schedule.forEach(item=>{
     if(item.pts == null) item.pts = 3;
@@ -178,7 +179,4 @@ function openDayEditor(dateISO){
 }
 function closeDayEditor(){
   document.getElementById('dayOverlay').classList.remove('open');
-  editingDate = null;
-}
-document.getElementById('dayCloseBtn').addEventListener('click', closeDayEditor);
-document.getEle
+  edit

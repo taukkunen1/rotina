@@ -1,4 +1,10 @@
-.getElementById('driveSaveBtn').addEventListener('click', driveSave);
+: 'none';
+      if(box.style.display === 'block'){ box.focus(); box.select(); }
+    });
+    return;
+  }
+
+  document.getElementById('driveSaveBtn').addEventListener('click', driveSave);
   document.getElementById('driveLoadBtn').addEventListener('click', driveLoad);
 }
 

@@ -67,12 +67,14 @@ function renderGameTimer(){
   const adjustBtn = document.getElementById('gameTimerAdjustBtn');
   if(adjustBtn){
     adjustBtn.addEventListener('click', ()=>{
-      const raw = prompt('Quantos minutos ajustar no tempo de hoje?\nPositivo soma (ex: 30), negativo tira (ex: -15).', '15');
+      const currentRemainingMin = Math.round(remaining/60);
+      const raw = prompt('Quantos minutos você quer que sobrem hoje?', String(Math.max(0, currentRemainingMin)));
       if(raw === null) return;
-      const minutes = parseInt(raw, 10);
-      if(!minutes || minutes === 0) return;
-      addGameTimerBonusHours(minutes/60);
-      addLog(`⚙️ ${minutes>0?'+':''}${minutes} min de tela · ajuste manual`);
+      const targetMin = parseInt(raw, 10);
+      if(isNaN(targetMin) || targetMin < 0) return;
+      const deltaSeconds = (targetMin*60) - remaining;
+      addGameTimerBonusHours(deltaSeconds/3600);
+      addLog(`⚙️ tempo de hoje ajustado pra ${targetMin} min restantes`);
       saveState(state);
       renderGameTimer();
     });
@@ -216,5 +218,4 @@ function renderCustomTimers(){
           <button class="custom-timer-btn secondary" id="customTimerSetBtn_${t.id}" ${running?'disabled':''}>definir</button>
         </div>
         <div class="custom-timer-btns">
-          <button class="custom-timer-btn" id="customTimerStartBtn_${t.id}" ${(running||remaining<=0)?'disabled':''}>▶️ Iniciar</button>
-          <button class="custom-timer-btn secondary" id="
+          <button class="custom-timer-btn" id="customTimerStartBtn_${t.id}" ${(

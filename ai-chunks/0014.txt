@@ -1,4 +1,5 @@
- opacity="${legOpacity}" transform="rotate(15 ${110+bodyW*0.5} ${bodyY+bodyH*0.92})"/>
+5} ${bodyY+bodyH*0.92})"/>
+    <ellipse cx="${110+bodyW*0.5}" cy="${bodyY+bodyH*0.92}" rx="7" ry="5" fill="#eeaecb" opacity="${legOpacity}" transform="rotate(15 ${110+bodyW*0.5} ${bodyY+bodyH*0.92})"/>
   `;
 
   const sparkle = adult > .8 ? `<text x="35" y="64" font-size="18">✨</text><text x="166" y="75" font-size="16">✨</text>` : '';
@@ -179,5 +180,4 @@ function showEvolutionCelebration(stageInfo, stage, maxStage){
 
   // confete espalhado pela tela toda, não só perto do Pacus
   fireConfetti(null, 40);
-  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.2, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 200);
-  
+  setTimeout(()=> fireConfetti({ getBou

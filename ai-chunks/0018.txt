@@ -1,4 +1,7 @@
-ta pra pendente
+= addPoints(taskNotDonePenalty(task));
+
+  if(current === clickedStatus){
+    // clicou de novo no mesmo estado: volta pra pendente
     delete state.checkedToday[id];
     delete state.taskDoneAt[id];
     addLog(`(desmarcado) ${task.txt}`);
@@ -187,5 +190,4 @@ function renderEditorBad(){
 function renderEditorSchedule(){
   const el = document.getElementById('editSchedule');
   el.innerHTML = '';
-  const dayOrder = ['seg','ter','qua','qui','sex','sab','dom'];
-  const dayShort = {seg:'S',ter:'T',qua:'Q',qui:'Q',sex:'S'
+  const 

@@ -1,4 +1,7 @@
-mentById('dayCancelBtn').addEventListener('click', closeDayEditor);
+ingDate = null;
+}
+document.getElementById('dayCloseBtn').addEventListener('click', closeDayEditor);
+document.getElementById('dayCancelBtn').addEventListener('click', closeDayEditor);
 document.getElementById('dayOverlay').addEventListener('click', e=>{
   if(e.target.id === 'dayOverlay') closeDayEditor();
 });
@@ -153,10 +156,4 @@ function renderDriveSync(){
     document.getElementById('driveCopyCodeBtn').addEventListener('click', ()=>{
       const box = document.getElementById('driveCodeBox');
       box.value = APPS_SCRIPT_CODE;
-      box.style.display = box.style.display === 'none' ? 'block' : 'none';
-      if(box.style.display === 'block'){ box.focus(); box.select(); }
-    });
-    return;
-  }
-
-  document
+      box.style.display = box.style.display === 'none' ? 'block' 

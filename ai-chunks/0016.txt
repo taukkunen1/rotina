@@ -1,4 +1,6 @@
-);
+ive?'+':'−'}${Math.abs(h.pts)}</span>`;
+    btn.addEventListener('click', ()=>{
+      const delta = addPoints(h.pts);
       addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
       saveState(state);
       bumpTotal(delta, btn);
@@ -217,10 +219,4 @@ function renderWeeklyReview(){
       const full = state.history[iso];
       if(full){
         totalPointsWeek += full.pointsEarnedThatDay || 0;
-        totalScreenMin += full.screenMinutes || 0;
-      }
-    }
-    if(entry.total > 0 && entry.perfect) perfectDays++;
-  });
-
-  const rangeLabel = `${form
+        totalScreenMin += full.screenMinu

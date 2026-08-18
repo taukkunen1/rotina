@@ -1,4 +1,5 @@
-setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.8, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 350);
+ndingClientRect: ()=>({left:window.innerWidth*0.2, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 200);
+  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.8, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 350);
 
   const autoClose = setTimeout(closeEvolutionCelebration, 4500);
   overlay.dataset.autoCloseId = autoClose;
@@ -174,6 +175,4 @@ function render(){
     const isPositive = h.pts >= 0;
     const btn = document.createElement('button');
     btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
-    btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
-    btn.addEventListener('click', ()=>{
-      const delta = addPoints(h.pts
+    btn.innerHTML = `${h.txt}<span class="minus">${isPosit
