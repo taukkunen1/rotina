@@ -2805,9 +2805,9 @@ async function autoPullOnStartup(){
   suppressAutoPush = false;
 }
 
-function addLog(text){
+function addLog(text, isParentAction){
   const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-  state.log.unshift(time+" — "+text);
+  state.log.unshift({ text: time+" — "+text, parent: !!isParentAction });
   state.log = state.log.slice(0, 30);
 }
 function bumpTotal(delta, anchorEl){
@@ -2989,7 +2989,7 @@ function renderGameTimer(){
       if(isNaN(targetMin) || targetMin < 0) return;
       const deltaSeconds = (targetMin*60) - remaining;
       addGameTimerBonusHours(deltaSeconds/3600);
-      addLog(`⚙️ tempo de hoje ajustado pra ${targetMin} min restantes`);
+      addLog(`⚙️ tempo de hoje ajustado pra ${targetMin} min restantes`, true);
       saveState(state);
       renderGameTimer();
     });
@@ -3651,7 +3651,7 @@ function render(){
     btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
     btn.addEventListener('click', ()=>{
       const delta = addPoints(h.pts);
-      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
+      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`, true);
       saveState(state);
       bumpTotal(delta, btn);
       renderLog();
@@ -3750,7 +3750,7 @@ function renderTestPanel(){
       state.checkedToday[t.id] = 'done';
     });
     syncPetCompletionFromDay(todayISO());
-    addLog('🧪 (teste) todas as tarefas de hoje marcadas como feitas');
+    addLog('🧪 (teste) todas as tarefas de hoje marcadas como feitas', true);
     saveState(state);
     render();
   });
@@ -4021,8 +4021,13 @@ function renderRewards(){
 
 function renderLog(){
   const logEl = document.getElementById('logList');
-  logEl.innerHTML = state.log.length
-    ? state.log.map(l=>`<div>${l}</div>`).join('')
+  // compatibilidade: entradas antigas eram só texto puro (sem marcação
+  // de quem fez) — tratamos essas como ação dele, pra não sumir nada.
+  const normalize = l => typeof l === 'string' ? { text:l, parent:false } : l;
+  const entries = state.log.map(normalize);
+  const visible = adultUnlocked ? entries : entries.filter(l => !l.parent);
+  logEl.innerHTML = visible.length
+    ? visible.map(l=>`<div>${l.text}</div>`).join('')
     : '<div>Nada ainda hoje — bora começar!</div>';
 }
 
@@ -4107,7 +4112,7 @@ document.getElementById('addPointsBtn').addEventListener('click', ()=>{
   const amount = parseInt(raw, 10);
   if(!amount || amount === 0) return;
   const delta = addPoints(amount);
-  addLog(`${amount>0?'+':''}${amount} · ajuste manual`);
+  addLog(`${amount>0?'+':''}${amount} · ajuste manual`, true);
   saveState(state);
   bumpTotal(delta);
   render();
@@ -4466,7 +4471,7 @@ document.getElementById('daySaveBtn').addEventListener('click', ()=>{
   let appliedDelta = 0;
   if(delta !== 0){
     appliedDelta = addPoints(delta);
-    addLog(`✏️ ajuste em ${formatDateBR(editingDate)}: ${delta>0?'+':''}${delta}`);
+    addLog(`✏️ ajuste em ${formatDateBR(editingDate)}: ${delta>0?'+':''}${delta}`, true);
   }
 
   saveState(state);
