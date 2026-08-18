@@ -159,9 +159,9 @@ async function autoPullOnStartup(){
   suppressAutoPush = false;
 }
 
-function addLog(text){
+function addLog(text, isParentAction){
   const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-  state.log.unshift(time+" — "+text);
+  state.log.unshift({ text: time+" — "+text, parent: !!isParentAction });
   state.log = state.log.slice(0, 30);
 }
 function bumpTotal(delta, anchorEl){
@@ -202,7 +202,4 @@ function addPoints(delta){
 function notDonePenalty(pts){
   let half = Math.ceil(pts/2);
   if(half % 2 !== 0) half += 1;
-  return half;
-}
-
-// Algumas tarefas (marcadas com fullPenalty
+  return h

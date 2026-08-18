@@ -1,4 +1,7 @@
-:true) perdem o valor CHEIO em
+alf;
+}
+
+// Algumas tarefas (marcadas com fullPenalty:true) perdem o valor CHEIO em
 // vez de metade — reforço maior pras tarefas mais chatas/resistidas.
 function taskNotDonePenalty(task){
   return task.fullPenalty ? task.pts : notDonePenalty(task.pts);
@@ -136,7 +139,7 @@ function renderGameTimer(){
       if(isNaN(targetMin) || targetMin < 0) return;
       const deltaSeconds = (targetMin*60) - remaining;
       addGameTimerBonusHours(deltaSeconds/3600);
-      addLog(`⚙️ tempo de hoje ajustado pra ${targetMin} min restantes`);
+      addLog(`⚙️ tempo de hoje ajustado pra ${targetMin} min restantes`, true);
       saveState(state);
       renderGameTimer();
     });
@@ -231,5 +234,3 @@ function startCustomTimerTicking(){
       const remaining = customTimerRemainingNow(t);
       if(remaining <= 0 && !t.finished){
         t.remainingSeconds = 0;
-        t.runningSince = null;
-        t.finished = true;

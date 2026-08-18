@@ -1,4 +1,6 @@
 
+        t.runningSince = null;
+        t.finished = true;
         playBeep();
         needsFullRender = true;
       }
@@ -170,5 +172,4 @@ function buildPacusSVG(stageFloat){
   const scale = 0.52 + growth*0.42 + adult*0.06;
   const bodyW = 45 + growth*10 + adult*4;
   const bodyH = 30 + growth*5 + adult*3;
-  const gillLen = 12 + growth*11 + adult*4;
-  const faceY = 
+  

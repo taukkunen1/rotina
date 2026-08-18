@@ -1,4 +1,5 @@
- = `Faltam <b>${diasFaltando} ${diasFaltando===1?'dia':'dias'}</b> para virar <b>${nextMilestone[1]}</b>.`;
+altando = nextMilestone[0] - daysEquivalent;
+      caption = `Faltam <b>${diasFaltando} ${diasFaltando===1?'dia':'dias'}</b> para virar <b>${nextMilestone[1]}</b>.`;
     } else {
       caption = `Quase lá! O Pacus está quase adulto.`;
     }
@@ -181,4 +182,4 @@ function render(){
       li.innerHTML = `
         <span class="task-reorder">
           <button type="button" class="mini-reorder-btn" data-dir="up" data-period="${key}" data-task="${task.id}" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
-          <button type="button" class="mini-reorder-btn" data-dir="down" data-period="${key}" data-task="${task.id}" ${idx===orderedTasks.length-1?'disabled':''} title="M
+          <button type="button" class="mini-reorder-btn" data-dir="down" data-period="${key}" data-task="${task.

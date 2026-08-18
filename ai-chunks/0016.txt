@@ -1,4 +1,4 @@
-over pra baixo">▼</button>
+id}" ${idx===orderedTasks.length-1?'disabled':''} title="Mover pra baixo">▼</button>
         </span>
         <span class="mark-group" data-id="${task.id}">
           <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
@@ -49,7 +49,7 @@ over pra baixo">▼</button>
     btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
     btn.addEventListener('click', ()=>{
       const delta = addPoints(h.pts);
-      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`);
+      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`, true);
       saveState(state);
       bumpTotal(delta, btn);
       renderLog();
@@ -148,7 +148,7 @@ function renderTestPanel(){
       state.checkedToday[t.id] = 'done';
     });
     syncPetCompletionFromDay(todayISO());
-    addLog('🧪 (teste) todas as tarefas de hoje marcadas como feitas');
+    addLog('🧪 (teste) todas as tarefas de hoje marcadas como feitas', true);
     saveState(state);
     render();
   });
@@ -201,4 +201,4 @@ function renderWeeklyNewsAnnouncement(){
   el.innerHTML = `
     <div class="family-announcement">
       <div class="title">🏆 Notícia da semana!</div>
-      <div class="msg">Você acertou a aposta com a Walda — respondeu certinho o que é ser uma <b>pessoa autêntica</b>
+      <div class="msg">Você acertou a aposta co

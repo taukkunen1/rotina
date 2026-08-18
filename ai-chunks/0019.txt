@@ -1,4 +1,10 @@
-ask);
+ub" placeholder="descrição (opcional)">
+    `;
+    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ task.txt = e.target.value; });
+    wireStepper(row, task, 'pts');
+    row.querySelector('[data-field=sub]').addEventListener('input', e=>{ task.sub = e.target.value; });
+    row.querySelector('.del').addEventListener('click', ()=>{
+      periodsObj[key].tasks = periodsObj[key].tasks.filter(t=>t!==task);
       renderEditorPeriod(key, elId, periodsObj);
     });
     row.querySelectorAll('.reorder-btn').forEach(btn=>{
@@ -172,20 +178,4 @@ document.getElementById('evolutionCelebration').addEventListener('click', e=>{
 document.getElementById('editBtn').addEventListener('click', ()=>{
   if(CONFIG.editorPin){
     const entered = prompt('Digite o PIN pra editar:');
-    if(entered === null) return; // cancelou
-    if(entered !== CONFIG.editorPin){
-      alert('PIN incorreto.');
-      return;
-    }
-  }
-  adultUnlocked = true;
-  openEditor();
-  render();
-});
-document.getElementById('adultTestBtn').addEventListener('click', ()=>{
-  closeEditor();
-  testPanelOpen = !testPanelOpen;
-  renderTestPanel();
-});
-document.getElementById('closeBtn').addEventListener('click', closeEditor);
-docum
+    

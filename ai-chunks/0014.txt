@@ -1,4 +1,5 @@
-92 - hatch*7;
+const gillLen = 12 + growth*11 + adult*4;
+  const faceY = 92 - hatch*7;
   const bodyY = 128 - hatch*5;
   const gid = uid('pacus');
   const shell = hatch < 1 ? `
@@ -156,5 +157,4 @@ function renderPet(){
   } else {
     const nextMilestone = milestones.find(([day]) => day > daysEquivalent);
     if(nextMilestone){
-      const diasFaltando = nextMilestone[0] - daysEquivalent;
-      caption
+      const diasF

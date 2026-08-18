@@ -1,4 +1,4 @@
-! <b>+5 Pacus Points</b> de bônus! 🎉</div>
+m a Walda — respondeu certinho o que é ser uma <b>pessoa autêntica</b>! <b>+5 Pacus Points</b> de bônus! 🎉</div>
       <button class="dismiss-btn" id="weeklyNewsDismissBtn">demais! 🌟</button>
     </div>
   `;
@@ -194,5 +194,4 @@ function renderRewards(){
         addGameTimerBonusHours(r.grantsHours);
         addLog(`🎮 +${r.grantsHours}h de jogo hoje (bônus da recompensa)`);
       }
-      if(!state.gameTimer.redemptions) state.gameTimer.redemptions = {};
-      state.g
+      if(!state.

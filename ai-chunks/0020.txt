@@ -1,4 +1,20 @@
-ent.getElementById('cancelBtn').addEventListener('click', closeEditor);
+if(entered === null) return; // cancelou
+    if(entered !== CONFIG.editorPin){
+      alert('PIN incorreto.');
+      return;
+    }
+  }
+  adultUnlocked = true;
+  openEditor();
+  render();
+});
+document.getElementById('adultTestBtn').addEventListener('click', ()=>{
+  closeEditor();
+  testPanelOpen = !testPanelOpen;
+  renderTestPanel();
+});
+document.getElementById('closeBtn').addEventListener('click', closeEditor);
+document.getElementById('cancelBtn').addEventListener('click', closeEditor);
 document.getElementById('overlay').addEventListener('click', e=>{
   if(e.target.id === 'overlay') closeEditor();
 });
@@ -82,7 +98,7 @@ document.getElementById('daySaveBtn').addEventListener('click', ()=>{
   let appliedDelta = 0;
   if(delta !== 0){
     appliedDelta = addPoints(delta);
-    addLog(`✏️ ajuste em ${formatDateBR(editingDate)}: ${delta>0?'+':''}${delta}`);
+    addLog(`✏️ ajuste em ${formatDateBR(editingDate)}: ${delta>0?'+':''}${delta}`, true);
   }
 
   saveState(state);
@@ -170,10 +186,3 @@ function renderDriveSync(){
       <button class="icon-btn" id="driveSetupInfoBtn">como configurar</button>
       <button class="icon-btn" id="driveCopyCodeBtn">📋 ver código do Apps Script</button>
     `;
-  } else {
-    statusHtml = state.driveLastSyncISO
-      ? `Sincronizado ✓ — ${formatDateBR(state.driveLastSyncISO)}${state.driveConflictCount ? ` · ${state.driveConflictCount} conflito(s) resolvido(s)` : ''}.`
-      : `Sincronização automática ativa — aguardando primeira sincronização.`;
-    actionsHtml = `
-      <button class="icon-btn primary" id="driveSaveBtn">☁️⬆️ forçar salvar agora</button>
-      <button class="ic

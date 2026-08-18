@@ -1,4 +1,5 @@
-ameTimer.redemptions[r.id] = redeemed + 1;
+gameTimer.redemptions) state.gameTimer.redemptions = {};
+      state.gameTimer.redemptions[r.id] = redeemed + 1;
 
       saveState(state);
       bumpTotal(delta, evt.currentTarget);
@@ -19,8 +20,13 @@ ameTimer.redemptions[r.id] = redeemed + 1;
 
 function renderLog(){
   const logEl = document.getElementById('logList');
-  logEl.innerHTML = state.log.length
-    ? state.log.map(l=>`<div>${l}</div>`).join('')
+  // compatibilidade: entradas antigas eram só texto puro (sem marcação
+  // de quem fez) — tratamos essas como ação dele, pra não sumir nada.
+  const normalize = l => typeof l === 'string' ? { text:l, parent:false } : l;
+  const entries = state.log.map(normalize);
+  const visible = adultUnlocked ? entries : entries.filter(l => !l.parent);
+  logEl.innerHTML = visible.length
+    ? visible.map(l=>`<div>${l.text}</div>`).join('')
     : '<div>Nada ainda hoje — bora começar!</div>';
 }
 
@@ -105,7 +111,7 @@ document.getElementById('addPointsBtn').addEventListener('click', ()=>{
   const amount = parseInt(raw, 10);
   if(!amount || amount === 0) return;
   const delta = addPoints(amount);
-  addLog(`${amount>0?'+':''}${amount} · ajuste manual`);
+  addLog(`${amount>0?'+':''}${amount} · ajuste manual`, true);
   saveState(state);
   bumpTotal(delta);
   render();
@@ -184,10 +190,4 @@ function renderEditorPeriod(key, elId, periodsObj){
         ${stepperHTML('pts', task.pts)}
         <button class="del" title="remover">🗑</button>
       </div>
-      <input type="text" class="sub-input" value="${escapeAttr(task.sub||'')}" data-field="sub" placeholder="descrição (opcional)">
-    `;
-    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ task.txt = e.target.value; });
-    wireStepper(row, task, 'pts');
-    row.querySelector('[data-field=sub]').addEventListener('input', e=>{ task.sub = e.target.value; });
-    row.querySelector('.del').addEventListener('click', ()=>{
-      periodsObj[key].tasks = periodsObj[key].tasks.filter(t=>t!==t
+      <input type="text" class="sub-input" value="${escapeAttr(task.sub||'')}" data-field="s
