@@ -1,6 +1,4 @@
-e);
-  if (!backups.hasNext()) {
-    DriveApp.createFile(backupName, JSON.stringify(incoming, null, 2), MimeType.PLAIN_TEXT);
+XT);
   }
 
   var allBackups = [];

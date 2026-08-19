@@ -1,8 +1,4 @@
-se(){
-    if(cycle >= 3){
-      label.textContent = 'Prontinho! 😊';
-      circle.classList.remove('breathing');
-      breathingTimeoutId = setTimeout(closeBreathingExercise, 1500);
+eathingTimeoutId = setTimeout(closeBreathingExercise, 1500);
       return;
     }
     label.textContent = phases[phaseIdx].text;
@@ -184,4 +180,6 @@ function doPost(e) {
 
   var backupDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'America/Sao_Paulo', 'yyyy-MM-dd');
   var backupName = 'rotina-hector-backup-' + backupDate + '.json';
-  var backups = DriveApp.getFilesByName(backupNam
+  var backups = DriveApp.getFilesByName(backupName);
+  if (!backups.hasNext()) {
+    DriveApp.createFile(backupName, JSON.stringify(incoming, null, 2), MimeType.PLAIN_TE

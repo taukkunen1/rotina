@@ -1,7 +1,4 @@
-).forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const dir = btn.getAttribute('data-dir');
-        const i = list.indexOf(task);
+st i = list.indexOf(task);
         const swapWith = dir === 'up' ? i-1 : i+1;
         if(swapWith < 0 || swapWith >= list.length) return;
         [list[i], list[swapWith]] = [list[swapWith], list[i]];
@@ -185,4 +182,8 @@ function startBreathingExercise(){
   let cycle = 0;
   let phaseIdx = 0;
 
-  function nextPha
+  function nextPhase(){
+    if(cycle >= 3){
+      label.textContent = 'Prontinho! 😊';
+      circle.classList.remove('breathing');
+      br
