@@ -1,4 +1,5 @@
-eathingTimeoutId = setTimeout(closeBreathingExercise, 1500);
+g');
+      breathingTimeoutId = setTimeout(closeBreathingExercise, 1500);
       return;
     }
     label.textContent = phases[phaseIdx].text;
@@ -182,4 +183,4 @@ function doPost(e) {
   var backupName = 'rotina-hector-backup-' + backupDate + '.json';
   var backups = DriveApp.getFilesByName(backupName);
   if (!backups.hasNext()) {
-    DriveApp.createFile(backupName, JSON.stringify(incoming, null, 2), MimeType.PLAIN_TE
+    DriveApp.createFile(backupName, JSON.stringify(incoming, null, 2), Mime

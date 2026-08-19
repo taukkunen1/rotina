@@ -1,4 +1,5 @@
- MODO TESTE ATIVO — data simulada: ${formatDateBR(TEST_DATE_OVERRIDE)}
+ner">
+      🧪 MODO TESTE ATIVO — data simulada: ${formatDateBR(TEST_DATE_OVERRIDE)}
       <button id="bannerRealDateBtn">voltar pra data real</button>
     </div>
   `;
@@ -206,4 +207,4 @@ function renderHistory(){
     rows.push(iso);
   }
 
-  const HISTORY_VISIBLE_DAYS = 30
+  const HISTORY_VISI

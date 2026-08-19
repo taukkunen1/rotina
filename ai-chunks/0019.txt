@@ -1,4 +1,4 @@
-bs(h.pts)} · ${h.txt}`, true);
+:'−'}${Math.abs(h.pts)} · ${h.txt}`, true);
         saveState(state);
         bumpTotal(delta, btn);
         renderLog();
@@ -186,5 +186,4 @@ function renderEditorPeriod(key, elId, periodsObj){
     });
     row.querySelectorAll('.reorder-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
-        const dir = btn.getAttribute('data-dir');
-        con
+        const dir = btn.getAttribute('data-dir')

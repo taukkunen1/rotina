@@ -1,4 +1,4 @@
-;
+  }).join('');
   return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${cells}</div>`;
 }
 
@@ -194,5 +194,4 @@ function renderTestModeBanner(){
   if(!el) return;
   if(!TEST_DATE_OVERRIDE){ el.innerHTML=''; return; }
   el.innerHTML = `
-    <div class="test-mode-banner">
-      🧪
+    <div class="test-mode-ban

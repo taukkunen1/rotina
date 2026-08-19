@@ -1,4 +1,5 @@
-   </div>
+ '—'}</div>
+    </div>
   `).join('');
   el.innerHTML = `
     <div class="achievement-mural">
@@ -193,4 +194,3 @@ function buildStreakStrip(){
     }
     if(isToday) cls += ' today';
     return `<span class="${cls}" title="${formatDateBR(iso)}"><span class="streak-letter">${letter}</span></span>`;
-  }).join('')

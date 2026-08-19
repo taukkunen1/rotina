@@ -1,4 +1,5 @@
-st i = list.indexOf(task);
+;
+        const i = list.indexOf(task);
         const swapWith = dir === 'up' ? i-1 : i+1;
         if(swapWith < 0 || swapWith >= list.length) return;
         [list[i], list[swapWith]] = [list[swapWith], list[i]];
@@ -185,5 +186,4 @@ function startBreathingExercise(){
   function nextPhase(){
     if(cycle >= 3){
       label.textContent = 'Prontinho! 😊';
-      circle.classList.remove('breathing');
-      br
+      circle.classList.remove('breathin

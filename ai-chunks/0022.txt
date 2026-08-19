@@ -1,4 +1,4 @@
-XT);
+Type.PLAIN_TEXT);
   }
 
   var allBackups = [];

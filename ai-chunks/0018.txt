@@ -1,4 +1,4 @@
-;
+BLE_DAYS = 30;
   const hiddenCount = Math.max(0, rows.length - HISTORY_VISIBLE_DAYS);
   const visibleRows = historyShowAll ? rows : rows.slice(-HISTORY_VISIBLE_DAYS);
 
@@ -174,4 +174,4 @@ function renderPositiveBehaviors(){
       btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
       btn.addEventListener('click', ()=>{
         const delta = addPoints(h.pts);
-        addLog(`${isPositive?'+':'−'}${Math.a
+        addLog(`${isPositive?'+'
