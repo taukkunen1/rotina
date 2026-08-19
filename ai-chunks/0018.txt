@@ -1,4 +1,8 @@
-){ el.innerHTML=''; return; }
+
+function renderTestModeBanner(){
+  const el = document.getElementById('testModeBanner');
+  if(!el) return;
+  if(!TEST_DATE_OVERRIDE){ el.innerHTML=''; return; }
   el.innerHTML = `
     <div class="test-mode-banner">
       🧪 MODO TESTE ATIVO — data simulada: ${formatDateBR(TEST_DATE_OVERRIDE)}
@@ -204,5 +208,4 @@ function renderHistory(){
   const today = new Date(todayISO()+"T00:00:00");
 
   const rows = [];
-  for(let d = new Date(startDate); d <= today; d.setDate(d.getDate()+1)){
-    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+Stri
+  for(let d = new Date(st

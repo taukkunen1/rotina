@@ -1,4 +1,17 @@
-   label.textContent = 'Prontinho! 😊';
+rcle.offsetWidth;
+  circle.classList.add('breathing');
+
+  const phases = [
+    { text:'Inspire...', duration:4000 },
+    { text:'Segure...', duration:2000 },
+    { text:'Expire...', duration:4000 },
+  ];
+  let cycle = 0;
+  let phaseIdx = 0;
+
+  function nextPhase(){
+    if(cycle >= 3){
+      label.textContent = 'Prontinho! 😊';
       circle.classList.remove('breathing');
       breathingTimeoutId = setTimeout(closeBreathingExercise, 1500);
       return;
@@ -178,9 +191,4 @@ function doPost(e) {
   incoming.revision = nextRevision;
   incoming.serverUpdatedAt = new Date().toISOString();
   if (incoming.state) incoming.state.driveRevision = nextRevision;
-  file.setContent(JSON.stringify(incoming, null, 2));
-
-  var backupDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'America/Sao_Paulo', 'yyyy-MM-dd');
-  var backupName = 'rotina-hector-backup-' + backupDate + '.json';
-  var backups = DriveApp.getFilesByName(backupName);
-  if (!backups.hasNext())
+  file.setContent(JSON.stringi

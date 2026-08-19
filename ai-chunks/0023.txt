@@ -1,4 +1,9 @@
- {
+fy(incoming, null, 2));
+
+  var backupDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'America/Sao_Paulo', 'yyyy-MM-dd');
+  var backupName = 'rotina-hector-backup-' + backupDate + '.json';
+  var backups = DriveApp.getFilesByName(backupName);
+  if (!backups.hasNext()) {
     DriveApp.createFile(backupName, JSON.stringify(incoming, null, 2), MimeType.PLAIN_TEXT);
   }
 

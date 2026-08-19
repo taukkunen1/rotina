@@ -101,6 +101,7 @@ function render(){
       const li = document.createElement('li');
       const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
       const isSuggested = task.id === nextSuggestedId;
+      const lightDay = isLightDay(todayISO());
       li.className = 'task'
         + (status === 'done' ? ' done' : '')
         + (status === 'na' ? ' na' : '')
@@ -114,10 +115,10 @@ function render(){
         <span class="mark-group" data-id="${task.id}">
           <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
           <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
-          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, perde metade dos pontos">✕</button>
+          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="${lightDay ? 'Não feito (dia leve, sem perder ponto)' : 'Não feito, perde metade dos pontos'}">✕</button>
         </span>
         <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
-        <span class="pts">${status==='na' ? 'n/a' : status==='x' ? '−'+taskNotDonePenalty(task) : '+'+task.pts}</span>
+        <span class="pts">${status==='na' ? 'n/a' : status==='x' ? (lightDay ? 'dia leve' : '−'+taskNotDonePenalty(task)) : '+'+task.pts}</span>
       `;
       ul.appendChild(li);
     });
@@ -193,8 +194,3 @@ let testPanelOpen = false;
 // Painéis de "adulto" (Drive, editar dia, modo teste) ficam escondidos
 // até desbloquear a "Área dos adultos" — reseta ao recarregar.
 let adultUnlocked = false;
-
-function renderTestModeBanner(){
-  const el = document.getElementById('testModeBanner');
-  if(!el) return;
-  if(!TEST_DATE_OVERRIDE

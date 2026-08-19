@@ -1,4 +1,10 @@
-dEventListener('click', ()=>{
+sk.sub = e.target.value; });
+    row.querySelector('.del').addEventListener('click', ()=>{
+      periodsObj[key].tasks = periodsObj[key].tasks.filter(t=>t!==task);
+      renderEditorPeriod(key, elId, periodsObj);
+    });
+    row.querySelectorAll('.reorder-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
         const dir = btn.getAttribute('data-dir');
         const i = list.indexOf(task);
         const swapWith = dir === 'up' ? i-1 : i+1;
@@ -173,17 +179,4 @@ function startBreathingExercise(){
   const label = document.getElementById('breathingLabel');
   overlay.classList.add('open');
   circle.classList.remove('breathing');
-  void circle.offsetWidth;
-  circle.classList.add('breathing');
-
-  const phases = [
-    { text:'Inspire...', duration:4000 },
-    { text:'Segure...', duration:2000 },
-    { text:'Expire...', duration:4000 },
-  ];
-  let cycle = 0;
-  let phaseIdx = 0;
-
-  function nextPhase(){
-    if(cycle >= 3){
-   
+  void ci
