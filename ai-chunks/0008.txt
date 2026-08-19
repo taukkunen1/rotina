@@ -1,223 +1,200 @@
-ba4xs');
+: CONFIG.periods;
+  const weekday = weekdayKeyFor(dateISO);
+  const todaysSchedule = (CONFIG.schedule || []).filter(s => s.days && s.days.includes(weekday));
+  const todaysExceptions = (CONFIG.scheduleExceptions || []).filter(s => s.date === dateISO);
+  if(todaysSchedule.length === 0 && todaysExceptions.length === 0) return base;
+
+  // clona pra não mexer no CONFIG original, e injeta os compromissos fixos
+  // (e exceções pontuais) de hoje como tarefas de verdade no período certo
+  const merged = JSON.parse(JSON.stringify(base));
+  todaysSchedule.forEach(s=>{
+    const periodKey = s.period && merged[s.period] ? s.period : 'tarde';
+    merged[periodKey].tasks.push({
+      id: 'sched_' + s.id,
+      txt: s.label,
+      sub: `${s.start}–${s.end}`,
+      pts: s.pts != null ? s.pts : 3,
+    });
+  });
+  todaysExceptions.forEach(s=>{
+    const periodKey = s.period && merged[s.period] ? s.period : 'tarde';
+    merged[periodKey].tasks.push({
+      id: 'exc_' + s.id,
+      txt: s.label,
+      sub: `${s.start}–${s.end}`,
+      pts: s.pts != null ? s.pts : 3,
+    });
+  });
+  return merged;
+}
+
+function allTasks(dateISO){
+  const periods = getPeriodsFor(dateISO || todayISO());
+  return [
+    ...periods.manha.tasks,
+    ...periods.tarde.tasks,
+    ...periods.noite.tasks,
+  ];
+}
+
+// Reordenação pessoal (autonomia > pontos, segundo os estudos), por
+// período, aplicada por cima da ordem sugerida — sem mexer na config.
+function getEffectiveTaskOrder(periodKey, tasks){
+  if(!state.customTaskOrder) state.customTaskOrder = {};
+  const customOrder = state.customTaskOrder[periodKey];
+  if(!customOrder || !customOrder.length) return tasks;
+  const byId = new Map(tasks.map(t=>[t.id, t]));
+  const ordered = customOrder.map(id=>byId.get(id)).filter(Boolean);
+  const missing = tasks.filter(t=>!customOrder.includes(t.id));
+  return [...ordered, ...missing];
+}
+
+// Lista achatada de tarefas ainda pendentes hoje, na ordem (por período,
+// respeitando a ordem pessoal) — usada no card "Agora / Próximo / Depois".
+function pendingTasksFlat(){
+  const order = ['manha','tarde','noite'];
+  const periodsObj = getPeriodsFor(todayISO());
+  let list = [];
+  order.forEach(key=>{
+    const tasks = getEffectiveTaskOrder(key, periodsObj[key].tasks);
+    tasks.forEach(t=>{
+      if(!state.checkedToday[t.id]) list.push(t);
+    });
+  });
+  return list;
+}
+
+// ☁️ Dia leve — sábado vem sem cobrança de pontuação, só um lembrete
+// pra descansar sem culpa.
+function isLightDay(dateISO){
+  return weekdayKeyFor(dateISO || todayISO()) === 'sab';
+}
+function renderLightDayBanner(){
+  const el = document.getElementById('lightDayBanner');
+  if(!el) return;
+  el.innerHTML = isLightDay(todayISO())
+    ? `<div class="light-day-banner">☁️ Dia leve — hoje é pra descansar também, sem pressão de pontuação.</div>`
+    : '';
+}
+
+// Agora → Próximo → Depois — em vez de jogar a lista toda de uma vez,
+// mostra só os 3 próximos passos, de um jeito mais leve de encarar o dia.
+function renderFocusCard(){
+  const el = document.getElementById('focusCard');
+  if(!el) return;
+  const pending = pendingTasksFlat().filter(t => !t.external);
+  if(pending.length === 0){ el.innerHTML = ''; return; }
+  const [now, next, later] = pending;
+  el.innerHTML = `
+    <div class="focus-card">
+      <div class="focus-step"><span class="focus-label">Agora</span><span class="focus-task">${taskIcon(now.txt)} ${now.txt}</span></div>
+      ${next ? `<div class="focus-step dim"><span class="focus-label">Próximo</span><span class="focus-task">${taskIcon(next.txt)} ${next.txt}</span></div>` : ''}
+      ${later ? `<div class="focus-step dim"><span class="focus-label">Depois</span><span class="focus-task">${taskIcon(later.txt)} ${later.txt}</span></div>` : ''}
+    </div>
+  `;
+}
+
+// 🌱 Recomeçar daqui — se teve alguma tarefa não feita hoje, oferece um
+// jeito de virar a página sem apagar o histórico: só acalma o visual
+// pro resto do dia, e oferece uma missãozinha fácil pra quebrar o ciclo
+// "errei → já perdi o dia → desisto".
+const RECOVERY_MISSIONS = [
+  'Guardar 5 brinquedos',
+  'Beber um copo de água',
+  'Escovar os dentes',
+  'Começar o dever por 5 minutinhos',
+];
+function renderFreshStartArea(){
+  const el = document.getElementById('freshStartArea');
+  if(!el) return;
+  const hasNotDoneToday = Object.values(state.checkedToday).includes('x');
+  const freshStartActive = state.freshStartActiveDate === todayISO();
+
+  if(!hasNotDoneToday || freshStartActive){
+    if(freshStartActive && !(state.recoveryMissionDone && state.recoveryMissionDone.date === todayISO())){
+      renderRecoveryMission(el);
+    } else {
+      el.innerHTML = '';
+    }
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="fresh-start-card">
+      <div class="fresh-start-msg">Tudo bem. Vamos começar de onde você está agora.</div>
+      <button class="fresh-start-btn" id="freshStartBtn">🌱 Recomeçar daqui</button>
+    </div>
+  `;
+  document.getElementById('freshStartBtn').addEventListener('click', ()=>{
+    state.freshStartActiveDate = todayISO();
+    saveState(state);
+    render();
+  });
+}
+function renderRecoveryMission(el){
+  const seed = todayISO().split('-').reduce((s,n)=>s+Number(n),0);
+  const mission = RECOVERY_MISSIONS[seed % RECOVERY_MISSIONS.length];
+  el.innerHTML = `
+    <div class="recovery-mission-card">
+      <div class="recovery-mission-title">⭐ Missão de recuperação</div>
+      <div class="recovery-mission-text">${mission}</div>
+      <button class="recovery-mission-btn" id="recoveryMissionBtn">concluí! 🎉</button>
+    </div>
+  `;
+  document.getElementById('recoveryMissionBtn').addEventListener('click', (evt)=>{
+    const delta = addPoints(1);
+    addLog(`⭐ +1 · Missão de recuperação: ${mission}`);
+    state.recoveryMissionDone = { date: todayISO(), mission };
+    saveState(state);
+    bumpTotal(delta, evt.currentTarget);
+    fireConfetti(evt.currentTarget, 16);
+    render();
+  });
+}
+
+// 🌟 Vitórias invisíveis — mostra o que já foi conquistado hoje, mesmo
+// que o dia não tenha sido perfeito.
+function renderInvisibleWinsCard(){
+  const el = document.getElementById('invisibleWinsCard');
+  if(!el) return;
+  const tasks = allTasks(todayISO());
+  const doneTasks = tasks.filter(t => state.checkedToday[t.id] === 'done');
+  const hasNotDone = Object.values(state.checkedToday).includes('x');
+  const recovered = state.freshStartActiveDate === todayISO();
+
+  if(doneTasks.length === 0){ el.innerHTML = ''; return; }
+
+  const items = doneTasks.slice(0, 6).map(t => `<li>${taskIcon(t.txt)} ${t.txt}</li>`);
+  if(hasNotDone && recovered) items.push('<li>🌱 Voltou depois de um momento difícil</li>');
+
+  el.innerHTML = `
+    <div class="wins-card">
+      <div class="wins-title">🌟 Coisas que você conseguiu hoje</div>
+      <ul class="wins-list">${items.join('')}</ul>
+    </div>
+  `;
+}
+
+function moveTaskInOrder(periodKey, tasks, taskId, direction){
+  const current = getEffectiveTaskOrder(periodKey, tasks).map(t=>t.id);
+  const idx = current.indexOf(taskId);
+  const swapWith = direction === 'up' ? idx-1 : idx+1;
+  if(idx < 0 || swapWith < 0 || swapWith >= current.length) return;
+  [current[idx], current[swapWith]] = [current[swapWith], current[idx]];
+  if(!state.customTaskOrder) state.customTaskOrder = {};
+  state.customTaskOrder[periodKey] = current;
+  saveState(state);
+}
+
+function stripLegacyHairTask(cfg){
+  // "Cabelo Lavado" virou tarefa duplicada por engano em algum momento —
+  // o controle de cabelo já tem sua própria seção dedicada (🧴 Lavar o
+  // cabelo), então removemos essa tarefa específica se ela aparecer.
+  if(cfg && cfg.periods && cfg.periods.noite && Array.isArray(cfg.periods.noite.tasks)){
+    cfg.periods.noite.tasks = cfg.periods.noite.tasks.filter(t => t.id !== 't_gzba4xs');
   }
   if(cfg && cfg.periodsWeekend && cfg.periodsWeekend.noite && Array.isArray(cfg.periodsWeekend.noite.tasks)){
     cfg.periodsWeekend.noite.tasks = cfg.periodsWeekend.noite.tasks.filter(t => t.id !== 't_gzba4xs');
   }
   // senha do site: recurso removido — limpa de qualquer config que já
-  // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
-  if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return splitBagunçaV1(addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))))))))));
-}
-
-// Reforça pontos de tarefas mais chatas — roda uma vez só, não desfaz
-// ajuste manual dos pais.
-const POINT_REBALANCE_V1 = {
-  m1:2, m3:2, m8:2, t_djf7hbb:4,
-  t3:2, t5:2,
-  n4:4, n5:3, n6:2, t_ci3brlt:4,
-};
-function applyPointRebalanceV1(cfg){
-  if(!cfg || cfg.pointRebalanceV1Applied) return cfg;
-  ['periods','periodsWeekend'].forEach(key=>{
-    const p = cfg[key];
-    if(!p) return;
-    ['manha','tarde','noite'].forEach(period=>{
-      if(p[period] && Array.isArray(p[period].tasks)){
-        p[period].tasks.forEach(t=>{
-          if(POINT_REBALANCE_V1[t.id] !== undefined) t.pts = POINT_REBALANCE_V1[t.id];
-        });
-      }
-    });
-  });
-  cfg.pointRebalanceV1Applied = true;
-  return cfg;
-}
-
-// Tarefa mais chata: 7 pontos, penalidade CHEIA se não fizer (não a metade).
-function applyPointRebalanceV2(cfg){
-  if(!cfg || cfg.pointRebalanceV2Applied) return cfg;
-  ['periods','periodsWeekend'].forEach(key=>{
-    const p = cfg[key];
-    if(p && p.noite && Array.isArray(p.noite.tasks)){
-      p.noite.tasks.forEach(t=>{
-        if(t.id === 'n5'){ t.pts = 7; t.fullPenalty = true; }
-      });
-    }
-  });
-  cfg.pointRebalanceV2Applied = true;
-  return cfg;
-}
-
-// Ordem por ciência comportamental: tarefa chata primeiro (eat the frog),
-// higiene em sequência, foco cognitivo com mente descansada, sair por
-// último, água fácil fechando o bloco (efeito do final).
-const TASK_ORDER_V1 = {
-  manha: ["m1","m4","m3","m7","m5","m8","t_djf7hbb","m2"],
-  tarde: ["t2","t3","t5","t4","t1"],
-  noite: ["n5_cartas","n5_carrinhos","n5_bolinhas","n5_caixas","n5_sala","n1","n4","n6","n7","t_ci3brlt","n2"],
-};
-function applyTaskOrderV1(cfg){
-  if(!cfg || cfg.taskOrderV1Applied) return cfg;
-  ['periods','periodsWeekend'].forEach(key=>{
-    const p = cfg[key];
-    if(!p) return;
-    ['manha','tarde','noite'].forEach(period=>{
-      if(p[period] && Array.isArray(p[period].tasks)){
-        const order = TASK_ORDER_V1[period];
-        const tasks = p[period].tasks;
-        const known = order.map(id => tasks.find(t=>t.id===id)).filter(Boolean);
-        const extra = tasks.filter(t => !order.includes(t.id));
-        p[period].tasks = [...known, ...extra];
-      }
-    });
-  });
-  cfg.taskOrderV1Applied = true;
-  return cfg;
-}
-
-// "Momento Criativo" — insere entre "Escovar os dentes" e "Ler Livro"
-// pra quem já sincronizou. Roda uma vez.
-function addCreativeTaskV1(cfg){
-  if(!cfg || cfg.creativeTaskV1Applied) return cfg;
-  ['periods','periodsWeekend'].forEach(key=>{
-    const p = cfg[key];
-    if(p && p.noite && Array.isArray(p.noite.tasks)){
-      const tasks = p.noite.tasks;
-      if(!tasks.some(t=>t.id === 'n7')){
-        const newTask = { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" };
-        const idx = tasks.findIndex(t=>t.id === 'n6');
-        if(idx >= 0) tasks.splice(idx+1, 0, newTask);
-        else tasks.push(newTask);
-      }
-    }
-  });
-  cfg.creativeTaskV1Applied = true;
-  return cfg;
-}
-
-// Tarefas fora do controle dele (refeições, escola) — soltas, sem entrar
-// no encadeamento de "próxima sugerida".
-const EXTERNAL_TASK_IDS = ["t2","t4","n1"];
-function markExternalTasksV1(cfg){
-  if(!cfg || cfg.externalTasksV1Applied) return cfg;
-  ['periods','periodsWeekend'].forEach(key=>{
-    const p = cfg[key];
-    if(!p) return;
-    ['manha','tarde','noite'].forEach(period=>{
-      if(p[period] && Array.isArray(p[period].tasks)){
-        p[period].tasks.forEach(t=>{
-          if(EXTERNAL_TASK_IDS.includes(t.id)) t.external = true;
-        });
-      }
-    });
-  });
-  cfg.externalTasksV1Applied = true;
-  return cfg;
-}
-
-// Jogos em Família — toda quinta à noite.
-function addFamilyGameNightV1(cfg){
-  if(!cfg || cfg.familyGameNightV1Applied) return cfg;
-  if(!Array.isArray(cfg.schedule)) cfg.schedule = [];
-  if(!cfg.schedule.some(s=>s.id === 'sc4')){
-    cfg.schedule.push({ id:"sc4", label:"Jogos em Família", days:["qui"], start:"16:00", end:"17:30", period:"tarde", pts:5 });
-  }
-  cfg.familyGameNightV1Applied = true;
-  return cfg;
-}
-
-// Correção: era pra ser de TARDE, não de noite — ajusta quem já tinha
-// recebido a versão antiga (noite, 19h-20h30).
-function fixFamilyGameNightV2(cfg){
-  if(!cfg || cfg.familyGameNightV2Applied) return cfg;
-  if(Array.isArray(cfg.schedule)){
-    const item = cfg.schedule.find(s=>s.id === 'sc4');
-    if(item){
-      item.label = "Jogos em Família";
-      item.period = "tarde";
-      item.start = "16:00";
-      item.end = "17:30";
-    }
-  }
-  cfg.familyGameNightV2Applied = true;
-  return cfg;
-}
-
-// Nome mais simples — "Tarde de..." era redundante já que o bloco em si
-// já se chama Tarde.
-function fixFamilyGameNightV3(cfg){
-  if(!cfg || cfg.familyGameNightV3Applied) return cfg;
-  if(Array.isArray(cfg.schedule)){
-    const item = cfg.schedule.find(s=>s.id === 'sc4');
-    if(item) item.label = "Jogos em Família";
-  }
-  cfg.familyGameNightV3Applied = true;
-  return cfg;
-}
-
-// Correção final: é de NOITE mesmo, das 21h às 23h de quinta.
-function fixFamilyGameNightV4(cfg){
-  if(!cfg || cfg.familyGameNightV4Applied) return cfg;
-  if(Array.isArray(cfg.schedule)){
-    const item = cfg.schedule.find(s=>s.id === 'sc4');
-    if(item){
-      item.period = "noite";
-      item.start = "21:00";
-      item.end = "23:00";
-    }
-  }
-  cfg.familyGameNightV4Applied = true;
-  return cfg;
-}
-
-// Recompensa: Passeio Especial (ele escolhe).
-function addOutingRewardV1(cfg){
-  if(!cfg || cfg.outingRewardV1Applied) return cfg;
-  if(!Array.isArray(cfg.rewards)) cfg.rewards = [];
-  if(!cfg.rewards.some(r=>r.id === 'r3')){
-    cfg.rewards.push({ id:"r3", txt:"Passeio Especial (você escolhe)", cost:500 });
-  }
-  cfg.outingRewardV1Applied = true;
-  return cfg;
-}
-
-// "Arrumar a bagunça" era vaga — quebrada em 5 tarefas pequenas e
-// concretas (começo/fim claros): cartas, carrinhos, bolinhas, caixas,
-// e conferência final da sala.
-function splitBagunçaV1(cfg){
-  if(!cfg || cfg.splitBagunçaV1Applied) return cfg;
-  const newTasks = [
-    { id:"n5_cartas", txt:"Guardar as cartas de bafo", pts:1, fullPenalty:true, sub:"na caixinha delas" },
-    { id:"n5_carrinhos", txt:"Guardar os carrinhos", pts:1, fullPenalty:true, sub:"na caixa/prateleira" },
-    { id:"n5_bolinhas", txt:"Guardar as bolinhas de gude", pts:1, fullPenalty:true, sub:"no potinho" },
-    { id:"n5_caixas", txt:"Guardar as caixas", pts:1, fullPenalty:true, sub:"no lugar certo ou no lixo" },
-    { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:3, fullPenalty:true, sub:"conferência final — nada espalhado" },
-  ];
-  ['periods','periodsWeekend'].forEach(key=>{
-    const p = cfg[key];
-    if(p && p.noite && Array.isArray(p.noite.tasks)){
-      const idx = p.noite.tasks.findIndex(t=>t.id === 'n5');
-      if(idx >= 0){
-        p.noite.tasks.splice(idx, 1, ...newTasks);
-      } else if(!p.noite.tasks.some(t=>t.id === 'n5_sala')){
-        p.noite.tasks.unshift(...newTasks);
-      }
-    }
-  });
-  cfg.splitBagunçaV1Applied = true;
-  return cfg;
-}
-
-function loadConfig(){
-  try{
-    const raw = localStorage.getItem(STORAGE_CONFIG_KEY);
-    if(raw) return stripLegacyHairTask(JSON.parse(raw));
-  }catch(e){}
-  return stripLegacyHairTask(JSON.parse(JSON.stringify(DEFAULT_CONFIG)));
-}
-function saveConfig(cfg){
-  try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(cfg)); }catch(e){}
-  scheduleAutoPush();
-}
-
-let TEST_DATE_OVERR
+  // tinha iss

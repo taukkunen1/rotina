@@ -1,4 +1,183 @@
-ava.
+tal, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
+}
+
+function saveState(state, options={}){
+  if(!options.remote){
+    state.revision = (Number(state.revision)||0) + 1;
+    state.updatedAt = new Date().toISOString();
+  }
+  try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+  scheduleAutoPush();
+}
+
+/* ---------- sincronização automática com o Google Drive ----------
+   Sempre que o arquivo abre, ele tenta buscar a versão mais nova salva
+   no Drive (via Apps Script) e usa ela — assim, não importa em qual
+   aparelho vocês abrirem, todos mostram a mesma coisa. Sempre que algo
+   muda aqui, ele também manda a atualização pro Drive sozinho, na hora
+   (sem precisar clicar em nada). Se estiver offline, o arquivo continua
+   funcionando normal com os dados salvos localmente.
+   IMPORTANTE: essas variáveis precisam existir ANTES de carregar
+   CONFIG/state, porque o carregamento pode precisar salvar de volta
+   (limpezas, correções automáticas) e isso já chama scheduleAutoPush.
+   E a sincronização fica SUSPENSA durante esse carregamento inicial —
+   nesse momento ainda nem todo o resto do código rodou, então tentar
+   sincronizar/renderizar tão cedo pode travar. Ela é reativada logo
+   depois, uma vez que CONFIG e state já estão prontos. */
+let suppressAutoPush = true;
+let pushInFlight = false;
+let pushPending = false;
+
+let CONFIG = loadConfig();
+let state = loadState();
+
+suppressAutoPush = false;
+
+function scheduleAutoPush(){
+  if(!APPS_SCRIPT_URL || suppressAutoPush) return;
+  if(pushInFlight){ pushPending = true; return; }
+  doAutoPush();
+}
+
+async function doAutoPush(){
+  if(!APPS_SCRIPT_URL) return;
+  pushInFlight = true;
+  try{
+    const payload = {
+      appVersion: APP_VERSION,
+      config: CONFIG,
+      state: state,
+      baseRevision: Number(state.driveRevision)||0,
+      clientRevision: Number(state.revision)||0,
+      clientUpdatedAt: state.updatedAt || new Date().toISOString(),
+      exportedAt: new Date().toISOString()
+    };
+    const res = await fetch(DATA_ENDPOINT, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if(result.ok){
+      state.driveRevision = Number(result.revision)||state.driveRevision;
+      state.driveLastSyncISO = todayISO();
+      state.driveConflictCount = 0;
+      try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+      renderDriveSync();
+    } else if(result.conflict && result.data){
+      state.driveConflictCount = (Number(state.driveConflictCount)||0)+1;
+      const server = result.data;
+      const merged = mergeRemoteData(server);
+      CONFIG = merged.config;
+      state = merged.state;
+      state.driveRevision = Number(result.revision)||Number(server.state?.driveRevision)||0;
+      state.driveLastSyncISO = todayISO();
+      saveState(state);
+      saveConfig(CONFIG);
+      render();
+    }
+  }catch(err){
+    renderDriveSync();
+  } finally {
+    pushInFlight = false;
+    if(pushPending){
+      pushPending = false;
+      doAutoPush();
+    }
+  }
+}
+
+function isValidPeriodsConfig(cfg){
+  try{
+    const p = cfg && cfg.periods;
+    return !!(
+      p &&
+      p.manha && Array.isArray(p.manha.tasks) && p.manha.tasks.length > 0 &&
+      p.tarde && Array.isArray(p.tarde.tasks) && p.tarde.tasks.length > 0 &&
+      p.noite && Array.isArray(p.noite.tasks) && p.noite.tasks.length > 0
+    );
+  }catch(e){
+    return false;
+  }
+}
+
+function sanitizeRemoteConfig(remoteConfig){
+  if(!isValidPeriodsConfig(remoteConfig)) return null;
+  const safe = JSON.parse(JSON.stringify(remoteConfig));
+  if(!safe.periodsWeekend) safe.periodsWeekend = null;
+  if(!Array.isArray(safe.badHabits)) safe.badHabits = [];
+  if(!Array.isArray(safe.rewards)) safe.rewards = [];
+  if(!Array.isArray(safe.schedule)) safe.schedule = [];
+  if(!Array.isArray(safe.scheduleExceptions)) safe.scheduleExceptions = [];
+  if(!safe.pet || !Array.isArray(safe.pet.stages) || safe.pet.stages.length < 2) {
+    safe.pet = JSON.parse(JSON.stringify(DEFAULT_CONFIG.pet));
+  }
+  return stripLegacyHairTask(safe);
+}
+
+function mergeRemoteData(remote){
+  const remoteState = remote.state || {};
+  const localState = state || {};
+  const merged = JSON.parse(JSON.stringify(remoteState));
+  merged.history = {...(remoteState.history||{})};
+  Object.entries(localState.history||{}).forEach(([iso,entry])=>{
+    const remoteEntry = merged.history[iso];
+    if(!remoteEntry || JSON.stringify(entry) !== JSON.stringify(remoteEntry)){
+      const localUpdated = entry.updatedAt || localState.updatedAt || '';
+      const remoteUpdated = remoteEntry.updatedAt || remoteState.updatedAt || '';
+      if(localUpdated >= remoteUpdated) merged.history[iso] = entry;
+    }
+  });
+  merged.petCompletedDays = [...new Set([...(remoteState.petCompletedDays||[]), ...(localState.petCompletedDays||[])])].sort();
+  merged.petPerfectBonusDays = [...new Set([...(remoteState.petPerfectBonusDays||[]), ...(localState.petPerfectBonusDays||[])])].sort();
+  merged.historyCorrectionV2Applied = !!(remoteState.historyCorrectionV2Applied || localState.historyCorrectionV2Applied);
+  merged.hairByDate = {...(remoteState.hairByDate||{}), ...(localState.hairByDate||{})};
+  merged.totalPoints = Math.max(Number(remoteState.totalPoints)||0, Number(localState.totalPoints)||0);
+  merged.lastSeenPetStage = Math.max(Number(remoteState.lastSeenPetStage)||0, Number(localState.lastSeenPetStage)||0);
+  merged.log = [...(localState.log||[]), ...(remoteState.log||[])].slice(0,30);
+  merged.revision = Math.max(Number(localState.revision)||0, Number(remoteState.revision)||0)+1;
+  merged.updatedAt = new Date().toISOString();
+  const remoteConfig = sanitizeRemoteConfig(remote.config);
+  const localConfigValid = isValidPeriodsConfig(CONFIG);
+  const useRemoteConfig = remoteConfig && (!localConfigValid || localState.updatedAt < (remoteState.updatedAt||''));
+  return {
+    config: useRemoteConfig ? remoteConfig : (localConfigValid ? CONFIG : JSON.parse(JSON.stringify(DEFAULT_CONFIG))),
+    state: merged
+  };
+}
+
+async function autoPullOnStartup(){
+  if(!APPS_SCRIPT_URL) return;
+  suppressAutoPush = true;
+  try{
+    const res = await fetch(DATA_ENDPOINT, {method:'GET', cache:'no-store'});
+    if(res.ok){
+      const backup = await res.json();
+      if(backup && backup.config && backup.state){
+        const localRevision = Number(state.driveRevision)||0;
+        const localDirty = (Number(state.revision)||0) > localRevision;
+        const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
+        if(localDirty && remoteRevision !== localRevision){
+          const merged = mergeRemoteData(backup);
+          CONFIG = merged.config;
+          state = merged.state;
+          state.driveRevision = remoteRevision;
+          saveConfig(CONFIG);
+          saveState(state);
+          render();
+        } else if(remoteRevision >= localRevision){
+          const remoteConfig = sanitizeRemoteConfig(backup.config);
+          if(remoteConfig){
+            CONFIG = remoteConfig;
+            state = reconcileState(backup.state);
+            state.driveRevision = remoteRevision;
+            state.driveLastSyncISO = todayISO();
+            try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(CONFIG)); }catch(e){}
+            try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+            render();
+          }else{
+            // Nunca substituir uma rotina válida por um backup remoto vazio/incompleto.
+            // O app continua com a configuração local que já funcionava.
             render();
           }
         }
@@ -12,219 +191,4 @@ ava.
 
 function addLog(text, isParentAction){
   const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-  state.log.unshift({ text: time+" — "+text, parent: !!isParentAction });
-  state.log = state.log.slice(0, 30);
-}
-function bumpTotal(delta, anchorEl){
-  const el = document.getElementById('totalPoints');
-  el.textContent = state.totalPoints;
-  el.classList.remove('bump');
-  void el.offsetWidth;
-  el.classList.add('bump');
-
-  if(delta){
-    const deltaEl = document.getElementById('pointsDelta');
-    if(deltaEl){
-      const rect = (anchorEl || el).getBoundingClientRect();
-      deltaEl.style.left = (rect.left + rect.width/2) + 'px';
-      deltaEl.style.top = (rect.top - 6) + 'px';
-      deltaEl.classList.remove('show-up','show-down');
-      void deltaEl.offsetWidth;
-      deltaEl.textContent = (delta>0?'+':'−') + Math.abs(delta);
-      deltaEl.classList.add(delta>0?'show-up':'show-down');
-    }
-  }
-}
-
-// 1 Pacus Point ≈ R$0,06 (dentro da faixa combinada de R$0,05–0,08) — o
-// saldo nunca passa de 1000 pontos, equivalente a uns R$60 no máximo.
-const MAX_POINTS = 1000;
-const POINT_VALUE_BRL = 0.06;
-
-function addPoints(delta){
-  const before = state.totalPoints;
-  state.totalPoints = Math.max(0, Math.min(MAX_POINTS, state.totalPoints + delta));
-  return state.totalPoints - before;
-}
-
-// "✕ não realizado": perde metade dos pontos, arredondado pra cima e
-// sempre par.
-function notDonePenalty(pts){
-  let half = Math.ceil(pts/2);
-  if(half % 2 !== 0) half += 1;
-  return half;
-}
-
-// Algumas tarefas (marcadas com fullPenalty:true) perdem o valor CHEIO em
-// vez de metade — reforço maior pras tarefas mais chatas/resistidas.
-function taskNotDonePenalty(task){
-  return task.fullPenalty ? task.pts : notDonePenalty(task.pts);
-}
-
-/* ===================== TIMER DE TEMPO DE JOGO (diário) ===================== */
-let gameTimerTickHandle = null;
-
-function gameTimerDailyLimitSeconds(){
-  const base = Math.round((CONFIG.screenDailyLimitHours || 2) * 3600);
-  const bonus = Math.round((state.gameTimer.bonusSeconds || 0));
-  return Math.max(0, base + bonus);
-}
-
-function addGameTimerBonusHours(hours){
-  if(!state.gameTimer.bonusSeconds) state.gameTimer.bonusSeconds = 0;
-  state.gameTimer.bonusSeconds += Math.round(hours * 3600);
-}
-
-function gameTimerSecondsUsedNow(){
-  const gt = state.gameTimer;
-  const running = gt.runningSince ? (Date.now() - gt.runningSince)/1000 : 0;
-  return gt.usedSeconds + running;
-}
-
-function gameTimerIsRunning(){
-  return !!state.gameTimer.runningSince;
-}
-
-function startGameTimer(){
-  if(gameTimerIsRunning()) return;
-  if(!isManhaComplete()) return;
-  state.gameTimer.runningSince = Date.now();
-  addLog('🎮 começou a jogar');
-  saveState(state);
-  renderGameTimer();
-  startGameTimerTicking();
-}
-
-function stopGameTimer(){
-  if(!gameTimerIsRunning()) return;
-  const elapsed = (Date.now() - state.gameTimer.runningSince)/1000;
-  state.gameTimer.usedSeconds += elapsed;
-  state.gameTimer.runningSince = null;
-  addLog('⏸️ parou de jogar');
-  saveState(state);
-  renderGameTimer();
-  stopGameTimerTicking();
-}
-
-// enquanto está rodando, "descarrega" o tempo periodicamente pro estado
-// salvo — assim não perde o progresso se a página fechar sem clicar em parar
-function flushGameTimer(){
-  if(!gameTimerIsRunning()) return;
-  const elapsed = (Date.now() - state.gameTimer.runningSince)/1000;
-  state.gameTimer.usedSeconds += elapsed;
-  state.gameTimer.runningSince = Date.now();
-  saveState(state);
-}
-
-function formatMinSec(totalSeconds){
-  const s = Math.max(0, Math.round(totalSeconds));
-  const h = Math.floor(s/3600);
-  const m = Math.floor((s%3600)/60);
-  if(h > 0) return `${h}h ${String(m).padStart(2,'0')}min`;
-  return `${m} min`;
-}
-
-function startGameTimerTicking(){
-  if(gameTimerTickHandle) return;
-  let flushCounter = 0;
-  gameTimerTickHandle = setInterval(()=>{
-    updateGameTimerDisplay();
-    flushCounter++;
-    if(flushCounter >= 20){ // ~20s, descarrega pro estado salvo
-      flushCounter = 0;
-      flushGameTimer();
-    }
-  }, 1000);
-}
-function stopGameTimerTicking(){
-  if(gameTimerTickHandle){ clearInterval(gameTimerTickHandle); gameTimerTickHandle = null; }
-}
-
-function updateGameTimerDisplay(){
-  const usedEl = document.getElementById('gameTimerUsed');
-  const barEl = document.getElementById('gameTimerBarFill');
-  if(!usedEl || !barEl) return;
-  const limit = gameTimerDailyLimitSeconds();
-  const used = gameTimerSecondsUsedNow();
-  const remaining = limit - used;
-  const pct = limit > 0 ? Math.min(100, Math.round((used/limit)*100)) : 100;
-  usedEl.innerHTML = remaining > 0
-    ? `<b>${formatMinSec(remaining)}</b> restantes hoje`
-    : `<b>tempo de hoje acabou</b>`;
-  barEl.style.width = pct + '%';
-  barEl.classList.toggle('over-limit', used >= limit);
-}
-
-function renderGameTimer(){
-  const el = document.getElementById('gameTimerSection');
-  if(!el) return;
-  const running = gameTimerIsRunning();
-  const limit = gameTimerDailyLimitSeconds();
-  const used = gameTimerSecondsUsedNow();
-  const remaining = limit - used;
-  const pct = limit > 0 ? Math.min(100, Math.round((used/limit)*100)) : 100;
-  const manhaOk = isManhaComplete();
-  const locked = !manhaOk && !running;
-
-  el.innerHTML = `
-    <div class="game-timer">
-      <h3>🎮 Tempo de Jogo</h3>
-      <div class="hint">Cota de ${CONFIG.screenDailyLimitHours || 2}h por dia.</div>
-      ${locked ? `<div class="game-timer-locked">🔒 Termine as tarefas da Manhã pra desbloquear</div>` : ''}
-      <div class="game-timer-used" id="gameTimerUsed">${remaining > 0 ? `<b>${formatMinSec(remaining)}</b> restantes hoje` : `<b>tempo de hoje acabou</b>`}</div>
-      <div class="game-timer-track"><div class="game-timer-fill ${used>=limit?'over-limit':''}" id="gameTimerBarFill" style="width:${pct}%"></div></div>
-      <button class="game-timer-btn ${running?'running':''}" id="gameTimerToggleBtn" ${locked?'disabled':''}>
-        ${running ? '⏸️ Parar de jogar' : '▶️ Começar a jogar'}
-      </button>
-      ${adultUnlocked ? `<button class="icon-btn" id="gameTimerAdjustBtn" style="margin-top:8px;" title="Ajuste manual do tempo de hoje">⚙️ ajustar tempo de hoje</button>` : ''}
-    </div>
-  `;
-  document.getElementById('gameTimerToggleBtn').addEventListener('click', ()=>{
-    if(gameTimerIsRunning()) stopGameTimer(); else startGameTimer();
-  });
-
-  const adjustBtn = document.getElementById('gameTimerAdjustBtn');
-  if(adjustBtn){
-    adjustBtn.addEventListener('click', ()=>{
-      const currentRemainingMin = Math.round(remaining/60);
-      const raw = prompt('Quantos minutos você quer que sobrem hoje?', String(Math.max(0, currentRemainingMin)));
-      if(raw === null) return;
-      const targetMin = parseInt(raw, 10);
-      if(isNaN(targetMin) || targetMin < 0) return;
-      const deltaSeconds = (targetMin*60) - remaining;
-      addGameTimerBonusHours(deltaSeconds/3600);
-      addLog(`⚙️ tempo de hoje ajustado pra ${targetMin} min restantes`, true);
-      saveState(state);
-      renderGameTimer();
-    });
-  }
-
-  if(running) startGameTimerTicking(); else stopGameTimerTicking();
-}
-
-/* ===================== TIMERS AVULSOS (tempo livre pra qualquer coisa) ===================== */
-let customTimerTickHandle = null;
-
-function findCustomTimer(id){
-  return state.customTimers.find(t=>t.id===id);
-}
-
-function customTimerRemainingNow(t){
-  if(!t.runningSince) return t.remainingSeconds;
-  const elapsed = (Date.now() - t.runningSince)/1000;
-  return Math.max(0, t.remainingSeconds - elapsed);
-}
-
-function setCustomTimerMinutes(id, minutes){
-  const t = findCustomTimer(id);
-  if(!t || t.runningSince) return; // não dá pra mudar enquanto está rodando
-  const secs = Math.max(0, Math.round(minutes*60));
-  t.totalSeconds = secs;
-  t.remainingSeconds = secs;
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function startCustomTimer(id){
-  const t = findCustomTimer(id
+  state.log.unshift({ text: time+" — "+text, pare

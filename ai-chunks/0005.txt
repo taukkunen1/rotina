@@ -1,4 +1,113 @@
-order-radius:6px;
+es breathingScale{
+    0%{ transform:scale(.6); }
+    40%{ transform:scale(1.15); }
+    60%{ transform:scale(1.15); }
+    100%{ transform:scale(.6); }
+  }
+  .breathing-label{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:1.3rem;
+    color:var(--chalk);
+    margin-bottom:20px;
+    min-height:1.6em;
+  }
+
+  footer{
+    text-align:center;
+    margin-top:22px;
+    font-size:.68rem;
+    color:rgba(242,237,225,.28);
+  }
+
+  /* ---------- editor (modal) ---------- */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(10,16,13,.72);
+    display:none;
+    align-items:flex-start;
+    justify-content:center;
+    padding:30px 14px;
+    overflow-y:auto;
+    z-index:100;
+  }
+  .overlay.open{ display:flex; }
+
+  .editor{
+    width:100%;
+    max-width:720px;
+    background:var(--board);
+    border:3px solid var(--wood);
+    border-radius:10px;
+    padding:20px 20px 24px;
+    box-shadow:0 20px 60px rgba(0,0,0,.6);
+  }
+
+  .editor-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:2px dashed var(--line);
+    padding-bottom:12px;
+    margin-bottom:16px;
+  }
+  .editor-head h2{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    color:var(--yellow);
+    margin:0;
+    font-size:1.4rem;
+  }
+
+  .editor-section{ margin-bottom:22px; }
+  .editor-section h3{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    font-size:1.05rem;
+    margin:0 0 4px;
+    color:var(--chalk);
+  }
+  .editor-section .hint{ font-size:.7rem; color:var(--chalk-dim); margin-bottom:10px; }
+
+  .edit-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:7px;
+  }
+  .edit-row-task{
+    flex-direction:column;
+    align-items:stretch;
+    gap:5px;
+    padding-bottom:8px;
+    margin-bottom:9px;
+    border-bottom:1px dashed var(--line);
+  }
+  .edit-row-task:last-child{ border-bottom:none; }
+  .edit-row-main{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .edit-row-main input[type=text]{ flex:1; }
+  .reorder-group{ display:flex; flex-direction:column; gap:1px; flex-shrink:0; }
+  .reorder-btn{
+    width:20px; height:15px;
+    font-size:.6rem;
+    line-height:1;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk-dim);
+    cursor:pointer;
+    border-radius:3px;
+    padding:0;
+  }
+  .reorder-btn:hover:not(:disabled){ color:var(--chalk); border-color:rgba(242,237,225,.4); }
+  .reorder-btn:disabled{ opacity:.25; cursor:not-allowed; }
+
+  .day-chip-row{ display:flex; gap:4px; margin:6px 0; }
+  .day-chip{
+    width:26px; height:26px;
+    border-radius:6px;
     border:1px solid var(--line);
     background:rgba(255,255,255,.04);
     color:var(--chalk-dim);
@@ -194,78 +303,13 @@ order-radius:6px;
       </div>
 
       <div id="weekendIndicator"></div>
+      <div id="lightDayBanner"></div>
+      <div id="focusCard"></div>
+      <div id="freshStartArea"></div>
       <div class="periods" id="periods"></div>
+
+      <div id="invisibleWinsCard"></div>
 
       <section class="hair-section" id="hairSection">
         <div class="hair-head">
-          <div class="hair-title">🧴 Lavar o cabelo</div>
-        </div>
-        <div class="hair-actions">
-          <button type="button" class="hair-btn" id="hairWashedBtn">💧 Lavei o cabelo</button>
-          <button type="button" class="hair-btn" id="hairNotWashedBtn">○ Não lavei</button>
-        </div>
-        <div class="hair-status" id="hairStatus">Hoje: ainda não registrado</div>
-      </section>
-
-      <section class="block" id="gameTimerSection"></section>
-
-      <details class="block-collapsible">
-        <summary>⏱️ Timers</summary>
-        <section class="block-collapsible-body" id="customTimersSection"></section>
-      </details>
-
-      <details class="block-collapsible">
-        <summary>🌟 Vi algo legal!</summary>
-        <div class="block-collapsible-body">
-          <div class="positive-behaviors" id="positiveBehaviors"></div>
-        </div>
-      </details>
-
-      <details class="block-collapsible">
-        <summary>🎁 Loja de Recompensas</summary>
-        <div class="block-collapsible-body">
-          <div class="rewards" id="rewards"></div>
-          <div id="pointValueNote" style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;"></div>
-        </div>
-      </details>
-
-      <details class="block-collapsible">
-        <summary>📝 Histórico de hoje</summary>
-        <div class="block-collapsible-body">
-          <div id="logList"></div>
-        </div>
-      </details>
-
-      <details class="block-collapsible">
-        <summary>🏆 Mural de Conquistas do Pacus</summary>
-        <section class="block-collapsible-body" id="achievementMuralSection"></section>
-      </details>
-
-      <details class="block-collapsible">
-        <summary>🗓️ Resumo semanal em família</summary>
-        <section class="block-collapsible-body" id="weeklyReviewSection"></section>
-      </details>
-
-      <details class="block-collapsible">
-        <summary>📅 Histórico dos dias</summary>
-        <div class="block-collapsible-body">
-          <div class="history">
-            <table class="history-table" id="historyTable">
-              <thead>
-                <tr><th>Dia</th><th>Tarefas</th><th>Pacus Points</th><th>Cabelo</th><th></th></tr>
-              </thead>
-              <tbody id="historyBody"></tbody>
-            </table>
-          </div>
-          <div id="historyToggle" style="text-align:center; margin-top:10px;"></div>
-        </div>
-      </details>
-
-      <section class="block" id="driveSyncSection"></section>
-
-      <footer>
-        <div id="backupReminder"></div>
-        Rotina do Hector · ${APP_VERSION}<br>
-        Funciona offline. O Google Drive é a fonte de sincronização quando configurado.
-        <br>
-        <button class="icon-btn" id="exportBtn" style="margin-top:8px;">⬇️ exportar backup</butto
+  

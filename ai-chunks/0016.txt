@@ -1,197 +1,191 @@
+= ['💕','😊','🥰','✨','👋','🫧','😄','💗'];
+function wirePacusInteraction(){
+  const wrap = document.getElementById('pacusInteractive');
+  if(!wrap) return;
+  wrap.addEventListener('click', ()=>{
+    wrap.classList.remove('spinning');
+    void wrap.offsetWidth;
+    wrap.classList.add('spinning');
+
+    const bubble = document.getElementById('petReactionBubble');
+    if(bubble){
+      const pick = PACUS_REACTIONS[Math.floor(Math.random()*PACUS_REACTIONS.length)];
+      bubble.textContent = pick;
+      bubble.classList.remove('show');
+      void bubble.offsetWidth;
+      bubble.classList.add('show');
+    }
+    if(Math.random() < 0.25) fireConfetti(wrap, 10);
+  });
+}
+
+// Fala noturna do Pacus — aparece sozinha quando a Noite começa,
+// dispensável só por hoje.
+const PACUS_NIGHT_MESSAGE = "Não esqueça de desenhar na lousa hoje! 🎨";
+let pacusDialogueTickHandle = null;
+function isEveningNow(){
+  const start = periodStartTime(CONFIG.periods.noite.time);
+  if(!start) return false;
+  const now = new Date();
+  const startToday = new Date(now);
+  startToday.setHours(start.hour, start.minute, 0, 0);
+  return now >= startToday;
+}
+function renderPacusDialogue(){
+  const el = document.getElementById('pacusDialogue');
+  if(!el) return;
+  const dismissedToday = state.pacusDialogueDismissedDate === todayISO();
+  if(!isEveningNow() || dismissedToday){ el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="pacus-dialogue">
+      <span class="pacus-dialogue-text">💬 ${PACUS_NIGHT_MESSAGE}</span>
+      <button class="pacus-dialogue-close" id="pacusDialogueCloseBtn" title="Ok, entendi!">✕</button>
+    </div>
+  `;
+  document.getElementById('pacusDialogueCloseBtn').addEventListener('click', ()=>{
+    state.pacusDialogueDismissedDate = todayISO();
+    saveState(state);
+    renderPacusDialogue();
+  });
+}
+function startPacusDialogueTicking(){
+  if(pacusDialogueTickHandle) return;
+  pacusDialogueTickHandle = setInterval(renderPacusDialogue, 30000);
+}
+
+function renderPet(){
+  const el = document.getElementById('petSection');
+  const data = computePetStage();
+  const { stage, stageFloat, daysEquivalent, cycleDays, maxStage, canGrowToday } = data;
+  const stageInfo = CONFIG.pet.stages[stage];
+  const progressPct = Math.round((daysEquivalent/cycleDays)*100);
+
+  renderMiniPacus(stageFloat);
+
+  const milestones = [
+    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
+  ];
+  const milestoneHtml = milestones.map(([day,label])=>{
+    const active = daysEquivalent >= day;
+    const current = stage >= day && (stage === day || (stage > day && day === 23));
+    return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label} <small>dia ${day}</small></span>`;
   }).join('');
-  return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${cells}</div>`;
-}
 
-function liveTodayEntry(){
-  const tasks = allTasks();
-  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  const total = applicable.length;
-  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-  const perfect = total>0 && done===total;
-  return { total, done, perfect };
-}
-
-function getHairStatus(dateISO){
-  return state.hairByDate && state.hairByDate[dateISO] ? state.hairByDate[dateISO] : null;
-}
-
-function setHairStatus(status){
-  const iso = todayISO();
-  if(!state.hairByDate) state.hairByDate = {};
-  state.hairByDate[iso] = status;
-  if(!state.history) state.history = {};
-  if(state.history[iso]) state.history[iso].hair = status;
-  saveState(state);
-  renderHair();
-  renderHistory();
-}
-
-function renderHair(){
-  const section = document.getElementById('hairSection');
-  if(!section) return;
-  const status = getHairStatus(todayISO());
-  const washedBtn = document.getElementById('hairWashedBtn');
-  const notWashedBtn = document.getElementById('hairNotWashedBtn');
-  const statusEl = document.getElementById('hairStatus');
-  washedBtn.classList.toggle('active-washed', status === 'washed');
-  notWashedBtn.classList.toggle('active-notwashed', status === 'not-washed');
-  statusEl.innerHTML = status === 'washed'
-    ? 'Hoje: <b class="hair-history-washed">💧 cabelo lavado</b>'
-    : status === 'not-washed'
-      ? 'Hoje: <b class="hair-history-notwashed">○ não lavou</b>'
-      : 'Hoje: ainda não registrado';
-}
-
-function render(){
-  document.getElementById('totalPoints').textContent = state.totalPoints;
-
-  renderPet();
-  renderHair();
-  renderGameTimer();
-  renderCustomTimers();
-
-  const weekendEl = document.getElementById('weekendIndicator');
-  if(weekendEl){
-    weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
-      ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
-      : '';
+  let caption;
+  if(stage === maxStage){
+    caption = `Pacus adulto! <b>Ciclo concluído em 31/08.</b> 🎉`;
+  } else if(canGrowToday && isDayPerfect(todayISO())){
+    caption = `<b>Dia perfeito!</b> O Pacus ganha um empurrãozinho <b>extra</b> de crescimento hoje! ✨`;
+  } else if(canGrowToday){
+    caption = `<b>Boa!</b> O Pacus vai evoluir mais um pouco hoje.`;
+  } else if(daysEquivalent === 0){
+    caption = `Complete um dia inteiro de tarefas pra começar a rachar o ovo.`;
+  } else {
+    const nextMilestone = milestones.find(([day]) => day > daysEquivalent);
+    if(nextMilestone){
+      const diasFaltando = nextMilestone[0] - daysEquivalent;
+      caption = `Faltam <b>${diasFaltando} ${diasFaltando===1?'dia':'dias'}</b> para virar <b>${nextMilestone[1]}</b>.`;
+    } else {
+      caption = `Quase lá! O Pacus está quase adulto.`;
+    }
   }
 
-  const periodsEl = document.getElementById('periods');
-  periodsEl.innerHTML = '';
-  const PERIOD_ORDER = ['manha','tarde','noite'];
-  const periodsObj = getPeriodsFor(todayISO());
+  const previousProgress = Number(el.dataset.pacusProgress ?? daysEquivalent);
+  const grewNow = daysEquivalent > previousProgress;
+  el.dataset.pacusProgress = String(daysEquivalent);
 
-  Object.entries(periodsObj).forEach(([key, period])=>{
-    const div = document.createElement('div');
-    div.className = 'period ' + key;
-
-    const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    const doneCount = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-    const remaining = applicable.length - doneCount;
-    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
-
-    let progressMsg;
-    if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
-    else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
-    else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
-    else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
-
-    // prévia da próxima etapa quando termina esse período — saber o que
-    // vem a seguir ajuda a reduzir a sensação de surpresa na transição.
-    let nextPreviewHtml = '';
-    if(pct === 100 && applicable.length > 0){
-      const idx = PERIOD_ORDER.indexOf(key);
-      const nextKey = idx >= 0 && idx < PERIOD_ORDER.length-1 ? PERIOD_ORDER[idx+1] : null;
-      if(nextKey && periodsObj[nextKey]){
-        const nextPeriod = periodsObj[nextKey];
-        const firstTask = nextPeriod.tasks[0];
-        nextPreviewHtml = `<div class="next-period-preview">➡️ A seguir: <b>${nextPeriod.label}</b>${firstTask ? ` — começando com ${taskIcon(firstTask.txt)} ${firstTask.txt}` : ''}</div>`;
-      } else if(!nextKey){
-        nextPreviewHtml = `<div class="next-period-preview">🎉 Terminou tudo por hoje!</div>`;
-      }
-    }
-
-    const ul = document.createElement('ul');
-    ul.className = 'tasks';
-    const orderedTasks = getEffectiveTaskOrder(key, period.tasks);
-    const nextSuggestedId = orderedTasks.find(t => !t.external && !state.checkedToday[t.id])?.id;
-    orderedTasks.forEach((task, idx)=>{
-      const li = document.createElement('li');
-      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
-      const isSuggested = task.id === nextSuggestedId;
-      li.className = 'task'
-        + (status === 'done' ? ' done' : '')
-        + (status === 'na' ? ' na' : '')
-        + (status === 'x' ? ' notdone' : '')
-        + (isSuggested ? ' suggested' : '');
-      li.innerHTML = `
-        <span class="task-reorder">
-          <button type="button" class="mini-reorder-btn" data-dir="up" data-period="${key}" data-task="${task.id}" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
-          <button type="button" class="mini-reorder-btn" data-dir="down" data-period="${key}" data-task="${task.id}" ${idx===orderedTasks.length-1?'disabled':''} title="Mover pra baixo">▼</button>
-        </span>
-        <span class="mark-group" data-id="${task.id}">
-          <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
-          <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
-          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, perde metade dos pontos">✕</button>
-        </span>
-        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
-        <span class="pts">${status==='na' ? 'n/a' : status==='x' ? '−'+taskNotDonePenalty(task) : '+'+task.pts}</span>
-      `;
-      ul.appendChild(li);
-    });
-
-    div.innerHTML = `
-      <div class="period-head"><h2>${period.label}</h2><span class="time">${period.time}</span></div>
-      <span class="time-remaining" id="timeRemaining_${key}"></span>
-      <span class="progress-txt">${progressMsg}</span>
-      <div class="progress-bar"><div style="width:${pct}%"></div></div>
-      ${nextPreviewHtml}
-    `;
-    div.dataset.periodTime = period.time;
-    div.appendChild(ul);
-    periodsEl.appendChild(div);
-  });
-
-  updateTimeRemainingDisplays();
-  startTimeRemainingTicking();
-
-  periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
-    btn.addEventListener('click', onMarkClick);
-  });
-
-  periodsEl.querySelectorAll('.mini-reorder-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const periodKey = btn.getAttribute('data-period');
-      const taskId = btn.getAttribute('data-task');
-      const dir = btn.getAttribute('data-dir');
-      const periodTasks = getPeriodsFor(todayISO())[periodKey].tasks;
-      moveTaskInOrder(periodKey, periodTasks, taskId, dir);
-      render();
-    });
-  });
-
-  renderPositiveBehaviors();
-
-  renderRewards();
-  renderLog();
-  renderHistory();
-  renderAchievementMural();
-  renderWeeklyReview();
-  renderFamilyGameNightAnnouncement();
-  renderWeeklyNewsAnnouncement();
-  renderBackupReminder();
-  renderTestPanel();
-  renderTestModeBanner();
-  renderDriveSync();
-}
-
-function daysBetween(isoA, isoB){
-  const a = new Date(isoA+"T00:00:00");
-  const b = new Date(isoB+"T00:00:00");
-  return Math.round((b-a)/86400000);
-}
-
-function shiftISODate(iso, deltaDays){
-  const d = new Date(iso+"T00:00:00");
-  d.setDate(d.getDate()+deltaDays);
-  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-}
-
-function goToTestDate(iso){
-  setTestDate(iso);
-  state = loadState();
-  render();
-}
-
-let testPanelOpen = false;
-// Painéis de "adulto" (Drive, editar dia, modo teste) ficam escondidos
-// até desbloquear a "Área dos adultos" — reseta ao recarregar.
-let adultUnlocked = false;
-
-function renderTestModeBanner(){
-  const el = document.getElementById('testModeBanner');
-  if(!el) return;
-  if(!TEST_DATE_OVERRIDE){ el.innerHTML=''; return; }
   el.innerHTML = `
-    <div class="test-mode-ban
+    <div class="pet-mascot-wrap" id="pacusInteractive" title="Toque no Pacus!">
+      ${buildPetVisual(stageFloat)}
+      <span class="pet-accessory">🌿</span>
+      <span class="pet-reaction-bubble" id="petReactionBubble"></span>
+    </div>
+    <div id="pacusDialogue"></div>
+    <div class="pet-name">${CONFIG.pet.name}</div>
+    <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
+    <div class="pet-day-progress">
+      <div class="pet-day-progress-head"><span>Progresso do Pacus</span><b>${progressPct}%</b></div>
+      <div class="pet-day-track" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
+    </div>
+    <div class="pet-milestones">${milestoneHtml}</div>
+    <div class="pet-caption">${caption}</div>
+    <div id="petEvolvedBanner"></div>
+    <div class="streak-strip">${buildStreakStrip()}</div>
+  `;
+
+  wirePacusInteraction();
+  renderPacusDialogue();
+  startPacusDialogueTicking();
+
+  if(grewNow){
+    const mascotEl = el.querySelector('.pet-mascot');
+    if(mascotEl){
+      mascotEl.classList.remove('pet-growth-burst');
+      void mascotEl.offsetWidth;
+      mascotEl.classList.add('pet-growth-burst');
+      if(stage < 9){ mascotEl.classList.add('pet-hatch-crack'); }
+    }
+  }
+
+  if(stage > state.lastSeenPetStage){
+    document.getElementById('petEvolvedBanner').innerHTML = `<div class="pet-evolved-banner">Pacus avançou para <b>${stageInfo.label}</b>.</div>`;
+    state.lastSeenPetStage = stage;
+    saveState(state);
+    showEvolutionCelebration(stageInfo, stage, maxStage);
+  }
+}
+
+function showEvolutionCelebration(stageInfo, stage, maxStage){
+  const overlay = document.getElementById('evolutionCelebration');
+  const mascotEl = document.getElementById('celebrationMascot');
+  mascotEl.innerHTML = buildPetVisual(stage);
+  document.getElementById('celebrationStage').innerHTML =
+    stage === maxStage
+      ? `O Pacus chegou em <b>${stageInfo.label}</b> — crescimento completo! 🏆`
+      : `O Pacus virou <b>${stageInfo.label}</b>!`;
+  overlay.classList.add('open');
+
+  // confete espalhado pela tela toda, não só perto do Pacus
+  fireConfetti(null, 40);
+  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.2, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 200);
+  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.8, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 350);
+
+  const autoClose = setTimeout(closeEvolutionCelebration, 4500);
+  overlay.dataset.autoCloseId = autoClose;
+}
+function closeEvolutionCelebration(){
+  const overlay = document.getElementById('evolutionCelebration');
+  if(overlay.dataset.autoCloseId) clearTimeout(Number(overlay.dataset.autoCloseId));
+  overlay.classList.remove('open');
+}
+
+function buildStreakStrip(){
+  const days = [];
+  for(let i=6; i>=0; i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+    days.push(iso);
+  }
+  const weekdayLetters = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  let progressDays = 0;
+  const cells = days.map(iso=>{
+    const isToday = iso === todayISO();
+    const d = new Date(iso+"T00:00:00");
+    const letter = weekdayLetters[d.getDay()];
+    let entry = isToday ? liveTodayEntry() : state.history[iso];
+    let cls = 'streak-cell none';
+    if(entry && entry.total > 0){
+      if(entry.perfect) cls = 'streak-cell perfect';
+      else if(entry.done === entry.total - 1) cls = 'streak-cell almost';
+      else if(entry.done > 0) cls = 'streak-cell partial';
+      else cls = 'streak-cell none';
+    }
+    if(entry && entry.done > 0) progressDays++;
+    if(isToday) cls += ' today';
+    return `<span class="${cls}" title="${formatDateBR(iso)}"><span class="streak-letter">${letter}</span></span>`;
+  }).join('');
+  const summary = progressDays > 0
+    ? `Você teve progresso em <b>${progressDays} dos últimos 7 dias</b>.`
+    : `Todo começo é assim — o próximo dia é uma nova chance.`;
+  return `<div class="streak-title">Últimos 7 dias</div

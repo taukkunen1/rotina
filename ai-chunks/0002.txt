@@ -1,4 +1,111 @@
- animation:crackFlash .55s ease-out; }
+id-template-columns:repeat(6,1fr);
+    gap:6px;
+    margin:4px 0 8px;
+  }
+  .pet-milestone{
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:5px 4px;
+    text-align:center;
+    font-size:.58rem;
+    color:var(--chalk-dim);
+    background:rgba(255,255,255,.025);
+  }
+  .pet-milestone.active{
+    color:#16241f;
+    background:var(--green);
+    border-color:var(--green);
+    font-weight:bold;
+  }
+  .pet-milestone.current{
+    outline:2px solid var(--yellow);
+    outline-offset:1px;
+  }
+  .pet-milestone small{
+    display:block;
+    margin-top:2px;
+    opacity:.75;
+    font-size:.92em;
+  }
+  @media(max-width:520px){
+    .pet-milestones{ grid-template-columns:repeat(3,1fr); }
+  }
+
+  .pet-caption{
+    font-size:.8rem;
+    color:var(--chalk-dim);
+    text-align:center;
+    max-width:420px;
+    line-height:1.4;
+  }
+  .pet-caption b{ color:var(--green); }
+
+  .pet-evolved-banner{
+    background:rgba(255,217,61,.12);
+    border:1px solid rgba(255,217,61,.4);
+    color:var(--yellow);
+    font-size:.82rem;
+    padding:8px 14px;
+    border-radius:8px;
+    margin-top:10px;
+    text-align:center;
+    animation: popIn .3s ease;
+  }
+  @keyframes popIn{
+    from{ transform:scale(.85); opacity:0; }
+    to{ transform:scale(1); opacity:1; }
+  }
+
+  /* ---------- crescimento diário do Pacus ---------- */
+  .pet-day-progress{
+    width:min(520px, 100%);
+    margin:6px 0 2px;
+  }
+  .pet-day-progress-head{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-size:.68rem;
+    color:var(--chalk-dim);
+    margin-bottom:5px;
+  }
+  .pet-day-progress-head b{ color:var(--green); }
+  .pet-day-track{
+    height:7px;
+    border-radius:999px;
+    overflow:hidden;
+    background:rgba(255,255,255,.08);
+    border:1px solid var(--line);
+  }
+  .pet-day-fill{
+    height:100%;
+    width:0;
+    background:var(--blue);
+    border-radius:999px;
+    transition:width .7s cubic-bezier(.2,.8,.2,1);
+  }
+  .pet-mascot.pet-egg{
+    transform-origin:50% 70%;
+    animation:eggLife 2.8s ease-in-out infinite;
+  }
+  .pet-mascot.pet-growth-burst{
+    animation:petGrowthBurst .75s cubic-bezier(.2,.8,.2,1);
+  }
+  .pet-egg .egg-crack{
+    transition:opacity .5s ease, stroke-width .5s ease;
+  }
+  @keyframes eggLife{
+    0%,100%{ transform:translateY(0) rotate(0deg); }
+    50%{ transform:translateY(-2px) rotate(.7deg); }
+  }
+  @keyframes petGrowthBurst{
+    0%{ transform:scale(1) rotate(0deg); }
+    25%{ transform:scale(1.08) rotate(-3deg); }
+    50%{ transform:scale(.96) rotate(3deg); }
+    75%{ transform:scale(1.035) rotate(-1deg); }
+    100%{ transform:scale(1) rotate(0deg); }
+  }
+  .pet-hatch-crack{ animation:crackFlash .55s ease-out; }
   @keyframes crackFlash{
     0%{ filter:brightness(1); }
     35%{ filter:brightness(1.28); }
@@ -195,85 +302,4 @@
     border-radius:7px;
     border:1px solid var(--line);
     background:rgba(255,255,255,.03);
-    color:var(--chalk-dim);
-    font-size:.9rem;
-    line-height:1;
-    cursor:pointer;
-    font-family:inherit;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:0;
-    transition:transform .12s ease, background .12s ease, border-color .12s ease;
-  }
-  .mark-btn:hover{ border-color:rgba(242,237,225,.4); color:var(--chalk); transform:scale(1.06); }
-  .mark-btn:active{ transform:scale(.92); }
-  .mark-done.active{ background:var(--green); border-color:var(--green); color:#132015; font-weight:bold; animation:markPop .3s ease; }
-  .mark-na.active{ background:var(--chalk-dim); border-color:var(--chalk-dim); color:#1b2e28; font-weight:bold; }
-  .mark-x.active{ background:var(--red); border-color:var(--red); color:#2a1414; font-weight:bold; }
-  @keyframes markPop{
-    0%{ transform:scale(1); }
-    40%{ transform:scale(1.35); }
-    100%{ transform:scale(1); }
-  }
-
-  .task .txt{ flex:1; font-size:.9rem; line-height:1.35; }
-  .task .sub{ display:block; font-size:.7rem; color:var(--chalk-dim); margin-top:1px; }
-  .task.done .txt{ text-decoration:line-through; color:var(--chalk-dim); }
-  .task.na .txt{ color:var(--chalk-dim); font-style:italic; }
-  .task.na .pts{ color:var(--chalk-dim); border-color:var(--line); }
-  .task.notdone .txt{ color:var(--red); }
-  .task.notdone .pts{ color:var(--red); border-color:rgba(255,107,107,.4); }
-  .task-icon{ font-size:1.05rem; margin-right:6px; flex-shrink:0; }
-
-  .task.suggested{
-    background:rgba(255,217,61,.08);
-    border:1px dashed rgba(255,217,61,.5);
-    border-radius:8px;
-    animation:suggestedPulse 2.4s ease-in-out infinite;
-  }
-  .suggested-flag{
-    display:inline-block;
-    margin-right:4px;
-    animation:suggestedNudge 1.2s ease-in-out infinite;
-  }
-  @keyframes suggestedPulse{
-    0%,100%{ box-shadow:0 0 0 0 rgba(255,217,61,0); }
-    50%{ box-shadow:0 0 0 3px rgba(255,217,61,.12); }
-  }
-  @keyframes suggestedNudge{
-    0%,100%{ transform:translateX(0); }
-    50%{ transform:translateX(3px); }
-  }
-
-  .pts{
-    font-size:.68rem;
-    color:var(--green);
-    border:1px solid rgba(95,216,117,.4);
-    border-radius:10px;
-    padding:1px 7px;
-    white-space:nowrap;
-    flex-shrink:0;
-    height:fit-content;
-  }
-
-  section.block{
-    margin-top:22px;
-    padding-top:16px;
-    border-top:2px dashed var(--line);
-  }
-
-  .block-collapsible{
-    margin-top:22px;
-    padding-top:16px;
-    border-top:2px dashed var(--line);
-  }
-  .block-collapsible summary{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-weight:normal;
-    font-size:1.2rem;
-    text-align:center;
-    cursor:pointer;
-    list-style:none;
-    color:var(--chalk);
-    
+    color:var(--chalk-di

@@ -1,4 +1,57 @@
-ts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" },
+   <div class="hint">PIN pra pedir antes de abrir "Editar tudo" — protege de mudanças acidentais.</div>
+      <div class="edit-row">
+        <input type="text" inputmode="numeric" id="editorPinInput" placeholder="ex: 1234 (deixe vazio pra não pedir PIN)" maxlength="8">
+      </div>
+    </div>
+
+    <div class="editor-footer">
+      <button class="btn" id="adultTestBtn">🧪 modo teste</button>
+      <button class="btn" id="cancelBtn">fechar</button>
+      <button class="btn save" id="saveBtn">salvar tudo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* DEFAULT_CONFIG só vale na primeira abertura; depois é tudo editável
+   pela tela e fica salvo no navegador. */
+const DEFAULT_CONFIG = {
+  periods: {
+    manha: {
+      label: "Manhã", time: "8:20 – 12:00",
+      tasks: [
+        { id:"m1", txt:"Arrumar a cama", pts:2, sub:"até às 12h" },
+        { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h" },
+        { id:"m3", txt:"Escovar os dentes", pts:2, sub:"até às 12h" },
+        { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 12h" },
+        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:5 },
+        { id:"m8", txt:"Arrumar a mochila", pts:2, sub:"até às 12h" },
+        { id:"t_djf7hbb", txt:"Levar Lixo", pts:4, sub:"até às 12h" },
+        { id:"m2", txt:"Beber 1 copo de água", pts:1, sub:"até às 12h" },
+      ]
+    },
+    tarde: {
+      label: "Tarde", time: "12:00 – 18:00",
+      tasks: [
+        { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h", external:true },
+        { id:"t3", txt:"Escovar os dentes", pts:2, sub:"até às 18h" },
+        { id:"t5", txt:"Arrumar a mochila", pts:2, sub:"até às 18h" },
+        { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h", external:true },
+        { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h" },
+      ]
+    },
+    noite: {
+      label: "Noite", time: "18:00 – 22:00",
+      tasks: [
+        { id:"n5_cartas", txt:"Guardar as cartas de bafo", pts:1, fullPenalty:true, sub:"na caixinha delas" },
+        { id:"n5_carrinhos", txt:"Guardar os carrinhos", pts:1, fullPenalty:true, sub:"na caixa/prateleira" },
+        { id:"n5_bolinhas", txt:"Guardar as bolinhas de gude", pts:1, fullPenalty:true, sub:"no potinho" },
+        { id:"n5_caixas", txt:"Guardar as caixas", pts:1, fullPenalty:true, sub:"no lugar certo ou no lixo" },
+        { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:3, fullPenalty:true, sub:"conferência final — nada espalhado" },
+        { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h", external:true },
+        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4 },
+        { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h" },
+        { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" },
         { id:"t_ci3brlt", txt:"Ler Livro", pts:4, sub:"3 capítulo do livro de casa (até às 22h)" },
         { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h" },
       ]
@@ -113,70 +166,4 @@ function weekdayKeyFor(dateISO){
 }
 
 function getPeriodsFor(dateISO){
-  const base = (CONFIG.periodsWeekend && isWeekendISO(dateISO)) ? CONFIG.periodsWeekend : CONFIG.periods;
-  const weekday = weekdayKeyFor(dateISO);
-  const todaysSchedule = (CONFIG.schedule || []).filter(s => s.days && s.days.includes(weekday));
-  const todaysExceptions = (CONFIG.scheduleExceptions || []).filter(s => s.date === dateISO);
-  if(todaysSchedule.length === 0 && todaysExceptions.length === 0) return base;
-
-  // clona pra não mexer no CONFIG original, e injeta os compromissos fixos
-  // (e exceções pontuais) de hoje como tarefas de verdade no período certo
-  const merged = JSON.parse(JSON.stringify(base));
-  todaysSchedule.forEach(s=>{
-    const periodKey = s.period && merged[s.period] ? s.period : 'tarde';
-    merged[periodKey].tasks.push({
-      id: 'sched_' + s.id,
-      txt: s.label,
-      sub: `${s.start}–${s.end}`,
-      pts: s.pts != null ? s.pts : 3,
-    });
-  });
-  todaysExceptions.forEach(s=>{
-    const periodKey = s.period && merged[s.period] ? s.period : 'tarde';
-    merged[periodKey].tasks.push({
-      id: 'exc_' + s.id,
-      txt: s.label,
-      sub: `${s.start}–${s.end}`,
-      pts: s.pts != null ? s.pts : 3,
-    });
-  });
-  return merged;
-}
-
-function allTasks(dateISO){
-  const periods = getPeriodsFor(dateISO || todayISO());
-  return [
-    ...periods.manha.tasks,
-    ...periods.tarde.tasks,
-    ...periods.noite.tasks,
-  ];
-}
-
-// Reordenação pessoal (autonomia > pontos, segundo os estudos), por
-// período, aplicada por cima da ordem sugerida — sem mexer na config.
-function getEffectiveTaskOrder(periodKey, tasks){
-  if(!state.customTaskOrder) state.customTaskOrder = {};
-  const customOrder = state.customTaskOrder[periodKey];
-  if(!customOrder || !customOrder.length) return tasks;
-  const byId = new Map(tasks.map(t=>[t.id, t]));
-  const ordered = customOrder.map(id=>byId.get(id)).filter(Boolean);
-  const missing = tasks.filter(t=>!customOrder.includes(t.id));
-  return [...ordered, ...missing];
-}
-function moveTaskInOrder(periodKey, tasks, taskId, direction){
-  const current = getEffectiveTaskOrder(periodKey, tasks).map(t=>t.id);
-  const idx = current.indexOf(taskId);
-  const swapWith = direction === 'up' ? idx-1 : idx+1;
-  if(idx < 0 || swapWith < 0 || swapWith >= current.length) return;
-  [current[idx], current[swapWith]] = [current[swapWith], current[idx]];
-  if(!state.customTaskOrder) state.customTaskOrder = {};
-  state.customTaskOrder[periodKey] = current;
-  saveState(state);
-}
-
-function stripLegacyHairTask(cfg){
-  // "Cabelo Lavado" virou tarefa duplicada por engano em algum momento —
-  // o controle de cabelo já tem sua própria seção dedicada (🧴 Lavar o
-  // cabelo), então removemos essa tarefa específica se ela aparecer.
-  if(cfg && cfg.periods && cfg.periods.noite && Array.isArray(cfg.periods.noite.tasks)){
-    cfg.periods.noite.tasks = cfg.periods.noite.tasks.filter(t => t.id !== 't_gz
+  const base = (CONFIG.periodsWeekend && isWeekendISO(dateISO)) ? CONFIG.periodsWeekend 

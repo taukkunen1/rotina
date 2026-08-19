@@ -1,181 +1,199 @@
-typeof state.revision !== 'number') state.revision = 0;
+
+  if(TEST_DATE_OVERRIDE) return TEST_DATE_OVERRIDE;
+  const d = new Date();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return d.getFullYear()+"-"+m+"-"+day;
+}
+function setTestDate(iso){
+  TEST_DATE_OVERRIDE = iso; // só em memória — some sozinho ao recarregar a página
+}
+function formatDateBR(iso){
+  const [,m,d] = iso.split("-");
+  return d+"/"+m;
+}
+
+// Extrai hora/minuto do horário final do período ("8:20 – 12:00").
+function periodEndTime(periodTimeStr){
+  const parts = periodTimeStr.split(/[–-]/).map(s=>s.trim());
+  const endStr = parts[parts.length-1];
+  const [h, m] = endStr.split(':').map(Number);
+  if(isNaN(h)) return null;
+  return { hour: h, minute: m||0 };
+}
+function periodStartTime(periodTimeStr){
+  const parts = periodTimeStr.split(/[–-]/).map(s=>s.trim());
+  const [h, m] = parts[0].split(':').map(Number);
+  if(isNaN(h)) return null;
+  return { hour: h, minute: m||0 };
+}
+
+// Tempo restante até o fim do período, com base no relógio real.
+function formatTimeRemaining(periodTimeStr){
+  const start = periodStartTime(periodTimeStr);
+  const end = periodEndTime(periodTimeStr);
+  if(!start || !end) return null;
+  const now = new Date();
+  const startDate = new Date(now); startDate.setHours(start.hour, start.minute, 0, 0);
+  const endDate = new Date(now); endDate.setHours(end.hour, end.minute, 0, 0);
+  if(now < startDate){
+    return { text: `começa às ${String(start.hour).padStart(2,'0')}:${String(start.minute).padStart(2,'0')}`, urgency: 'none' };
+  }
+  if(now > endDate){
+    return { text: `período encerrado`, urgency: 'over' };
+  }
+  const diffMin = Math.max(0, Math.round((endDate - now)/60000));
+  const h = Math.floor(diffMin/60);
+  const m = diffMin%60;
+  const text = h > 0 ? `⏳ faltam ${h}h ${String(m).padStart(2,'0')}min` : `⏳ faltam ${m}min`;
+  const urgency = diffMin <= 30 ? 'high' : diffMin <= 60 ? 'medium' : 'low';
+  return { text, urgency };
+}
+
+let timeRemainingTickHandle = null;
+function updateTimeRemainingDisplays(){
+  document.querySelectorAll('.period').forEach(div=>{
+    const el = div.querySelector('.time-remaining');
+    const periodTime = div.dataset.periodTime;
+    if(!el || !periodTime) return;
+    const info = formatTimeRemaining(periodTime);
+    if(!info){ el.textContent = ''; el.className = 'time-remaining'; return; }
+    el.textContent = info.text;
+    el.className = 'time-remaining urgency-' + info.urgency;
+  });
+}
+function startTimeRemainingTicking(){
+  if(timeRemainingTickHandle) return;
+  timeRemainingTickHandle = setInterval(updateTimeRemainingDisplays, 30000);
+}
+
+function loadState(){
+  let raw = null;
+  try{ raw = localStorage.getItem(STORAGE_STATE_KEY); }catch(e){}
+  let state = raw ? JSON.parse(raw) : null;
+  if(!state) state = { totalPoints:120, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveLastSyncISO:null, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, hairByDate:{} };
+  return reconcileState(state);
+}
+
+function applyHistoryCorrection_v2(state){
+  // Correção pontual, aplicada só UMA VEZ (por causa da flag abaixo) —
+  // depois disso nunca mais mexe sozinha nesses dias, pra não apagar
+  // edições feitas manualmente depois. Cobre 09/08 a 12/08: todos os
+  // dias foram completos; dia 12 teve -10 Pacus Points por causa de uma
+  // briga na escola; saldo final confirmado até 12/08: 170 Pacus Points.
+  if(state.historyCorrectionV2Applied) return;
+
+  const hairByDay = {
+    "2026-08-09": "not-washed",
+    "2026-08-10": "washed",
+    "2026-08-11": "not-washed",
+    "2026-08-12": "washed",
+  };
+  const pointsPenaltyByDay = {
+    "2026-08-12": 10, // brigou na escola
+  };
+
+  if(!state.history) state.history = {};
+  if(!state.hairByDate) state.hairByDate = {};
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+
+  Object.keys(hairByDay).forEach(iso => {
+    const tasks = allTasks(iso);
+    const total = tasks.length;
+    const rawPoints = tasks.reduce((sum, task) => sum + (Number(task.pts) || 0), 0);
+    const penalty = pointsPenaltyByDay[iso] || 0;
+    const netPoints = Math.max(0, rawPoints - penalty);
+
+    state.history[iso] = {
+      done: total,
+      total: total,
+      pointsEarnedThatDay: netPoints,
+      perfect: true,
+      screenMinutes: CONFIG.perfectDayBonusMinutes || 30,
+      periodsCompleted: 3,
+      hair: hairByDay[iso],
+    };
+    state.hairByDate[iso] = hairByDay[iso];
+
+    if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
+    if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
+    if(!state.petPerfectBonusDays.includes(iso)) state.petPerfectBonusDays.push(iso);
+  });
+
+  state.petCompletedDays.sort();
+  state.petLastCompletionISO = state.petCompletedDays.length
+    ? state.petCompletedDays[state.petCompletedDays.length - 1]
+    : null;
+
+  // saldo confirmado até 12/08 — hoje (13/08) ainda não foi jogado
+  state.totalPoints = 170;
+
+  state.historyCorrectionV2Applied = true;
+}
+
+// Correção 13-14/08: tudo feito exceto "Arrumar a bagunça" (penalidade
+// cheia). Mesmo sem ser perfeito, conta pro crescimento do Pacus. Roda
+// uma vez.
+function applyHistoryCorrection_v3(state){
+  if(state.historyCorrectionV3Applied) return;
+
+  const days = ["2026-08-13", "2026-08-14"];
+  if(!state.history) state.history = {};
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+
+  let totalDelta = 0;
+  days.forEach(iso=>{
+    const tasks = allTasks(iso);
+    const total = tasks.length;
+    const bagunca = tasks.find(t=>t.id === 'n5');
+    const penalty = bagunca ? (bagunca.fullPenalty ? bagunca.pts : Math.ceil(bagunca.pts/2)) : 0;
+    const rawPoints = tasks.reduce((sum, t) => sum + (Number(t.pts) || 0), 0);
+    // pontos de todas as tarefas MENOS os pontos da bagunça (não feita) MENOS a penalidade dela
+    const pointsEarnedThatDay = Math.max(0, (rawPoints - (bagunca ? bagunca.pts : 0)) - penalty);
+    const done = bagunca ? total - 1 : total;
+
+    const oldPoints = (state.history[iso] && state.history[iso].pointsEarnedThatDay) || 0;
+    totalDelta += pointsEarnedThatDay - oldPoints;
+
+    const hair = (state.history[iso] && state.history[iso].hair) || (state.hairByDate && state.hairByDate[iso]) || null;
+
+    state.history[iso] = {
+      done,
+      total,
+      pointsEarnedThatDay,
+      perfect: false, // "Arrumar a bagunça" ficou de fora
+      screenMinutes: 0,
+      periodsCompleted: 2, // manhã e tarde completos; noite não (faltou a bagunça)
+      hair,
+    };
+
+    // crescimento do Pacus não exige dia perfeito — só engajamento real
+    if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
+  });
+
+  state.petCompletedDays.sort();
+  state.petLastCompletionISO = state.petCompletedDays.length
+    ? state.petCompletedDays[state.petCompletedDays.length - 1]
+    : null;
+
+  state.totalPoints = Math.max(0, (Number(state.totalPoints)||0) + totalDelta);
+  state.historyCorrectionV3Applied = true;
+}
+
+function seedKnownPerfectDays(state){
+  applyHistoryCorrection_v2(state);
+  applyHistoryCorrection_v3(state);
+}
+
+function reconcileState(state){
+  if(state.driveFileId === undefined) state.driveFileId = null;
+  if(state.driveLastSyncISO === undefined) state.driveLastSyncISO = null;
+  if(state.lastSeenPetStage === undefined) state.lastSeenPetStage = 0;
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+  if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
+  if(state.petLastCompletionISO === undefined) state.petLastCompletionISO = null;
+  if(typeof state.revision !== 'number') state.revision = 0;
   if(typeof state.driveRevision !== 'number') state.driveRevision = 0;
   if(typeof state.driveConflictCount !== 'number') state.driveConflictCount = 0;
   if(state.lastBackupISO === undefined) state.lastBackupISO = null;
-  if(state.backupReminderDismissedFor === undefined) state.backupReminderDismissedFor = null;
-  if(!state.checkedToday) state.checkedToday = {};
-  if(!state.log) state.log = [];
-  if(!state.history) state.history = {};
-  if(!state.hairByDate || typeof state.hairByDate !== "object") state.hairByDate = {};
-  if(!state.customTaskOrder || typeof state.customTaskOrder !== "object") state.customTaskOrder = {};
-  if(!state.familyAnnouncementResetV1Applied){
-    state.familyGameNightAnnouncementSeen = false;
-    state.familyAnnouncementResetV1Applied = true;
-  }
-  if(!state.familyAnnouncementResetV2Applied){
-    state.familyGameNightAnnouncementSeen = false;
-    state.familyAnnouncementResetV2Applied = true;
-  }
-  if(!state.familyAnnouncementResetV3Applied){
-    state.familyGameNightAnnouncementSeen = false;
-    state.familyAnnouncementResetV3Applied = true;
-  }
-  if(!state.familyAnnouncementResetV4Applied){
-    state.familyGameNightAnnouncementSeen = false;
-    state.familyAnnouncementResetV4Applied = true;
-  }
-  if(!state.waldaBetBonusApplied){
-    state.totalPoints = Math.max(0, Math.min(1000, (Number(state.totalPoints)||0) + 5));
-    if(!state.log) state.log = [];
-    state.log.unshift('🏆 +5 · acertou a aposta com a Walda (pessoa autêntica)');
-    state.waldaBetBonusApplied = true;
-  }
-  if(!state.celebrationReplayV1Applied){
-    state.lastSeenPetStage = 0;
-    state.celebrationReplayV1Applied = true;
-  }
-  if(!state.perfectBonusBackfillV1Applied){
-    if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
-    Object.keys(state.history || {}).forEach(iso=>{
-      if(state.history[iso] && state.history[iso].perfect && !state.petPerfectBonusDays.includes(iso)){
-        state.petPerfectBonusDays.push(iso);
-      }
-    });
-    state.petPerfectBonusDays.sort();
-    state.perfectBonusBackfillV1Applied = true;
-  }
-  if(!state.hairCorrectionAug1718Applied){
-    if(!state.hairByDate) state.hairByDate = {};
-    state.hairByDate["2026-08-17"] = "not-washed";
-    state.hairByDate["2026-08-18"] = "washed";
-    if(state.history["2026-08-17"]) state.history["2026-08-17"].hair = "not-washed";
-    if(state.history["2026-08-18"]) state.history["2026-08-18"].hair = "washed";
-    state.hairCorrectionAug1718Applied = true;
-  }
-  if(!state.gameTimer || typeof state.gameTimer !== "object"){
-    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
-  }
-  if(state.gameTimer.bonusSeconds === undefined) state.gameTimer.bonusSeconds = 0;
-  if(!state.gameTimer.redemptions || typeof state.gameTimer.redemptions !== "object") state.gameTimer.redemptions = {};
-  if(!Array.isArray(state.customTimers) || state.customTimers.length !== 2){
-    state.customTimers = [
-      { id:"ct1", label:"Timer 1", totalSeconds:300, remainingSeconds:300, runningSince:null, finished:false },
-      { id:"ct2", label:"Timer 2", totalSeconds:300, remainingSeconds:300, runningSince:null, finished:false },
-    ];
-  }
-  state.customTimers.forEach(t=>{
-    if(t.totalSeconds === undefined) t.totalSeconds = 300;
-    if(t.remainingSeconds === undefined) t.remainingSeconds = t.totalSeconds;
-    if(t.runningSince === undefined) t.runningSince = null;
-    if(t.finished === undefined) t.finished = false;
-  });
-  if(state.historyCorrectionV2Applied === undefined) state.historyCorrectionV2Applied = false;
-
-  seedKnownPerfectDays(state);
-
-  // limpeza: remove qualquer registro de histórico com data no futuro (só pode
-  // ter vindo de uma sessão anterior de teste de data) — evita que isso
-  // inflacione o crescimento do Pacus ou bagunce as tabelas depois
-  let cleaned = false;
-  if(!TEST_DATE_OVERRIDE){
-    const realToday = todayISO();
-    Object.keys(state.history).forEach(iso=>{
-      if(iso > realToday){ delete state.history[iso]; cleaned = true; }
-    });
-    if(state.lastDate > realToday){ state.lastDate = realToday; cleaned = true; }
-  }
-
-  if(state.lastDate !== todayISO()){
-    // fecha o dia anterior no histórico antes de zerar o checklist
-    closeOutDay(state, state.lastDate);
-    state.checkedToday = {};
-    state.log = [];
-    state.lastDate = todayISO();
-    // zera o tempo de jogo usado — é uma cota que renova todo dia
-    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
-    saveState(state);
-  } else if(cleaned){
-    saveState(state);
-  }
-  return state;
-}
-
-function periodsCompletedFrom(checkedMap, dateISO){
-  let count = 0;
-  Object.values(getPeriodsFor(dateISO || todayISO())).forEach(period=>{
-    const applicable = period.tasks.filter(t=>checkedMap[t.id] !== 'na');
-    if(applicable.length>0 && applicable.every(t=>checkedMap[t.id]==='done')) count++;
-  });
-  return count;
-}
-
-// Tempo de tela só desbloqueia depois que a Manhã inteira estiver feita.
-function isManhaComplete(dateISO){
-  const periods = getPeriodsFor(dateISO || todayISO());
-  const applicable = periods.manha.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  return applicable.length > 0 && applicable.every(t=>state.checkedToday[t.id] === 'done');
-}
-
-function registerPetDayCompletion(dateISO){
-  const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
-  const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
-  if(dateISO < startISO || dateISO > endISO) return false;
-  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
-  if(state.petCompletedDays.includes(dateISO)) return false;
-  state.petCompletedDays.push(dateISO);
-  state.petCompletedDays.sort();
-  state.petLastCompletionISO = dateISO;
-  return true;
-}
-
-// Dia 100% perfeito dá um empurrãozinho A MAIS no crescimento do Pacus,
-// além do dia normal que ele já ganha por ter feito alguma coisa.
-function registerPetPerfectBonus(dateISO){
-  const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
-  const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
-  if(dateISO < startISO || dateISO > endISO) return false;
-  if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
-  if(state.petPerfectBonusDays.includes(dateISO)) return false;
-  state.petPerfectBonusDays.push(dateISO);
-  state.petPerfectBonusDays.sort();
-  return true;
-}
-
-function isDayPerfect(dateISO){
-  if(dateISO === todayISO()){
-    const tasks = allTasks(dateISO);
-    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    return applicable.length > 0 && applicable.every(t=>state.checkedToday[t.id] === 'done');
-  }
-  return !!(state.history[dateISO] && state.history[dateISO].perfect);
-}
-
-// Crescimento não exige dia perfeito, só engajamento real. isDayPerfect
-// continua controlando o bônus de tela e o selo "dia perfeito".
-function hasDayProgress(dateISO){
-  if(dateISO === todayISO()){
-    const tasks = allTasks(dateISO);
-    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    return applicable.some(t=>state.checkedToday[t.id] === 'done');
-  }
-  const entry = state.history[dateISO];
-  return !!(entry && entry.done > 0);
-}
-
-function syncPetCompletionFromDay(dateISO){
-  let grew = false;
-  if(hasDayProgress(dateISO)) grew = registerPetDayCompletion(dateISO) || grew;
-  if(isDayPerfect(dateISO)) grew = registerPetPerfectBonus(dateISO) || grew;
-  return grew;
-}
-
-function closeOutDay(state, dateISO){
-  if(!dateISO) return;
-  const tasks = allTasks(dateISO);
-  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  const total = applicable.length;
-  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-  const pointsEarnedThatDay = tasks
-    .filter(t=>state.checkedToday[t.id] === 'done')
-    .reduce((s,t)=>s+t.pts, 0);
-  const perfect = tota
+  if(state.backupReminderDismissedFor =

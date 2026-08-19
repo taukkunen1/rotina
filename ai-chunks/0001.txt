@@ -1,4 +1,108 @@
--timers{
+font-size:1rem;
+    margin-bottom:4px;
+  }
+  .recovery-mission-text{ font-size:.85rem; color:var(--chalk); margin-bottom:10px; }
+  .recovery-mission-btn{
+    background:var(--yellow);
+    color:#2a2410;
+    border:none;
+    padding:8px 18px;
+    border-radius:8px;
+    font-size:.82rem;
+    font-weight:bold;
+    cursor:pointer;
+    font-family:inherit;
+  }
+
+  .wins-card{
+    background:rgba(255,126,185,.06);
+    border:1px solid rgba(255,126,185,.3);
+    border-radius:12px;
+    padding:14px 16px;
+    margin:14px 0;
+  }
+  .wins-title{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    color:var(--pink);
+    font-size:1rem;
+    margin-bottom:8px;
+    text-align:center;
+  }
+  .wins-list{ list-style:none; margin:0; padding:0; font-size:.85rem; color:var(--chalk); }
+  .wins-list li{ padding:3px 0; }
+
+  .streak-summary{
+    text-align:center;
+    font-size:.75rem;
+    color:var(--chalk-dim);
+    margin-top:8px;
+  }
+  .streak-summary b{ color:var(--green); }
+
+  /* ---------- timer de tempo de jogo ---------- */
+  .game-timer{
+    background:rgba(255,126,185,.07);
+    border:1px solid rgba(255,126,185,.3);
+    border-radius:12px;
+    padding:14px 16px;
+    margin-bottom:16px;
+    text-align:center;
+  }
+  .game-timer h3{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    color:var(--pink);
+    margin:0 0 4px;
+    font-size:1.05rem;
+  }
+  .game-timer .hint{ font-size:.7rem; color:var(--chalk-dim); margin-bottom:10px; }
+  .game-timer-locked{
+    background:rgba(255,107,107,.1);
+    border:1px solid rgba(255,107,107,.35);
+    color:var(--red);
+    font-size:.78rem;
+    font-weight:bold;
+    padding:8px 10px;
+    border-radius:8px;
+    margin-bottom:10px;
+  }
+  .game-timer-used{ font-size:.95rem; margin-bottom:8px; }
+  .game-timer-used b{ color:var(--pink); }
+  .game-timer-track{
+    height:8px;
+    border-radius:999px;
+    background:rgba(255,255,255,.08);
+    border:1px solid var(--line);
+    overflow:hidden;
+    margin-bottom:12px;
+  }
+  .game-timer-fill{
+    height:100%;
+    width:0;
+    background:var(--pink);
+    border-radius:999px;
+    transition:width .5s ease;
+  }
+  .game-timer-fill.over-limit{ background:var(--red); }
+  .game-timer-btn{
+    background:var(--pink);
+    color:#2a1420;
+    border:none;
+    padding:10px 22px;
+    border-radius:8px;
+    font-size:.9rem;
+    font-weight:bold;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .game-timer-btn.running{
+    background:rgba(255,255,255,.08);
+    color:var(--chalk);
+    border:1px solid var(--line);
+  }
+
+  /* ---------- timers avulsos (tempo livre pra qualquer coisa) ---------- */
+  .custom-timers{
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:12px;
@@ -217,111 +321,4 @@
   .pet-milestones{
     width:min(560px,100%);
     display:grid;
-    grid-template-columns:repeat(6,1fr);
-    gap:6px;
-    margin:4px 0 8px;
-  }
-  .pet-milestone{
-    border:1px solid var(--line);
-    border-radius:7px;
-    padding:5px 4px;
-    text-align:center;
-    font-size:.58rem;
-    color:var(--chalk-dim);
-    background:rgba(255,255,255,.025);
-  }
-  .pet-milestone.active{
-    color:#16241f;
-    background:var(--green);
-    border-color:var(--green);
-    font-weight:bold;
-  }
-  .pet-milestone.current{
-    outline:2px solid var(--yellow);
-    outline-offset:1px;
-  }
-  .pet-milestone small{
-    display:block;
-    margin-top:2px;
-    opacity:.75;
-    font-size:.92em;
-  }
-  @media(max-width:520px){
-    .pet-milestones{ grid-template-columns:repeat(3,1fr); }
-  }
-
-  .pet-caption{
-    font-size:.8rem;
-    color:var(--chalk-dim);
-    text-align:center;
-    max-width:420px;
-    line-height:1.4;
-  }
-  .pet-caption b{ color:var(--green); }
-
-  .pet-evolved-banner{
-    background:rgba(255,217,61,.12);
-    border:1px solid rgba(255,217,61,.4);
-    color:var(--yellow);
-    font-size:.82rem;
-    padding:8px 14px;
-    border-radius:8px;
-    margin-top:10px;
-    text-align:center;
-    animation: popIn .3s ease;
-  }
-  @keyframes popIn{
-    from{ transform:scale(.85); opacity:0; }
-    to{ transform:scale(1); opacity:1; }
-  }
-
-  /* ---------- crescimento diário do Pacus ---------- */
-  .pet-day-progress{
-    width:min(520px, 100%);
-    margin:6px 0 2px;
-  }
-  .pet-day-progress-head{
-    display:flex;
-    justify-content:space-between;
-    gap:10px;
-    font-size:.68rem;
-    color:var(--chalk-dim);
-    margin-bottom:5px;
-  }
-  .pet-day-progress-head b{ color:var(--green); }
-  .pet-day-track{
-    height:7px;
-    border-radius:999px;
-    overflow:hidden;
-    background:rgba(255,255,255,.08);
-    border:1px solid var(--line);
-  }
-  .pet-day-fill{
-    height:100%;
-    width:0;
-    background:var(--blue);
-    border-radius:999px;
-    transition:width .7s cubic-bezier(.2,.8,.2,1);
-  }
-  .pet-mascot.pet-egg{
-    transform-origin:50% 70%;
-    animation:eggLife 2.8s ease-in-out infinite;
-  }
-  .pet-mascot.pet-growth-burst{
-    animation:petGrowthBurst .75s cubic-bezier(.2,.8,.2,1);
-  }
-  .pet-egg .egg-crack{
-    transition:opacity .5s ease, stroke-width .5s ease;
-  }
-  @keyframes eggLife{
-    0%,100%{ transform:translateY(0) rotate(0deg); }
-    50%{ transform:translateY(-2px) rotate(.7deg); }
-  }
-  @keyframes petGrowthBurst{
-    0%{ transform:scale(1) rotate(0deg); }
-    25%{ transform:scale(1.08) rotate(-3deg); }
-    50%{ transform:scale(.96) rotate(3deg); }
-    75%{ transform:scale(1.035) rotate(-1deg); }
-    100%{ transform:scale(1) rotate(0deg); }
-  }
-  .pet-hatch-crack{
+    gr
