@@ -764,6 +764,18 @@
     transition:width .25s ease;
   }
 
+  .next-period-preview{
+    background:rgba(79,195,247,.08);
+    border:1px dashed rgba(79,195,247,.4);
+    border-radius:8px;
+    padding:7px 10px;
+    font-size:.76rem;
+    color:var(--chalk);
+    margin-bottom:12px;
+    animation:detailsFadeIn .3s ease;
+  }
+  .next-period-preview b{ color:var(--blue); }
+
   ul.tasks{ list-style:none; margin:0; padding:0; }
 
   .task{
@@ -3736,7 +3748,10 @@ function render(){
 
   const periodsEl = document.getElementById('periods');
   periodsEl.innerHTML = '';
-  Object.entries(getPeriodsFor(todayISO())).forEach(([key, period])=>{
+  const PERIOD_ORDER = ['manha','tarde','noite'];
+  const periodsObj = getPeriodsFor(todayISO());
+
+  Object.entries(periodsObj).forEach(([key, period])=>{
     const div = document.createElement('div');
     div.className = 'period ' + key;
 
@@ -3750,6 +3765,21 @@ function render(){
     else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
     else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
     else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
+
+    // prévia da próxima etapa quando termina esse período — saber o que
+    // vem a seguir ajuda a reduzir a sensação de surpresa na transição.
+    let nextPreviewHtml = '';
+    if(pct === 100 && applicable.length > 0){
+      const idx = PERIOD_ORDER.indexOf(key);
+      const nextKey = idx >= 0 && idx < PERIOD_ORDER.length-1 ? PERIOD_ORDER[idx+1] : null;
+      if(nextKey && periodsObj[nextKey]){
+        const nextPeriod = periodsObj[nextKey];
+        const firstTask = nextPeriod.tasks[0];
+        nextPreviewHtml = `<div class="next-period-preview">➡️ A seguir: <b>${nextPeriod.label}</b>${firstTask ? ` — começando com ${taskIcon(firstTask.txt)} ${firstTask.txt}` : ''}</div>`;
+      } else if(!nextKey){
+        nextPreviewHtml = `<div class="next-period-preview">🎉 Terminou tudo por hoje!</div>`;
+      }
+    }
 
     const ul = document.createElement('ul');
     ul.className = 'tasks';
@@ -3785,6 +3815,7 @@ function render(){
       <span class="time-remaining" id="timeRemaining_${key}"></span>
       <span class="progress-txt">${progressMsg}</span>
       <div class="progress-bar"><div style="width:${pct}%"></div></div>
+      ${nextPreviewHtml}
     `;
     div.dataset.periodTime = period.time;
     div.appendChild(ul);
