@@ -1,4 +1,7 @@
-, 4500);
+ct: ()=>({left:window.innerWidth*0.2, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 200);
+  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.8, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 350);
+
+  const autoClose = setTimeout(closeEvolutionCelebration, 4500);
   overlay.dataset.autoCloseId = autoClose;
 }
 function closeEvolutionCelebration(){
@@ -91,7 +94,10 @@ function render(){
 
   const periodsEl = document.getElementById('periods');
   periodsEl.innerHTML = '';
-  Object.entries(getPeriodsFor(todayISO())).forEach(([key, period])=>{
+  const PERIOD_ORDER = ['manha','tarde','noite'];
+  const periodsObj = getPeriodsFor(todayISO());
+
+  Object.entries(periodsObj).forEach(([key, period])=>{
     const div = document.createElement('div');
     div.className = 'period ' + key;
 
@@ -105,6 +111,21 @@ function render(){
     else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
     else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
     else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
+
+    // prévia da próxima etapa quando termina esse período — saber o que
+    // vem a seguir ajuda a reduzir a sensação de surpresa na transição.
+    let nextPreviewHtml = '';
+    if(pct === 100 && applicable.length > 0){
+      const idx = PERIOD_ORDER.indexOf(key);
+      const nextKey = idx >= 0 && idx < PERIOD_ORDER.length-1 ? PERIOD_ORDER[idx+1] : null;
+      if(nextKey && periodsObj[nextKey]){
+        const nextPeriod = periodsObj[nextKey];
+        const firstTask = nextPeriod.tasks[0];
+        nextPreviewHtml = `<div class="next-period-preview">➡️ A seguir: <b>${nextPeriod.label}</b>${firstTask ? ` — começando com ${taskIcon(firstTask.txt)} ${firstTask.txt}` : ''}</div>`;
+      } else if(!nextKey){
+        nextPreviewHtml = `<div class="next-period-preview">🎉 Terminou tudo por hoje!</div>`;
+      }
+    }
 
     const ul = document.createElement('ul');
     ul.className = 'tasks';
@@ -140,6 +161,7 @@ function render(){
       <span class="time-remaining" id="timeRemaining_${key}"></span>
       <span class="progress-txt">${progressMsg}</span>
       <div class="progress-bar"><div style="width:${pct}%"></div></div>
+      ${nextPreviewHtml}
     `;
     div.dataset.periodTime = period.time;
     div.appendChild(ul);
@@ -150,42 +172,4 @@ function render(){
   startTimeRemainingTicking();
 
   periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
-    btn.addEventListener('click', onMarkClick);
-  });
-
-  periodsEl.querySelectorAll('.mini-reorder-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const periodKey = btn.getAttribute('data-period');
-      const taskId = btn.getAttribute('data-task');
-      const dir = btn.getAttribute('data-dir');
-      const periodTasks = getPeriodsFor(todayISO())[periodKey].tasks;
-      moveTaskInOrder(periodKey, periodTasks, taskId, dir);
-      render();
-    });
-  });
-
-  const badEl = document.getElementById('badHabits');
-  badEl.innerHTML = '';
-  CONFIG.badHabits.forEach(h=>{
-    const isPositive = h.pts >= 0;
-    const btn = document.createElement('button');
-    btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
-    btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
-    btn.addEventListener('click', ()=>{
-      const delta = addPoints(h.pts);
-      addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`, true);
-      saveState(state);
-      bumpTotal(delta, btn);
-      renderLog();
-    });
-    badEl.appendChild(btn);
-  });
-
-  renderRewards();
-  renderLog();
-  renderHistory();
-  renderAchievementMural();
-  renderWeeklyReview();
-  renderFamilyGameNightAnnouncement();
-  renderWeeklyNewsAnnouncement();
-  r
+    btn.addEventListener('click', onMarkClic

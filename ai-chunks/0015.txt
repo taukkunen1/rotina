@@ -1,4 +1,11 @@
-)=>{
+(!target || !mini || !('IntersectionObserver' in window)) return;
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      mini.classList.toggle('visible', !entry.isIntersecting);
+    });
+  }, { threshold: 0 });
+  observer.observe(target);
+  mini.addEventListener('click', ()=>{
     target.scrollIntoView({ behavior:'smooth', block:'center' });
   });
   miniPacusObserverStarted = true;
@@ -190,7 +197,4 @@ function showEvolutionCelebration(stageInfo, stage, maxStage){
 
   // confete espalhado pela tela toda, não só perto do Pacus
   fireConfetti(null, 40);
-  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.2, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 200);
-  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.8, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 350);
-
-  const autoClose = setTimeout(closeEvolutionCelebration
+  setTimeout(()=> fireConfetti({ getBoundingClientRe

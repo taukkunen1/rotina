@@ -1,4 +1,9 @@
-em mexer
+eriod:"manha", pts:5 },
+    { id:"sc3", label:"Escoteiros", days:["sab"], start:"13:00", end:"17:30", period:"tarde", pts:5 },
+    { id:"sc4", label:"Jogos em Família", days:["qui"], start:"21:00", end:"23:00", period:"noite", pts:5 },
+  ],
+
+  // exceções pontuais: um compromisso só naquele dia específico, sem mexer
   // na regra recorrente (ex: Inglês de reposição numa sexta).
   scheduleExceptions: [
     { id:"exc1", date:"2026-08-14", label:"Inglês (exceção)", period:"manha", pts:5, start:"09:00", end:"10:00" },
@@ -171,8 +176,4 @@ function stripLegacyHairTask(cfg){
   // "Cabelo Lavado" virou tarefa duplicada por engano em algum momento —
   // o controle de cabelo já tem sua própria seção dedicada (🧴 Lavar o
   // cabelo), então removemos essa tarefa específica se ela aparecer.
-  if(cfg && cfg.periods && cfg.periods.noite && Array.isArray(cfg.periods.noite.tasks)){
-    cfg.periods.noite.tasks = cfg.periods.noite.tasks.filter(t => t.id !== 't_gzba4xs');
-  }
-  if(cfg && cfg.periodsWeekend && cfg.periodsWeekend.noite && Array.isArray(cfg.periodsWeekend.noite.tasks)){
-    cfg.periodsWee
+ 

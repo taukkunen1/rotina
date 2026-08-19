@@ -1,4 +1,25 @@
->/exec</code>).</li>
+ conflito(s) resolvido(s)` : ''}.`
+      : `Sincronização automática ativa — aguardando primeira sincronização.`;
+    actionsHtml = `
+      <button class="icon-btn primary" id="driveSaveBtn">☁️⬆️ forçar salvar agora</button>
+      <button class="icon-btn primary" id="driveLoadBtn">☁️⬇️ forçar carregar agora</button>
+    `;
+  }
+
+  el.innerHTML = `
+    <div class="drive-sync">
+      <h3>☁️ Sincronizado com Google Drive</h3>
+      <div class="hint">O Drive guarda os dados, o histórico e uma cópia diária. O app continua funcionando offline e sincroniza quando a conexão volta.</div>
+      <div class="status">${statusHtml}</div>
+      <div class="drive-sync-row">${actionsHtml}</div>
+      <div id="driveSetupInfo" style="display:none;" class="drive-setup">
+        <b>Passo a passo:</b>
+        <ol>
+          <li>Acesse <code>script.google.com</code> → "Novo projeto".</li>
+          <li>Apague o código de exemplo e cole o código do Apps Script (botão "ver código" ao lado).</li>
+          <li>Clique em "Implantar" → "Nova implantação".</li>
+          <li>Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer pessoa".</li>
+          <li>Implante, autorize (é a sua própria conta), e copie a URL gerada (termina em <code>/exec</code>).</li>
           <li>Cole essa URL na constante <code>APPS_SCRIPT_URL</code> no início do arquivo HTML.</li>
           <li>No seu Google Drive, salve o arquivo do app com o nome exato <code>rotina-hector.html</code>.</li>
           <li>Em todos os aparelhos, abra e salve como favorito essa <b>mesma URL do Apps Script</b> (a que termina em <code>/exec</code>) — não o arquivo local. A partir daí, atualizar é só substituir o conteúdo do <code>rotina-hector.html</code> no Drive; todo aparelho já abre a versão nova sozinho.</li>

@@ -142,6 +142,18 @@
     transition:width .25s ease;
   }
 
+  .next-period-preview{
+    background:rgba(79,195,247,.08);
+    border:1px dashed rgba(79,195,247,.4);
+    border-radius:8px;
+    padding:7px 10px;
+    font-size:.76rem;
+    color:var(--chalk);
+    margin-bottom:12px;
+    animation:detailsFadeIn .3s ease;
+  }
+  .next-period-preview b{ color:var(--blue); }
+
   ul.tasks{ list-style:none; margin:0; padding:0; }
 
   .task{
@@ -261,15 +273,4 @@
     border-top:2px dashed var(--line);
   }
   .block-collapsible summary{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-weight:normal;
-    font-size:1.2rem;
-    text-align:center;
-    cursor:pointer;
-    list-style:none;
-    color:var(--chalk);
-    padding:4px 0;
-    position:relative;
-  }
-  .block-collapsible summary::-webkit-details-marker{ display:none; }
-  .block-collapsible summary::after{
+    font-family:"Segoe Print","B

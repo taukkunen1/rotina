@@ -1,4 +1,13 @@
-ttp://www.w3.org/2000/svg" role="img" aria-label="Evolução do Pacus"';
+));
+  return {
+    stage, stageFloat, unitsCompleted:completedDays, totalUnits:cycle.totalDays,
+    maxStage, daysEquivalent:completedDays, cycleDays:cycle.totalDays,
+    todayPerfect:todayHasProgress, canGrowToday, completedDays:validDays
+  };
+}
+
+function svgAttrs(){
+  return 'viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Evolução do Pacus"';
 }
 
 function buildEggSVG(progress){
@@ -135,11 +144,4 @@ function startMiniPacusObserver(){
   if(miniPacusObserverStarted) return;
   const target = document.getElementById('petSection');
   const mini = document.getElementById('miniPacus');
-  if(!target || !mini || !('IntersectionObserver' in window)) return;
-  const observer = new IntersectionObserver((entries)=>{
-    entries.forEach(entry=>{
-      mini.classList.toggle('visible', !entry.isIntersecting);
-    });
-  }, { threshold: 0 });
-  observer.observe(target);
-  mini.addEventListener('click', (
+  if

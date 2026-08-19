@@ -1,4 +1,8 @@
-{
+up.config && backup.state){
+        const localRevision = Number(state.driveRevision)||0;
+        const localDirty = (Number(state.revision)||0) > localRevision;
+        const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
+        if(localDirty && remoteRevision !== localRevision){
           const merged = mergeRemoteData(backup);
           CONFIG = merged.config;
           state = merged.state;
@@ -207,9 +211,4 @@ function renderGameTimer(){
   const adjustBtn = document.getElementById('gameTimerAdjustBtn');
   if(adjustBtn){
     adjustBtn.addEventListener('click', ()=>{
-      const currentRemainingMin = Math.round(remaining/60);
-      const raw = prompt('Quantos minutos você quer que sobrem hoje?', String(Math.max(0, currentRemainingMin)));
-      if(raw === null) return;
-      const targetMin = parseInt(raw, 10);
-      if(isNaN(targetMin) || targetMin < 0) return;
-      const deltaSeconds = (targetMin*60
+      const currentRemainingMin

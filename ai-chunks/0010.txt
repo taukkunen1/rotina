@@ -1,4 +1,12 @@
- pointsEarnedThatDay,
+Points = (state.history[iso] && state.history[iso].pointsEarnedThatDay) || 0;
+    totalDelta += pointsEarnedThatDay - oldPoints;
+
+    const hair = (state.history[iso] && state.history[iso].hair) || (state.hairByDate && state.hairByDate[iso]) || null;
+
+    state.history[iso] = {
+      done,
+      total,
+      pointsEarnedThatDay,
       perfect: false, // "Arrumar a bagunça" ficou de fora
       screenMinutes: 0,
       periodsCompleted: 2, // manhã e tarde completos; noite não (faltou a bagunça)
@@ -171,11 +179,4 @@ function isDayPerfect(dateISO){
     const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
     return applicable.length > 0 && applicable.every(t=>state.checkedToday[t.id] === 'done');
   }
-  return !!(state.history[dateISO] && state.history[dateISO].perfect);
-}
-
-// O crescimento do Pacus NÃO exige o dia 100% perfeito — só que alguma
-// tarefa de verdade tenha sido feita naquele dia. "isDayPerfect" continua
-// controlando o bônus de tela e o selo "dia perfeito"; esta função aqui
-// é só pro crescimento.
-function hasDayProgress(dateISO){
+  return !!(state.history[dateISO] && state.

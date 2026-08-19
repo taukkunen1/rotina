@@ -1,4 +1,9 @@
-y.isArray(p.noite.tasks)){
+t:"Guardar as caixas", pts:1, fullPenalty:true, sub:"no lugar certo ou no lixo" },
+    { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:3, fullPenalty:true, sub:"conferência final — nada espalhado" },
+  ];
+  ['periods','periodsWeekend'].forEach(key=>{
+    const p = cfg[key];
+    if(p && p.noite && Array.isArray(p.noite.tasks)){
       const idx = p.noite.tasks.findIndex(t=>t.id === 'n5');
       if(idx >= 0){
         p.noite.tasks.splice(idx, 1, ...newTasks);
@@ -189,12 +194,4 @@ function applyHistoryCorrection_v3(state){
     const pointsEarnedThatDay = Math.max(0, (rawPoints - (bagunca ? bagunca.pts : 0)) - penalty);
     const done = bagunca ? total - 1 : total;
 
-    const oldPoints = (state.history[iso] && state.history[iso].pointsEarnedThatDay) || 0;
-    totalDelta += pointsEarnedThatDay - oldPoints;
-
-    const hair = (state.history[iso] && state.history[iso].hair) || (state.hairByDate && state.hairByDate[iso]) || null;
-
-    state.history[iso] = {
-      done,
-      total,
-     
+    const old

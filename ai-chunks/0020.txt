@@ -1,4 +1,38 @@
-w = document.createElement('div');
+ });
+  });
+}
+
+function renderEditorBad(){
+  const el = document.getElementById('editBad');
+  el.innerHTML = '';
+  draft.badHabits.forEach(h=>{
+    const row = document.createElement('div');
+    row.className = 'edit-row';
+    row.innerHTML = `
+      <input type="text" value="${escapeAttr(h.txt)}" data-field="txt" placeholder="hábito (ex: brigou -10, ajudou +5)">
+      ${stepperHTML('pts', h.pts, true)}
+      <button class="del" title="remover">🗑</button>
+    `;
+    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ h.txt = e.target.value; });
+    wireStepper(row, h, 'pts', true);
+    row.querySelector('.del').addEventListener('click', ()=>{
+      draft.badHabits = draft.badHabits.filter(x=>x!==h);
+      renderEditorBad();
+    });
+    el.appendChild(row);
+  });
+}
+
+function renderEditorSchedule(){
+  const el = document.getElementById('editSchedule');
+  el.innerHTML = '';
+  const dayOrder = ['seg','ter','qua','qui','sex','sab','dom'];
+  const dayShort = {seg:'S',ter:'T',qua:'Q',qui:'Q',sex:'S',sab:'S',dom:'D'};
+  const periodLabels = {manha:'Manhã', tarde:'Tarde', noite:'Noite'};
+  draft.schedule.forEach(item=>{
+    if(item.pts == null) item.pts = 3;
+    if(!item.period) item.period = 'tarde';
+    const row = document.createElement('div');
     row.className = 'edit-row-task';
     const dayChips = dayOrder.map(d=>
       `<button type="button" class="day-chip ${item.days.includes(d)?'active':''}" data-day="${d}" title="${WEEKDAY_LABELS[d]}">${dayShort[d]}</button>`
@@ -156,34 +190,4 @@ document.getElementById('editBtn').addEventListener('click', ()=>{
   }
   adultUnlocked = true;
   openEditor();
-  render();
-});
-document.getElementById('adultTestBtn').addEventListener('click', ()=>{
-  closeEditor();
-  testPanelOpen = !testPanelOpen;
-  renderTestPanel();
-});
-document.getElementById('closeBtn').addEventListener('click', closeEditor);
-document.getElementById('cancelBtn').addEventListener('click', closeEditor);
-document.getElementById('overlay').addEventListener('click', e=>{
-  if(e.target.id === 'overlay') closeEditor();
-});
-
-document.getElementById('saveBtn').addEventListener('click', ()=>{
-  // limpa linhas vazias (sem nome) antes de salvar
-  ['manha','tarde','noite'].forEach(k=>{
-    draft.periods[k].tasks = draft.periods[k].tasks.filter(t=>t.txt.trim() !== '');
-  });
-  if(draft.periodsWeekend){
-    ['manha','tarde','noite'].forEach(k=>{
-      draft.periodsWeekend[k].tasks = draft.periodsWeekend[k].tasks.filter(t=>t.txt.trim() !== '');
-    });
-  }
-  draft.badHabits = draft.badHabits.filter(h=>h.txt.trim() !== '');
-  draft.rewards = draft.rewards.filter(r=>r.txt.trim() !== '');
-  draft.schedule = (draft.schedule || []).filter(s=>s.label.trim() !== '' && s.days.length > 0);
-
-  const pinVal = document.getElementById('editorPinInput').value.trim();
-  draft.editorPin = pinVal;
-
-  const gameLimitVal = parseFloat(document.
+  r

@@ -1,4 +1,11 @@
-s pontos ajusta o saldo total automaticamente.</div>
+1; font-size:.82rem;">Cabelo</label>
+        <select id="dayHair" style="width:150px;">
+          <option value="">Não registrado</option>
+          <option value="washed">💧 Lavou</option>
+          <option value="not-washed">○ Não lavou</option>
+        </select>
+      </div>
+      <div class="hint">Mudar os pontos ajusta o saldo total automaticamente.</div>
     </div>
 
     <div class="editor-footer">
@@ -169,9 +176,4 @@ const DEFAULT_CONFIG = {
   // tarefa aparece: manha, tarde ou noite. "Escola" já existe como tarefa
   // fixa lá em cima, então não repetimos ela aqui.
   schedule: [
-    { id:"sc1", label:"Inglês", days:["ter","qui"], start:"09:00", end:"10:00", period:"manha", pts:5 },
-    { id:"sc3", label:"Escoteiros", days:["sab"], start:"13:00", end:"17:30", period:"tarde", pts:5 },
-    { id:"sc4", label:"Jogos em Família", days:["qui"], start:"21:00", end:"23:00", period:"noite", pts:5 },
-  ],
-
-  // exceções pontuais: um compromisso só naquele dia específico, s
+    { id:"sc1", label:"Inglês", days:["ter","qui"], start:"09:00", end:"10:00", p
