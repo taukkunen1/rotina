@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Rotina do Hector — Pacus</title>
 <style>
   /* Arquivo local, sem instalação — abre no navegador. Tudo é editado
@@ -2547,6 +2550,14 @@ function reconcileState(state){
     state.petPerfectBonusDays.sort();
     state.perfectBonusBackfillV1Applied = true;
   }
+  if(!state.hairCorrectionAug1718Applied){
+    if(!state.hairByDate) state.hairByDate = {};
+    state.hairByDate["2026-08-17"] = "not-washed";
+    state.hairByDate["2026-08-18"] = "washed";
+    if(state.history["2026-08-17"]) state.history["2026-08-17"].hair = "not-washed";
+    if(state.history["2026-08-18"]) state.history["2026-08-18"].hair = "washed";
+    state.hairCorrectionAug1718Applied = true;
+  }
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
   }
@@ -3625,7 +3636,7 @@ function buildStreakStrip(){
     const d = new Date(iso+"T00:00:00");
     const letter = weekdayLetters[d.getDay()];
     let entry = isToday ? liveTodayEntry() : state.history[iso];
-    let cls = 'streak-cell empty';
+    let cls = 'streak-cell none';
     if(entry && entry.total > 0){
       if(entry.perfect) cls = 'streak-cell perfect';
       else if(entry.done === entry.total - 1) cls = 'streak-cell almost';
