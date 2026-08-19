@@ -1,11 +1,4 @@
-1; font-size:.82rem;">Cabelo</label>
-        <select id="dayHair" style="width:150px;">
-          <option value="">Não registrado</option>
-          <option value="washed">💧 Lavou</option>
-          <option value="not-washed">○ Não lavou</option>
-        </select>
-      </div>
-      <div class="hint">Mudar os pontos ajusta o saldo total automaticamente.</div>
+ saldo total automaticamente.</div>
     </div>
 
     <div class="editor-footer">
@@ -109,11 +102,8 @@
 </div>
 
 <script>
-/* =========================================================================
-   DEFAULT_CONFIG só é usado da primeira vez que o arquivo abre (sem nada
-   salvo ainda no navegador). Depois disso tudo é editado pela tela e fica
-   guardado em localStorage — o botão "Editar tudo" já resolve tudo.
-   ========================================================================= */
+/* DEFAULT_CONFIG só vale na primeira abertura; depois é tudo editável
+   pela tela e fica salvo no navegador. */
 const DEFAULT_CONFIG = {
   periods: {
     manha: {
@@ -176,4 +166,15 @@ const DEFAULT_CONFIG = {
   // tarefa aparece: manha, tarde ou noite. "Escola" já existe como tarefa
   // fixa lá em cima, então não repetimos ela aqui.
   schedule: [
-    { id:"sc1", label:"Inglês", days:["ter","qui"], start:"09:00", end:"10:00", p
+    { id:"sc1", label:"Inglês", days:["ter","qui"], start:"09:00", end:"10:00", period:"manha", pts:5 },
+    { id:"sc3", label:"Escoteiros", days:["sab"], start:"13:00", end:"17:30", period:"tarde", pts:5 },
+    { id:"sc4", label:"Jogos em Família", days:["qui"], start:"21:00", end:"23:00", period:"noite", pts:5 },
+  ],
+
+  // exceções pontuais: um compromisso só naquele dia específico, sem mexer
+  // na regra recorrente (ex: Inglês de reposição numa sexta).
+  scheduleExceptions: [
+    { id:"exc1", date:"2026-08-14", label:"Inglês (exceção)", period:"manha", pts:5, start:"09:00", end:"10:00" },
+  ],
+
+  // Pacus, o axolote: começa em 09/08 e cresce um passo a ca

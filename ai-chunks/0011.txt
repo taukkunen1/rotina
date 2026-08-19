@@ -1,92 +1,4 @@
-history[dateISO].perfect);
-}
-
-// O crescimento do Pacus NÃO exige o dia 100% perfeito — só que alguma
-// tarefa de verdade tenha sido feita naquele dia. "isDayPerfect" continua
-// controlando o bônus de tela e o selo "dia perfeito"; esta função aqui
-// é só pro crescimento.
-function hasDayProgress(dateISO){
-  if(dateISO === todayISO()){
-    const tasks = allTasks(dateISO);
-    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    return applicable.some(t=>state.checkedToday[t.id] === 'done');
-  }
-  const entry = state.history[dateISO];
-  return !!(entry && entry.done > 0);
-}
-
-function syncPetCompletionFromDay(dateISO){
-  let grew = false;
-  if(hasDayProgress(dateISO)) grew = registerPetDayCompletion(dateISO) || grew;
-  if(isDayPerfect(dateISO)) grew = registerPetPerfectBonus(dateISO) || grew;
-  return grew;
-}
-
-function closeOutDay(state, dateISO){
-  if(!dateISO) return;
-  const tasks = allTasks(dateISO);
-  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  const total = applicable.length;
-  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-  const pointsEarnedThatDay = tasks
-    .filter(t=>state.checkedToday[t.id] === 'done')
-    .reduce((s,t)=>s+t.pts, 0);
-  const perfect = total > 0 && done === total;
-  if(done > 0) registerPetDayCompletion(dateISO);
-  if(perfect) registerPetPerfectBonus(dateISO);
-  const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
-  const periodsCompleted = periodsCompletedFrom(state.checkedToday, dateISO);
-  state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
-}
-
-function saveState(state, options={}){
-  if(!options.remote){
-    state.revision = (Number(state.revision)||0) + 1;
-    state.updatedAt = new Date().toISOString();
-  }
-  try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
-  scheduleAutoPush();
-}
-
-/* ---------- sincronização automática com o Google Drive ----------
-   Sempre que o arquivo abre, ele tenta buscar a versão mais nova salva
-   no Drive (via Apps Script) e usa ela — assim, não importa em qual
-   aparelho vocês abrirem, todos mostram a mesma coisa. Sempre que algo
-   muda aqui, ele também manda a atualização pro Drive sozinho, na hora
-   (sem precisar clicar em nada). Se estiver offline, o arquivo continua
-   funcionando normal com os dados salvos localmente.
-   IMPORTANTE: essas variáveis precisam existir ANTES de carregar
-   CONFIG/state, porque o carregamento pode precisar salvar de volta
-   (limpezas, correções automáticas) e isso já chama scheduleAutoPush.
-   E a sincronização fica SUSPENSA durante esse carregamento inicial —
-   nesse momento ainda nem todo o resto do código rodou, então tentar
-   sincronizar/renderizar tão cedo pode travar. Ela é reativada logo
-   depois, uma vez que CONFIG e state já estão prontos. */
-let suppressAutoPush = true;
-let pushInFlight = false;
-let pushPending = false;
-
-let CONFIG = loadConfig();
-let state = loadState();
-
-suppressAutoPush = false;
-
-function scheduleAutoPush(){
-  if(!APPS_SCRIPT_URL || suppressAutoPush) return;
-  if(pushInFlight){ pushPending = true; return; }
-  doAutoPush();
-}
-
-async function doAutoPush(){
-  if(!APPS_SCRIPT_URL) return;
-  pushInFlight = true;
-  try{
-    const payload = {
-      appVersion: APP_VERSION,
-      config: CONFIG,
-      state: state,
-      baseRevision: Number(state.driveRevision)||0,
-      clientRevision: Number(state.revision)||0,
+evision)||0,
       clientUpdatedAt: state.updatedAt || new Date().toISOString(),
       exportedAt: new Date().toISOString()
     };
@@ -191,4 +103,100 @@ async function autoPullOnStartup(){
     const res = await fetch(DATA_ENDPOINT, {method:'GET', cache:'no-store'});
     if(res.ok){
       const backup = await res.json();
-      if(backup && back
+      if(backup && backup.config && backup.state){
+        const localRevision = Number(state.driveRevision)||0;
+        const localDirty = (Number(state.revision)||0) > localRevision;
+        const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
+        if(localDirty && remoteRevision !== localRevision){
+          const merged = mergeRemoteData(backup);
+          CONFIG = merged.config;
+          state = merged.state;
+          state.driveRevision = remoteRevision;
+          saveConfig(CONFIG);
+          saveState(state);
+          render();
+        } else if(remoteRevision >= localRevision){
+          const remoteConfig = sanitizeRemoteConfig(backup.config);
+          if(remoteConfig){
+            CONFIG = remoteConfig;
+            state = reconcileState(backup.state);
+            state.driveRevision = remoteRevision;
+            state.driveLastSyncISO = todayISO();
+            try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(CONFIG)); }catch(e){}
+            try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+            render();
+          }else{
+            // Nunca substituir uma rotina válida por um backup remoto vazio/incompleto.
+            // O app continua com a configuração local que já funcionava.
+            render();
+          }
+        }
+      }
+    }
+  }catch(err){
+    renderDriveSync();
+  }
+  suppressAutoPush = false;
+}
+
+function addLog(text, isParentAction){
+  const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  state.log.unshift({ text: time+" — "+text, parent: !!isParentAction });
+  state.log = state.log.slice(0, 30);
+}
+function bumpTotal(delta, anchorEl){
+  const el = document.getElementById('totalPoints');
+  el.textContent = state.totalPoints;
+  el.classList.remove('bump');
+  void el.offsetWidth;
+  el.classList.add('bump');
+
+  if(delta){
+    const deltaEl = document.getElementById('pointsDelta');
+    if(deltaEl){
+      const rect = (anchorEl || el).getBoundingClientRect();
+      deltaEl.style.left = (rect.left + rect.width/2) + 'px';
+      deltaEl.style.top = (rect.top - 6) + 'px';
+      deltaEl.classList.remove('show-up','show-down');
+      void deltaEl.offsetWidth;
+      deltaEl.textContent = (delta>0?'+':'−') + Math.abs(delta);
+      deltaEl.classList.add(delta>0?'show-up':'show-down');
+    }
+  }
+}
+
+// 1 Pacus Point ≈ R$0,06 (dentro da faixa combinada de R$0,05–0,08) — o
+// saldo nunca passa de 1000 pontos, equivalente a uns R$60 no máximo.
+const MAX_POINTS = 1000;
+const POINT_VALUE_BRL = 0.06;
+
+function addPoints(delta){
+  const before = state.totalPoints;
+  state.totalPoints = Math.max(0, Math.min(MAX_POINTS, state.totalPoints + delta));
+  return state.totalPoints - before;
+}
+
+// "✕ não realizado": perde metade dos pontos, arredondado pra cima e
+// sempre par.
+function notDonePenalty(pts){
+  let half = Math.ceil(pts/2);
+  if(half % 2 !== 0) half += 1;
+  return half;
+}
+
+// Algumas tarefas (marcadas com fullPenalty:true) perdem o valor CHEIO em
+// vez de metade — reforço maior pras tarefas mais chatas/resistidas.
+function taskNotDonePenalty(task){
+  return task.fullPenalty ? task.pts : notDonePenalty(task.pts);
+}
+
+/* ===================== TIMER DE TEMPO DE JOGO (diário) ===================== */
+let gameTimerTickHandle = null;
+
+function gameTimerDailyLimitSeconds(){
+  const base = Math.round((CONFIG.screenDailyLimitHours || 2) * 3600);
+  const bonus = Math.round((state.gameTimer.bonusSeconds || 0));
+  return Math.max(0, base + bonus);
+}
+
+function

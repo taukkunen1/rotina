@@ -1,15 +1,4 @@
-dit-row input[type=number]{
-    width:58px;
-    background:rgba(255,255,255,.05);
-    border:1px solid var(--line);
-    color:var(--chalk);
-    border-radius:6px;
-    padding:7px 6px;
-    font-size:.82rem;
-    text-align:center;
-    font-family:inherit;
-  }
-  .edit-row input:focus, .edit-row select:focus{ outline:1px solid var(--yellow); }
+ar(--yellow); }
   .edit-row select{
     background:rgba(255,255,255,.05);
     border:1px solid var(--line);
@@ -240,4 +229,11 @@ dit-row input[type=number]{
         <input type="number" min="0" id="dayPoints" style="width:70px;">
       </div>
       <div class="edit-row">
-        <label style="flex:
+        <label style="flex:1; font-size:.82rem;">Cabelo</label>
+        <select id="dayHair" style="width:150px;">
+          <option value="">Não registrado</option>
+          <option value="washed">💧 Lavou</option>
+          <option value="not-washed">○ Não lavou</option>
+        </select>
+      </div>
+      <div class="hint">Mudar os pontos ajusta o

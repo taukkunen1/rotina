@@ -5,13 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rotina do Hector — Pacus</title>
 <style>
-  /* =====================================================================
-     Arquivo local, sem internet, sem instalação. Abra num navegador.
-     Todo o conteúdo (tarefas, hábitos ruins, recompensas) agora é editado
-     pelo botão "Editar tudo" na tela — não precisa mexer no código.
-     Os dados ficam salvos no navegador (localStorage). O DEFAULT_CONFIG
-     lá embaixo no <script> só é usado na primeira vez que o arquivo abre.
-     ===================================================================== */
+  /* Arquivo local, sem instalação — abre no navegador. Tudo é editado
+     pela tela ("Editar tudo"), dados ficam salvos no navegador.
+     DEFAULT_CONFIG só vale na primeira abertura. */
 
   :root{
     --board:#16241f;
@@ -292,4 +288,18 @@
     font-family:inherit;
   }
   .game-timer-btn.running{
-    background:rgba(255,255,
+    background:rgba(255,255,255,.08);
+    color:var(--chalk);
+    border:1px solid var(--line);
+  }
+
+  /* ---------- timers avulsos (tempo livre pra qualquer coisa) ---------- */
+  .custom-timers{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  @media (max-width:520px){
+    .custom-timers{ grid-template-columns:1fr; }
+  }
+  .cu

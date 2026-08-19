@@ -1,124 +1,4 @@
- = Math.round(remaining/60);
-      const raw = prompt('Quantos minutos você quer que sobrem hoje?', String(Math.max(0, currentRemainingMin)));
-      if(raw === null) return;
-      const targetMin = parseInt(raw, 10);
-      if(isNaN(targetMin) || targetMin < 0) return;
-      const deltaSeconds = (targetMin*60) - remaining;
-      addGameTimerBonusHours(deltaSeconds/3600);
-      addLog(`⚙️ tempo de hoje ajustado pra ${targetMin} min restantes`, true);
-      saveState(state);
-      renderGameTimer();
-    });
-  }
-
-  if(running) startGameTimerTicking(); else stopGameTimerTicking();
-}
-
-/* ===================== TIMERS AVULSOS (tempo livre pra qualquer coisa) ===================== */
-let customTimerTickHandle = null;
-
-function findCustomTimer(id){
-  return state.customTimers.find(t=>t.id===id);
-}
-
-function customTimerRemainingNow(t){
-  if(!t.runningSince) return t.remainingSeconds;
-  const elapsed = (Date.now() - t.runningSince)/1000;
-  return Math.max(0, t.remainingSeconds - elapsed);
-}
-
-function setCustomTimerMinutes(id, minutes){
-  const t = findCustomTimer(id);
-  if(!t || t.runningSince) return; // não dá pra mudar enquanto está rodando
-  const secs = Math.max(0, Math.round(minutes*60));
-  t.totalSeconds = secs;
-  t.remainingSeconds = secs;
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function startCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t || t.runningSince || t.remainingSeconds <= 0) return;
-  t.runningSince = Date.now();
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-  startCustomTimerTicking();
-}
-
-function pauseCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t || !t.runningSince) return;
-  t.remainingSeconds = customTimerRemainingNow(t);
-  t.runningSince = null;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function resetCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t) return;
-  t.remainingSeconds = t.totalSeconds;
-  t.runningSince = null;
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function playBeep(){
-  try{
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if(!Ctx) return;
-    const ctx = new Ctx();
-    [0, 220, 440].forEach(delay=>{
-      setTimeout(()=>{
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = 880;
-        gain.gain.value = 0.15;
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.18);
-      }, delay);
-    });
-  }catch(e){ /* som é só um extra, sem problema se falhar */ }
-}
-
-function anyCustomTimerRunning(){
-  return state.customTimers.some(t=>t.runningSince);
-}
-
-function startCustomTimerTicking(){
-  if(customTimerTickHandle) return;
-  customTimerTickHandle = setInterval(()=>{
-    let needsFullRender = false;
-    state.customTimers.forEach(t=>{
-      if(!t.runningSince) return;
-      const remaining = customTimerRemainingNow(t);
-      if(remaining <= 0 && !t.finished){
-        t.remainingSeconds = 0;
-        t.runningSince = null;
-        t.finished = true;
-        playBeep();
-        needsFullRender = true;
-      }
-    });
-    if(needsFullRender){ saveState(state); renderCustomTimers(); }
-    else updateCustomTimerDisplays();
-    if(!anyCustomTimerRunning()) stopCustomTimerTicking();
-  }, 1000);
-}
-function stopCustomTimerTicking(){
-  if(customTimerTickHandle){ clearInterval(customTimerTickHandle); customTimerTickHandle = null; }
-}
-
-function updateCustomTimerDisplays(){
-  state.customTimers.forEach(t=>{
-    const el = document.getElementById('customTimerDisplay_'+t.id);
-    if(el) el.textContent = formatHMS(customTimerRemainingNow(t));
+el.textContent = formatHMS(customTimerRemainingNow(t));
   });
 }
 
@@ -209,4 +89,79 @@ function computePetStage(){
   const stageFloat = Math.min(maxStage, completedDays);
   const stage = Math.min(maxStage, completedDays);
   const todayHasProgress = hasDayProgress(todayISO());
-  const canGrowToday = todayISO() >= cycle.startISO && todayISO() <= cycle.endISO && todayHasProgress && !completed.has(todayISO(
+  const canGrowToday = todayISO() >= cycle.startISO && todayISO() <= cycle.endISO && todayHasProgress && !completed.has(todayISO());
+  return {
+    stage, stageFloat, unitsCompleted:completedDays, totalUnits:cycle.totalDays,
+    maxStage, daysEquivalent:completedDays, cycleDays:cycle.totalDays,
+    todayPerfect:todayHasProgress, canGrowToday, completedDays:validDays
+  };
+}
+
+function svgAttrs(){
+  return 'viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Evolução do Pacus"';
+}
+
+function buildEggSVG(progress){
+  const p = Math.max(0, Math.min(1, progress));
+  const wobble = Math.sin(p*Math.PI*3)*1.4;
+  const gid = uid('egg');
+  const cracks = [
+    ["M94 80 L106 96 L98 109 L112 125 L103 142", 0.12],
+    ["M80 96 L92 108 L84 122 L96 136", 0.32],
+    ["M124 90 L113 105 L126 117 L116 132 L123 147", 0.52],
+    ["M76 124 L89 131 L82 147", 0.72],
+    ["M132 119 L122 128 L134 141", 0.88]
+  ];
+  const crackSvg = cracks.map(([d,start],i)=>{
+    const opacity = p < start ? 0 : Math.min(1,(p-start)/0.16);
+    return `<path d="${d}" class="egg-crack" stroke="#c9506f" stroke-width="${2+i*.25}" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>`;
+  }).join('');
+  const shellBreak = p > .78 ? `<path d="M62 118 Q100 ${142+p*10} 158 118" stroke="#c9506f" stroke-width="2.4" fill="none" opacity="${(p-.78)/.22}"/>` : '';
+  // silhueta do filhote crescendo por dentro, visível através da casca
+  const embryoOpacity = Math.max(0, p-0.3)*0.55;
+  const embryoScale = 0.5 + p*0.5;
+  return `<svg class="pet-mascot pet-egg" ${svgAttrs()}>
+    <defs>
+      <radialGradient id="${gid}-shell" cx="36%" cy="30%" r="78%">
+        <stop offset="0%" stop-color="#fffaf1"/>
+        <stop offset="55%" stop-color="#f9ecd9"/>
+        <stop offset="100%" stop-color="#eed7bd"/>
+      </radialGradient>
+    </defs>
+    <g class="pacus-idle">
+      <g transform="rotate(${wobble} 110 130)">
+        <ellipse cx="110" cy="130" rx="48" ry="60" fill="url(#${gid}-shell)" stroke="#e88aa8" stroke-width="3"/>
+        <ellipse cx="93" cy="106" rx="12" ry="18" fill="#fff" opacity=".5"/>
+        <g transform="translate(110 138) scale(${embryoScale.toFixed(2)}) translate(-110 -138)" opacity="${embryoOpacity.toFixed(2)}">
+          <ellipse cx="110" cy="138" rx="26" ry="20" fill="#f6c7dc"/>
+          <circle cx="110" cy="122" r="15" fill="#f6c7dc"/>
+        </g>
+        ${crackSvg}${shellBreak}
+      </g>
+    </g>
+    <circle class="pacus-bubble" cx="72" cy="169" r="4" fill="#e8a3c0" opacity=".55"/>
+    <circle class="pacus-bubble" cx="151" cy="165" r="3" fill="#e8a3c0" opacity=".45" style="animation-delay:1s;"/>
+    <circle class="pacus-bubble" cx="118" cy="182" r="2.4" fill="#e8a3c0" opacity=".4" style="animation-delay:1.9s;"/>
+  </svg>`;
+}
+
+function buildPacusSVG(stageFloat){
+  const s = Math.max(0, Math.min(23, stageFloat));
+  const hatch = Math.max(0, Math.min(1, (s-8)/6));
+  const growth = Math.max(0, Math.min(1, (s-14)/9));
+  const adult = Math.max(0, Math.min(1, (s-21)/2));
+  const scale = 0.52 + growth*0.42 + adult*0.06;
+  const bodyW = 45 + growth*10 + adult*4;
+  const bodyH = 30 + growth*5 + adult*3;
+  const gillLen = 12 + growth*11 + adult*4;
+  const faceY = 92 - hatch*7;
+  const bodyY = 128 - hatch*5;
+  const gid = uid('pacus');
+  const shell = hatch < 1 ? `
+    <path d="M62 151 Q45 158 54 174 Q70 184 85 170" fill="#f6ecd9" stroke="#e88aa8" stroke-width="2.5" opacity="${1-hatch*.75}"/>
+    <path d="M158 151 Q175 158 166 174 Q150 184 135 170" fill="#f6ecd9" stroke="#e88aa8" stroke-width="2.5" opacity="${1-hatch*.75}"/>` : '';
+
+  // guelras com dois filamentos cada, balançando devagar (efeito de água)
+  const gillCount = 2 + Math.floor(Math.min(2,growth*2));
+  let gills = '';
+  for(le
