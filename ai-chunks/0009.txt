@@ -1,4 +1,46 @@
-(end.hour, end.minute, 0, 0);
+IDE = null; // string ISO "yyyy-mm-dd" ou null (usa a data real do sistema)
+// IMPORTANTE: o modo de teste nunca fica salvo entre aberturas do arquivo —
+// toda vez que a página abre, começa sempre na data real do sistema.
+try{ localStorage.removeItem('hector_rotina_testdate_v1'); }catch(e){}
+
+function todayISO(){
+  if(TEST_DATE_OVERRIDE) return TEST_DATE_OVERRIDE;
+  const d = new Date();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return d.getFullYear()+"-"+m+"-"+day;
+}
+function setTestDate(iso){
+  TEST_DATE_OVERRIDE = iso; // só em memória — some sozinho ao recarregar a página
+}
+function formatDateBR(iso){
+  const [,m,d] = iso.split("-");
+  return d+"/"+m;
+}
+
+// Extrai hora/minuto do horário final do período ("8:20 – 12:00").
+function periodEndTime(periodTimeStr){
+  const parts = periodTimeStr.split(/[–-]/).map(s=>s.trim());
+  const endStr = parts[parts.length-1];
+  const [h, m] = endStr.split(':').map(Number);
+  if(isNaN(h)) return null;
+  return { hour: h, minute: m||0 };
+}
+function periodStartTime(periodTimeStr){
+  const parts = periodTimeStr.split(/[–-]/).map(s=>s.trim());
+  const [h, m] = parts[0].split(':').map(Number);
+  if(isNaN(h)) return null;
+  return { hour: h, minute: m||0 };
+}
+
+// Tempo restante até o fim do período, com base no relógio real.
+function formatTimeRemaining(periodTimeStr){
+  const start = periodStartTime(periodTimeStr);
+  const end = periodEndTime(periodTimeStr);
+  if(!start || !end) return null;
+  const now = new Date();
+  const startDate = new Date(now); startDate.setHours(start.hour, start.minute, 0, 0);
+  const endDate = new Date(now); endDate.setHours(end.hour, end.minute, 0, 0);
   if(now < startDate){
     return { text: `começa às ${String(start.hour).padStart(2,'0')}:${String(start.minute).padStart(2,'0')}`, urgency: 'none' };
   }
@@ -155,38 +197,4 @@ function reconcileState(state){
   if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
   if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
   if(state.petLastCompletionISO === undefined) state.petLastCompletionISO = null;
-  if(typeof state.revision !== 'number') state.revision = 0;
-  if(typeof state.driveRevision !== 'number') state.driveRevision = 0;
-  if(typeof state.driveConflictCount !== 'number') state.driveConflictCount = 0;
-  if(state.lastBackupISO === undefined) state.lastBackupISO = null;
-  if(state.backupReminderDismissedFor === undefined) state.backupReminderDismissedFor = null;
-  if(!state.checkedToday) state.checkedToday = {};
-  if(!state.log) state.log = [];
-  if(!state.history) state.history = {};
-  if(!state.hairByDate || typeof state.hairByDate !== "object") state.hairByDate = {};
-  if(!state.customTaskOrder || typeof state.customTaskOrder !== "object") state.customTaskOrder = {};
-  if(!state.familyAnnouncementResetV1Applied){
-    state.familyGameNightAnnouncementSeen = false;
-    state.familyAnnouncementResetV1Applied = true;
-  }
-  if(!state.familyAnnouncementResetV2Applied){
-    state.familyGameNightAnnouncementSeen = false;
-    state.familyAnnouncementResetV2Applied = true;
-  }
-  if(!state.familyAnnouncementResetV3Applied){
-    state.familyGameNightAnnouncementSeen = false;
-    state.familyAnnouncementResetV3Applied = true;
-  }
-  if(!state.familyAnnouncementResetV4Applied){
-    state.familyGameNightAnnouncementSeen = false;
-    state.familyAnnouncementResetV4Applied = true;
-  }
-  if(!state.waldaBetBonusApplied){
-    state.totalPoints = Math.max(0, Math.min(1000, (Number(state.totalPoints)||0) + 5));
-    if(!state.log) state.log = [];
-    state.log.unshift('🏆 +5 · acertou a aposta com a Walda (pessoa autêntica)');
-    state.waldaBetBonusApplied = true;
-  }
-  if(!state.celebrationReplayV1Applied){
-    state.lastSeenPetStage = 0;
-    state.celebration
+  if(

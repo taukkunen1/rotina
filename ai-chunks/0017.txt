@@ -1,4 +1,31 @@
-/b>${usingOverride ? ' (modo teste ativo)' : ' (data real do sistema)'}</div>
+ MODO TESTE ATIVO — data simulada: ${formatDateBR(TEST_DATE_OVERRIDE)}
+      <button id="bannerRealDateBtn">voltar pra data real</button>
+    </div>
+  `;
+  document.getElementById('bannerRealDateBtn').addEventListener('click', ()=>{
+    setTestDate(null);
+    state = loadState();
+    render();
+  });
+}
+
+function renderTestPanel(){
+  const el = document.getElementById('testPanel');
+  if(!el) return;
+  if(!testPanelOpen){ el.style.display='none'; el.innerHTML=''; return; }
+  el.style.display='block';
+
+  const realToday = (()=>{
+    const d = new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+  })();
+  const usingOverride = !!TEST_DATE_OVERRIDE;
+
+  el.innerHTML = `
+    <div class="test-panel">
+      <h3>🧪 Modo de teste</h3>
+      <div class="hint">Ferramentas só pra conferir se o crescimento do Pacus e o histórico estão funcionando. Não mexe nas tarefas de verdade — só simula dias.</div>
+      <div class="test-date">Data simulada agora: <b>${formatDateBR(todayISO())}/${todayISO().split('-')[0]}</b>${usingOverride ? ' (modo teste ativo)' : ' (data real do sistema)'}</div>
       <div class="test-row">
         <button class="icon-btn" id="testCompleteDayBtn">✅ completar tudo hoje</button>
         <button class="icon-btn" id="testPrevDayBtn">◀ dia anterior</button>
@@ -179,28 +206,4 @@ function renderHistory(){
     rows.push(iso);
   }
 
-  const HISTORY_VISIBLE_DAYS = 30;
-  const hiddenCount = Math.max(0, rows.length - HISTORY_VISIBLE_DAYS);
-  const visibleRows = historyShowAll ? rows : rows.slice(-HISTORY_VISIBLE_DAYS);
-
-  body.innerHTML = visibleRows.map(iso=>{
-    const isToday = iso === todayISO();
-    let entry;
-    if(isToday){
-      const tasks = allTasks();
-      const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-      const total = applicable.length;
-      const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-      const pointsEarnedThatDay = tasks.filter(t=>state.checkedToday[t.id]==='done').reduce((s,t)=>s+t.pts,0);
-      const perfect = total>0 && done===total;
-      entry = { done, total, pointsEarnedThatDay, perfect, hair:getHairStatus(iso) };
-    } else {
-      entry = state.history[iso];
-    }
-    const hair = getHairStatus(iso) || (entry && entry.hair) || null;
-    if(!entry){
-      return `<tr${isToday?' class="today-row"':''}>
-        <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
-        <td>—</td>
-        <td class="pts-cell">—</td>
-        <td>${hairLabel(
+  const HISTORY_VISIBLE_DAYS = 30

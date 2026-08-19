@@ -1,4 +1,52 @@
-n; }
+   </div>
+  `).join('');
+  el.innerHTML = `
+    <div class="achievement-mural">
+      <div class="mural-grid">${cardsHtml}</div>
+    </div>
+  `;
+}
+
+// Toque no Pacus: gira em 3D e mostra uma reaçãozinha fofa — pura
+// diversão, não mexe em pontos nem no formato/crescimento dele.
+const PACUS_REACTIONS = ['💕','😊','🥰','✨','👋','🫧','😄','💗'];
+function wirePacusInteraction(){
+  const wrap = document.getElementById('pacusInteractive');
+  if(!wrap) return;
+  wrap.addEventListener('click', ()=>{
+    wrap.classList.remove('spinning');
+    void wrap.offsetWidth;
+    wrap.classList.add('spinning');
+
+    const bubble = document.getElementById('petReactionBubble');
+    if(bubble){
+      const pick = PACUS_REACTIONS[Math.floor(Math.random()*PACUS_REACTIONS.length)];
+      bubble.textContent = pick;
+      bubble.classList.remove('show');
+      void bubble.offsetWidth;
+      bubble.classList.add('show');
+    }
+    if(Math.random() < 0.25) fireConfetti(wrap, 10);
+  });
+}
+
+// Fala noturna do Pacus — aparece sozinha quando a Noite começa,
+// dispensável só por hoje.
+const PACUS_NIGHT_MESSAGE = "Não esqueça de desenhar na lousa hoje! 🎨";
+let pacusDialogueTickHandle = null;
+function isEveningNow(){
+  const start = periodStartTime(CONFIG.periods.noite.time);
+  if(!start) return false;
+  const now = new Date();
+  const startToday = new Date(now);
+  startToday.setHours(start.hour, start.minute, 0, 0);
+  return now >= startToday;
+}
+function renderPacusDialogue(){
+  const el = document.getElementById('pacusDialogue');
+  if(!el) return;
+  const dismissedToday = state.pacusDialogueDismissedDate === todayISO();
+  if(!isEveningNow() || dismissedToday){ el.innerHTML = ''; return; }
   el.innerHTML = `
     <div class="pacus-dialogue">
       <span class="pacus-dialogue-text">💬 ${PACUS_NIGHT_MESSAGE}</span>
@@ -145,51 +193,4 @@ function buildStreakStrip(){
     }
     if(isToday) cls += ' today';
     return `<span class="${cls}" title="${formatDateBR(iso)}"><span class="streak-letter">${letter}</span></span>`;
-  }).join('');
-  return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${cells}</div>`;
-}
-
-function liveTodayEntry(){
-  const tasks = allTasks();
-  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  const total = applicable.length;
-  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-  const perfect = total>0 && done===total;
-  return { total, done, perfect };
-}
-
-function getHairStatus(dateISO){
-  return state.hairByDate && state.hairByDate[dateISO] ? state.hairByDate[dateISO] : null;
-}
-
-function setHairStatus(status){
-  const iso = todayISO();
-  if(!state.hairByDate) state.hairByDate = {};
-  state.hairByDate[iso] = status;
-  if(!state.history) state.history = {};
-  if(state.history[iso]) state.history[iso].hair = status;
-  saveState(state);
-  renderHair();
-  renderHistory();
-}
-
-function renderHair(){
-  const section = document.getElementById('hairSection');
-  if(!section) return;
-  const status = getHairStatus(todayISO());
-  const washedBtn = document.getElementById('hairWashedBtn');
-  const notWashedBtn = document.getElementById('hairNotWashedBtn');
-  const statusEl = document.getElementById('hairStatus');
-  washedBtn.classList.toggle('active-washed', status === 'washed');
-  notWashedBtn.classList.toggle('active-notwashed', status === 'not-washed');
-  statusEl.innerHTML = status === 'washed'
-    ? 'Hoje: <b class="hair-history-washed">💧 cabelo lavado</b>'
-    : status === 'not-washed'
-      ? 'Hoje: <b class="hair-history-notwashed">○ não lavou</b>'
-      : 'Hoje: ainda não registrado';
-}
-
-function render(){
-  document.getElementById('totalPoints').textContent = state.totalPoints;
-
- 
+  }).join('')

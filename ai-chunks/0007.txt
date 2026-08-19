@@ -1,4 +1,38 @@
- date:"2026-08-14", label:"Inglês (exceção)", period:"manha", pts:5, start:"09:00", end:"10:00" },
+ts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" },
+        { id:"t_ci3brlt", txt:"Ler Livro", pts:4, sub:"3 capítulo do livro de casa (até às 22h)" },
+        { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h" },
+      ]
+    },
+  },
+  // rotina de fim de semana: fica null (desativada) até os pais ativarem
+  // no editor — quando ativada, é editada separadamente da de dia de escola
+  periodsWeekend: null,
+  // PIN opcional pra travar o botão "Editar tudo" — vazio = sem trava
+  editorPin: "",
+  badHabits: [],
+  rewards: [
+    { id:"r1", txt:"1 hora de tela", cost:90, grantsHours:1, maxPerDay:2 },
+    { id:"r2", txt:"Hot Wheels (brinquedo)", cost:300 },
+    { id:"r3", txt:"Passeio Especial (você escolhe)", cost:500 },
+  ],
+  screenDailyLimitHours: 2, // usado pelo timer de jogo diário abaixo
+  perfectDayBonusMinutes: 30,
+  historyStartDate: "2026-08-09",
+
+  // compromissos fixos da semana — aparecem direto como tarefas do dia
+  // (no período certo), não como uma lista separada. "period" é onde a
+  // tarefa aparece: manha, tarde ou noite. "Escola" já existe como tarefa
+  // fixa lá em cima, então não repetimos ela aqui.
+  schedule: [
+    { id:"sc1", label:"Inglês", days:["ter","qui"], start:"09:00", end:"10:00", period:"manha", pts:5 },
+    { id:"sc3", label:"Escoteiros", days:["sab"], start:"13:00", end:"17:30", period:"tarde", pts:5 },
+    { id:"sc4", label:"Jogos em Família", days:["qui"], start:"21:00", end:"23:00", period:"noite", pts:5 },
+  ],
+
+  // exceções pontuais: um compromisso só naquele dia específico, sem mexer
+  // na regra recorrente (ex: Inglês de reposição numa sexta).
+  scheduleExceptions: [
+    { id:"exc1", date:"2026-08-14", label:"Inglês (exceção)", period:"manha", pts:5, start:"09:00", end:"10:00" },
   ],
 
   // Pacus, o axolote: começa em 09/08 e cresce um passo a cada dia
@@ -145,44 +179,4 @@ function stripLegacyHairTask(cfg){
   // o controle de cabelo já tem sua própria seção dedicada (🧴 Lavar o
   // cabelo), então removemos essa tarefa específica se ela aparecer.
   if(cfg && cfg.periods && cfg.periods.noite && Array.isArray(cfg.periods.noite.tasks)){
-    cfg.periods.noite.tasks = cfg.periods.noite.tasks.filter(t => t.id !== 't_gzba4xs');
-  }
-  if(cfg && cfg.periodsWeekend && cfg.periodsWeekend.noite && Array.isArray(cfg.periodsWeekend.noite.tasks)){
-    cfg.periodsWeekend.noite.tasks = cfg.periodsWeekend.noite.tasks.filter(t => t.id !== 't_gzba4xs');
-  }
-  // senha do site: recurso removido — limpa de qualquer config que já
-  // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
-  if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return splitBagunçaV1(addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))))))))));
-}
-
-// Reforça pontos de tarefas mais chatas — roda uma vez só, não desfaz
-// ajuste manual dos pais.
-const POINT_REBALANCE_V1 = {
-  m1:2, m3:2, m8:2, t_djf7hbb:4,
-  t3:2, t5:2,
-  n4:4, n5:3, n6:2, t_ci3brlt:4,
-};
-function applyPointRebalanceV1(cfg){
-  if(!cfg || cfg.pointRebalanceV1Applied) return cfg;
-  ['periods','periodsWeekend'].forEach(key=>{
-    const p = cfg[key];
-    if(!p) return;
-    ['manha','tarde','noite'].forEach(period=>{
-      if(p[period] && Array.isArray(p[period].tasks)){
-        p[period].tasks.forEach(t=>{
-          if(POINT_REBALANCE_V1[t.id] !== undefined) t.pts = POINT_REBALANCE_V1[t.id];
-        });
-      }
-    });
-  });
-  cfg.pointRebalanceV1Applied = true;
-  return cfg;
-}
-
-// Tarefa mais chata: 7 pontos, penalidade CHEIA se não fizer (não a metade).
-function applyPointRebalanceV2(cfg){
-  if(!cfg || cfg.pointRebalanceV2Applied) return cfg;
-  ['periods','periodsWeekend'].forEach(key=>{
-    const p = cfg[key];
-    if(p && p.noite && Array.isArray(p.noite.tasks)){
+    cfg.periods.noite.tasks = cfg.periods.noite.tasks.filter(t => t.id !== 't_gz

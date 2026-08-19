@@ -1,4 +1,39 @@
-ue="washed">💧 Lavou</option>
+n>
+        <button class="icon-btn" id="importBtn" style="margin-top:8px;">⬆️ importar backup</button>
+        <input type="file" id="importFile" accept=".json" style="display:none;">
+        <br><button class="icon-btn danger" id="resetBtn" style="margin-top:8px;">reiniciar Pacus Points e histórico</button>
+      </footer>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================== MODAL DE EDIÇÃO DE DIA ANTERIOR ===================== -->
+<div class="overlay" id="dayOverlay">
+  <div class="editor" style="max-width:420px;">
+    <div class="editor-head">
+      <h2 id="dayEditorTitle">Editar dia</h2>
+      <button class="icon-btn" id="dayCloseBtn">fechar ✕</button>
+    </div>
+
+    <div class="editor-section">
+      <div class="edit-row">
+        <label style="flex:1; font-size:.82rem;">Tarefas feitas</label>
+        <input type="number" min="0" id="dayDone" style="width:70px;">
+      </div>
+      <div class="edit-row">
+        <label style="flex:1; font-size:.82rem;">Tarefas aplicáveis no dia</label>
+        <input type="number" min="0" id="dayTotal" style="width:70px;">
+      </div>
+      <div class="edit-row">
+        <label style="flex:1; font-size:.82rem;">Pacus Points ganhos naquele dia</label>
+        <input type="number" min="0" id="dayPoints" style="width:70px;">
+      </div>
+      <div class="edit-row">
+        <label style="flex:1; font-size:.82rem;">Cabelo</label>
+        <select id="dayHair" style="width:150px;">
+          <option value="">Não registrado</option>
+          <option value="washed">💧 Lavou</option>
           <option value="not-washed">○ Não lavou</option>
         </select>
       </div>
@@ -62,9 +97,10 @@ ue="washed">💧 Lavou</option>
     </div>
 
     <div class="editor-section">
-      <h3>✨ Pacus Points Extra</h3>
+      <h3>🌟 Outros comportamentos (extra)</h3>
+      <div class="hint">Os 6 botões principais de "Vi algo legal!" já ficam fixos na tela. Aqui dá pra adicionar outros, se precisar.</div>
       <div id="editBad"></div>
-      <button class="add-row-btn" data-add="bad">+ adicionar hábito</button>
+      <button class="add-row-btn" data-add="bad">+ adicionar comportamento</button>
     </div>
 
     <div class="editor-section">
@@ -144,38 +180,4 @@ const DEFAULT_CONFIG = {
         { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h", external:true },
         { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4 },
         { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h" },
-        { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" },
-        { id:"t_ci3brlt", txt:"Ler Livro", pts:4, sub:"3 capítulo do livro de casa (até às 22h)" },
-        { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h" },
-      ]
-    },
-  },
-  // rotina de fim de semana: fica null (desativada) até os pais ativarem
-  // no editor — quando ativada, é editada separadamente da de dia de escola
-  periodsWeekend: null,
-  // PIN opcional pra travar o botão "Editar tudo" — vazio = sem trava
-  editorPin: "",
-  badHabits: [],
-  rewards: [
-    { id:"r1", txt:"1 hora de tela", cost:90, grantsHours:1, maxPerDay:2 },
-    { id:"r2", txt:"Hot Wheels (brinquedo)", cost:300 },
-    { id:"r3", txt:"Passeio Especial (você escolhe)", cost:500 },
-  ],
-  screenDailyLimitHours: 2, // usado pelo timer de jogo diário abaixo
-  perfectDayBonusMinutes: 30,
-  historyStartDate: "2026-08-09",
-
-  // compromissos fixos da semana — aparecem direto como tarefas do dia
-  // (no período certo), não como uma lista separada. "period" é onde a
-  // tarefa aparece: manha, tarde ou noite. "Escola" já existe como tarefa
-  // fixa lá em cima, então não repetimos ela aqui.
-  schedule: [
-    { id:"sc1", label:"Inglês", days:["ter","qui"], start:"09:00", end:"10:00", period:"manha", pts:5 },
-    { id:"sc3", label:"Escoteiros", days:["sab"], start:"13:00", end:"17:30", period:"tarde", pts:5 },
-    { id:"sc4", label:"Jogos em Família", days:["qui"], start:"21:00", end:"23:00", period:"noite", pts:5 },
-  ],
-
-  // exceções pontuais: um compromisso só naquele dia específico, sem mexer
-  // na regra recorrente (ex: Inglês de reposição numa sexta).
-  scheduleExceptions: [
-    { id:"exc1",
+        { id:"n7", txt:"Momento Criativo", p

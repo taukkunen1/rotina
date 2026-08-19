@@ -3,8 +3,8 @@
   "encoding": "utf-8",
   "chunkSize": 8000,
   "totalChunks": 23,
-  "totalSize": 178496,
-  "sha256": "35dba308eca130a9c02f21901b84443e6ac5176f63b905af148717997a82a9af",
+  "totalSize": 183241,
+  "sha256": "9bb54756462e1a58a51fb5281978af9ba0e421c34b562e029ade48b3ed697b4b",
   "chunks": [
     {
       "chunk": 0,
@@ -164,8 +164,8 @@
       "chunk": 22,
       "file": "0022.txt",
       "start": 176000,
-      "end": 178496,
-      "size": 2496
+      "end": 183241,
+      "size": 7241
     }
   ]
 }

@@ -1,4 +1,69 @@
-x;
+order-radius:6px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.04);
+    color:var(--chalk-dim);
+    font-size:.72rem;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .day-chip.active{
+    background:var(--blue);
+    border-color:var(--blue);
+    color:#16241f;
+    font-weight:bold;
+  }
+
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap:2px;
+    flex-shrink:0;
+  }
+  .stepper input[type=number]{
+    width:44px;
+    text-align:center;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    border-radius:6px;
+    padding:6px 2px;
+    font-size:.82rem;
+    font-family:inherit;
+  }
+  .step-btn{
+    width:24px; height:28px;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk-dim);
+    border-radius:6px;
+    font-size:.9rem;
+    cursor:pointer;
+    font-family:inherit;
+    line-height:1;
+  }
+  .step-btn:hover{ color:var(--chalk); border-color:rgba(242,237,225,.4); }
+
+  .sub-input{
+    font-size:.74rem !important;
+    color:var(--chalk-dim);
+    padding:5px 9px !important;
+  }
+  .edit-row input[type=text]{
+    flex:1;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    border-radius:6px;
+    padding:7px 9px;
+    font-size:.82rem;
+    font-family:inherit;
+  }
+  .edit-row input[type=number]{
+    width:58px;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    border-radius:6px;
     padding:7px 6px;
     font-size:.82rem;
     text-align:center;
@@ -150,9 +215,9 @@ x;
       </details>
 
       <details class="block-collapsible">
-        <summary>✨ Pacus Points Extra</summary>
+        <summary>🌟 Vi algo legal!</summary>
         <div class="block-collapsible-body">
-          <div class="bad-habits" id="badHabits"></div>
+          <div class="positive-behaviors" id="positiveBehaviors"></div>
         </div>
       </details>
 
@@ -203,39 +268,4 @@ x;
         Rotina do Hector · ${APP_VERSION}<br>
         Funciona offline. O Google Drive é a fonte de sincronização quando configurado.
         <br>
-        <button class="icon-btn" id="exportBtn" style="margin-top:8px;">⬇️ exportar backup</button>
-        <button class="icon-btn" id="importBtn" style="margin-top:8px;">⬆️ importar backup</button>
-        <input type="file" id="importFile" accept=".json" style="display:none;">
-        <br><button class="icon-btn danger" id="resetBtn" style="margin-top:8px;">reiniciar Pacus Points e histórico</button>
-      </footer>
-    </div>
-
-  </div>
-</div>
-
-<!-- ===================== MODAL DE EDIÇÃO DE DIA ANTERIOR ===================== -->
-<div class="overlay" id="dayOverlay">
-  <div class="editor" style="max-width:420px;">
-    <div class="editor-head">
-      <h2 id="dayEditorTitle">Editar dia</h2>
-      <button class="icon-btn" id="dayCloseBtn">fechar ✕</button>
-    </div>
-
-    <div class="editor-section">
-      <div class="edit-row">
-        <label style="flex:1; font-size:.82rem;">Tarefas feitas</label>
-        <input type="number" min="0" id="dayDone" style="width:70px;">
-      </div>
-      <div class="edit-row">
-        <label style="flex:1; font-size:.82rem;">Tarefas aplicáveis no dia</label>
-        <input type="number" min="0" id="dayTotal" style="width:70px;">
-      </div>
-      <div class="edit-row">
-        <label style="flex:1; font-size:.82rem;">Pacus Points ganhos naquele dia</label>
-        <input type="number" min="0" id="dayPoints" style="width:70px;">
-      </div>
-      <div class="edit-row">
-        <label style="flex:1; font-size:.82rem;">Cabelo</label>
-        <select id="dayHair" style="width:150px;">
-          <option value="">Não registrado</option>
-          <option val
+        <button class="icon-btn" id="exportBtn" style="margin-top:8px;">⬇️ exportar backup</butto

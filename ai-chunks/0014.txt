@@ -1,4 +1,38 @@
- growth*11 + adult*4;
+yoScale = 0.5 + p*0.5;
+  return `<svg class="pet-mascot pet-egg" ${svgAttrs()}>
+    <defs>
+      <radialGradient id="${gid}-shell" cx="36%" cy="30%" r="78%">
+        <stop offset="0%" stop-color="#fffaf1"/>
+        <stop offset="55%" stop-color="#f9ecd9"/>
+        <stop offset="100%" stop-color="#eed7bd"/>
+      </radialGradient>
+    </defs>
+    <g class="pacus-idle">
+      <g transform="rotate(${wobble} 110 130)">
+        <ellipse cx="110" cy="130" rx="48" ry="60" fill="url(#${gid}-shell)" stroke="#e88aa8" stroke-width="3"/>
+        <ellipse cx="93" cy="106" rx="12" ry="18" fill="#fff" opacity=".5"/>
+        <g transform="translate(110 138) scale(${embryoScale.toFixed(2)}) translate(-110 -138)" opacity="${embryoOpacity.toFixed(2)}">
+          <ellipse cx="110" cy="138" rx="26" ry="20" fill="#f6c7dc"/>
+          <circle cx="110" cy="122" r="15" fill="#f6c7dc"/>
+        </g>
+        ${crackSvg}${shellBreak}
+      </g>
+    </g>
+    <circle class="pacus-bubble" cx="72" cy="169" r="4" fill="#e8a3c0" opacity=".55"/>
+    <circle class="pacus-bubble" cx="151" cy="165" r="3" fill="#e8a3c0" opacity=".45" style="animation-delay:1s;"/>
+    <circle class="pacus-bubble" cx="118" cy="182" r="2.4" fill="#e8a3c0" opacity=".4" style="animation-delay:1.9s;"/>
+  </svg>`;
+}
+
+function buildPacusSVG(stageFloat){
+  const s = Math.max(0, Math.min(23, stageFloat));
+  const hatch = Math.max(0, Math.min(1, (s-8)/6));
+  const growth = Math.max(0, Math.min(1, (s-14)/9));
+  const adult = Math.max(0, Math.min(1, (s-21)/2));
+  const scale = 0.52 + growth*0.42 + adult*0.06;
+  const bodyW = 45 + growth*10 + adult*4;
+  const bodyH = 30 + growth*5 + adult*3;
+  const gillLen = 12 + growth*11 + adult*4;
   const faceY = 92 - hatch*7;
   const bodyY = 128 - hatch*5;
   const gid = uid('pacus');
@@ -117,52 +151,4 @@ function renderAchievementMural(){
     <div class="mural-card ${m.reached?'reached':''}">
       <div class="mural-stage">${m.label}</div>
       <div class="mural-date">${m.reached ? formatDateBR(m.date) : '—'}</div>
-    </div>
-  `).join('');
-  el.innerHTML = `
-    <div class="achievement-mural">
-      <div class="mural-grid">${cardsHtml}</div>
-    </div>
-  `;
-}
-
-// Toque no Pacus: gira em 3D e mostra uma reaçãozinha fofa — pura
-// diversão, não mexe em pontos nem no formato/crescimento dele.
-const PACUS_REACTIONS = ['💕','😊','🥰','✨','👋','🫧','😄','💗'];
-function wirePacusInteraction(){
-  const wrap = document.getElementById('pacusInteractive');
-  if(!wrap) return;
-  wrap.addEventListener('click', ()=>{
-    wrap.classList.remove('spinning');
-    void wrap.offsetWidth;
-    wrap.classList.add('spinning');
-
-    const bubble = document.getElementById('petReactionBubble');
-    if(bubble){
-      const pick = PACUS_REACTIONS[Math.floor(Math.random()*PACUS_REACTIONS.length)];
-      bubble.textContent = pick;
-      bubble.classList.remove('show');
-      void bubble.offsetWidth;
-      bubble.classList.add('show');
-    }
-    if(Math.random() < 0.25) fireConfetti(wrap, 10);
-  });
-}
-
-// Fala noturna do Pacus — aparece sozinha quando a Noite começa,
-// dispensável só por hoje.
-const PACUS_NIGHT_MESSAGE = "Não esqueça de desenhar na lousa hoje! 🎨";
-let pacusDialogueTickHandle = null;
-function isEveningNow(){
-  const start = periodStartTime(CONFIG.periods.noite.time);
-  if(!start) return false;
-  const now = new Date();
-  const startToday = new Date(now);
-  startToday.setHours(start.hour, start.minute, 0, 0);
-  return now >= startToday;
-}
-function renderPacusDialogue(){
-  const el = document.getElementById('pacusDialogue');
-  if(!el) return;
-  const dismissedToday = state.pacusDialogueDismissedDate === todayISO();
-  if(!isEveningNow() || dismissedToday){ el.innerHTML = ''; retur
+ 
