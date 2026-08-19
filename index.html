@@ -234,6 +234,114 @@
     margin-bottom:14px;
   }
 
+  .light-day-banner{
+    text-align:center;
+    font-size:.78rem;
+    color:var(--blue);
+    background:rgba(79,195,247,.08);
+    border:1px solid rgba(79,195,247,.3);
+    border-radius:10px;
+    padding:9px 12px;
+    margin-bottom:14px;
+  }
+
+  .focus-card{
+    background:rgba(255,255,255,.03);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px 16px;
+    margin-bottom:16px;
+  }
+  .focus-step{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    padding:3px 0;
+  }
+  .focus-step .focus-label{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:.85rem;
+    color:var(--yellow);
+    min-width:64px;
+    flex-shrink:0;
+  }
+  .focus-step.dim .focus-label{ color:var(--chalk-dim); }
+  .focus-step.dim{ opacity:.65; font-size:.9rem; }
+  .focus-task{ font-size:.92rem; color:var(--chalk); }
+
+  .fresh-start-card{
+    text-align:center;
+    background:rgba(95,216,117,.08);
+    border:1px dashed rgba(95,216,117,.5);
+    border-radius:12px;
+    padding:14px 16px;
+    margin-bottom:14px;
+  }
+  .fresh-start-msg{ font-size:.85rem; color:var(--chalk); margin-bottom:10px; }
+  .fresh-start-btn{
+    background:var(--green);
+    color:#132015;
+    border:none;
+    padding:9px 20px;
+    border-radius:8px;
+    font-size:.85rem;
+    font-weight:bold;
+    cursor:pointer;
+    font-family:inherit;
+  }
+
+  .recovery-mission-card{
+    text-align:center;
+    background:rgba(255,217,61,.08);
+    border:1px dashed rgba(255,217,61,.5);
+    border-radius:12px;
+    padding:14px 16px;
+    margin-bottom:14px;
+  }
+  .recovery-mission-title{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    color:var(--yellow);
+    font-size:1rem;
+    margin-bottom:4px;
+  }
+  .recovery-mission-text{ font-size:.85rem; color:var(--chalk); margin-bottom:10px; }
+  .recovery-mission-btn{
+    background:var(--yellow);
+    color:#2a2410;
+    border:none;
+    padding:8px 18px;
+    border-radius:8px;
+    font-size:.82rem;
+    font-weight:bold;
+    cursor:pointer;
+    font-family:inherit;
+  }
+
+  .wins-card{
+    background:rgba(255,126,185,.06);
+    border:1px solid rgba(255,126,185,.3);
+    border-radius:12px;
+    padding:14px 16px;
+    margin:14px 0;
+  }
+  .wins-title{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    color:var(--pink);
+    font-size:1rem;
+    margin-bottom:8px;
+    text-align:center;
+  }
+  .wins-list{ list-style:none; margin:0; padding:0; font-size:.85rem; color:var(--chalk); }
+  .wins-list li{ padding:3px 0; }
+
+  .streak-summary{
+    text-align:center;
+    font-size:.75rem;
+    color:var(--chalk-dim);
+    margin-top:8px;
+  }
+  .streak-summary b{ color:var(--green); }
+
   /* ---------- timer de tempo de jogo ---------- */
   .game-timer{
     background:rgba(255,126,185,.07);
@@ -1708,7 +1816,12 @@
       </div>
 
       <div id="weekendIndicator"></div>
+      <div id="lightDayBanner"></div>
+      <div id="focusCard"></div>
+      <div id="freshStartArea"></div>
       <div class="periods" id="periods"></div>
+
+      <div id="invisibleWinsCard"></div>
 
       <section class="hair-section" id="hairSection">
         <div class="hair-head">
@@ -2129,6 +2242,133 @@ function getEffectiveTaskOrder(periodKey, tasks){
   const missing = tasks.filter(t=>!customOrder.includes(t.id));
   return [...ordered, ...missing];
 }
+
+// Lista achatada de tarefas ainda pendentes hoje, na ordem (por período,
+// respeitando a ordem pessoal) — usada no card "Agora / Próximo / Depois".
+function pendingTasksFlat(){
+  const order = ['manha','tarde','noite'];
+  const periodsObj = getPeriodsFor(todayISO());
+  let list = [];
+  order.forEach(key=>{
+    const tasks = getEffectiveTaskOrder(key, periodsObj[key].tasks);
+    tasks.forEach(t=>{
+      if(!state.checkedToday[t.id]) list.push(t);
+    });
+  });
+  return list;
+}
+
+// ☁️ Dia leve — sábado vem sem cobrança de pontuação, só um lembrete
+// pra descansar sem culpa.
+function isLightDay(dateISO){
+  return weekdayKeyFor(dateISO || todayISO()) === 'sab';
+}
+function renderLightDayBanner(){
+  const el = document.getElementById('lightDayBanner');
+  if(!el) return;
+  el.innerHTML = isLightDay(todayISO())
+    ? `<div class="light-day-banner">☁️ Dia leve — hoje é pra descansar também, sem pressão de pontuação.</div>`
+    : '';
+}
+
+// Agora → Próximo → Depois — em vez de jogar a lista toda de uma vez,
+// mostra só os 3 próximos passos, de um jeito mais leve de encarar o dia.
+function renderFocusCard(){
+  const el = document.getElementById('focusCard');
+  if(!el) return;
+  const pending = pendingTasksFlat().filter(t => !t.external);
+  if(pending.length === 0){ el.innerHTML = ''; return; }
+  const [now, next, later] = pending;
+  el.innerHTML = `
+    <div class="focus-card">
+      <div class="focus-step"><span class="focus-label">Agora</span><span class="focus-task">${taskIcon(now.txt)} ${now.txt}</span></div>
+      ${next ? `<div class="focus-step dim"><span class="focus-label">Próximo</span><span class="focus-task">${taskIcon(next.txt)} ${next.txt}</span></div>` : ''}
+      ${later ? `<div class="focus-step dim"><span class="focus-label">Depois</span><span class="focus-task">${taskIcon(later.txt)} ${later.txt}</span></div>` : ''}
+    </div>
+  `;
+}
+
+// 🌱 Recomeçar daqui — se teve alguma tarefa não feita hoje, oferece um
+// jeito de virar a página sem apagar o histórico: só acalma o visual
+// pro resto do dia, e oferece uma missãozinha fácil pra quebrar o ciclo
+// "errei → já perdi o dia → desisto".
+const RECOVERY_MISSIONS = [
+  'Guardar 5 brinquedos',
+  'Beber um copo de água',
+  'Escovar os dentes',
+  'Começar o dever por 5 minutinhos',
+];
+function renderFreshStartArea(){
+  const el = document.getElementById('freshStartArea');
+  if(!el) return;
+  const hasNotDoneToday = Object.values(state.checkedToday).includes('x');
+  const freshStartActive = state.freshStartActiveDate === todayISO();
+
+  if(!hasNotDoneToday || freshStartActive){
+    if(freshStartActive && !(state.recoveryMissionDone && state.recoveryMissionDone.date === todayISO())){
+      renderRecoveryMission(el);
+    } else {
+      el.innerHTML = '';
+    }
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="fresh-start-card">
+      <div class="fresh-start-msg">Tudo bem. Vamos começar de onde você está agora.</div>
+      <button class="fresh-start-btn" id="freshStartBtn">🌱 Recomeçar daqui</button>
+    </div>
+  `;
+  document.getElementById('freshStartBtn').addEventListener('click', ()=>{
+    state.freshStartActiveDate = todayISO();
+    saveState(state);
+    render();
+  });
+}
+function renderRecoveryMission(el){
+  const seed = todayISO().split('-').reduce((s,n)=>s+Number(n),0);
+  const mission = RECOVERY_MISSIONS[seed % RECOVERY_MISSIONS.length];
+  el.innerHTML = `
+    <div class="recovery-mission-card">
+      <div class="recovery-mission-title">⭐ Missão de recuperação</div>
+      <div class="recovery-mission-text">${mission}</div>
+      <button class="recovery-mission-btn" id="recoveryMissionBtn">concluí! 🎉</button>
+    </div>
+  `;
+  document.getElementById('recoveryMissionBtn').addEventListener('click', (evt)=>{
+    const delta = addPoints(1);
+    addLog(`⭐ +1 · Missão de recuperação: ${mission}`);
+    state.recoveryMissionDone = { date: todayISO(), mission };
+    saveState(state);
+    bumpTotal(delta, evt.currentTarget);
+    fireConfetti(evt.currentTarget, 16);
+    render();
+  });
+}
+
+// 🌟 Vitórias invisíveis — mostra o que já foi conquistado hoje, mesmo
+// que o dia não tenha sido perfeito.
+function renderInvisibleWinsCard(){
+  const el = document.getElementById('invisibleWinsCard');
+  if(!el) return;
+  const tasks = allTasks(todayISO());
+  const doneTasks = tasks.filter(t => state.checkedToday[t.id] === 'done');
+  const hasNotDone = Object.values(state.checkedToday).includes('x');
+  const recovered = state.freshStartActiveDate === todayISO();
+
+  if(doneTasks.length === 0){ el.innerHTML = ''; return; }
+
+  const items = doneTasks.slice(0, 6).map(t => `<li>${taskIcon(t.txt)} ${t.txt}</li>`);
+  if(hasNotDone && recovered) items.push('<li>🌱 Voltou depois de um momento difícil</li>');
+
+  el.innerHTML = `
+    <div class="wins-card">
+      <div class="wins-title">🌟 Coisas que você conseguiu hoje</div>
+      <ul class="wins-list">${items.join('')}</ul>
+    </div>
+  `;
+}
+
 function moveTaskInOrder(periodKey, tasks, taskId, direction){
   const current = getEffectiveTaskOrder(periodKey, tasks).map(t=>t.id);
   const idx = current.indexOf(taskId);
@@ -3693,6 +3933,7 @@ function buildStreakStrip(){
     days.push(iso);
   }
   const weekdayLetters = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  let progressDays = 0;
   const cells = days.map(iso=>{
     const isToday = iso === todayISO();
     const d = new Date(iso+"T00:00:00");
@@ -3705,10 +3946,14 @@ function buildStreakStrip(){
       else if(entry.done > 0) cls = 'streak-cell partial';
       else cls = 'streak-cell none';
     }
+    if(entry && entry.done > 0) progressDays++;
     if(isToday) cls += ' today';
     return `<span class="${cls}" title="${formatDateBR(iso)}"><span class="streak-letter">${letter}</span></span>`;
   }).join('');
-  return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${cells}</div>`;
+  const summary = progressDays > 0
+    ? `Você teve progresso em <b>${progressDays} dos últimos 7 dias</b>.`
+    : `Todo começo é assim — o próximo dia é uma nova chance.`;
+  return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${cells}</div><div class="streak-summary">${summary}</div>`;
 }
 
 function liveTodayEntry(){
@@ -3765,6 +4010,8 @@ function render(){
       ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
       : '';
   }
+
+  renderLightDayBanner();
 
   const periodsEl = document.getElementById('periods');
   periodsEl.innerHTML = '';
@@ -3841,6 +4088,10 @@ function render(){
     div.appendChild(ul);
     periodsEl.appendChild(div);
   });
+
+  renderFocusCard();
+  renderFreshStartArea();
+  renderInvisibleWinsCard();
 
   updateTimeRemainingDisplays();
   startTimeRemainingTicking();
