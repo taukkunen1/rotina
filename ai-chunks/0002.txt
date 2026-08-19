@@ -122,12 +122,8 @@
   .time-remaining.urgency-none{ color:var(--chalk-dim); font-weight:normal; }
   .time-remaining.urgency-low{ color:var(--chalk-dim); }
   .time-remaining.urgency-medium{ color:var(--orange); }
-  .time-remaining.urgency-high{ color:var(--red); animation:urgentPulse 1.6s ease-in-out infinite; }
+  .time-remaining.urgency-high{ color:var(--red); }
   .time-remaining.urgency-over{ color:var(--chalk-dim); font-style:italic; font-weight:normal; }
-  @keyframes urgentPulse{
-    0%,100%{ opacity:1; }
-    50%{ opacity:.5; }
-  }
 
   .manha h2{ color:var(--yellow); }
   .tarde h2{ color:var(--orange); }
@@ -220,14 +216,6 @@
   .task.na .pts{ color:var(--chalk-dim); border-color:var(--line); }
   .task.notdone .txt{ color:var(--red); }
   .task.notdone .pts{ color:var(--red); border-color:rgba(255,107,107,.4); }
-  .late-flag{
-    display:inline-block;
-    margin-left:6px;
-    font-size:.65rem;
-    color:var(--orange);
-    font-style:normal;
-  }
-  .task.late-done .txt{ color:var(--chalk); }
   .task-icon{ font-size:1.05rem; margin-right:6px; flex-shrink:0; }
 
   .task.suggested{
@@ -273,4 +261,15 @@
     border-top:2px dashed var(--line);
   }
   .block-collapsible summary{
-    font-family:"Segoe Print","B
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-weight:normal;
+    font-size:1.2rem;
+    text-align:center;
+    cursor:pointer;
+    list-style:none;
+    color:var(--chalk);
+    padding:4px 0;
+    position:relative;
+  }
+  .block-collapsible summary::-webkit-details-marker{ display:none; }
+  .block-collapsible summary::after{

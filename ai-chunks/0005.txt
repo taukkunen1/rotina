@@ -1,4 +1,20 @@
-px 6px;
+tline:1px solid var(--yellow); }
+  .edit-row select{
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    border-radius:6px;
+    padding:7px 6px;
+    font-size:.78rem;
+    font-family:inherit;
+  }
+  .edit-row .del{
+    background:none;
+    border:none;
+    color:var(--red);
+    font-size:1rem;
+    cursor:pointer;
+    padding:2px 6px;
     line-height:1;
   }
   .edit-row .del:hover{ opacity:.7; }
@@ -66,6 +82,14 @@ px 6px;
   </div>
 </div>
 
+<div class="overlay" id="breathingOverlay" style="z-index:700; align-items:center;">
+  <div class="celebration-card breathing-card">
+    <div class="breathing-circle" id="breathingCircle"></div>
+    <div class="breathing-label" id="breathingLabel">Prepara...</div>
+    <button class="btn" id="breathingCloseBtn">fechar</button>
+  </div>
+</div>
+
 <div class="board-frame">
   <div class="board-inner">
 
@@ -93,6 +117,10 @@ px 6px;
       <div id="familyGameNightAnnouncement"></div>
 
       <section class="pet-section" id="petSection"></section>
+
+      <div style="text-align:center; margin-top:8px; margin-bottom:8px;">
+        <button class="icon-btn" id="breathingBtn" title="Uma pausa calma de 30 segundos">🌬️ Pausa pra respirar</button>
+      </div>
 
       <div id="weekendIndicator"></div>
       <div class="periods" id="periods"></div>
@@ -208,32 +236,4 @@ px 6px;
           <option value="not-washed">○ Não lavou</option>
         </select>
       </div>
-      <div class="hint">Mudar os pontos ajusta o saldo total automaticamente.</div>
-    </div>
-
-    <div class="editor-footer">
-      <button class="btn" id="dayCancelBtn">cancelar</button>
-      <button class="btn save" id="daySaveBtn">salvar dia</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== MODAL DE EDIÇÃO ===================== -->
-<div class="overlay" id="overlay">
-  <div class="editor">
-    <div class="editor-head">
-      <h2>Editar tudo</h2>
-      <button class="icon-btn" id="closeBtn">fechar ✕</button>
-    </div>
-
-    <div class="editor-section">
-      <h3>🌅 Manhã</h3>
-      <div class="hint">Tarefa, pontos e (opcional) um detalhe menor embaixo do nome.</div>
-      <div id="editManha"></div>
-      <button class="add-row-btn" data-add="manha">+ adicionar tarefa</button>
-    </div>
-
-    <div class="editor-section">
-      <h3>☀️ Tarde</h3>
-      <div id="editTarde"></div>
-      <button class="add-row-btn" data-add="tarde">+ a
+      <div class="hint">Mudar o

@@ -1,4 +1,5 @@
--row-task';
+w = document.createElement('div');
+    row.className = 'edit-row-task';
     const dayChips = dayOrder.map(d=>
       `<button type="button" class="day-chip ${item.days.includes(d)?'active':''}" data-day="${d}" title="${WEEKDAY_LABELS[d]}">${dayShort[d]}</button>`
     ).join('');
@@ -98,6 +99,52 @@ document.getElementById('evolutionCelebration').addEventListener('click', e=>{
   if(e.target.id === 'evolutionCelebration') closeEvolutionCelebration();
 });
 
+/* ---------- pausa pra respirar (30s, sem pontos, só pra acalmar) ---------- */
+let breathingTimeoutId = null;
+function startBreathingExercise(){
+  const overlay = document.getElementById('breathingOverlay');
+  const circle = document.getElementById('breathingCircle');
+  const label = document.getElementById('breathingLabel');
+  overlay.classList.add('open');
+  circle.classList.remove('breathing');
+  void circle.offsetWidth;
+  circle.classList.add('breathing');
+
+  const phases = [
+    { text:'Inspire...', duration:4000 },
+    { text:'Segure...', duration:2000 },
+    { text:'Expire...', duration:4000 },
+  ];
+  let cycle = 0;
+  let phaseIdx = 0;
+
+  function nextPhase(){
+    if(cycle >= 3){
+      label.textContent = 'Prontinho! 😊';
+      circle.classList.remove('breathing');
+      breathingTimeoutId = setTimeout(closeBreathingExercise, 1500);
+      return;
+    }
+    label.textContent = phases[phaseIdx].text;
+    breathingTimeoutId = setTimeout(()=>{
+      phaseIdx++;
+      if(phaseIdx >= phases.length){ phaseIdx = 0; cycle++; }
+      nextPhase();
+    }, phases[phaseIdx].duration);
+  }
+  nextPhase();
+}
+function closeBreathingExercise(){
+  clearTimeout(breathingTimeoutId);
+  document.getElementById('breathingOverlay').classList.remove('open');
+  document.getElementById('breathingCircle').classList.remove('breathing');
+}
+document.getElementById('breathingBtn').addEventListener('click', startBreathingExercise);
+document.getElementById('breathingCloseBtn').addEventListener('click', closeBreathingExercise);
+document.getElementById('breathingOverlay').addEventListener('click', e=>{
+  if(e.target.id === 'breathingOverlay') closeBreathingExercise();
+});
+
 document.getElementById('editBtn').addEventListener('click', ()=>{
   if(CONFIG.editorPin){
     const entered = prompt('Digite o PIN pra editar:');
@@ -139,46 +186,4 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   const pinVal = document.getElementById('editorPinInput').value.trim();
   draft.editorPin = pinVal;
 
-  const gameLimitVal = parseFloat(document.getElementById('gameLimitInput').value);
-  draft.screenDailyLimitHours = isNaN(gameLimitVal) || gameLimitVal < 0 ? 2 : gameLimitVal;
-
-  CONFIG = draft;
-  saveConfig(CONFIG);
-
-  // remove do estado marcado de hoje qualquer tarefa que não existe mais
-  // na rotina ativa de hoje (dia de escola ou fim de semana)
-  const validIds = new Set(allTasks().map(t=>t.id));
-  Object.keys(state.checkedToday).forEach(id=>{
-    if(!validIds.has(id)) delete state.checkedToday[id];
-  });
-  saveState(state);
-
-  closeEditor();
-  render();
-});
-
-/* ===================== EDITOR DE DIA ANTERIOR ===================== */
-let editingDate = null;
-
-function openDayEditor(dateISO){
-  editingDate = dateISO;
-  const entry = state.history[dateISO] || { done:0, total:0, pointsEarnedThatDay:0, perfect:false, screenMinutes:0 };
-  document.getElementById('dayEditorTitle').textContent = 'Editar ' + formatDateBR(dateISO);
-  document.getElementById('dayDone').value = entry.done;
-  document.getElementById('dayTotal').value = entry.total;
-  document.getElementById('dayPoints').value = entry.pointsEarnedThatDay;
-  document.getElementById('dayHair').value = getHairStatus(dateISO) || entry.hair || '';
-  document.getElementById('dayOverlay').classList.add('open');
-}
-function closeDayEditor(){
-  document.getElementById('dayOverlay').classList.remove('open');
-  editingDate = null;
-}
-document.getElementById('dayCloseBtn').addEventListener('click', closeDayEditor);
-document.getElementById('dayCancelBtn').addEventListener('click', closeDayEditor);
-document.getElementById('dayOverlay').addEventListener('click', e=>{
-  if(e.target.id === 'dayOverlay') closeDayEditor();
-});
-
-document.getElementById('daySaveBtn').addEventListener('click', ()=>{
-  if(!editin
+  const gameLimitVal = parseFloat(document.

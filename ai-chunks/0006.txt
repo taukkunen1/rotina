@@ -1,4 +1,32 @@
-dicionar tarefa</button>
+s pontos ajusta o saldo total automaticamente.</div>
+    </div>
+
+    <div class="editor-footer">
+      <button class="btn" id="dayCancelBtn">cancelar</button>
+      <button class="btn save" id="daySaveBtn">salvar dia</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL DE EDIÇÃO ===================== -->
+<div class="overlay" id="overlay">
+  <div class="editor">
+    <div class="editor-head">
+      <h2>Editar tudo</h2>
+      <button class="icon-btn" id="closeBtn">fechar ✕</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>🌅 Manhã</h3>
+      <div class="hint">Tarefa, pontos e (opcional) um detalhe menor embaixo do nome.</div>
+      <div id="editManha"></div>
+      <button class="add-row-btn" data-add="manha">+ adicionar tarefa</button>
+    </div>
+
+    <div class="editor-section">
+      <h3>☀️ Tarde</h3>
+      <div id="editTarde"></div>
+      <button class="add-row-btn" data-add="tarde">+ adicionar tarefa</button>
     </div>
 
     <div class="editor-section">
@@ -146,26 +174,4 @@ const DEFAULT_CONFIG = {
     { id:"sc4", label:"Jogos em Família", days:["qui"], start:"21:00", end:"23:00", period:"noite", pts:5 },
   ],
 
-  // exceções pontuais: um compromisso só naquele dia específico, sem mexer
-  // na regra recorrente (ex: Inglês de reposição numa sexta).
-  scheduleExceptions: [
-    { id:"exc1", date:"2026-08-14", label:"Inglês (exceção)", period:"manha", pts:5, start:"09:00", end:"10:00" },
-  ],
-
-  // Pacus, o axolote: começa em 09/08 e cresce um passo a cada dia
-  // em que todas as tarefas aplicáveis são concluídas. O ciclo termina
-  // em 31/08. São 23 dias de crescimento, contando 09/08 e 31/08.
-  // O Pacus nunca regride por dias já concluídos.
-  pet: {
-    name: "Pacus",
-    growthStartDate: "2026-08-09",
-    growthEndDate: "2026-08-31",
-    stages: [
-      { key:"ovo", label:"Ovo intacto" },
-      { key:"ovo1", label:"Primeira rachadura" },
-      { key:"ovo2", label:"Rachadura inicial" },
-      { key:"ovo3", label:"Rachando" },
-      { key:"ovo4", label:"Mais rachaduras" },
-      { key:"ovo5", label:"Casca cedendo" },
-      { key:"ovo6", label:"Quase abrindo" },
-      { key:"ovo7", label:
+  // exceções pontuais: um compromisso só naquele dia específico, s

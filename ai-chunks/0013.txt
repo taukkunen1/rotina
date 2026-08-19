@@ -1,4 +1,18 @@
-mer(id){
+) - remaining;
+      addGameTimerBonusHours(deltaSeconds/3600);
+      addLog(`⚙️ tempo de hoje ajustado pra ${targetMin} min restantes`, true);
+      saveState(state);
+      renderGameTimer();
+    });
+  }
+
+  if(running) startGameTimerTicking(); else stopGameTimerTicking();
+}
+
+/* ===================== TIMERS AVULSOS (tempo livre pra qualquer coisa) ===================== */
+let customTimerTickHandle = null;
+
+function findCustomTimer(id){
   return state.customTimers.find(t=>t.id===id);
 }
 
@@ -199,15 +213,4 @@ function computePetStage(){
 }
 
 function svgAttrs(){
-  return 'viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Evolução do Pacus"';
-}
-
-function buildEggSVG(progress){
-  const p = Math.max(0, Math.min(1, progress));
-  const wobble = Math.sin(p*Math.PI*3)*1.4;
-  const gid = uid('egg');
-  const cracks = [
-    ["M94 80 L106 96 L98 109 L112 125 L103 142", 0.12],
-    ["M80 96 L92 108 L84 122 L96 136", 0.32],
-    ["M124 90 L113 105 L126 117 L116 132 L123 147", 0.52],
-    ["M76 124 L89 131 L82 1
+  return 'viewBox="0 0 220 220" xmlns="h

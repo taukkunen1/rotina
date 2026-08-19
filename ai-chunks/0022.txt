@@ -1,4 +1,34 @@
-ng() };
+>/exec</code>).</li>
+          <li>Cole essa URL na constante <code>APPS_SCRIPT_URL</code> no início do arquivo HTML.</li>
+          <li>No seu Google Drive, salve o arquivo do app com o nome exato <code>rotina-hector.html</code>.</li>
+          <li>Em todos os aparelhos, abra e salve como favorito essa <b>mesma URL do Apps Script</b> (a que termina em <code>/exec</code>) — não o arquivo local. A partir daí, atualizar é só substituir o conteúdo do <code>rotina-hector.html</code> no Drive; todo aparelho já abre a versão nova sozinho.</li>
+        </ol>
+      </div>
+      <textarea id="driveCodeBox" readonly style="display:none; width:100%; height:180px; margin-top:10px; background:rgba(0,0,0,.3); color:var(--chalk); border:1px solid var(--line); border-radius:8px; padding:10px; font-family:monospace; font-size:.72rem;"></textarea>
+    </div>
+  `;
+
+  if(!configured){
+    document.getElementById('driveSetupInfoBtn').addEventListener('click', ()=>{
+      const info = document.getElementById('driveSetupInfo');
+      info.style.display = info.style.display === 'none' ? 'block' : 'none';
+    });
+    document.getElementById('driveCopyCodeBtn').addEventListener('click', ()=>{
+      const box = document.getElementById('driveCodeBox');
+      box.value = APPS_SCRIPT_CODE;
+      box.style.display = box.style.display === 'none' ? 'block' : 'none';
+      if(box.style.display === 'block'){ box.focus(); box.select(); }
+    });
+    return;
+  }
+
+  document.getElementById('driveSaveBtn').addEventListener('click', driveSave);
+  document.getElementById('driveLoadBtn').addEventListener('click', driveLoad);
+}
+
+async function driveSave(){
+  try{
+    const backup = { config: CONFIG, state: state, exportedAt: new Date().toISOString() };
     const res = await fetch(DATA_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita pré-checagem CORS

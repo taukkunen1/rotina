@@ -1,4 +1,15 @@
-47", 0.72],
+ttp://www.w3.org/2000/svg" role="img" aria-label="Evolução do Pacus"';
+}
+
+function buildEggSVG(progress){
+  const p = Math.max(0, Math.min(1, progress));
+  const wobble = Math.sin(p*Math.PI*3)*1.4;
+  const gid = uid('egg');
+  const cracks = [
+    ["M94 80 L106 96 L98 109 L112 125 L103 142", 0.12],
+    ["M80 96 L92 108 L84 122 L96 136", 0.32],
+    ["M124 90 L113 105 L126 117 L116 132 L123 147", 0.52],
+    ["M76 124 L89 131 L82 147", 0.72],
     ["M132 119 L122 128 L134 141", 0.88]
   ];
   const crackSvg = cracks.map(([d,start],i)=>{
@@ -131,15 +142,4 @@ function startMiniPacusObserver(){
     });
   }, { threshold: 0 });
   observer.observe(target);
-  mini.addEventListener('click', ()=>{
-    target.scrollIntoView({ behavior:'smooth', block:'center' });
-  });
-  miniPacusObserverStarted = true;
-}
-
-// Pra cada marco de evolução, descobre em que dia ele foi alcançado (com
-// base na lista de dias completos, em ordem) — usado no mural de conquistas.
-function getMilestoneDates(){
-  const cycle = getPetCycle();
-  const sorted = [...(state.petCompletedDays||[])]
-    .filter(d => d >= cycle.startISO && d <= cycle.e
+  mini.addEventListener('click', (

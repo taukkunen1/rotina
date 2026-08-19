@@ -1,4 +1,20 @@
-te.totalPoints = Math.max(0, (Number(state.totalPoints)||0) + totalDelta);
+ pointsEarnedThatDay,
+      perfect: false, // "Arrumar a bagunça" ficou de fora
+      screenMinutes: 0,
+      periodsCompleted: 2, // manhã e tarde completos; noite não (faltou a bagunça)
+      hair,
+    };
+
+    // crescimento do Pacus não exige dia perfeito — só engajamento real
+    if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
+  });
+
+  state.petCompletedDays.sort();
+  state.petLastCompletionISO = state.petCompletedDays.length
+    ? state.petCompletedDays[state.petCompletedDays.length - 1]
+    : null;
+
+  state.totalPoints = Math.max(0, (Number(state.totalPoints)||0) + totalDelta);
   state.historyCorrectionV3Applied = true;
 }
 
@@ -23,7 +39,6 @@ function reconcileState(state){
   if(!state.log) state.log = [];
   if(!state.history) state.history = {};
   if(!state.hairByDate || typeof state.hairByDate !== "object") state.hairByDate = {};
-  if(!state.taskDoneAt || typeof state.taskDoneAt !== "object") state.taskDoneAt = {};
   if(!state.customTaskOrder || typeof state.customTaskOrder !== "object") state.customTaskOrder = {};
   if(!state.familyAnnouncementResetV1Applied){
     state.familyGameNightAnnouncementSeen = false;
@@ -98,7 +113,6 @@ function reconcileState(state){
     // fecha o dia anterior no histórico antes de zerar o checklist
     closeOutDay(state, state.lastDate);
     state.checkedToday = {};
-    state.taskDoneAt = {};
     state.log = [];
     state.lastDate = todayISO();
     // zera o tempo de jogo usado — é uma cota que renova todo dia
@@ -165,15 +179,3 @@ function isDayPerfect(dateISO){
 // controlando o bônus de tela e o selo "dia perfeito"; esta função aqui
 // é só pro crescimento.
 function hasDayProgress(dateISO){
-  if(dateISO === todayISO()){
-    const tasks = allTasks(dateISO);
-    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    return applicable.some(t=>state.checkedToday[t.id] === 'done');
-  }
-  const entry = state.history[dateISO];
-  return !!(entry && entry.done > 0);
-}
-
-function syncPetCompletionFromDay(dateISO){
-  let grew = false;
-  if(hasDayProgress(dateISO)) grew = registerPetDayCompletion(dateISO) |

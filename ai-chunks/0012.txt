@@ -1,4 +1,16 @@
-        state = reconcileState(backup.state);
+{
+          const merged = mergeRemoteData(backup);
+          CONFIG = merged.config;
+          state = merged.state;
+          state.driveRevision = remoteRevision;
+          saveConfig(CONFIG);
+          saveState(state);
+          render();
+        } else if(remoteRevision >= localRevision){
+          const remoteConfig = sanitizeRemoteConfig(backup.config);
+          if(remoteConfig){
+            CONFIG = remoteConfig;
+            state = reconcileState(backup.state);
             state.driveRevision = remoteRevision;
             state.driveLastSyncISO = todayISO();
             try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(CONFIG)); }catch(e){}
@@ -200,18 +212,4 @@ function renderGameTimer(){
       if(raw === null) return;
       const targetMin = parseInt(raw, 10);
       if(isNaN(targetMin) || targetMin < 0) return;
-      const deltaSeconds = (targetMin*60) - remaining;
-      addGameTimerBonusHours(deltaSeconds/3600);
-      addLog(`⚙️ tempo de hoje ajustado pra ${targetMin} min restantes`, true);
-      saveState(state);
-      renderGameTimer();
-    });
-  }
-
-  if(running) startGameTimerTicking(); else stopGameTimerTicking();
-}
-
-/* ===================== TIMERS AVULSOS (tempo livre pra qualquer coisa) ===================== */
-let customTimerTickHandle = null;
-
-function findCustomTi
+      const deltaSeconds = (targetMin*60

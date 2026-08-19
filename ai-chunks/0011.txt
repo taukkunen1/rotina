@@ -1,4 +1,15 @@
-| grew;
+  if(dateISO === todayISO()){
+    const tasks = allTasks(dateISO);
+    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    return applicable.some(t=>state.checkedToday[t.id] === 'done');
+  }
+  const entry = state.history[dateISO];
+  return !!(entry && entry.done > 0);
+}
+
+function syncPetCompletionFromDay(dateISO){
+  let grew = false;
+  if(hasDayProgress(dateISO)) grew = registerPetDayCompletion(dateISO) || grew;
   if(isDayPerfect(dateISO)) grew = registerPetPerfectBonus(dateISO) || grew;
   return grew;
 }
@@ -176,16 +187,4 @@ async function autoPullOnStartup(){
         const localRevision = Number(state.driveRevision)||0;
         const localDirty = (Number(state.revision)||0) > localRevision;
         const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
-        if(localDirty && remoteRevision !== localRevision){
-          const merged = mergeRemoteData(backup);
-          CONFIG = merged.config;
-          state = merged.state;
-          state.driveRevision = remoteRevision;
-          saveConfig(CONFIG);
-          saveState(state);
-          render();
-        } else if(remoteRevision >= localRevision){
-          const remoteConfig = sanitizeRemoteConfig(backup.config);
-          if(remoteConfig){
-            CONFIG = remoteConfig;
-    
+        if(localDirty && remoteRevision !== localRevision)

@@ -1,11 +1,13 @@
-new Date().toISOString();
+esmarcado) ${task.txt}`);
+  } else {
+    state.checkedToday[id] = clickedStatus;
+    if(clickedStatus === 'done'){
+      totalDelta += addPoints(task.pts);
       addLog(`+${task.pts} · ${task.txt}`);
       fireConfetti(btn);
     } else if(clickedStatus === 'na'){
-      delete state.taskDoneAt[id];
       addLog(`n/a · ${task.txt}`);
     } else {
-      delete state.taskDoneAt[id];
       const penalty = taskNotDonePenalty(task);
       totalDelta += addPoints(-penalty);
       addLog(`✕ não realizado · ${task.txt} (−${penalty})`);
@@ -185,5 +187,4 @@ function renderEditorSchedule(){
   draft.schedule.forEach(item=>{
     if(item.pts == null) item.pts = 3;
     if(!item.period) item.period = 'tarde';
-    const row = document.createElement('div');
-    row.className = 'edit
+    const ro

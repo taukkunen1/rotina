@@ -1,4 +1,31 @@
- real do sistema.
+y.isArray(p.noite.tasks)){
+      const idx = p.noite.tasks.findIndex(t=>t.id === 'n5');
+      if(idx >= 0){
+        p.noite.tasks.splice(idx, 1, ...newTasks);
+      } else if(!p.noite.tasks.some(t=>t.id === 'n5_sala')){
+        p.noite.tasks.unshift(...newTasks);
+      }
+    }
+  });
+  cfg.splitBagunçaV1Applied = true;
+  return cfg;
+}
+
+function loadConfig(){
+  try{
+    const raw = localStorage.getItem(STORAGE_CONFIG_KEY);
+    if(raw) return stripLegacyHairTask(JSON.parse(raw));
+  }catch(e){}
+  return stripLegacyHairTask(JSON.parse(JSON.stringify(DEFAULT_CONFIG)));
+}
+function saveConfig(cfg){
+  try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(cfg)); }catch(e){}
+  scheduleAutoPush();
+}
+
+let TEST_DATE_OVERRIDE = null; // string ISO "yyyy-mm-dd" ou null (usa a data real do sistema)
+// IMPORTANTE: o modo de teste nunca fica salvo entre aberturas do arquivo —
+// toda vez que a página abre, começa sempre na data real do sistema.
 try{ localStorage.removeItem('hector_rotina_testdate_v1'); }catch(e){}
 
 function todayISO(){
@@ -35,17 +62,6 @@ function periodStartTime(periodTimeStr){
 
 // Verifica se uma tarefa marcada "feita" hoje foi concluída depois do
 // horário limite do período (comparando timestamps reais, não só a data).
-function isTaskLate(task, periodTimeStr){
-  const doneAtIso = state.taskDoneAt && state.taskDoneAt[task.id];
-  if(!doneAtIso) return false;
-  const end = periodEndTime(periodTimeStr);
-  if(!end) return false;
-  const doneAt = new Date(doneAtIso);
-  const deadline = new Date(doneAt);
-  deadline.setHours(end.hour, end.minute, 0, 0);
-  return doneAt.getTime() > deadline.getTime();
-}
-
 // Calcula quanto tempo falta pra acabar o período (com base no horário
 // real do dispositivo) — usado no aviso visual ao lado de cada bloco.
 function formatTimeRemaining(periodTimeStr){
@@ -181,20 +197,4 @@ function applyHistoryCorrection_v3(state){
     state.history[iso] = {
       done,
       total,
-      pointsEarnedThatDay,
-      perfect: false, // "Arrumar a bagunça" ficou de fora
-      screenMinutes: 0,
-      periodsCompleted: 2, // manhã e tarde completos; noite não (faltou a bagunça)
-      hair,
-    };
-
-    // crescimento do Pacus não exige dia perfeito — só engajamento real
-    if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
-  });
-
-  state.petCompletedDays.sort();
-  state.petLastCompletionISO = state.petCompletedDays.length
-    ? state.petCompletedDays[state.petCompletedDays.length - 1]
-    : null;
-
-  sta
+     

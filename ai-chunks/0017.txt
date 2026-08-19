@@ -1,4 +1,16 @@
-Date(iso, deltaDays){
+enderBackupReminder();
+  renderTestPanel();
+  renderTestModeBanner();
+  renderDriveSync();
+}
+
+function daysBetween(isoA, isoB){
+  const a = new Date(isoA+"T00:00:00");
+  const b = new Date(isoB+"T00:00:00");
+  return Math.round((b-a)/86400000);
+}
+
+function shiftISODate(iso, deltaDays){
   const d = new Date(iso+"T00:00:00");
   d.setDate(d.getDate()+deltaDays);
   return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
@@ -204,6 +216,4 @@ function renderWeeklyReview(){
       </div>
       <div class="wr-stats">
         <div class="wr-stat"><span class="wr-num">${perfectDays}/7</span><span class="wr-label">dias completos</span></div>
-        <div class="wr-stat"><span class="wr-num">${totalPointsWeek}</span><span class="wr-label">Pacus Points ganhos</span></div>
-        <div class="wr-stat"><span class="wr-num">${totalScreenMin}</span><span class="wr-label">min de tela ganhos</span></div>
-      </div>
+        
