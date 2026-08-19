@@ -5,13 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rotina do Hector — Pacus</title>
 <style>
-  /* =====================================================================
-     Arquivo local, sem internet, sem instalação. Abra num navegador.
-     Todo o conteúdo (tarefas, hábitos ruins, recompensas) agora é editado
-     pelo botão "Editar tudo" na tela — não precisa mexer no código.
-     Os dados ficam salvos no navegador (localStorage). O DEFAULT_CONFIG
-     lá embaixo no <script> só é usado na primeira vez que o arquivo abre.
-     ===================================================================== */
+  /* Arquivo local, sem instalação — abre no navegador. Tudo é editado
+     pela tela ("Editar tudo"), dados ficam salvos no navegador.
+     DEFAULT_CONFIG só vale na primeira abertura. */
 
   :root{
     --board:#16241f;
@@ -1865,11 +1861,8 @@
 </div>
 
 <script>
-/* =========================================================================
-   DEFAULT_CONFIG só é usado da primeira vez que o arquivo abre (sem nada
-   salvo ainda no navegador). Depois disso tudo é editado pela tela e fica
-   guardado em localStorage — o botão "Editar tudo" já resolve tudo.
-   ========================================================================= */
+/* DEFAULT_CONFIG só vale na primeira abertura; depois é tudo editável
+   pela tela e fica salvo no navegador. */
 const DEFAULT_CONFIG = {
   periods: {
     manha: {
@@ -1983,40 +1976,18 @@ const STORAGE_CONFIG_KEY = "hector_rotina_config_v3";
 const STORAGE_STATE_KEY  = "hector_rotina_state_v3";
 const APP_VERSION = "2026.08.11-pacus-v4";
 
-/* =========================================================================
-   SINCRONIZAÇÃO COM GOOGLE DRIVE (opcional) — via Google Apps Script
-   Não precisa hospedar esse arquivo em lugar nenhum: o próprio Apps Script
-   serve o app (essa URL abre o app direto) e guarda os dados no Drive.
-
-   Depois de configurado, o jeito certo de abrir em qualquer aparelho é
-   pela URL do Apps Script (a que termina em /exec) — não pelo arquivo
-   local. Assim, quando o app for atualizado, basta substituir o
-   conteúdo do arquivo "rotina-hector.html" no Drive uma vez, e todo
-   aparelho já abre a versão nova sozinho, sem copiar arquivo nenhum.
-
-   Passo a passo pra ativar:
-   1. Acesse https://script.google.com/ → "Novo projeto".
-   2. Apague o código de exemplo e cole o código que aparece no botão
-      "📋 ver código do Apps Script" logo abaixo, na seção de sincronização.
-   3. Clique em "Implantar" → "Nova implantação".
-   4. Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer
-      pessoa".
-   5. Clique em "Implantar", autorize o acesso (é a sua própria conta), e
-      copie a URL gerada (termina em /exec).
-   6. Cole essa URL na constante abaixo, entre aspas.
-   7. No Google Drive, salve o código deste arquivo com o nome exato
-      "rotina-hector.html". A partir daí, abram sempre a URL do Apps
-      Script (não o arquivo local) em todos os aparelhos.
-   ========================================================================= */
+/* Sincronização com Google Drive via Apps Script — guarda os dados
+   (não o código, que fica no GitHub Pages). Setup: script.google.com →
+   novo projeto → cole o código do botão "ver código do Apps Script" →
+   Implantar → App da Web, executar como eu, acesso qualquer pessoa →
+   cole a URL /exec abaixo. */
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec";
-// A mesma URL agora também serve o próprio app (HTML) quando aberta sem
-// parâmetro — pra pedir só os dados (backup), usamos ?data=1.
+// ?data=1 pede só os dados (backup); sem parâmetro, serve o app.
 const DATA_ENDPOINT = APPS_SCRIPT_URL + "?data=1";
 
 function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9); }
 
-// mapeia palavras-chave do nome da tarefa pra um emoji — reforça o texto
-// com uma pista visual (útil pra leitura rápida / crianças ainda alfabetizando)
+// mapeia palavra-chave da tarefa pra um emoji (pista visual de leitura rápida)
 const ICON_RULES = [
   [/cama/i, "🛏️"], [/água/i, "💧"], [/dente/i, "🦷"], [/rosto|banho/i, "🧼"],
   [/duolingo|inglês|idioma/i, "🗣️"], [/ler|livro|capítulo/i, "📖"],
@@ -2082,10 +2053,8 @@ function allTasks(dateISO){
   ];
 }
 
-// O Hector pode reordenar as tarefas do jeito que ele preferir (autonomia
-// ajuda mais que pontos, segundo os estudos) — essa ordem pessoal fica
-// guardada por período e é aplicada por cima da ordem sugerida/científica,
-// sem mexer na configuração dos pais.
+// Reordenação pessoal (autonomia > pontos, segundo os estudos), por
+// período, aplicada por cima da ordem sugerida — sem mexer na config.
 function getEffectiveTaskOrder(periodKey, tasks){
   if(!state.customTaskOrder) state.customTaskOrder = {};
   const customOrder = state.customTaskOrder[periodKey];
@@ -2122,10 +2091,8 @@ function stripLegacyHairTask(cfg){
   return splitBagunçaV1(addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))))))))));
 }
 
-// Reforça os pontos de tarefas que costumam ser mais chatas/incômodas pras
-// crianças (arrumar cama, escovar dente, tomar banho, arrumar bagunça,
-// leitura, mochila, lixo) — só roda uma vez (flag), pra não desfazer ajuste
-// manual que os pais façam depois.
+// Reforça pontos de tarefas mais chatas — roda uma vez só, não desfaz
+// ajuste manual dos pais.
 const POINT_REBALANCE_V1 = {
   m1:2, m3:2, m8:2, t_djf7hbb:4,
   t3:2, t5:2,
@@ -2148,8 +2115,7 @@ function applyPointRebalanceV1(cfg){
   return cfg;
 }
 
-// "Arrumar a bagunça" é a tarefa mais chata pro Hector — fixada em 7
-// pontos, com penalidade CHEIA (perde os 7, não a metade) se não fizer.
+// Tarefa mais chata: 7 pontos, penalidade CHEIA se não fizer (não a metade).
 function applyPointRebalanceV2(cfg){
   if(!cfg || cfg.pointRebalanceV2Applied) return cfg;
   ['periods','periodsWeekend'].forEach(key=>{
@@ -2164,13 +2130,9 @@ function applyPointRebalanceV2(cfg){
   return cfg;
 }
 
-// Reordena as tarefas com base em princípios de ciência comportamental:
-// 1) tarefa mais chata primeiro ("eat the frog" — vontade está mais alta
-//    no início do bloco); 2) tarefas de higiene em sequência (menos troca
-//    de contexto); 3) tarefa de foco cognitivo com a mente ainda
-//    descansada; 4) tarefas de preparar-pra-sair por último; 5) tarefa
-//    fácil (beber água) fechando o bloco — "efeito do final" ajuda a
-//    criar associação positiva com a rotina.
+// Ordem por ciência comportamental: tarefa chata primeiro (eat the frog),
+// higiene em sequência, foco cognitivo com mente descansada, sair por
+// último, água fácil fechando o bloco (efeito do final).
 const TASK_ORDER_V1 = {
   manha: ["m1","m4","m3","m7","m5","m8","t_djf7hbb","m2"],
   tarde: ["t2","t3","t5","t4","t1"],
@@ -2195,9 +2157,8 @@ function applyTaskOrderV1(cfg){
   return cfg;
 }
 
-// Nova tarefa fixa da noite — "Momento Criativo" (desenhar, montar Lego,
-// pintar...). Insere logo depois de "Escovar os dentes" e antes de "Ler
-// Livro" pra quem já tinha a rotina sincronizada. Roda só uma vez.
+// "Momento Criativo" — insere entre "Escovar os dentes" e "Ler Livro"
+// pra quem já sincronizou. Roda uma vez.
 function addCreativeTaskV1(cfg){
   if(!cfg || cfg.creativeTaskV1Applied) return cfg;
   ['periods','periodsWeekend'].forEach(key=>{
@@ -2216,9 +2177,8 @@ function addCreativeTaskV1(cfg){
   return cfg;
 }
 
-// Marca as tarefas que não dependem da iniciativa do Hector (refeições e
-// horário da escola são definidos pela família/instituição, não por ele)
-// pra ficarem "soltas" — fora do encadeamento de "próxima tarefa sugerida".
+// Tarefas fora do controle dele (refeições, escola) — soltas, sem entrar
+// no encadeamento de "próxima sugerida".
 const EXTERNAL_TASK_IDS = ["t2","t4","n1"];
 function markExternalTasksV1(cfg){
   if(!cfg || cfg.externalTasksV1Applied) return cfg;
@@ -2237,7 +2197,7 @@ function markExternalTasksV1(cfg){
   return cfg;
 }
 
-// Tarde de Jogos em Família — toda quinta à tarde, com Pedro, Geovana e Hector.
+// Jogos em Família — toda quinta à noite.
 function addFamilyGameNightV1(cfg){
   if(!cfg || cfg.familyGameNightV1Applied) return cfg;
   if(!Array.isArray(cfg.schedule)) cfg.schedule = [];
@@ -2292,7 +2252,7 @@ function fixFamilyGameNightV4(cfg){
   return cfg;
 }
 
-// Nova recompensa: Passeio Especial, escolhido pelo Hector.
+// Recompensa: Passeio Especial (ele escolhe).
 function addOutingRewardV1(cfg){
   if(!cfg || cfg.outingRewardV1Applied) return cfg;
   if(!Array.isArray(cfg.rewards)) cfg.rewards = [];
@@ -2303,10 +2263,9 @@ function addOutingRewardV1(cfg){
   return cfg;
 }
 
-// "Arrumar a bagunça" era vaga demais — quebrada em 5 tarefas pequenas e
-// concretas (cada uma com começo e fim bem claros), pro que o Hector
-// realmente deixa espalhado na sala: cartas de bafo, carrinhos, bolinhas
-// de gude, caixas — e uma conferência final da sala.
+// "Arrumar a bagunça" era vaga — quebrada em 5 tarefas pequenas e
+// concretas (começo/fim claros): cartas, carrinhos, bolinhas, caixas,
+// e conferência final da sala.
 function splitBagunçaV1(cfg){
   if(!cfg || cfg.splitBagunçaV1Applied) return cfg;
   const newTasks = [
@@ -2363,9 +2322,7 @@ function formatDateBR(iso){
   return d+"/"+m;
 }
 
-// Extrai a hora/minuto do horário final do período a partir do texto
-// "8:20 – 12:00" (ou similar) — usado tanto pro aviso de tempo restante
-// quanto pra detectar tarefa concluída atrasada.
+// Extrai hora/minuto do horário final do período ("8:20 – 12:00").
 function periodEndTime(periodTimeStr){
   const parts = periodTimeStr.split(/[–-]/).map(s=>s.trim());
   const endStr = parts[parts.length-1];
@@ -2380,10 +2337,7 @@ function periodStartTime(periodTimeStr){
   return { hour: h, minute: m||0 };
 }
 
-// Verifica se uma tarefa marcada "feita" hoje foi concluída depois do
-// horário limite do período (comparando timestamps reais, não só a data).
-// Calcula quanto tempo falta pra acabar o período (com base no horário
-// real do dispositivo) — usado no aviso visual ao lado de cada bloco.
+// Tempo restante até o fim do período, com base no relógio real.
 function formatTimeRemaining(periodTimeStr){
   const start = periodStartTime(periodTimeStr);
   const end = periodEndTime(periodTimeStr);
@@ -2486,11 +2440,9 @@ function applyHistoryCorrection_v2(state){
   state.historyCorrectionV2Applied = true;
 }
 
-// Correção pontual pra 13/08 e 14/08: tudo foi feito EXCETO "Arrumar a
-// bagunça" (não fez em nenhum dos dois dias) — que tem penalidade cheia
-// (perde os 7 pontos, não a metade). Mesmo não sendo dia 100% perfeito,
-// o Pacus continua contando o dia pro crescimento (crescimento não exige
-// perfeição, só engajamento real). Roda só uma vez.
+// Correção 13-14/08: tudo feito exceto "Arrumar a bagunça" (penalidade
+// cheia). Mesmo sem ser perfeito, conta pro crescimento do Pacus. Roda
+// uma vez.
 function applyHistoryCorrection_v3(state){
   if(state.historyCorrectionV3Applied) return;
 
@@ -2693,10 +2645,8 @@ function isDayPerfect(dateISO){
   return !!(state.history[dateISO] && state.history[dateISO].perfect);
 }
 
-// O crescimento do Pacus NÃO exige o dia 100% perfeito — só que alguma
-// tarefa de verdade tenha sido feita naquele dia. "isDayPerfect" continua
-// controlando o bônus de tela e o selo "dia perfeito"; esta função aqui
-// é só pro crescimento.
+// Crescimento não exige dia perfeito, só engajamento real. isDayPerfect
+// continua controlando o bônus de tela e o selo "dia perfeito".
 function hasDayProgress(dateISO){
   if(dateISO === todayISO()){
     const tasks = allTasks(dateISO);
@@ -2956,9 +2906,8 @@ function addPoints(delta){
   return state.totalPoints - before;
 }
 
-// Pra "✕ não realizado": perde metade dos pontos daquela tarefa. A metade
-// é sempre arredondada pra cima, e nunca fica em número ímpar (se o
-// arredondamento der ímpar, sobe mais 1 pra virar par).
+// "✕ não realizado": perde metade dos pontos, arredondado pra cima e
+// sempre par.
 function notDonePenalty(pts){
   let half = Math.ceil(pts/2);
   if(half % 2 !== 0) half += 1;
@@ -3439,9 +3388,8 @@ function buildPetVisual(stageFloat){
   return buildPacusSVG(stageFloat);
 }
 
-// Miniatura do Pacus fixa no canto — fica visível quando a seção principal
-// dele sai da tela (ex: rolando pra baixo pra marcar tarefas), assim ele
-// nunca some de vista de verdade. Um toque nela rola de volta pro topo.
+// Miniatura fixa no canto — aparece quando a seção principal sai da
+// tela. Toque rola de volta pro topo.
 let miniPacusObserverStarted = false;
 function renderMiniPacus(stageFloat){
   const el = document.getElementById('miniPacus');
@@ -3523,9 +3471,8 @@ function wirePacusInteraction(){
   });
 }
 
-// Fala do Pacus, toda noite — um lembrete fofo, aparece sozinho quando
-// a Noite começa (com base no horário real do dispositivo) e pode ser
-// dispensado só por hoje (volta amanhã à noite de novo, sozinho).
+// Fala noturna do Pacus — aparece sozinha quando a Noite começa,
+// dispensável só por hoje.
 const PACUS_NIGHT_MESSAGE = "Não esqueça de desenhar na lousa hoje! 🎨";
 let pacusDialogueTickHandle = null;
 function isEveningNow(){
@@ -3889,10 +3836,8 @@ function goToTestDate(iso){
 }
 
 let testPanelOpen = false;
-// Painéis de "adulto" (sincronização com Drive, editar dia anterior, modo
-// teste) ficam escondidos da tela principal até alguém abrir a "Área dos
-// adultos" com sucesso — assim o Hector só vê o que usa no dia a dia.
-// Reseta sozinho ao recarregar a página.
+// Painéis de "adulto" (Drive, editar dia, modo teste) ficam escondidos
+// até desbloquear a "Área dos adultos" — reseta ao recarregar.
 let adultUnlocked = false;
 
 function renderTestModeBanner(){
