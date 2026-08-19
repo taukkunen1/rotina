@@ -4056,6 +4056,7 @@ function render(){
       const li = document.createElement('li');
       const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
       const isSuggested = task.id === nextSuggestedId;
+      const lightDay = isLightDay(todayISO());
       li.className = 'task'
         + (status === 'done' ? ' done' : '')
         + (status === 'na' ? ' na' : '')
@@ -4069,10 +4070,10 @@ function render(){
         <span class="mark-group" data-id="${task.id}">
           <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
           <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
-          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, perde metade dos pontos">✕</button>
+          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="${lightDay ? 'Não feito (dia leve, sem perder ponto)' : 'Não feito, perde metade dos pontos'}">✕</button>
         </span>
         <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
-        <span class="pts">${status==='na' ? 'n/a' : status==='x' ? '−'+taskNotDonePenalty(task) : '+'+task.pts}</span>
+        <span class="pts">${status==='na' ? 'n/a' : status==='x' ? (lightDay ? 'dia leve' : '−'+taskNotDonePenalty(task)) : '+'+task.pts}</span>
       `;
       ul.appendChild(li);
     });
@@ -4595,10 +4596,11 @@ function onMarkClick(e){
 
   const current = state.checkedToday[id]; // undefined | 'done' | 'na' | 'x'
   let totalDelta = 0;
+  const lightDay = isLightDay(todayISO());
 
   // desfazer o efeito do estado anterior nos pontos
   if(current === 'done') totalDelta += addPoints(-task.pts);
-  else if(current === 'x') totalDelta += addPoints(taskNotDonePenalty(task));
+  else if(current === 'x' && !lightDay) totalDelta += addPoints(taskNotDonePenalty(task));
 
   if(current === clickedStatus){
     // clicou de novo no mesmo estado: volta pra pendente
@@ -4612,6 +4614,8 @@ function onMarkClick(e){
       fireConfetti(btn);
     } else if(clickedStatus === 'na'){
       addLog(`n/a · ${task.txt}`);
+    } else if(lightDay){
+      addLog(`✕ não realizado · ${task.txt} (dia leve, sem perder ponto)`);
     } else {
       const penalty = taskNotDonePenalty(task);
       totalDelta += addPoints(-penalty);
