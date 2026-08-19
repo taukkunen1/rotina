@@ -1,4 +1,21 @@
+ renderPet();
+  renderHair();
+  renderGameTimer();
+  renderCustomTimers();
 
+  const weekendEl = document.getElementById('weekendIndicator');
+  if(weekendEl){
+    weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
+      ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
+      : '';
+  }
+
+  const periodsEl = document.getElementById('periods');
+  periodsEl.innerHTML = '';
+  const PERIOD_ORDER = ['manha','tarde','noite'];
+  const periodsObj = getPeriodsFor(todayISO());
+
+  Object.entries(periodsObj).forEach(([key, period])=>{
     const div = document.createElement('div');
     div.className = 'period ' + key;
 
@@ -173,11 +190,4 @@ function renderTestPanel(){
     <div class="test-panel">
       <h3>🧪 Modo de teste</h3>
       <div class="hint">Ferramentas só pra conferir se o crescimento do Pacus e o histórico estão funcionando. Não mexe nas tarefas de verdade — só simula dias.</div>
-      <div class="test-date">Data simulada agora: <b>${formatDateBR(todayISO())}/${todayISO().split('-')[0]}</b>${usingOverride ? ' (modo teste ativo)' : ' (data real do sistema)'}</div>
-      <div class="test-row">
-        <button class="icon-btn" id="testCompleteDayBtn">✅ completar tudo hoje</button>
-        <button class="icon-btn" id="testPrevDayBtn">◀ dia anterior</button>
-        <button class="icon-btn" id="testNextDayBtn">dia seguinte ▶</button>
-        <input type="date" id="testDatePicker" value="${todayISO()}">
-        <button class="icon-btn" id="testGoDateBtn">ir pra essa data</button>
-        <button class="icon-btn danger" id="testResetDateBtn">voltar pra da
+      <div class="test-date">Data simulada agora: <b>${formatDateBR(todayISO())}/${todayISO().split('-')[0]}<

@@ -1,4 +1,7 @@
-da dia
+ date:"2026-08-14", label:"Inglês (exceção)", period:"manha", pts:5, start:"09:00", end:"10:00" },
+  ],
+
+  // Pacus, o axolote: começa em 09/08 e cresce um passo a cada dia
   // em que todas as tarefas aplicáveis são concluídas. O ciclo termina
   // em 31/08. São 23 dias de crescimento, contando 09/08 e 31/08.
   // O Pacus nunca regride por dias já concluídos.
@@ -183,10 +186,3 @@ function applyPointRebalanceV2(cfg){
   ['periods','periodsWeekend'].forEach(key=>{
     const p = cfg[key];
     if(p && p.noite && Array.isArray(p.noite.tasks)){
-      p.noite.tasks.forEach(t=>{
-        if(t.id === 'n5'){ t.pts = 7; t.fullPenalty = true; }
-      });
-    }
-  });
-  cfg.pointRebalanceV2Applied = true;
-  return c

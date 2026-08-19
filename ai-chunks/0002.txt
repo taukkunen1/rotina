@@ -1,3 +1,8 @@
+ animation:crackFlash .55s ease-out; }
+  @keyframes crackFlash{
+    0%{ filter:brightness(1); }
+    35%{ filter:brightness(1.28); }
+    100%{ filter:brightness(1); }
   }
 
   /* ---------- animações contínuas do Pacus (todo dia, o tempo todo) ---------- */
@@ -271,9 +276,4 @@
     cursor:pointer;
     list-style:none;
     color:var(--chalk);
-    padding:4px 0;
-    position:relative;
-  }
-  .block-collapsible summary::-webkit-details-marker{ display:none; }
-  .block-collapsible summary::after{
-    content:"▾";
+    

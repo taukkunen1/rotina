@@ -1,4 +1,19 @@
- addGameTimerBonusHours(hours){
+arefas (marcadas com fullPenalty:true) perdem o valor CHEIO em
+// vez de metade — reforço maior pras tarefas mais chatas/resistidas.
+function taskNotDonePenalty(task){
+  return task.fullPenalty ? task.pts : notDonePenalty(task.pts);
+}
+
+/* ===================== TIMER DE TEMPO DE JOGO (diário) ===================== */
+let gameTimerTickHandle = null;
+
+function gameTimerDailyLimitSeconds(){
+  const base = Math.round((CONFIG.screenDailyLimitHours || 2) * 3600);
+  const bonus = Math.round((state.gameTimer.bonusSeconds || 0));
+  return Math.max(0, base + bonus);
+}
+
+function addGameTimerBonusHours(hours){
   if(!state.gameTimer.bonusSeconds) state.gameTimer.bonusSeconds = 0;
   state.gameTimer.bonusSeconds += Math.round(hours * 3600);
 }
@@ -216,22 +231,4 @@ function startCustomTimerTicking(){
       const remaining = customTimerRemainingNow(t);
       if(remaining <= 0 && !t.finished){
         t.remainingSeconds = 0;
-        t.runningSince = null;
-        t.finished = true;
-        playBeep();
-        needsFullRender = true;
-      }
-    });
-    if(needsFullRender){ saveState(state); renderCustomTimers(); }
-    else updateCustomTimerDisplays();
-    if(!anyCustomTimerRunning()) stopCustomTimerTicking();
-  }, 1000);
-}
-function stopCustomTimerTicking(){
-  if(customTimerTickHandle){ clearInterval(customTimerTickHandle); customTimerTickHandle = null; }
-}
-
-function updateCustomTimerDisplays(){
-  state.customTimers.forEach(t=>{
-    const el = document.getElementById('customTimerDisplay_'+t.id);
-    if(el) 
+        t.runningSi

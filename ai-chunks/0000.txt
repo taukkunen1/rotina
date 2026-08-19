@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Rotina do Hector — Pacus</title>
 <style>
   /* Arquivo local, sem instalação — abre no navegador. Tudo é editado
@@ -294,12 +297,4 @@
   }
 
   /* ---------- timers avulsos (tempo livre pra qualquer coisa) ---------- */
-  .custom-timers{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:12px;
-  }
-  @media (max-width:520px){
-    .custom-timers{ grid-template-columns:1fr; }
-  }
-  .cu
+  .custom

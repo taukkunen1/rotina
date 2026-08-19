@@ -1,4 +1,23 @@
-uerySelector('[data-field=txt]').addEventListener('input', e=>{ r.txt = e.target.value; });
+{
+      draft.schedule = draft.schedule.filter(x=>x!==item);
+      renderEditorSchedule();
+    });
+    el.appendChild(row);
+  });
+}
+
+function renderEditorRewards(){
+  const el = document.getElementById('editRewards');
+  el.innerHTML = '';
+  draft.rewards.forEach(r=>{
+    const row = document.createElement('div');
+    row.className = 'edit-row';
+    row.innerHTML = `
+      <input type="text" value="${escapeAttr(r.txt)}" data-field="txt" placeholder="recompensa">
+      ${stepperHTML('cost', r.cost)}
+      <button class="del" title="remover">🗑</button>
+    `;
+    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ r.txt = e.target.value; });
     wireStepper(row, r, 'cost');
     row.querySelector('.del').addEventListener('click', ()=>{
       draft.rewards = draft.rewards.filter(x=>x!==r);
@@ -179,15 +198,4 @@ document.getElementById('daySaveBtn').addEventListener('click', ()=>{
   const done = Math.max(0, parseInt(document.getElementById('dayDone').value,10) || 0);
   const total = Math.max(0, parseInt(document.getElementById('dayTotal').value,10) || 0);
   const pointsEarnedThatDay = Math.max(0, parseInt(document.getElementById('dayPoints').value,10) || 0);
-  const hair = document.getElementById('dayHair').value || null;
-  const perfect = total > 0 && done >= total;
-
-  if(!state.hairByDate) state.hairByDate = {};
-  if(hair) state.hairByDate[editingDate] = hair; else delete state.hairByDate[editingDate];
-  state.history[editingDate] = { done, total, pointsEarnedThatDay, perfect, screenMinutes: perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0, hair };
-  if(perfect) registerPetDayCompletion(editingDate);
-
-  // ajusta o saldo total pela diferença de pontos daquele dia
-  const delta = pointsEarnedThatDay - oldPoints;
-  let appliedDelta = 0;
-  if(delta !=
+  const hair = document.getElement

@@ -1,4 +1,19 @@
-, 30000);
+n; }
+  el.innerHTML = `
+    <div class="pacus-dialogue">
+      <span class="pacus-dialogue-text">💬 ${PACUS_NIGHT_MESSAGE}</span>
+      <button class="pacus-dialogue-close" id="pacusDialogueCloseBtn" title="Ok, entendi!">✕</button>
+    </div>
+  `;
+  document.getElementById('pacusDialogueCloseBtn').addEventListener('click', ()=>{
+    state.pacusDialogueDismissedDate = todayISO();
+    saveState(state);
+    renderPacusDialogue();
+  });
+}
+function startPacusDialogueTicking(){
+  if(pacusDialogueTickHandle) return;
+  pacusDialogueTickHandle = setInterval(renderPacusDialogue, 30000);
 }
 
 function renderPet(){
@@ -121,7 +136,7 @@ function buildStreakStrip(){
     const d = new Date(iso+"T00:00:00");
     const letter = weekdayLetters[d.getDay()];
     let entry = isToday ? liveTodayEntry() : state.history[iso];
-    let cls = 'streak-cell empty';
+    let cls = 'streak-cell none';
     if(entry && entry.total > 0){
       if(entry.perfect) cls = 'streak-cell perfect';
       else if(entry.done === entry.total - 1) cls = 'streak-cell almost';
@@ -177,21 +192,4 @@ function renderHair(){
 function render(){
   document.getElementById('totalPoints').textContent = state.totalPoints;
 
-  renderPet();
-  renderHair();
-  renderGameTimer();
-  renderCustomTimers();
-
-  const weekendEl = document.getElementById('weekendIndicator');
-  if(weekendEl){
-    weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
-      ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
-      : '';
-  }
-
-  const periodsEl = document.getElementById('periods');
-  periodsEl.innerHTML = '';
-  const PERIOD_ORDER = ['manha','tarde','noite'];
-  const periodsObj = getPeriodsFor(todayISO());
-
-  Object.entries(periodsObj).forEach(([key, period])=>{
+ 

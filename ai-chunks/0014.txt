@@ -1,4 +1,15 @@
-t i=0;i<gillCount;i++){
+ growth*11 + adult*4;
+  const faceY = 92 - hatch*7;
+  const bodyY = 128 - hatch*5;
+  const gid = uid('pacus');
+  const shell = hatch < 1 ? `
+    <path d="M62 151 Q45 158 54 174 Q70 184 85 170" fill="#f6ecd9" stroke="#e88aa8" stroke-width="2.5" opacity="${1-hatch*.75}"/>
+    <path d="M158 151 Q175 158 166 174 Q150 184 135 170" fill="#f6ecd9" stroke="#e88aa8" stroke-width="2.5" opacity="${1-hatch*.75}"/>` : '';
+
+  // guelras com dois filamentos cada, balançando devagar (efeito de água)
+  const gillCount = 2 + Math.floor(Math.min(2,growth*2));
+  let gills = '';
+  for(let i=0;i<gillCount;i++){
     const y = faceY-6+i*8;
     const len = gillLen-(i*2);
     const delay = (i*0.18).toFixed(2);
@@ -154,19 +165,4 @@ function renderPacusDialogue(){
   const el = document.getElementById('pacusDialogue');
   if(!el) return;
   const dismissedToday = state.pacusDialogueDismissedDate === todayISO();
-  if(!isEveningNow() || dismissedToday){ el.innerHTML = ''; return; }
-  el.innerHTML = `
-    <div class="pacus-dialogue">
-      <span class="pacus-dialogue-text">💬 ${PACUS_NIGHT_MESSAGE}</span>
-      <button class="pacus-dialogue-close" id="pacusDialogueCloseBtn" title="Ok, entendi!">✕</button>
-    </div>
-  `;
-  document.getElementById('pacusDialogueCloseBtn').addEventListener('click', ()=>{
-    state.pacusDialogueDismissedDate = todayISO();
-    saveState(state);
-    renderPacusDialogue();
-  });
-}
-function startPacusDialogueTicking(){
-  if(pacusDialogueTickHandle) return;
-  pacusDialogueTickHandle = setInterval(renderPacusDialogue
+  if(!isEveningNow() || dismissedToday){ el.innerHTML = ''; retur

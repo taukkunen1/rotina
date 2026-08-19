@@ -1,4 +1,28 @@
-evision)||0,
+ssAutoPush = true;
+let pushInFlight = false;
+let pushPending = false;
+
+let CONFIG = loadConfig();
+let state = loadState();
+
+suppressAutoPush = false;
+
+function scheduleAutoPush(){
+  if(!APPS_SCRIPT_URL || suppressAutoPush) return;
+  if(pushInFlight){ pushPending = true; return; }
+  doAutoPush();
+}
+
+async function doAutoPush(){
+  if(!APPS_SCRIPT_URL) return;
+  pushInFlight = true;
+  try{
+    const payload = {
+      appVersion: APP_VERSION,
+      config: CONFIG,
+      state: state,
+      baseRevision: Number(state.driveRevision)||0,
+      clientRevision: Number(state.revision)||0,
       clientUpdatedAt: state.updatedAt || new Date().toISOString(),
       exportedAt: new Date().toISOString()
     };
@@ -184,19 +208,4 @@ function notDonePenalty(pts){
   return half;
 }
 
-// Algumas tarefas (marcadas com fullPenalty:true) perdem o valor CHEIO em
-// vez de metade — reforço maior pras tarefas mais chatas/resistidas.
-function taskNotDonePenalty(task){
-  return task.fullPenalty ? task.pts : notDonePenalty(task.pts);
-}
-
-/* ===================== TIMER DE TEMPO DE JOGO (diário) ===================== */
-let gameTimerTickHandle = null;
-
-function gameTimerDailyLimitSeconds(){
-  const base = Math.round((CONFIG.screenDailyLimitHours || 2) * 3600);
-  const bonus = Math.round((state.gameTimer.bonusSeconds || 0));
-  return Math.max(0, base + bonus);
-}
-
-function
+// Algumas t

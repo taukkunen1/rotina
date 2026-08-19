@@ -1,4 +1,11 @@
-ta real</button>
+/b>${usingOverride ? ' (modo teste ativo)' : ' (data real do sistema)'}</div>
+      <div class="test-row">
+        <button class="icon-btn" id="testCompleteDayBtn">✅ completar tudo hoje</button>
+        <button class="icon-btn" id="testPrevDayBtn">◀ dia anterior</button>
+        <button class="icon-btn" id="testNextDayBtn">dia seguinte ▶</button>
+        <input type="date" id="testDatePicker" value="${todayISO()}">
+        <button class="icon-btn" id="testGoDateBtn">ir pra essa data</button>
+        <button class="icon-btn danger" id="testResetDateBtn">voltar pra data real</button>
       </div>
     </div>
   `;
@@ -196,12 +203,4 @@ function renderHistory(){
         <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
         <td>—</td>
         <td class="pts-cell">—</td>
-        <td>${hairLabel(hair)}</td>
-        <td>${(isToday||!adultUnlocked)?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
-      </tr>`;
-    }
-    const perfectBadge = entry.perfect
-      ? '<span class="badge-perfect">dia perfeito</span>'
-      : (entry.total > 0 && entry.done === entry.total - 1 ? '<span class="badge-almost">quase lá! 🌟</span>' : '');
-    const editCell = (isToday||!adultUnlocked) ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
-    return `<tr${isToday?' class=
+        <td>${hairLabel(

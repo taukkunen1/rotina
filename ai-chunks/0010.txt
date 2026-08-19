@@ -1,10 +1,22 @@
-eys(state.history || {}).forEach(iso=>{
+ReplayV1Applied = true;
+  }
+  if(!state.perfectBonusBackfillV1Applied){
+    if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
+    Object.keys(state.history || {}).forEach(iso=>{
       if(state.history[iso] && state.history[iso].perfect && !state.petPerfectBonusDays.includes(iso)){
         state.petPerfectBonusDays.push(iso);
       }
     });
     state.petPerfectBonusDays.sort();
     state.perfectBonusBackfillV1Applied = true;
+  }
+  if(!state.hairCorrectionAug1718Applied){
+    if(!state.hairByDate) state.hairByDate = {};
+    state.hairByDate["2026-08-17"] = "not-washed";
+    state.hairByDate["2026-08-18"] = "washed";
+    if(state.history["2026-08-17"]) state.history["2026-08-17"].hair = "not-washed";
+    if(state.history["2026-08-18"]) state.history["2026-08-18"].hair = "washed";
+    state.hairCorrectionAug1718Applied = true;
   }
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
@@ -163,28 +175,4 @@ function saveState(state, options={}){
    nesse momento ainda nem todo o resto do código rodou, então tentar
    sincronizar/renderizar tão cedo pode travar. Ela é reativada logo
    depois, uma vez que CONFIG e state já estão prontos. */
-let suppressAutoPush = true;
-let pushInFlight = false;
-let pushPending = false;
-
-let CONFIG = loadConfig();
-let state = loadState();
-
-suppressAutoPush = false;
-
-function scheduleAutoPush(){
-  if(!APPS_SCRIPT_URL || suppressAutoPush) return;
-  if(pushInFlight){ pushPending = true; return; }
-  doAutoPush();
-}
-
-async function doAutoPush(){
-  if(!APPS_SCRIPT_URL) return;
-  pushInFlight = true;
-  try{
-    const payload = {
-      appVersion: APP_VERSION,
-      config: CONFIG,
-      state: state,
-      baseRevision: Number(state.driveRevision)||0,
-      clientRevision: Number(state.r
+let suppre

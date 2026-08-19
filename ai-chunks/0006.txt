@@ -1,4 +1,8 @@
- saldo total automaticamente.</div>
+ue="washed">💧 Lavou</option>
+          <option value="not-washed">○ Não lavou</option>
+        </select>
+      </div>
+      <div class="hint">Mudar os pontos ajusta o saldo total automaticamente.</div>
     </div>
 
     <div class="editor-footer">
@@ -174,7 +178,4 @@ const DEFAULT_CONFIG = {
   // exceções pontuais: um compromisso só naquele dia específico, sem mexer
   // na regra recorrente (ex: Inglês de reposição numa sexta).
   scheduleExceptions: [
-    { id:"exc1", date:"2026-08-14", label:"Inglês (exceção)", period:"manha", pts:5, start:"09:00", end:"10:00" },
-  ],
-
-  // Pacus, o axolote: começa em 09/08 e cresce um passo a ca
+    { id:"exc1",

@@ -1,4 +1,11 @@
-mation:announcePop .4s cubic-bezier(.2,1.4,.4,1);
+.12));
+    border:2px dashed var(--pink);
+    border-radius:14px;
+    padding:16px 18px;
+    margin-bottom:18px;
+    text-align:center;
+    position:relative;
+    animation:announcePop .4s cubic-bezier(.2,1.4,.4,1);
   }
   @keyframes announcePop{
     0%{ transform:scale(.9); opacity:0; }
@@ -324,10 +331,4 @@ mation:announcePop .4s cubic-bezier(.2,1.4,.4,1);
     background:rgba(255,255,255,.05);
     border:1px solid var(--line);
     color:var(--chalk);
-    border-radius:6px;
-    padding:7px 6px;
-    font-size:.82rem;
-    text-align:center;
-    font-family:inherit;
-  }
-  .edit-row input:focus, .edit-row select:focus{ outline:1px solid v
+    border-radius:6p

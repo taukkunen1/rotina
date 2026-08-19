@@ -1,4 +1,22 @@
-el.textContent = formatHMS(customTimerRemainingNow(t));
+nce = null;
+        t.finished = true;
+        playBeep();
+        needsFullRender = true;
+      }
+    });
+    if(needsFullRender){ saveState(state); renderCustomTimers(); }
+    else updateCustomTimerDisplays();
+    if(!anyCustomTimerRunning()) stopCustomTimerTicking();
+  }, 1000);
+}
+function stopCustomTimerTicking(){
+  if(customTimerTickHandle){ clearInterval(customTimerTickHandle); customTimerTickHandle = null; }
+}
+
+function updateCustomTimerDisplays(){
+  state.customTimers.forEach(t=>{
+    const el = document.getElementById('customTimerDisplay_'+t.id);
+    if(el) el.textContent = formatHMS(customTimerRemainingNow(t));
   });
 }
 
@@ -153,15 +171,4 @@ function buildPacusSVG(stageFloat){
   const scale = 0.52 + growth*0.42 + adult*0.06;
   const bodyW = 45 + growth*10 + adult*4;
   const bodyH = 30 + growth*5 + adult*3;
-  const gillLen = 12 + growth*11 + adult*4;
-  const faceY = 92 - hatch*7;
-  const bodyY = 128 - hatch*5;
-  const gid = uid('pacus');
-  const shell = hatch < 1 ? `
-    <path d="M62 151 Q45 158 54 174 Q70 184 85 170" fill="#f6ecd9" stroke="#e88aa8" stroke-width="2.5" opacity="${1-hatch*.75}"/>
-    <path d="M158 151 Q175 158 166 174 Q150 184 135 170" fill="#f6ecd9" stroke="#e88aa8" stroke-width="2.5" opacity="${1-hatch*.75}"/>` : '';
-
-  // guelras com dois filamentos cada, balançando devagar (efeito de água)
-  const gillCount = 2 + Math.floor(Math.min(2,growth*2));
-  let gills = '';
-  for(le
+  const gillLen = 12 +

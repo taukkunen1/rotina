@@ -1,4 +1,12 @@
-"today-row"':''}>
+hair)}</td>
+        <td>${(isToday||!adultUnlocked)?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
+      </tr>`;
+    }
+    const perfectBadge = entry.perfect
+      ? '<span class="badge-perfect">dia perfeito</span>'
+      : (entry.total > 0 && entry.done === entry.total - 1 ? '<span class="badge-almost">quase lá! 🌟</span>' : '');
+    const editCell = (isToday||!adultUnlocked) ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
+    return `<tr${isToday?' class="today-row"':''}>
       <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
       <td>${entry.done}/${entry.total}${perfectBadge}</td>
       <td class="pts-cell">${entry.pointsEarnedThatDay}</td>
@@ -184,16 +192,4 @@ function openEditor(){
   renderEditorPeriod('tarde', 'editTarde');
   renderEditorPeriod('noite', 'editNoite');
   renderEditorBad();
-  renderEditorRewards();
-
-  const weekendToggle = document.getElementById('weekendToggle');
-  const weekendBody = document.getElementById('weekendEditorBody');
-  weekendToggle.checked = !!draft.periodsWeekend;
-  weekendBody.style.display = draft.periodsWeekend ? 'block' : 'none';
-  if(draft.periodsWeekend){
-    renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
-    renderEditorPeriod('tarde', 'editTardeWeekend', draft.periodsWeekend);
-    renderEditorPeriod('noite', 'editNoiteWeekend', draft.periodsWeekend);
-  }
-  weekendToggle.onchange = ()=>{
-    if(weekendT
+  renderEditor
