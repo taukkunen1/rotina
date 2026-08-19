@@ -744,12 +744,8 @@
   .time-remaining.urgency-none{ color:var(--chalk-dim); font-weight:normal; }
   .time-remaining.urgency-low{ color:var(--chalk-dim); }
   .time-remaining.urgency-medium{ color:var(--orange); }
-  .time-remaining.urgency-high{ color:var(--red); animation:urgentPulse 1.6s ease-in-out infinite; }
+  .time-remaining.urgency-high{ color:var(--red); }
   .time-remaining.urgency-over{ color:var(--chalk-dim); font-style:italic; font-weight:normal; }
-  @keyframes urgentPulse{
-    0%,100%{ opacity:1; }
-    50%{ opacity:.5; }
-  }
 
   .manha h2{ color:var(--yellow); }
   .tarde h2{ color:var(--orange); }
@@ -842,14 +838,6 @@
   .task.na .pts{ color:var(--chalk-dim); border-color:var(--line); }
   .task.notdone .txt{ color:var(--red); }
   .task.notdone .pts{ color:var(--red); border-color:rgba(255,107,107,.4); }
-  .late-flag{
-    display:inline-block;
-    margin-left:6px;
-    font-size:.65rem;
-    color:var(--orange);
-    font-style:normal;
-  }
-  .task.late-done .txt{ color:var(--chalk); }
   .task-icon{ font-size:1.05rem; margin-right:6px; flex-shrink:0; }
 
   .task.suggested{
@@ -1331,6 +1319,32 @@
   }
   .celebration-stage b{ color:var(--green); }
 
+  .breathing-card{ text-align:center; }
+  .breathing-circle{
+    width:110px;
+    height:110px;
+    border-radius:50%;
+    margin:10px auto 22px;
+    background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.3), var(--blue) 75%);
+    transform:scale(.6);
+  }
+  .breathing-circle.breathing{
+    animation:breathingScale 10s ease-in-out 3;
+  }
+  @keyframes breathingScale{
+    0%{ transform:scale(.6); }
+    40%{ transform:scale(1.15); }
+    60%{ transform:scale(1.15); }
+    100%{ transform:scale(.6); }
+  }
+  .breathing-label{
+    font-family:"Segoe Print","Bradley Hand",cursive;
+    font-size:1.3rem;
+    color:var(--chalk);
+    margin-bottom:20px;
+    min-height:1.6em;
+  }
+
   footer{
     text-align:center;
     margin-top:22px;
@@ -1581,6 +1595,14 @@
   </div>
 </div>
 
+<div class="overlay" id="breathingOverlay" style="z-index:700; align-items:center;">
+  <div class="celebration-card breathing-card">
+    <div class="breathing-circle" id="breathingCircle"></div>
+    <div class="breathing-label" id="breathingLabel">Prepara...</div>
+    <button class="btn" id="breathingCloseBtn">fechar</button>
+  </div>
+</div>
+
 <div class="board-frame">
   <div class="board-inner">
 
@@ -1608,6 +1630,10 @@
       <div id="familyGameNightAnnouncement"></div>
 
       <section class="pet-section" id="petSection"></section>
+
+      <div style="text-align:center; margin-top:8px; margin-bottom:8px;">
+        <button class="icon-btn" id="breathingBtn" title="Uma pausa calma de 30 segundos">🌬️ Pausa pra respirar</button>
+      </div>
 
       <div id="weekendIndicator"></div>
       <div class="periods" id="periods"></div>
@@ -2344,17 +2370,6 @@ function periodStartTime(periodTimeStr){
 
 // Verifica se uma tarefa marcada "feita" hoje foi concluída depois do
 // horário limite do período (comparando timestamps reais, não só a data).
-function isTaskLate(task, periodTimeStr){
-  const doneAtIso = state.taskDoneAt && state.taskDoneAt[task.id];
-  if(!doneAtIso) return false;
-  const end = periodEndTime(periodTimeStr);
-  if(!end) return false;
-  const doneAt = new Date(doneAtIso);
-  const deadline = new Date(doneAt);
-  deadline.setHours(end.hour, end.minute, 0, 0);
-  return doneAt.getTime() > deadline.getTime();
-}
-
 // Calcula quanto tempo falta pra acabar o período (com base no horário
 // real do dispositivo) — usado no aviso visual ao lado de cada bloco.
 function formatTimeRemaining(periodTimeStr){
@@ -2531,7 +2546,6 @@ function reconcileState(state){
   if(!state.log) state.log = [];
   if(!state.history) state.history = {};
   if(!state.hairByDate || typeof state.hairByDate !== "object") state.hairByDate = {};
-  if(!state.taskDoneAt || typeof state.taskDoneAt !== "object") state.taskDoneAt = {};
   if(!state.customTaskOrder || typeof state.customTaskOrder !== "object") state.customTaskOrder = {};
   if(!state.familyAnnouncementResetV1Applied){
     state.familyGameNightAnnouncementSeen = false;
@@ -2606,7 +2620,6 @@ function reconcileState(state){
     // fecha o dia anterior no histórico antes de zerar o checklist
     closeOutDay(state, state.lastDate);
     state.checkedToday = {};
-    state.taskDoneAt = {};
     state.log = [];
     state.lastDate = todayISO();
     // zera o tempo de jogo usado — é uma cota que renova todo dia
@@ -3746,13 +3759,11 @@ function render(){
       const li = document.createElement('li');
       const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
       const isSuggested = task.id === nextSuggestedId;
-      const late = status === 'done' && isTaskLate(task, period.time);
       li.className = 'task'
         + (status === 'done' ? ' done' : '')
         + (status === 'na' ? ' na' : '')
         + (status === 'x' ? ' notdone' : '')
-        + (isSuggested ? ' suggested' : '')
-        + (late ? ' late-done' : '');
+        + (isSuggested ? ' suggested' : '');
       li.innerHTML = `
         <span class="task-reorder">
           <button type="button" class="mini-reorder-btn" data-dir="up" data-period="${key}" data-task="${task.id}" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
@@ -3763,7 +3774,7 @@ function render(){
           <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
           <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não feito, perde metade dos pontos">✕</button>
         </span>
-        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}${late ? '<span class="late-flag">⏰ atrasado</span>' : ''}</span>
+        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
         <span class="pts">${status==='na' ? 'n/a' : status==='x' ? '−'+taskNotDonePenalty(task) : '+'+task.pts}</span>
       `;
       ul.appendChild(li);
@@ -4221,7 +4232,6 @@ function onMarkClick(e){
 
   const current = state.checkedToday[id]; // undefined | 'done' | 'na' | 'x'
   let totalDelta = 0;
-  if(!state.taskDoneAt) state.taskDoneAt = {};
 
   // desfazer o efeito do estado anterior nos pontos
   if(current === 'done') totalDelta += addPoints(-task.pts);
@@ -4230,20 +4240,16 @@ function onMarkClick(e){
   if(current === clickedStatus){
     // clicou de novo no mesmo estado: volta pra pendente
     delete state.checkedToday[id];
-    delete state.taskDoneAt[id];
     addLog(`(desmarcado) ${task.txt}`);
   } else {
     state.checkedToday[id] = clickedStatus;
     if(clickedStatus === 'done'){
       totalDelta += addPoints(task.pts);
-      state.taskDoneAt[id] = new Date().toISOString();
       addLog(`+${task.pts} · ${task.txt}`);
       fireConfetti(btn);
     } else if(clickedStatus === 'na'){
-      delete state.taskDoneAt[id];
       addLog(`n/a · ${task.txt}`);
     } else {
-      delete state.taskDoneAt[id];
       const penalty = taskNotDonePenalty(task);
       totalDelta += addPoints(-penalty);
       addLog(`✕ não realizado · ${task.txt} (−${penalty})`);
@@ -4522,6 +4528,52 @@ document.querySelectorAll('.add-row-btn').forEach(btn=>{
 document.getElementById('celebrationCloseBtn').addEventListener('click', closeEvolutionCelebration);
 document.getElementById('evolutionCelebration').addEventListener('click', e=>{
   if(e.target.id === 'evolutionCelebration') closeEvolutionCelebration();
+});
+
+/* ---------- pausa pra respirar (30s, sem pontos, só pra acalmar) ---------- */
+let breathingTimeoutId = null;
+function startBreathingExercise(){
+  const overlay = document.getElementById('breathingOverlay');
+  const circle = document.getElementById('breathingCircle');
+  const label = document.getElementById('breathingLabel');
+  overlay.classList.add('open');
+  circle.classList.remove('breathing');
+  void circle.offsetWidth;
+  circle.classList.add('breathing');
+
+  const phases = [
+    { text:'Inspire...', duration:4000 },
+    { text:'Segure...', duration:2000 },
+    { text:'Expire...', duration:4000 },
+  ];
+  let cycle = 0;
+  let phaseIdx = 0;
+
+  function nextPhase(){
+    if(cycle >= 3){
+      label.textContent = 'Prontinho! 😊';
+      circle.classList.remove('breathing');
+      breathingTimeoutId = setTimeout(closeBreathingExercise, 1500);
+      return;
+    }
+    label.textContent = phases[phaseIdx].text;
+    breathingTimeoutId = setTimeout(()=>{
+      phaseIdx++;
+      if(phaseIdx >= phases.length){ phaseIdx = 0; cycle++; }
+      nextPhase();
+    }, phases[phaseIdx].duration);
+  }
+  nextPhase();
+}
+function closeBreathingExercise(){
+  clearTimeout(breathingTimeoutId);
+  document.getElementById('breathingOverlay').classList.remove('open');
+  document.getElementById('breathingCircle').classList.remove('breathing');
+}
+document.getElementById('breathingBtn').addEventListener('click', startBreathingExercise);
+document.getElementById('breathingCloseBtn').addEventListener('click', closeBreathingExercise);
+document.getElementById('breathingOverlay').addEventListener('click', e=>{
+  if(e.target.id === 'breathingOverlay') closeBreathingExercise();
 });
 
 document.getElementById('editBtn').addEventListener('click', ()=>{
