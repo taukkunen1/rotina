@@ -2924,6 +2924,24 @@ function reconcileState(state){
     if(state.history["2026-08-18"]) state.history["2026-08-18"].hair = "washed";
     state.hairCorrectionAug1718Applied = true;
   }
+  if(!state.backfillGapDaysV1Applied){
+    ["2026-08-17","2026-08-18"].forEach(iso=>{
+      if(!state.history[iso] || !state.history[iso].total){
+        const tasks = allTasks(iso);
+        state.history[iso] = {
+          done:0, total:tasks.length, pointsEarnedThatDay:0, perfect:false,
+          screenMinutes:0, periodsCompleted:0,
+          hair: (state.hairByDate && state.hairByDate[iso]) || null,
+        };
+      }
+    });
+    // 19/08 tinha registro, mas com total 0 (bug do mesmo tipo) — recalcula certo
+    if(state.history["2026-08-19"] && !state.history["2026-08-19"].total){
+      const tasks19 = allTasks("2026-08-19");
+      state.history["2026-08-19"].total = tasks19.length;
+    }
+    state.backfillGapDaysV1Applied = true;
+  }
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
   }
@@ -2960,6 +2978,24 @@ function reconcileState(state){
   if(state.lastDate !== todayISO()){
     // fecha o dia anterior no histórico antes de zerar o checklist
     closeOutDay(state, state.lastDate);
+
+    // se ficou mais de um dia sem abrir o app, os dias pulados no meio
+    // nunca tinham registro nenhum — agora registramos como "app não
+    // aberto" (sem tarefa marcada), não como um dia que falhou.
+    if(state.lastDate){
+      let cursor = new Date(state.lastDate+"T00:00:00");
+      cursor.setDate(cursor.getDate()+1);
+      const todayDate = new Date(todayISO()+"T00:00:00");
+      while(cursor < todayDate){
+        const iso = cursor.getFullYear()+"-"+String(cursor.getMonth()+1).padStart(2,'0')+"-"+String(cursor.getDate()).padStart(2,'0');
+        if(!state.history[iso]){
+          const skippedTasks = allTasks(iso);
+          state.history[iso] = { done:0, total:skippedTasks.length, pointsEarnedThatDay:0, perfect:false, screenMinutes:0, periodsCompleted:0, hair:null };
+        }
+        cursor.setDate(cursor.getDate()+1);
+      }
+    }
+
     state.checkedToday = {};
     state.log = [];
     state.lastDate = todayISO();
