@@ -2043,12 +2043,12 @@ const DEFAULT_CONFIG = {
     manha: {
       label: "Manhã", time: "8:20 – 12:00",
       tasks: [
-        { id:"m1", txt:"Arrumar a cama", pts:2, sub:"até às 12h", tier:"responsabilidade" },
+        { id:"m1", txt:"Arrumar a cama", pts:1, sub:"até às 12h", tier:"responsabilidade" },
         { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h", tier:"essencial" },
-        { id:"m3", txt:"Escovar os dentes", pts:2, sub:"até às 12h", tier:"essencial" },
-        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:5, tier:"extra" },
-        { id:"m8", txt:"Arrumar a mochila", pts:2, sub:"até às 12h", tier:"essencial" },
-        { id:"t_djf7hbb", txt:"Levar Lixo", pts:4, sub:"até às 12h", tier:"responsabilidade" },
+        { id:"m3", txt:"Escovar os dentes", pts:1, sub:"até às 12h", tier:"essencial" },
+        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:3, tier:"extra" },
+        { id:"m8", txt:"Arrumar a mochila", pts:1, sub:"até às 12h", tier:"essencial" },
+        { id:"t_djf7hbb", txt:"Levar Lixo", pts:2, sub:"até às 12h", tier:"responsabilidade" },
         { id:"m2", txt:"Beber 1 copo de água", pts:1, sub:"até às 12h", tier:"essencial" },
       ]
     },
@@ -2056,10 +2056,10 @@ const DEFAULT_CONFIG = {
       label: "Tarde", time: "12:00 – 18:00",
       tasks: [
         { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h", external:true, tier:"essencial" },
-        { id:"t3", txt:"Escovar os dentes", pts:2, sub:"até às 18h", tier:"essencial" },
-        { id:"t5", txt:"Arrumar a mochila", pts:2, sub:"até às 18h", tier:"essencial" },
+        { id:"t3", txt:"Escovar os dentes", pts:1, sub:"até às 18h", tier:"essencial" },
+        { id:"t5", txt:"Arrumar a mochila", pts:1, sub:"até às 18h", tier:"essencial" },
         { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 18h", tier:"essencial" },
-        { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h", external:true, tier:"essencial" },
+        { id:"t4", txt:"Ir para a escola", pts:3, sub:"até às 18h", external:true, tier:"essencial" },
         { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h", tier:"essencial" },
       ]
     },
@@ -2070,12 +2070,12 @@ const DEFAULT_CONFIG = {
         { id:"n5_carrinhos", txt:"Guardar os carrinhos", pts:1, fullPenalty:true, sub:"na caixa/prateleira", tier:"responsabilidade" },
         { id:"n5_bolinhas", txt:"Guardar as bolinhas de gude", pts:1, fullPenalty:true, sub:"no potinho", tier:"responsabilidade" },
         { id:"n5_caixas", txt:"Guardar as caixas", pts:1, fullPenalty:true, sub:"no lugar certo ou no lixo", tier:"responsabilidade" },
-        { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:3, fullPenalty:true, sub:"conferência final — nada espalhado", tier:"responsabilidade" },
+        { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:2, fullPenalty:true, sub:"conferência final — nada espalhado", tier:"responsabilidade" },
         { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h", external:true, tier:"essencial" },
-        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4, tier:"essencial" },
-        { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h", tier:"essencial" },
-        { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)", tier:"extra" },
-        { id:"t_ci3brlt", txt:"Ler Livro", pts:4, sub:"3 capítulo do livro de casa (até às 22h)", tier:"extra" },
+        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:2, tier:"essencial" },
+        { id:"n6", txt:"Escovar os dentes", pts:1, sub:"até às 22h", tier:"essencial" },
+        { id:"n7", txt:"Momento Criativo", pts:3, sub:"Desenhar, montar Lego, pintar... (30–40 min)", tier:"extra" },
+        { id:"t_ci3brlt", txt:"Ler Livro", pts:2, sub:"3 capítulo do livro de casa (até às 22h)", tier:"extra" },
         { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h", tier:"essencial" },
       ]
     },
@@ -2087,9 +2087,9 @@ const DEFAULT_CONFIG = {
   editorPin: "",
   badHabits: [],
   rewards: [
-    { id:"r1", txt:"1 hora de tela", cost:90, grantsHours:1, maxPerDay:2 },
-    { id:"r2", txt:"Hot Wheels (brinquedo)", cost:300 },
-    { id:"r3", txt:"Passeio Especial (você escolhe)", cost:500 },
+    { id:"r1", txt:"1 hora de tela", cost:50, grantsHours:1, maxPerDay:2 },
+    { id:"r2", txt:"Hot Wheels (brinquedo)", cost:500 },
+    { id:"r3", txt:"Passeio Especial (você escolhe)", cost:650 },
   ],
   screenDailyLimitHours: 2, // usado pelo timer de jogo diário abaixo
   perfectDayBonusMinutes: 30,
@@ -2100,9 +2100,9 @@ const DEFAULT_CONFIG = {
   // tarefa aparece: manha, tarde ou noite. "Escola" já existe como tarefa
   // fixa lá em cima, então não repetimos ela aqui.
   schedule: [
-    { id:"sc1", label:"Inglês", days:["ter","qui"], start:"09:00", end:"10:00", period:"manha", pts:5 },
-    { id:"sc3", label:"Escoteiros", days:["sab"], start:"13:00", end:"17:30", period:"tarde", pts:5 },
-    { id:"sc4", label:"Jogos em Família", days:["qui"], start:"21:00", end:"23:00", period:"noite", pts:5 },
+    { id:"sc1", label:"Inglês", days:["ter","qui"], start:"09:00", end:"10:00", period:"manha", pts:3 },
+    { id:"sc3", label:"Escoteiros", days:["sab"], start:"13:00", end:"17:30", period:"tarde", pts:3 },
+    { id:"sc4", label:"Jogos em Família", days:["qui"], start:"21:00", end:"23:00", period:"noite", pts:3 },
   ],
 
   // exceções pontuais: um compromisso só naquele dia específico, sem mexer
@@ -2398,7 +2398,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return moveUniformToTardeV1(applyTaskTiersV1(splitBagunçaV1(addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))))))))))));
+  return applyEconomyRebalanceV1(moveUniformToTardeV1(applyTaskTiersV1(splitBagunçaV1(addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))))))))))))));
 }
 
 // Reforça pontos de tarefas mais chatas — roda uma vez só, não desfaz
@@ -2649,6 +2649,46 @@ function moveUniformToTardeV1(cfg){
     }
   });
   cfg.moveUniformToTardeV1Applied = true;
+  return cfg;
+}
+
+// Recalibra a economia inteira pra um mês perfeito valer ~1000 Pacus
+// Points (~R$60), não ~1900 (~R$114) como estava. Reduz os pontos das
+// tarefas proporcionalmente (mantendo o peso relativo entre elas) e
+// ajusta o preço das recompensas: Hot Wheels = R$30 (2 por mês cabem no
+// teto), tempo de tela e passeio em valores compatíveis.
+const TASK_POINTS_V2 = {
+  m1:1, m4:1, m3:1, m5:3, m8:1, t_djf7hbb:2, m2:1,
+  t2:1, t3:1, t5:1, m7:1, t4:3, t1:1,
+  n5_cartas:1, n5_carrinhos:1, n5_bolinhas:1, n5_caixas:1, n5_sala:2,
+  n1:1, n4:2, n6:1, n7:3, t_ci3brlt:2, n2:1,
+};
+const REWARD_COSTS_V2 = { r1:50, r2:500, r3:650 };
+const SCHEDULE_POINTS_V2 = { sc1:3, sc3:3, sc4:3 };
+function applyEconomyRebalanceV1(cfg){
+  if(!cfg || cfg.economyRebalanceV1Applied) return cfg;
+  ['periods','periodsWeekend'].forEach(key=>{
+    const p = cfg[key];
+    if(!p) return;
+    ['manha','tarde','noite'].forEach(period=>{
+      if(p[period] && Array.isArray(p[period].tasks)){
+        p[period].tasks.forEach(t=>{
+          if(TASK_POINTS_V2[t.id] !== undefined) t.pts = TASK_POINTS_V2[t.id];
+        });
+      }
+    });
+  });
+  if(Array.isArray(cfg.rewards)){
+    cfg.rewards.forEach(r=>{
+      if(REWARD_COSTS_V2[r.id] !== undefined) r.cost = REWARD_COSTS_V2[r.id];
+    });
+  }
+  if(Array.isArray(cfg.schedule)){
+    cfg.schedule.forEach(s=>{
+      if(SCHEDULE_POINTS_V2[s.id] !== undefined) s.pts = SCHEDULE_POINTS_V2[s.id];
+    });
+  }
+  cfg.economyRebalanceV1Applied = true;
   return cfg;
 }
 
