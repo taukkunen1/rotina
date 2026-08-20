@@ -1,4 +1,74 @@
-= customTimerRemainingNow(t);
+.screenDailyLimitHours || 2}h por dia.</div>
+      ${locked ? `<div class="game-timer-locked">🔒 Termine as tarefas da Manhã pra desbloquear</div>` : ''}
+      <div class="game-timer-used" id="gameTimerUsed">${remaining > 0 ? `<b>${formatMinSec(remaining)}</b> restantes hoje` : `<b>tempo de hoje acabou</b>`}</div>
+      <div class="game-timer-track"><div class="game-timer-fill ${used>=limit?'over-limit':''}" id="gameTimerBarFill" style="width:${pct}%"></div></div>
+      <button class="game-timer-btn ${running?'running':''}" id="gameTimerToggleBtn" ${locked?'disabled':''}>
+        ${running ? '⏸️ Parar de jogar' : '▶️ Começar a jogar'}
+      </button>
+      ${adultUnlocked ? `<button class="icon-btn" id="gameTimerAdjustBtn" style="margin-top:8px;" title="Ajuste manual do tempo de hoje">⚙️ ajustar tempo de hoje</button>` : ''}
+    </div>
+  `;
+  document.getElementById('gameTimerToggleBtn').addEventListener('click', ()=>{
+    if(gameTimerIsRunning()) stopGameTimer(); else startGameTimer();
+  });
+
+  const adjustBtn = document.getElementById('gameTimerAdjustBtn');
+  if(adjustBtn){
+    adjustBtn.addEventListener('click', ()=>{
+      const currentRemainingMin = Math.round(remaining/60);
+      const raw = prompt('Quantos minutos você quer que sobrem hoje?', String(Math.max(0, currentRemainingMin)));
+      if(raw === null) return;
+      const targetMin = parseInt(raw, 10);
+      if(isNaN(targetMin) || targetMin < 0) return;
+      const deltaSeconds = (targetMin*60) - remaining;
+      addGameTimerBonusHours(deltaSeconds/3600);
+      addLog(`⚙️ tempo de hoje ajustado pra ${targetMin} min restantes`, true);
+      saveState(state);
+      renderGameTimer();
+    });
+  }
+
+  if(running) startGameTimerTicking(); else stopGameTimerTicking();
+}
+
+/* ===================== TIMERS AVULSOS (tempo livre pra qualquer coisa) ===================== */
+let customTimerTickHandle = null;
+
+function findCustomTimer(id){
+  return state.customTimers.find(t=>t.id===id);
+}
+
+function customTimerRemainingNow(t){
+  if(!t.runningSince) return t.remainingSeconds;
+  const elapsed = (Date.now() - t.runningSince)/1000;
+  return Math.max(0, t.remainingSeconds - elapsed);
+}
+
+function setCustomTimerMinutes(id, minutes){
+  const t = findCustomTimer(id);
+  if(!t || t.runningSince) return; // não dá pra mudar enquanto está rodando
+  const secs = Math.max(0, Math.round(minutes*60));
+  t.totalSeconds = secs;
+  t.remainingSeconds = secs;
+  t.finished = false;
+  saveState(state);
+  renderCustomTimers();
+}
+
+function startCustomTimer(id){
+  const t = findCustomTimer(id);
+  if(!t || t.runningSince || t.remainingSeconds <= 0) return;
+  t.runningSince = Date.now();
+  t.finished = false;
+  saveState(state);
+  renderCustomTimers();
+  startCustomTimerTicking();
+}
+
+function pauseCustomTimer(id){
+  const t = findCustomTimer(id);
+  if(!t || !t.runningSince) return;
+  t.remainingSeconds = customTimerRemainingNow(t);
   t.runningSince = null;
   saveState(state);
   renderCustomTimers();
@@ -134,63 +204,4 @@ function getPetCycle(){
   const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
   const start = new Date(startISO+"T00:00:00");
   const end = new Date(endISO+"T00:00:00");
-  const totalDays = Math.max(1, Math.round((end-start)/86400000)+1);
-  return { startISO, endISO, start, end, totalDays };
-}
-
-function computePetStage(){
-  const cycle = getPetCycle();
-  const maxStage = CONFIG.pet.stages.length - 1;
-  const completed = new Set(Array.isArray(state.petCompletedDays) ? state.petCompletedDays : []);
-  const perfectBonus = new Set(Array.isArray(state.petPerfectBonusDays) ? state.petPerfectBonusDays : []);
-  const validDays = [];
-  let bonusDays = 0;
-  for(let i=0;i<cycle.totalDays;i++){
-    const d = new Date(cycle.start);
-    d.setDate(d.getDate()+i);
-    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-    if(completed.has(iso)) validDays.push(iso);
-    if(perfectBonus.has(iso)) bonusDays++;
-  }
-  const completedDays = Math.min(cycle.totalDays, validDays.length + bonusDays);
-  const stageFloat = Math.min(maxStage, completedDays);
-  const stage = Math.min(maxStage, completedDays);
-  const todayHasProgress = hasDayProgress(todayISO());
-  const canGrowToday = todayISO() >= cycle.startISO && todayISO() <= cycle.endISO && todayHasProgress && !completed.has(todayISO());
-  return {
-    stage, stageFloat, unitsCompleted:completedDays, totalUnits:cycle.totalDays,
-    maxStage, daysEquivalent:completedDays, cycleDays:cycle.totalDays,
-    todayPerfect:todayHasProgress, canGrowToday, completedDays:validDays
-  };
-}
-
-function svgAttrs(){
-  return 'viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Evolução do Pacus"';
-}
-
-function buildEggSVG(progress){
-  const p = Math.max(0, Math.min(1, progress));
-  const wobble = Math.sin(p*Math.PI*3)*1.4;
-  const gid = uid('egg');
-  const cracks = [
-    ["M94 80 L106 96 L98 109 L112 125 L103 142", 0.12],
-    ["M80 96 L92 108 L84 122 L96 136", 0.32],
-    ["M124 90 L113 105 L126 117 L116 132 L123 147", 0.52],
-    ["M76 124 L89 131 L82 147", 0.72],
-    ["M132 119 L122 128 L134 141", 0.88]
-  ];
-  const crackSvg = cracks.map(([d,start],i)=>{
-    const opacity = p < start ? 0 : Math.min(1,(p-start)/0.16);
-    return `<path d="${d}" class="egg-crack" stroke="#c9506f" stroke-width="${2+i*.25}" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>`;
-  }).join('');
-  const shellBreak = p > .78 ? `<path d="M62 118 Q100 ${142+p*10} 158 118" stroke="#c9506f" stroke-width="2.4" fill="none" opacity="${(p-.78)/.22}"/>` : '';
-  // silhueta do filhote crescendo por dentro, visível através da casca
-  const embryoOpacity = Math.max(0, p-0.3)*0.55;
-  const embryoScale = 0.5 + p*0.5;
-  return `<svg class="pet-mascot pet-egg" ${svgAttrs()}>
-    <defs>
-      <radialGradient id="${gid}-shell" cx="36%" cy="30%" r="78%">
-        <stop offset="0%" stop-color="#fffaf1"/>
-        <stop offset="55%" stop-color="#f9ecd9"/>
-        <stop offset="100%" stop-color="#eed7bd"/>
-      <
+  c

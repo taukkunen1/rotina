@@ -1,4 +1,68 @@
-tal, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
+dateISO);
+  state.petCompletedDays.sort();
+  state.petLastCompletionISO = dateISO;
+  return true;
+}
+
+// Dia 100% perfeito dá um empurrãozinho A MAIS no crescimento do Pacus,
+// além do dia normal que ele já ganha por ter feito alguma coisa.
+function registerPetPerfectBonus(dateISO){
+  const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
+  const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
+  if(dateISO < startISO || dateISO > endISO) return false;
+  if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
+  if(state.petPerfectBonusDays.includes(dateISO)) return false;
+  state.petPerfectBonusDays.push(dateISO);
+  state.petPerfectBonusDays.sort();
+  return true;
+}
+
+function isDayPerfect(dateISO){
+  if(dateISO === todayISO()){
+    const tasks = allTasks(dateISO);
+    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    return applicable.length > 0 && applicable.every(t=>isCountedDone(state.checkedToday[t.id]));
+  }
+  return !!(state.history[dateISO] && state.history[dateISO].perfect);
+}
+
+// Crescimento não exige dia perfeito, só engajamento real. isDayPerfect
+// continua controlando o bônus de tela e o selo "dia perfeito".
+function hasDayProgress(dateISO){
+  if(dateISO === todayISO()){
+    const tasks = allTasks(dateISO);
+    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    return applicable.some(t=>isCountedDone(state.checkedToday[t.id]));
+  }
+  const entry = state.history[dateISO];
+  return !!(entry && entry.done > 0);
+}
+
+function syncPetCompletionFromDay(dateISO){
+  let grew = false;
+  if(hasDayProgress(dateISO)) grew = registerPetDayCompletion(dateISO) || grew;
+  if(isDayPerfect(dateISO)) grew = registerPetPerfectBonus(dateISO) || grew;
+  return grew;
+}
+
+function closeOutDay(state, dateISO){
+  if(!dateISO) return;
+  const tasks = allTasks(dateISO);
+  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+  const total = applicable.length;
+  const done = applicable.filter(t=>isCountedDone(state.checkedToday[t.id])).length;
+  const pointsEarnedThatDay = tasks.reduce((s,t)=>{
+    const st = state.checkedToday[t.id];
+    if(st === 'done') return s + t.pts;
+    if(st === 'help') return s + taskHelpPoints(t);
+    return s;
+  }, 0);
+  const perfect = total > 0 && done === total;
+  if(done > 0) registerPetDayCompletion(dateISO);
+  if(perfect) registerPetPerfectBonus(dateISO);
+  const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
+  const periodsCompleted = periodsCompletedFrom(state.checkedToday, dateISO);
+  state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
 }
 
 function saveState(state, options={}){
@@ -132,63 +196,4 @@ function mergeRemoteData(remote){
   merged.petPerfectBonusDays = [...new Set([...(remoteState.petPerfectBonusDays||[]), ...(localState.petPerfectBonusDays||[])])].sort();
   merged.historyCorrectionV2Applied = !!(remoteState.historyCorrectionV2Applied || localState.historyCorrectionV2Applied);
   merged.hairByDate = {...(remoteState.hairByDate||{}), ...(localState.hairByDate||{})};
-  merged.totalPoints = Math.max(Number(remoteState.totalPoints)||0, Number(localState.totalPoints)||0);
-  merged.lastSeenPetStage = Math.max(Number(remoteState.lastSeenPetStage)||0, Number(localState.lastSeenPetStage)||0);
-  merged.log = [...(localState.log||[]), ...(remoteState.log||[])].slice(0,30);
-  merged.revision = Math.max(Number(localState.revision)||0, Number(remoteState.revision)||0)+1;
-  merged.updatedAt = new Date().toISOString();
-  const remoteConfig = sanitizeRemoteConfig(remote.config);
-  const localConfigValid = isValidPeriodsConfig(CONFIG);
-  const useRemoteConfig = remoteConfig && (!localConfigValid || localState.updatedAt < (remoteState.updatedAt||''));
-  return {
-    config: useRemoteConfig ? remoteConfig : (localConfigValid ? CONFIG : JSON.parse(JSON.stringify(DEFAULT_CONFIG))),
-    state: merged
-  };
-}
-
-async function autoPullOnStartup(){
-  if(!APPS_SCRIPT_URL) return;
-  suppressAutoPush = true;
-  try{
-    const res = await fetch(DATA_ENDPOINT, {method:'GET', cache:'no-store'});
-    if(res.ok){
-      const backup = await res.json();
-      if(backup && backup.config && backup.state){
-        const localRevision = Number(state.driveRevision)||0;
-        const localDirty = (Number(state.revision)||0) > localRevision;
-        const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
-        if(localDirty && remoteRevision !== localRevision){
-          const merged = mergeRemoteData(backup);
-          CONFIG = merged.config;
-          state = merged.state;
-          state.driveRevision = remoteRevision;
-          saveConfig(CONFIG);
-          saveState(state);
-          render();
-        } else if(remoteRevision >= localRevision){
-          const remoteConfig = sanitizeRemoteConfig(backup.config);
-          if(remoteConfig){
-            CONFIG = remoteConfig;
-            state = reconcileState(backup.state);
-            state.driveRevision = remoteRevision;
-            state.driveLastSyncISO = todayISO();
-            try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(CONFIG)); }catch(e){}
-            try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
-            render();
-          }else{
-            // Nunca substituir uma rotina válida por um backup remoto vazio/incompleto.
-            // O app continua com a configuração local que já funcionava.
-            render();
-          }
-        }
-      }
-    }
-  }catch(err){
-    renderDriveSync();
-  }
-  suppressAutoPush = false;
-}
-
-function addLog(text, isParentAction){
-  const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-  state.log.unshift({ text: time+" — "+text, pare
+  merged.totalPoints = Math.max(Number(remoteState.t

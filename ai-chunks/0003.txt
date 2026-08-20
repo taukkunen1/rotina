@@ -1,5 +1,5 @@
 m);
-    font-size:.9rem;
+    font-size:.82rem;
     line-height:1;
     cursor:pointer;
     font-family:inherit;
@@ -12,8 +12,12 @@ m);
   .mark-btn:hover{ border-color:rgba(242,237,225,.4); color:var(--chalk); transform:scale(1.06); }
   .mark-btn:active{ transform:scale(.92); }
   .mark-done.active{ background:var(--green); border-color:var(--green); color:#132015; font-weight:bold; animation:markPop .3s ease; }
+  .mark-help.active{ background:var(--blue); border-color:var(--blue); color:#0f2733; font-weight:bold; animation:markPop .3s ease; }
   .mark-na.active{ background:var(--chalk-dim); border-color:var(--chalk-dim); color:#1b2e28; font-weight:bold; }
   .mark-x.active{ background:var(--red); border-color:var(--red); color:#2a1414; font-weight:bold; }
+  .task.helped .txt{ color:var(--blue); }
+  .task.helped .pts{ color:var(--blue); border-color:rgba(79,195,247,.4); }
+  .tier-badge{ font-size:.6rem; margin-right:4px; vertical-align:middle; }
   @keyframes markPop{
     0%{ transform:scale(1); }
     40%{ transform:scale(1.35); }
@@ -248,17 +252,4 @@ m);
   .history{ overflow-x:auto; }
   table.history-table{
     width:100%;
-    border-collapse:collapse;
-    font-size:.8rem;
-  }
-  table.history-table th, table.history-table td{
-    padding:8px 10px;
-    text-align:left;
-    border-bottom:1px solid var(--line);
-    white-space:nowrap;
-  }
-  table.history-table th{
-    color:var(--chalk-dim);
-    font-weight:normal;
-    font-size:.68rem;
-    text-transfor
+    bo

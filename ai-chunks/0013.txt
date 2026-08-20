@@ -1,4 +1,63 @@
-nt: !!isParentAction });
+otalPoints)||0, Number(localState.totalPoints)||0);
+  merged.lastSeenPetStage = Math.max(Number(remoteState.lastSeenPetStage)||0, Number(localState.lastSeenPetStage)||0);
+  merged.log = [...(localState.log||[]), ...(remoteState.log||[])].slice(0,30);
+  merged.revision = Math.max(Number(localState.revision)||0, Number(remoteState.revision)||0)+1;
+  merged.updatedAt = new Date().toISOString();
+  const remoteConfig = sanitizeRemoteConfig(remote.config);
+  const localConfigValid = isValidPeriodsConfig(CONFIG);
+  const useRemoteConfig = remoteConfig && (!localConfigValid || localState.updatedAt < (remoteState.updatedAt||''));
+  return {
+    config: useRemoteConfig ? remoteConfig : (localConfigValid ? CONFIG : JSON.parse(JSON.stringify(DEFAULT_CONFIG))),
+    state: merged
+  };
+}
+
+async function autoPullOnStartup(){
+  if(!APPS_SCRIPT_URL) return;
+  suppressAutoPush = true;
+  try{
+    const res = await fetch(DATA_ENDPOINT, {method:'GET', cache:'no-store'});
+    if(res.ok){
+      const backup = await res.json();
+      if(backup && backup.config && backup.state){
+        const localRevision = Number(state.driveRevision)||0;
+        const localDirty = (Number(state.revision)||0) > localRevision;
+        const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
+        if(localDirty && remoteRevision !== localRevision){
+          const merged = mergeRemoteData(backup);
+          CONFIG = merged.config;
+          state = merged.state;
+          state.driveRevision = remoteRevision;
+          saveConfig(CONFIG);
+          saveState(state);
+          render();
+        } else if(remoteRevision >= localRevision){
+          const remoteConfig = sanitizeRemoteConfig(backup.config);
+          if(remoteConfig){
+            CONFIG = remoteConfig;
+            state = reconcileState(backup.state);
+            state.driveRevision = remoteRevision;
+            state.driveLastSyncISO = todayISO();
+            try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(CONFIG)); }catch(e){}
+            try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+            render();
+          }else{
+            // Nunca substituir uma rotina válida por um backup remoto vazio/incompleto.
+            // O app continua com a configuração local que já funcionava.
+            render();
+          }
+        }
+      }
+    }
+  }catch(err){
+    renderDriveSync();
+  }
+  suppressAutoPush = false;
+}
+
+function addLog(text, isParentAction){
+  const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  state.log.unshift({ text: time+" — "+text, parent: !!isParentAction });
   state.log = state.log.slice(0, 30);
 }
 function bumpTotal(delta, anchorEl){
@@ -45,6 +104,13 @@ function notDonePenalty(pts){
 // vez de metade — reforço maior pras tarefas mais chatas/resistidas.
 function taskNotDonePenalty(task){
   return task.fullPenalty ? task.pts : notDonePenalty(task.pts);
+}
+
+// Regra 4: pedir ajuda ou dividir a tarefa continua valendo — metade dos
+// pontos, arredondado pra cima (pedir ajuda direito é uma habilidade,
+// não uma falha).
+function taskHelpPoints(task){
+  return Math.max(1, Math.ceil(task.pts/2));
 }
 
 /* ===================== TIMER DE TEMPO DE JOGO (diário) ===================== */
@@ -155,74 +221,4 @@ function renderGameTimer(){
   el.innerHTML = `
     <div class="game-timer">
       <h3>🎮 Tempo de Jogo</h3>
-      <div class="hint">Cota de ${CONFIG.screenDailyLimitHours || 2}h por dia.</div>
-      ${locked ? `<div class="game-timer-locked">🔒 Termine as tarefas da Manhã pra desbloquear</div>` : ''}
-      <div class="game-timer-used" id="gameTimerUsed">${remaining > 0 ? `<b>${formatMinSec(remaining)}</b> restantes hoje` : `<b>tempo de hoje acabou</b>`}</div>
-      <div class="game-timer-track"><div class="game-timer-fill ${used>=limit?'over-limit':''}" id="gameTimerBarFill" style="width:${pct}%"></div></div>
-      <button class="game-timer-btn ${running?'running':''}" id="gameTimerToggleBtn" ${locked?'disabled':''}>
-        ${running ? '⏸️ Parar de jogar' : '▶️ Começar a jogar'}
-      </button>
-      ${adultUnlocked ? `<button class="icon-btn" id="gameTimerAdjustBtn" style="margin-top:8px;" title="Ajuste manual do tempo de hoje">⚙️ ajustar tempo de hoje</button>` : ''}
-    </div>
-  `;
-  document.getElementById('gameTimerToggleBtn').addEventListener('click', ()=>{
-    if(gameTimerIsRunning()) stopGameTimer(); else startGameTimer();
-  });
-
-  const adjustBtn = document.getElementById('gameTimerAdjustBtn');
-  if(adjustBtn){
-    adjustBtn.addEventListener('click', ()=>{
-      const currentRemainingMin = Math.round(remaining/60);
-      const raw = prompt('Quantos minutos você quer que sobrem hoje?', String(Math.max(0, currentRemainingMin)));
-      if(raw === null) return;
-      const targetMin = parseInt(raw, 10);
-      if(isNaN(targetMin) || targetMin < 0) return;
-      const deltaSeconds = (targetMin*60) - remaining;
-      addGameTimerBonusHours(deltaSeconds/3600);
-      addLog(`⚙️ tempo de hoje ajustado pra ${targetMin} min restantes`, true);
-      saveState(state);
-      renderGameTimer();
-    });
-  }
-
-  if(running) startGameTimerTicking(); else stopGameTimerTicking();
-}
-
-/* ===================== TIMERS AVULSOS (tempo livre pra qualquer coisa) ===================== */
-let customTimerTickHandle = null;
-
-function findCustomTimer(id){
-  return state.customTimers.find(t=>t.id===id);
-}
-
-function customTimerRemainingNow(t){
-  if(!t.runningSince) return t.remainingSeconds;
-  const elapsed = (Date.now() - t.runningSince)/1000;
-  return Math.max(0, t.remainingSeconds - elapsed);
-}
-
-function setCustomTimerMinutes(id, minutes){
-  const t = findCustomTimer(id);
-  if(!t || t.runningSince) return; // não dá pra mudar enquanto está rodando
-  const secs = Math.max(0, Math.round(minutes*60));
-  t.totalSeconds = secs;
-  t.remainingSeconds = secs;
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function startCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t || t.runningSince || t.remainingSeconds <= 0) return;
-  t.runningSince = Date.now();
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-  startCustomTimerTicking();
-}
-
-function pauseCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t || !t.runningSince) return;
-  t.remainingSeconds 
+      <div class="hint">Cota de ${CONFIG

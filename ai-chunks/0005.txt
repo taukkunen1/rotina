@@ -1,4 +1,16 @@
-es breathingScale{
+center; }
+  .breathing-circle{
+    width:110px;
+    height:110px;
+    border-radius:50%;
+    margin:10px auto 22px;
+    background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.3), var(--blue) 75%);
+    transform:scale(.6);
+  }
+  .breathing-circle.breathing{
+    animation:breathingScale 10s ease-in-out 3;
+  }
+  @keyframes breathingScale{
     0%{ transform:scale(.6); }
     40%{ transform:scale(1.15); }
     60%{ transform:scale(1.15); }
@@ -301,15 +313,3 @@ es breathingScale{
       <div style="text-align:center; margin-top:8px; margin-bottom:8px;">
         <button class="icon-btn" id="breathingBtn" title="Uma pausa calma de 30 segundos">🌬️ Pausa pra respirar</button>
       </div>
-
-      <div id="weekendIndicator"></div>
-      <div id="lightDayBanner"></div>
-      <div id="focusCard"></div>
-      <div id="freshStartArea"></div>
-      <div class="periods" id="periods"></div>
-
-      <div id="invisibleWinsCard"></div>
-
-      <section class="hair-section" id="hairSection">
-        <div class="hair-head">
-  

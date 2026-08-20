@@ -1,4 +1,17 @@
-m:uppercase;
+rder-collapse:collapse;
+    font-size:.8rem;
+  }
+  table.history-table th, table.history-table td{
+    padding:8px 10px;
+    text-align:left;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  table.history-table th{
+    color:var(--chalk-dim);
+    font-weight:normal;
+    font-size:.68rem;
+    text-transform:uppercase;
     letter-spacing:.5px;
   }
   table.history-table td.pts-cell{ color:var(--green); }
@@ -306,16 +319,4 @@ m:uppercase;
   }
   .celebration-stage b{ color:var(--green); }
 
-  .breathing-card{ text-align:center; }
-  .breathing-circle{
-    width:110px;
-    height:110px;
-    border-radius:50%;
-    margin:10px auto 22px;
-    background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.3), var(--blue) 75%);
-    transform:scale(.6);
-  }
-  .breathing-circle.breathing{
-    animation:breathingScale 10s ease-in-out 3;
-  }
-  @keyfram
+  .breathing-card{ text-align:

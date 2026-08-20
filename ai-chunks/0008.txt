@@ -1,4 +1,26 @@
-: CONFIG.periods;
+"🍲"], [/bagunça|arrumar/i, "🧹"],
+  [/toalha|cesto|roupa/i, "🧺"], [/tela|jogo|vídeo/i, "📺"],
+  [/dever|tarefa|estud/i, "✏️"], [/dormir|soneca/i, "😴"],
+];
+function taskIcon(txt){
+  for(const [re, icon] of ICON_RULES){ if(re.test(txt)) return icon; }
+  return "⭐";
+}
+
+function isWeekendISO(dateISO){
+  const day = new Date(dateISO+"T00:00:00").getDay();
+  return day === 0 || day === 6;
+}
+
+const WEEKDAY_KEYS = ['dom','seg','ter','qua','qui','sex','sab'];
+const WEEKDAY_LABELS = {dom:'Domingo', seg:'Segunda', ter:'Terça', qua:'Quarta', qui:'Quinta', sex:'Sexta', sab:'Sábado'};
+
+function weekdayKeyFor(dateISO){
+  return WEEKDAY_KEYS[new Date(dateISO+"T00:00:00").getDay()];
+}
+
+function getPeriodsFor(dateISO){
+  const base = (CONFIG.periodsWeekend && isWeekendISO(dateISO)) ? CONFIG.periodsWeekend : CONFIG.periods;
   const weekday = weekdayKeyFor(dateISO);
   const todaysSchedule = (CONFIG.schedule || []).filter(s => s.days && s.days.includes(weekday));
   const todaysExceptions = (CONFIG.scheduleExceptions || []).filter(s => s.date === dateISO);
@@ -14,6 +36,7 @@
       txt: s.label,
       sub: `${s.start}–${s.end}`,
       pts: s.pts != null ? s.pts : 3,
+      tier: 'responsabilidade',
     });
   });
   todaysExceptions.forEach(s=>{
@@ -23,6 +46,7 @@
       txt: s.label,
       sub: `${s.start}–${s.end}`,
       pts: s.pts != null ? s.pts : 3,
+      tier: 'responsabilidade',
     });
   });
   return merged;
@@ -35,6 +59,12 @@ function allTasks(dateISO){
     ...periods.tarde.tasks,
     ...periods.noite.tasks,
   ];
+}
+
+// Regra 4: pedir ajuda / dividir a tarefa também conta como cumprida —
+// não é uma falha, é um jeito válido de fazer.
+function isCountedDone(status){
+  return status === 'done' || status === 'help';
 }
 
 // Reordenação pessoal (autonomia > pontos, segundo os estudos), por
@@ -158,7 +188,7 @@ function renderInvisibleWinsCard(){
   const el = document.getElementById('invisibleWinsCard');
   if(!el) return;
   const tasks = allTasks(todayISO());
-  const doneTasks = tasks.filter(t => state.checkedToday[t.id] === 'done');
+  const doneTasks = tasks.filter(t => isCountedDone(state.checkedToday[t.id]));
   const hasNotDone = Object.values(state.checkedToday).includes('x');
   const recovered = state.freshStartActiveDate === todayISO();
 
@@ -177,24 +207,4 @@ function renderInvisibleWinsCard(){
 
 function moveTaskInOrder(periodKey, tasks, taskId, direction){
   const current = getEffectiveTaskOrder(periodKey, tasks).map(t=>t.id);
-  const idx = current.indexOf(taskId);
-  const swapWith = direction === 'up' ? idx-1 : idx+1;
-  if(idx < 0 || swapWith < 0 || swapWith >= current.length) return;
-  [current[idx], current[swapWith]] = [current[swapWith], current[idx]];
-  if(!state.customTaskOrder) state.customTaskOrder = {};
-  state.customTaskOrder[periodKey] = current;
-  saveState(state);
-}
-
-function stripLegacyHairTask(cfg){
-  // "Cabelo Lavado" virou tarefa duplicada por engano em algum momento —
-  // o controle de cabelo já tem sua própria seção dedicada (🧴 Lavar o
-  // cabelo), então removemos essa tarefa específica se ela aparecer.
-  if(cfg && cfg.periods && cfg.periods.noite && Array.isArray(cfg.periods.noite.tasks)){
-    cfg.periods.noite.tasks = cfg.periods.noite.tasks.filter(t => t.id !== 't_gzba4xs');
-  }
-  if(cfg && cfg.periodsWeekend && cfg.periodsWeekend.noite && Array.isArray(cfg.periodsWeekend.noite.tasks)){
-    cfg.periodsWeekend.noite.tasks = cfg.periodsWeekend.noite.tasks.filter(t => t.id !== 't_gzba4xs');
-  }
-  // senha do site: recurso removido — limpa de qualquer config que já
-  // tinha iss
+  const idx = current.inde

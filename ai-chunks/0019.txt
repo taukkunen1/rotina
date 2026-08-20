@@ -1,4 +1,103 @@
-artDate); d <= today; d.setDate(d.getDate()+1)){
+ById('weeklyNewsDismissBtn').addEventListener('click', ()=>{
+    state.weeklyNewsSeen = true;
+    saveState(state);
+    renderWeeklyNewsAnnouncement();
+  });
+}
+
+function renderBackupReminder(){
+  const el = document.getElementById('backupReminder');
+  if(!el) return;
+
+  const today = todayISO();
+  const daysSinceBackup = state.lastBackupISO ? daysBetween(state.lastBackupISO, today) : Infinity;
+  const dismissed = state.backupReminderDismissedFor === today;
+
+  const shouldShow = daysSinceBackup >= 7 && !dismissed;
+
+  if(!shouldShow){ el.innerHTML=''; return; }
+
+  const msg = state.lastBackupISO
+    ? `Já faz ${daysSinceBackup} dias desde o último backup. Que tal exportar de novo?`
+    : `Vocês ainda não fizeram nenhum backup. Vale exportar um agora pra não perder o progresso.`;
+
+  el.innerHTML = `
+    <div class="backup-reminder">
+      <span>💾 ${msg}</span>
+      <span>
+        <button id="backupReminderExportBtn">exportar agora</button>
+        <button class="dismiss" id="backupReminderDismissBtn">lembrar depois</button>
+      </span>
+    </div>
+  `;
+  document.getElementById('backupReminderExportBtn').addEventListener('click', ()=>{
+    document.getElementById('exportBtn').click();
+  });
+  document.getElementById('backupReminderDismissBtn').addEventListener('click', ()=>{
+    state.backupReminderDismissedFor = today;
+    saveState(state);
+    renderBackupReminder();
+  });
+}
+
+function renderWeeklyReview(){
+  const el = document.getElementById('weeklyReviewSection');
+  if(!el) return;
+
+  const days = [];
+  for(let i=6; i>=0; i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    days.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'));
+  }
+
+  let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0;
+  days.forEach(iso=>{
+    const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
+    if(!entry) return;
+    if(iso !== todayISO()){
+      // dias fechados já têm pointsEarnedThatDay e screenMinutes calculados
+      const full = state.history[iso];
+      if(full){
+        totalPointsWeek += full.pointsEarnedThatDay || 0;
+        totalScreenMin += full.screenMinutes || 0;
+      }
+    }
+    if(entry.total > 0 && entry.perfect) perfectDays++;
+  });
+
+  const rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
+
+  el.innerHTML = `
+    <div class="weekly-review">
+      <div class="wr-head">
+        <span class="wr-range">${rangeLabel}</span>
+      </div>
+      <div class="wr-stats">
+        <div class="wr-stat"><span class="wr-num">${perfectDays}/7</span><span class="wr-label">dias completos</span></div>
+        <div class="wr-stat"><span class="wr-num">${totalPointsWeek}</span><span class="wr-label">Pacus Points ganhos</span></div>
+        <div class="wr-stat"><span class="wr-num">${totalScreenMin}</span><span class="wr-label">min de tela ganhos</span></div>
+      </div>
+    </div>
+  `;
+}
+
+function hairLabel(status){
+  if(status === 'washed') return '<span class="hair-history-washed">💧 Lavou</span>';
+  if(status === 'not-washed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
+  return '<span class="hair-history-unknown">— Não registrado</span>';
+}
+
+let historyShowAll = false;
+
+function renderHistory(){
+  const body = document.getElementById('historyBody');
+  const start = CONFIG.historyStartDate || todayISO();
+  const startDate = new Date(start+"T00:00:00");
+  const today = new Date(todayISO()+"T00:00:00");
+
+  const rows = [];
+  for(let d = new Date(startDate); d <= today; d.setDate(d.getDate()+1)){
     const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
     rows.push(iso);
   }
@@ -14,8 +113,13 @@ artDate); d <= today; d.setDate(d.getDate()+1)){
       const tasks = allTasks();
       const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
       const total = applicable.length;
-      const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-      const pointsEarnedThatDay = tasks.filter(t=>state.checkedToday[t.id]==='done').reduce((s,t)=>s+t.pts,0);
+      const done = applicable.filter(t=>isCountedDone(state.checkedToday[t.id])).length;
+      const pointsEarnedThatDay = tasks.reduce((s,t)=>{
+        const st = state.checkedToday[t.id];
+        if(st === 'done') return s + t.pts;
+        if(st === 'help') return s + taskHelpPoints(t);
+        return s;
+      }, 0);
       const perfect = total>0 && done===total;
       entry = { done, total, pointsEarnedThatDay, perfect, hair:getHairStatus(iso) };
     } else {
@@ -92,88 +196,4 @@ function renderRewards(){
         addLog(`🎮 +${r.grantsHours}h de jogo hoje (bônus da recompensa)`);
       }
       if(!state.gameTimer.redemptions) state.gameTimer.redemptions = {};
-      state.gameTimer.redemptions[r.id] = redeemed + 1;
-
-      saveState(state);
-      bumpTotal(delta, evt.currentTarget);
-      renderRewards();
-      renderLog();
-      renderGameTimer();
-    });
-    rEl.appendChild(div);
-  });
-
-  const noteEl = document.getElementById('pointValueNote');
-  if(noteEl){
-    const brlValue = POINT_VALUE_BRL.toFixed(2).replace('.', ',');
-    const maxBrl = Math.round(MAX_POINTS * POINT_VALUE_BRL);
-    noteEl.textContent = `1 Pacus Point ≈ R$${brlValue} · máximo: ${MAX_POINTS} pontos (~R$${maxBrl})`;
-  }
-}
-
-// Comportamentos positivos espontâneos — cada um já vem com um elogio
-// específico (não genérico), pra reforçar exatamente o que ele fez bem.
-const POSITIVE_BEHAVIORS = [
-  { id:'helped', label:'Ajudou alguém', emoji:'🤝', praise:'Isso foi generosidade de verdade!' },
-  { id:'kind', label:'Foi gentil', emoji:'❤️', praise:'Gentileza gera gentileza!' },
-  { id:'persisted', label:'Não desistiu', emoji:'💪', praise:'Continuou tentando mesmo sendo difícil — isso é persistência!' },
-  { id:'solved', label:'Resolveu um problema', emoji:'🧠', praise:'Pensou e resolveu sozinho — muito bem!' },
-  { id:'initiative', label:'Teve iniciativa', emoji:'🚀', praise:'Não esperou pedirem — tomou a frente!' },
-];
-
-function renderPositiveBehaviors(){
-  const el = document.getElementById('positiveBehaviors');
-  if(!el) return;
-
-  el.innerHTML = `
-    <div class="behavior-grid">
-      ${POSITIVE_BEHAVIORS.map(b => `
-        <div class="behavior-card">
-          <button type="button" class="behavior-btn" data-id="${b.id}">${b.emoji} ${b.label}</button>
-          <div class="behavior-picker" id="behaviorPicker_${b.id}">
-            <input type="text" class="behavior-note" id="behaviorNote_${b.id}" placeholder="detalhe (opcional)" maxlength="60">
-            <div class="behavior-pts-row">
-              <button type="button" class="behavior-pts-btn" data-pts="1">+1</button>
-              <button type="button" class="behavior-pts-btn" data-pts="2">+2</button>
-              <button type="button" class="behavior-pts-btn" data-pts="3">+3</button>
-            </div>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-    ${CONFIG.badHabits.length ? `<div class="behavior-extra-title">outros</div><div class="behavior-extra" id="behaviorExtra"></div>` : ''}
-  `;
-
-  POSITIVE_BEHAVIORS.forEach(b=>{
-    const btn = el.querySelector(`.behavior-btn[data-id="${b.id}"]`);
-    const picker = document.getElementById(`behaviorPicker_${b.id}`);
-    btn.addEventListener('click', ()=>{
-      const isOpen = picker.classList.contains('open');
-      el.querySelectorAll('.behavior-picker.open').forEach(p=>p.classList.remove('open'));
-      if(!isOpen) picker.classList.add('open');
-    });
-    picker.querySelectorAll('.behavior-pts-btn').forEach(ptsBtn=>{
-      ptsBtn.addEventListener('click', (evt)=>{
-        const pts = parseInt(ptsBtn.getAttribute('data-pts'));
-        const noteInput = document.getElementById(`behaviorNote_${b.id}`);
-        const note = noteInput.value.trim();
-        const delta = addPoints(pts);
-        addLog(`${b.emoji} +${pts} Pacus — ${b.praise}${note ? ` (${note})` : ''}`);
-        saveState(state);
-        bumpTotal(delta, btn);
-        fireConfetti(btn, 10);
-        picker.classList.remove('open');
-        noteInput.value = '';
-        renderLog();
-      });
-    });
-  });
-
-  // comportamentos extras que os pais adicionarem no editor, além dos 6 fixos
-  const extraEl = document.getElementById('behaviorExtra');
-  if(extraEl){
-    CONFIG.badHabits.forEach(h=>{
-      const isPositive = h.pts >= 0;
-      const btn = document.createElement('button');
-      btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
-    
+      state.gameTimer.redemptions[r.id] = redee

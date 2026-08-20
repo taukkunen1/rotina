@@ -1,6 +1,26 @@
-o salvo, pra garantir que ninguém peça senha nunca mais.
+xOf(taskId);
+  const swapWith = direction === 'up' ? idx-1 : idx+1;
+  if(idx < 0 || swapWith < 0 || swapWith >= current.length) return;
+  [current[idx], current[swapWith]] = [current[swapWith], current[idx]];
+  if(!state.customTaskOrder) state.customTaskOrder = {};
+  state.customTaskOrder[periodKey] = current;
+  saveState(state);
+}
+
+function stripLegacyHairTask(cfg){
+  // "Cabelo Lavado" virou tarefa duplicada por engano em algum momento —
+  // o controle de cabelo já tem sua própria seção dedicada (🧴 Lavar o
+  // cabelo), então removemos essa tarefa específica se ela aparecer.
+  if(cfg && cfg.periods && cfg.periods.noite && Array.isArray(cfg.periods.noite.tasks)){
+    cfg.periods.noite.tasks = cfg.periods.noite.tasks.filter(t => t.id !== 't_gzba4xs');
+  }
+  if(cfg && cfg.periodsWeekend && cfg.periodsWeekend.noite && Array.isArray(cfg.periodsWeekend.noite.tasks)){
+    cfg.periodsWeekend.noite.tasks = cfg.periodsWeekend.noite.tasks.filter(t => t.id !== 't_gzba4xs');
+  }
+  // senha do site: recurso removido — limpa de qualquer config que já
+  // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return splitBagunçaV1(addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))))))))));
+  return applyTaskTiersV1(splitBagunçaV1(addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))))))))))));
 }
 
 // Reforça pontos de tarefas mais chatas — roda uma vez só, não desfaz
@@ -188,35 +208,4 @@ function splitBagunçaV1(cfg){
     { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:3, fullPenalty:true, sub:"conferência final — nada espalhado" },
   ];
   ['periods','periodsWeekend'].forEach(key=>{
-    const p = cfg[key];
-    if(p && p.noite && Array.isArray(p.noite.tasks)){
-      const idx = p.noite.tasks.findIndex(t=>t.id === 'n5');
-      if(idx >= 0){
-        p.noite.tasks.splice(idx, 1, ...newTasks);
-      } else if(!p.noite.tasks.some(t=>t.id === 'n5_sala')){
-        p.noite.tasks.unshift(...newTasks);
-      }
-    }
-  });
-  cfg.splitBagunçaV1Applied = true;
-  return cfg;
-}
-
-function loadConfig(){
-  try{
-    const raw = localStorage.getItem(STORAGE_CONFIG_KEY);
-    if(raw) return stripLegacyHairTask(JSON.parse(raw));
-  }catch(e){}
-  return stripLegacyHairTask(JSON.parse(JSON.stringify(DEFAULT_CONFIG)));
-}
-function saveConfig(cfg){
-  try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(cfg)); }catch(e){}
-  scheduleAutoPush();
-}
-
-let TEST_DATE_OVERRIDE = null; // string ISO "yyyy-mm-dd" ou null (usa a data real do sistema)
-// IMPORTANTE: o modo de teste nunca fica salvo entre aberturas do arquivo —
-// toda vez que a página abre, começa sempre na data real do sistema.
-try{ localStorage.removeItem('hector_rotina_testdate_v1'); }catch(e){}
-
-function todayISO(){
+   

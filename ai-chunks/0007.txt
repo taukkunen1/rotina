@@ -1,4 +1,13 @@
-   <div class="hint">PIN pra pedir antes de abrir "Editar tudo" — protege de mudanças acidentais.</div>
+"hint">Cota diária de tempo de jogo.</div>
+      <div class="edit-row">
+        <label style="flex:1; font-size:.85rem;">Horas de jogo por dia</label>
+        <input type="number" min="0" step="0.5" id="gameLimitInput" style="width:70px;">
+      </div>
+    </div>
+
+    <div class="editor-section">
+      <h3>🔒 Segurança</h3>
+      <div class="hint">PIN pra pedir antes de abrir "Editar tudo" — protege de mudanças acidentais.</div>
       <div class="edit-row">
         <input type="text" inputmode="numeric" id="editorPinInput" placeholder="ex: 1234 (deixe vazio pra não pedir PIN)" maxlength="8">
       </div>
@@ -20,40 +29,40 @@ const DEFAULT_CONFIG = {
     manha: {
       label: "Manhã", time: "8:20 – 12:00",
       tasks: [
-        { id:"m1", txt:"Arrumar a cama", pts:2, sub:"até às 12h" },
-        { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h" },
-        { id:"m3", txt:"Escovar os dentes", pts:2, sub:"até às 12h" },
-        { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 12h" },
-        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:5 },
-        { id:"m8", txt:"Arrumar a mochila", pts:2, sub:"até às 12h" },
-        { id:"t_djf7hbb", txt:"Levar Lixo", pts:4, sub:"até às 12h" },
-        { id:"m2", txt:"Beber 1 copo de água", pts:1, sub:"até às 12h" },
+        { id:"m1", txt:"Arrumar a cama", pts:2, sub:"até às 12h", tier:"responsabilidade" },
+        { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h", tier:"essencial" },
+        { id:"m3", txt:"Escovar os dentes", pts:2, sub:"até às 12h", tier:"essencial" },
+        { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 12h", tier:"essencial" },
+        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:5, tier:"extra" },
+        { id:"m8", txt:"Arrumar a mochila", pts:2, sub:"até às 12h", tier:"essencial" },
+        { id:"t_djf7hbb", txt:"Levar Lixo", pts:4, sub:"até às 12h", tier:"responsabilidade" },
+        { id:"m2", txt:"Beber 1 copo de água", pts:1, sub:"até às 12h", tier:"essencial" },
       ]
     },
     tarde: {
       label: "Tarde", time: "12:00 – 18:00",
       tasks: [
-        { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h", external:true },
-        { id:"t3", txt:"Escovar os dentes", pts:2, sub:"até às 18h" },
-        { id:"t5", txt:"Arrumar a mochila", pts:2, sub:"até às 18h" },
-        { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h", external:true },
-        { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h" },
+        { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h", external:true, tier:"essencial" },
+        { id:"t3", txt:"Escovar os dentes", pts:2, sub:"até às 18h", tier:"essencial" },
+        { id:"t5", txt:"Arrumar a mochila", pts:2, sub:"até às 18h", tier:"essencial" },
+        { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h", external:true, tier:"essencial" },
+        { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h", tier:"essencial" },
       ]
     },
     noite: {
       label: "Noite", time: "18:00 – 22:00",
       tasks: [
-        { id:"n5_cartas", txt:"Guardar as cartas de bafo", pts:1, fullPenalty:true, sub:"na caixinha delas" },
-        { id:"n5_carrinhos", txt:"Guardar os carrinhos", pts:1, fullPenalty:true, sub:"na caixa/prateleira" },
-        { id:"n5_bolinhas", txt:"Guardar as bolinhas de gude", pts:1, fullPenalty:true, sub:"no potinho" },
-        { id:"n5_caixas", txt:"Guardar as caixas", pts:1, fullPenalty:true, sub:"no lugar certo ou no lixo" },
-        { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:3, fullPenalty:true, sub:"conferência final — nada espalhado" },
-        { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h", external:true },
-        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4 },
-        { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h" },
-        { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" },
-        { id:"t_ci3brlt", txt:"Ler Livro", pts:4, sub:"3 capítulo do livro de casa (até às 22h)" },
-        { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h" },
+        { id:"n5_cartas", txt:"Guardar as cartas de bafo", pts:1, fullPenalty:true, sub:"na caixinha delas", tier:"responsabilidade" },
+        { id:"n5_carrinhos", txt:"Guardar os carrinhos", pts:1, fullPenalty:true, sub:"na caixa/prateleira", tier:"responsabilidade" },
+        { id:"n5_bolinhas", txt:"Guardar as bolinhas de gude", pts:1, fullPenalty:true, sub:"no potinho", tier:"responsabilidade" },
+        { id:"n5_caixas", txt:"Guardar as caixas", pts:1, fullPenalty:true, sub:"no lugar certo ou no lixo", tier:"responsabilidade" },
+        { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:3, fullPenalty:true, sub:"conferência final — nada espalhado", tier:"responsabilidade" },
+        { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h", external:true, tier:"essencial" },
+        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4, tier:"essencial" },
+        { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h", tier:"essencial" },
+        { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)", tier:"extra" },
+        { id:"t_ci3brlt", txt:"Ler Livro", pts:4, sub:"3 capítulo do livro de casa (até às 22h)", tier:"extra" },
+        { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h", tier:"essencial" },
       ]
     },
   },
@@ -144,26 +153,4 @@ const ICON_RULES = [
   [/cama/i, "🛏️"], [/água/i, "💧"], [/dente/i, "🦷"], [/rosto|banho/i, "🧼"],
   [/duolingo|inglês|idioma/i, "🗣️"], [/ler|livro|capítulo/i, "📖"],
   [/uniforme|vestir/i, "👕"], [/mochila/i, "🎒"], [/almoç/i, "🍽️"],
-  [/escola/i, "🏫"], [/jantar/i, "🍲"], [/bagunça|arrumar/i, "🧹"],
-  [/toalha|cesto|roupa/i, "🧺"], [/tela|jogo|vídeo/i, "📺"],
-  [/dever|tarefa|estud/i, "✏️"], [/dormir|soneca/i, "😴"],
-];
-function taskIcon(txt){
-  for(const [re, icon] of ICON_RULES){ if(re.test(txt)) return icon; }
-  return "⭐";
-}
-
-function isWeekendISO(dateISO){
-  const day = new Date(dateISO+"T00:00:00").getDay();
-  return day === 0 || day === 6;
-}
-
-const WEEKDAY_KEYS = ['dom','seg','ter','qua','qui','sex','sab'];
-const WEEKDAY_LABELS = {dom:'Domingo', seg:'Segunda', ter:'Terça', qua:'Quarta', qui:'Quinta', sex:'Sexta', sab:'Sábado'};
-
-function weekdayKeyFor(dateISO){
-  return WEEKDAY_KEYS[new Date(dateISO+"T00:00:00").getDay()];
-}
-
-function getPeriodsFor(dateISO){
-  const base = (CONFIG.periodsWeekend && isWeekendISO(dateISO)) ? CONFIG.periodsWeekend 
+  [/escola/i, "🏫"], [/jantar/i, 

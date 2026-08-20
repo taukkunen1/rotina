@@ -1,4 +1,15 @@
-        <div class="hair-title">🧴 Lavar o cabelo</div>
+
+      <div id="weekendIndicator"></div>
+      <div id="lightDayBanner"></div>
+      <div id="focusCard"></div>
+      <div id="freshStartArea"></div>
+      <div class="periods" id="periods"></div>
+
+      <div id="invisibleWinsCard"></div>
+
+      <section class="hair-section" id="hairSection">
+        <div class="hair-head">
+          <div class="hair-title">🧴 Lavar o cabelo</div>
         </div>
         <div class="hair-actions">
           <button type="button" class="hair-btn" id="hairWashedBtn">💧 Lavei o cabelo</button>
@@ -188,13 +199,4 @@
 
     <div class="editor-section">
       <h3>🎮 Tempo de Jogo</h3>
-      <div class="hint">Cota diária de tempo de jogo.</div>
-      <div class="edit-row">
-        <label style="flex:1; font-size:.85rem;">Horas de jogo por dia</label>
-        <input type="number" min="0" step="0.5" id="gameLimitInput" style="width:70px;">
-      </div>
-    </div>
-
-    <div class="editor-section">
-      <h3>🔒 Segurança</h3>
-   
+      <div class=
