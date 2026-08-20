@@ -1,4 +1,7 @@
-+ delta;
+row.querySelectorAll('.step-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const delta = parseInt(btn.getAttribute('data-step'));
+      const next = (obj[field]||0) + delta;
       obj[field] = allowNegative ? next : Math.max(0, next);
       input.value = obj[field];
     });
@@ -182,8 +185,4 @@ document.getElementById('breathingOverlay').addEventListener('click', e=>{
   if(e.target.id === 'breathingOverlay') closeBreathingExercise();
 });
 
-document.getElementById('editBtn').addEventListener('click', ()=>{
-  if(CONFIG.editorPin){
-    const entered = prompt('Digite o PIN pra editar:');
-    if(entered === null) return; // cancelou
-    if(entered !== CONFIG.edito
+document.getElementById('editBtn').add

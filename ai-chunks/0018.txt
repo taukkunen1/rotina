@@ -1,4 +1,9 @@
-plicable.length === 0){ progressMsg = 'nada marcado ainda'; }
+t.id])).length;
+    const remaining = applicable.length - doneCount;
+    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
+
+    let progressMsg;
+    if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
     else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
     else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
     else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
@@ -164,11 +169,4 @@ function renderTestPanel(){
         <button class="icon-btn" id="testNextDayBtn">dia seguinte ▶</button>
         <input type="date" id="testDatePicker" value="${todayISO()}">
         <button class="icon-btn" id="testGoDateBtn">ir pra essa data</button>
-        <button class="icon-btn danger" id="testResetDateBtn">voltar pra data real</button>
-      </div>
-    </div>
-  `;
-
-  document.getElementById('testCompleteDayBtn').addEventListener('click', ()=>{
-    allTasks().forEach(t=>{
-   
+        <button class="icon-btn danger" id="test

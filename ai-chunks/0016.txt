@@ -1,4 +1,5 @@
-stroke="#ef8fb3" stroke-width="3" fill="none" stroke-linecap="round"/>
+g class="pacus-gill" style="animation-delay:${delay}s; transform-origin:${146+i*2}px ${y}px;">
+      <path d="M${146+i*2} ${y} Q ${160+len*0.6} ${y-len*0.5} ${170+len/2} ${y-len*0.15}" stroke="#ef8fb3" stroke-width="3" fill="none" stroke-linecap="round"/>
       <path d="M${146+i*2} ${y} Q ${162+len*0.5} ${y+len*0.15} ${172+len/2} ${y+len*0.35}" stroke="#f3a7c6" stroke-width="2.3" fill="none" stroke-linecap="round"/>
     </g>`;
   }
@@ -176,6 +177,4 @@ function renderPet(){
     [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
   ];
   const milestoneHtml = milestones.map(([day,label])=>{
-    const active = daysEquivalent >= day;
-    const current = stage >= day && (stage === day || (stage > day && day === 23));
-    return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label} <
+    const active = daysEquivalent >= 

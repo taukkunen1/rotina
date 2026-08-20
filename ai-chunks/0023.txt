@@ -1,4 +1,8 @@
-rPin){
+EventListener('click', ()=>{
+  if(CONFIG.editorPin){
+    const entered = prompt('Digite o PIN pra editar:');
+    if(entered === null) return; // cancelou
+    if(entered !== CONFIG.editorPin){
       alert('PIN incorreto.');
       return;
     }
@@ -182,9 +186,4 @@ function renderDriveSync(){
   if(!configured){
     statusHtml = `Ainda não configurado neste arquivo.`;
     actionsHtml = `
-      <button class="icon-btn" id="driveSetupInfoBtn">como configurar</button>
-      <button class="icon-btn" id="driveCopyCodeBtn">📋 ver código do Apps Script</button>
-    `;
-  } else {
-    statusHtml = state.driveLastSyncISO
-      ? `Sincronizad
+      <button class="icon-btn" id="driveSetupInfoBtn">como con

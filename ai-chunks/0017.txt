@@ -1,4 +1,6 @@
-small>dia ${day}</small></span>`;
+day;
+    const current = stage >= day && (stage === day || (stage > day && day === 23));
+    return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label} <small>dia ${day}</small></span>`;
   }).join('');
 
   let caption;
@@ -188,9 +190,4 @@ function render(){
     div.className = 'period ' + key;
 
     const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    const doneCount = applicable.filter(t=>isCountedDone(state.checkedToday[t.id])).length;
-    const remaining = applicable.length - doneCount;
-    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
-
-    let progressMsg;
-    if(ap
+    const doneCount = applicable.filter(t=>isCountedDone(state.checkedToday[

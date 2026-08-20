@@ -1,4 +1,8 @@
-dChild(piece);
+ot', (Math.random()*360)+'deg');
+    piece.style.left = originX+'px';
+    piece.style.top = originY+'px';
+    piece.style.background = colors[i % colors.length];
+    document.body.appendChild(piece);
     setTimeout(()=>piece.remove(), 950);
   }
 }
@@ -179,7 +183,4 @@ function wireStepper(row, obj, field, allowNegative){
     const v = parseInt(e.target.value)||0;
     obj[field] = allowNegative ? v : Math.max(0, v);
   });
-  row.querySelectorAll('.step-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const delta = parseInt(btn.getAttribute('data-step'));
-      const next = (obj[field]||0) 
+  

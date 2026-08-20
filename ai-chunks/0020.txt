@@ -1,4 +1,6 @@
-matDateBR(iso)}${isToday?' (hoje)':''}</td>
+!adultUnlocked) ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
+    return `<tr${isToday?' class="today-row"':''}>
+      <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
       <td>${entry.done}/${entry.total}${perfectBadge}</td>
       <td class="pts-cell">${entry.pointsEarnedThatDay}</td>
       <td>${hairLabel(hair)}</td>
@@ -179,8 +181,4 @@ function fireConfetti(originEl, count){
     const dist = 60 + Math.random()*90;
     piece.style.setProperty('--dx', (Math.cos(angle)*dist)+'px');
     piece.style.setProperty('--dy', (Math.sin(angle)*dist - 40)+'px');
-    piece.style.setProperty('--rot', (Math.random()*360)+'deg');
-    piece.style.left = originX+'px';
-    piece.style.top = originY+'px';
-    piece.style.background = colors[i % colors.length];
-    document.body.appen
+    piece.style.setProperty('--r
