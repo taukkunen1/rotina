@@ -15,26 +15,19 @@ rder-collapse:collapse;
     letter-spacing:.5px;
   }
   table.history-table td.pts-cell{ color:var(--green); }
-  .badge-perfect{
+  .badge-perfect, .badge-almost, .badge-good, .badge-progress, .badge-started{
     display:inline-block;
-    background:rgba(255,217,61,.15);
-    color:var(--yellow);
-    border:1px solid rgba(255,217,61,.4);
     border-radius:999px;
     padding:1px 8px;
     font-size:.68rem;
     margin-left:6px;
+    border:1px solid;
   }
-  .badge-almost{
-    display:inline-block;
-    background:rgba(79,195,247,.15);
-    color:var(--blue);
-    border:1px solid rgba(79,195,247,.4);
-    border-radius:999px;
-    padding:1px 8px;
-    font-size:.68rem;
-    margin-left:6px;
-  }
+  .badge-perfect{ background:rgba(255,217,61,.15); color:var(--yellow); border-color:rgba(255,217,61,.4); }
+  .badge-almost{ background:rgba(79,195,247,.15); color:var(--blue); border-color:rgba(79,195,247,.4); }
+  .badge-good{ background:rgba(95,216,117,.15); color:var(--green); border-color:rgba(95,216,117,.4); }
+  .badge-progress{ background:rgba(255,159,67,.15); color:var(--orange); border-color:rgba(255,159,67,.4); }
+  .badge-started{ background:rgba(255,126,185,.15); color:var(--pink); border-color:rgba(255,126,185,.4); }
   tr.today-row td{ color:var(--chalk); font-weight:bold; }
   .edit-day-btn{
     padding:3px 7px;
@@ -307,16 +300,4 @@ rder-collapse:collapse;
   }
   .celebration-mascot .pet-mascot{ width:100%; height:100%; }
   .celebration-title{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-size:1.5rem;
-    color:var(--yellow);
-    margin-bottom:6px;
-  }
-  .celebration-stage{
-    font-size:1rem;
-    color:var(--chalk);
-    margin-bottom:18px;
-  }
-  .celebration-stage b{ color:var(--green); }
-
-  .breathing-card{ text-align:
+    font-family:"Segoe P

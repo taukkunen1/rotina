@@ -1,4 +1,8 @@
-d'].forEach(key=>{
+potinho" },
+    { id:"n5_caixas", txt:"Guardar as caixas", pts:1, fullPenalty:true, sub:"no lugar certo ou no lixo" },
+    { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:3, fullPenalty:true, sub:"conferência final — nada espalhado" },
+  ];
+  ['periods','periodsWeekend'].forEach(key=>{
     const p = cfg[key];
     if(p && p.noite && Array.isArray(p.noite.tasks)){
       const idx = p.noite.tasks.findIndex(t=>t.id === 'n5');
@@ -195,10 +199,4 @@ function applyHistoryCorrection_v2(state){
       perfect: true,
       screenMinutes: CONFIG.perfectDayBonusMinutes || 30,
       periodsCompleted: 3,
-      hair: hairByDay[iso],
-    };
-    state.hairByDate[iso] = hairByDay[iso];
-
-    if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
-    if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
-    if(!state.petPerfectBonusDays.inc
+    

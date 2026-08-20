@@ -1,4 +1,24 @@
-figurar</button>
+na-hector-backup-\d{4}-\d{2}-\d{2}[.]json$/.test(f.getName())) allBackups.push(f);
+  }
+  allBackups.sort(function(a,b){ return b.getDateCreated().getTime() - a.getDateCreated().getTime(); });
+  for (var i=30; i<allBackups.length; i++) allBackups[i].setTrashed(true);
+
+  return ContentService.createTextOutput(JSON.stringify({ok:true, revision:nextRevision})).setMimeType(ContentService.MimeType.JSON);
+}`;
+
+function renderDriveSync(){
+  const el = document.getElementById('driveSyncSection');
+  if(!el) return;
+  if(!adultUnlocked){ el.innerHTML=''; return; }
+
+  const configured = !!APPS_SCRIPT_URL;
+
+  let statusHtml, actionsHtml;
+
+  if(!configured){
+    statusHtml = `Ainda não configurado neste arquivo.`;
+    actionsHtml = `
+      <button class="icon-btn" id="driveSetupInfoBtn">como configurar</button>
       <button class="icon-btn" id="driveCopyCodeBtn">📋 ver código do Apps Script</button>
     `;
   } else {

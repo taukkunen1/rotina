@@ -1,4 +1,26 @@
-row.querySelectorAll('.step-btn').forEach(btn=>{
+th) return;
+        [list[i], list[swapWith]] = [list[swapWith], list[i]];
+        renderEditorPeriod(key, elId, periodsObj);
+      });
+    });
+    el.appendChild(row);
+  });
+}
+
+function stepperHTML(field, value, allowNegative){
+  return `<span class="stepper">
+    <button type="button" class="step-btn" data-step="-1" title="menos">−</button>
+    <input type="number" ${allowNegative?'':'min="0"'} value="${value}" data-field="${field}">
+    <button type="button" class="step-btn" data-step="1" title="mais">+</button>
+  </span>`;
+}
+function wireStepper(row, obj, field, allowNegative){
+  const input = row.querySelector(`[data-field=${field}]`);
+  input.addEventListener('input', e=>{
+    const v = parseInt(e.target.value)||0;
+    obj[field] = allowNegative ? v : Math.max(0, v);
+  });
+  row.querySelectorAll('.step-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const delta = parseInt(btn.getAttribute('data-step'));
       const next = (obj[field]||0) + delta;
@@ -165,24 +187,4 @@ function startBreathingExercise(){
       breathingTimeoutId = setTimeout(closeBreathingExercise, 1500);
       return;
     }
-    label.textContent = phases[phaseIdx].text;
-    breathingTimeoutId = setTimeout(()=>{
-      phaseIdx++;
-      if(phaseIdx >= phases.length){ phaseIdx = 0; cycle++; }
-      nextPhase();
-    }, phases[phaseIdx].duration);
-  }
-  nextPhase();
-}
-function closeBreathingExercise(){
-  clearTimeout(breathingTimeoutId);
-  document.getElementById('breathingOverlay').classList.remove('open');
-  document.getElementById('breathingCircle').classList.remove('breathing');
-}
-document.getElementById('breathingBtn').addEventListener('click', startBreathingExercise);
-document.getElementById('breathingCloseBtn').addEventListener('click', closeBreathingExercise);
-document.getElementById('breathingOverlay').addEventListener('click', e=>{
-  if(e.target.id === 'breathingOverlay') closeBreathingExercise();
-});
-
-document.getElementById('editBtn').add
+    label.textContent = phases[phaseIdx].text

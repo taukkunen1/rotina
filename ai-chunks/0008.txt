@@ -1,4 +1,9 @@
-"🍲"], [/bagunça|arrumar/i, "🧹"],
+itura rápida)
+const ICON_RULES = [
+  [/cama/i, "🛏️"], [/água/i, "💧"], [/dente/i, "🦷"], [/rosto|banho/i, "🧼"],
+  [/duolingo|inglês|idioma/i, "🗣️"], [/ler|livro|capítulo/i, "📖"],
+  [/uniforme|vestir/i, "👕"], [/mochila/i, "🎒"], [/almoç/i, "🍽️"],
+  [/escola/i, "🏫"], [/jantar/i, "🍲"], [/bagunça|arrumar/i, "🧹"],
   [/toalha|cesto|roupa/i, "🧺"], [/tela|jogo|vídeo/i, "📺"],
   [/dever|tarefa|estud/i, "✏️"], [/dormir|soneca/i, "😴"],
 ];
@@ -199,12 +204,4 @@ function renderInvisibleWinsCard(){
 
   el.innerHTML = `
     <div class="wins-card">
-      <div class="wins-title">🌟 Coisas que você conseguiu hoje</div>
-      <ul class="wins-list">${items.join('')}</ul>
-    </div>
-  `;
-}
-
-function moveTaskInOrder(periodKey, tasks, taskId, direction){
-  const current = getEffectiveTaskOrder(periodKey, tasks).map(t=>t.id);
-  const idx = current.inde
+      <div class="wins-ti

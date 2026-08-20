@@ -1,3 +1,10 @@
+v>
+
+      <section class="pet-section" id="petSection"></section>
+
+      <div style="text-align:center; margin-top:8px; margin-bottom:8px;">
+        <button class="icon-btn" id="breathingBtn" title="Uma pausa calma de 30 segundos">🌬️ Pausa pra respirar</button>
+      </div>
 
       <div id="weekendIndicator"></div>
       <div id="lightDayBanner"></div>
@@ -192,11 +199,4 @@
 
     <div class="editor-section">
       <h3>📅 Compromissos Fixos</h3>
-      <div class="hint">Aparecem na lista do dia certo e valem pontos como qualquer tarefa.</div>
-      <div id="editSchedule"></div>
-      <button class="add-row-btn" data-add="schedule">+ adicionar compromisso</button>
-    </div>
-
-    <div class="editor-section">
-      <h3>🎮 Tempo de Jogo</h3>
-      <div class=
+      <div class="hint">Aparecem na lis

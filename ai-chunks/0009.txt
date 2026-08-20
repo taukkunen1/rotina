@@ -1,4 +1,12 @@
-xOf(taskId);
+tle">🌟 Coisas que você conseguiu hoje</div>
+      <ul class="wins-list">${items.join('')}</ul>
+    </div>
+  `;
+}
+
+function moveTaskInOrder(periodKey, tasks, taskId, direction){
+  const current = getEffectiveTaskOrder(periodKey, tasks).map(t=>t.id);
+  const idx = current.indexOf(taskId);
   const swapWith = direction === 'up' ? idx-1 : idx+1;
   if(idx < 0 || swapWith < 0 || swapWith >= current.length) return;
   [current[idx], current[swapWith]] = [current[swapWith], current[idx]];
@@ -203,8 +211,4 @@ function splitBagunçaV1(cfg){
   const newTasks = [
     { id:"n5_cartas", txt:"Guardar as cartas de bafo", pts:1, fullPenalty:true, sub:"na caixinha delas" },
     { id:"n5_carrinhos", txt:"Guardar os carrinhos", pts:1, fullPenalty:true, sub:"na caixa/prateleira" },
-    { id:"n5_bolinhas", txt:"Guardar as bolinhas de gude", pts:1, fullPenalty:true, sub:"no potinho" },
-    { id:"n5_caixas", txt:"Guardar as caixas", pts:1, fullPenalty:true, sub:"no lugar certo ou no lixo" },
-    { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:3, fullPenalty:true, sub:"conferência final — nada espalhado" },
-  ];
-  ['periods','periodsWeeken
+    { id:"n5_bolinhas", txt:"Guardar as bolinhas de gude", pts:1, fullPenalty:true, sub:"no 

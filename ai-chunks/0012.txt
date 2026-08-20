@@ -1,4 +1,11 @@
-tDate > realToday){ state.lastDate = realToday; cleaned = true; }
+rescimento do Pacus ou bagunce as tabelas depois
+  let cleaned = false;
+  if(!TEST_DATE_OVERRIDE){
+    const realToday = todayISO();
+    Object.keys(state.history).forEach(iso=>{
+      if(iso > realToday){ delete state.history[iso]; cleaned = true; }
+    });
+    if(state.lastDate > realToday){ state.lastDate = realToday; cleaned = true; }
   }
 
   if(state.lastDate !== todayISO()){
@@ -185,9 +192,4 @@ async function doAutoPush(){
       state.driveRevision = Number(result.revision)||state.driveRevision;
       state.driveLastSyncISO = todayISO();
       state.driveConflictCount = 0;
-      try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
-      renderDriveSync();
-    } else if(result.conflict && result.data){
-      state.driveConflictCount = (Number(state.driveConflictCount)||0)+1;
-      const server = result.data;
-      const merged = mergeRemoteData(server)
+      try{ localStorage.setItem(STOR

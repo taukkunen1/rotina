@@ -1,4 +1,23 @@
-!adultUnlocked) ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
+= 'help') return s + taskHelpPoints(t);
+        return s;
+      }, 0);
+      const perfect = total>0 && done===total;
+      entry = { done, total, pointsEarnedThatDay, perfect, hair:getHairStatus(iso) };
+    } else {
+      entry = state.history[iso];
+    }
+    const hair = getHairStatus(iso) || (entry && entry.hair) || null;
+    if(!entry){
+      return `<tr${isToday?' class="today-row"':''}>
+        <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
+        <td>—</td>
+        <td class="pts-cell">—</td>
+        <td>${hairLabel(hair)}</td>
+        <td>${(isToday||!adultUnlocked)?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
+      </tr>`;
+    }
+    const perfectBadge = dayQualityBadge(entry);
+    const editCell = (isToday||!adultUnlocked) ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
     return `<tr${isToday?' class="today-row"':''}>
       <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
       <td>${entry.done}/${entry.total}${perfectBadge}</td>
@@ -162,23 +181,4 @@ function renderLog(){
   const visible = adultUnlocked ? entries : entries.filter(l => !l.parent);
   logEl.innerHTML = visible.length
     ? visible.map(l=>`<div>${l.text}</div>`).join('')
-    : '<div>Nada ainda hoje — bora começar!</div>';
-}
-
-function fireConfetti(originEl, count){
-  count = count || 14;
-  const colors = ['#ffd93d','#ff7eb9','#4fc3f7','#ff9f43','#5fd875'];
-  const rect = originEl && originEl.getBoundingClientRect
-    ? originEl.getBoundingClientRect()
-    : { left: window.innerWidth/2, top: window.innerHeight/2, width:0, height:0 };
-  const originX = rect.left + rect.width/2;
-  const originY = rect.top + rect.height/2;
-
-  for(let i=0;i<count;i++){
-    const piece = document.createElement('span');
-    piece.className = 'confetti-piece';
-    const angle = Math.random()*Math.PI*2;
-    const dist = 60 + Math.random()*90;
-    piece.style.setProperty('--dx', (Math.cos(angle)*dist)+'px');
-    piece.style.setProperty('--dy', (Math.sin(angle)*dist - 40)+'px');
-    piece.style.setProperty('--r
+    : '<div>Nada ainda hoje — bora 

@@ -1,4 +1,8 @@
-ResetDateBtn">voltar pra data real</button>
+>
+        <button class="icon-btn" id="testNextDayBtn">dia seguinte ▶</button>
+        <input type="date" id="testDatePicker" value="${todayISO()}">
+        <button class="icon-btn" id="testGoDateBtn">ir pra essa data</button>
+        <button class="icon-btn danger" id="testResetDateBtn">voltar pra data real</button>
       </div>
     </div>
   `;
@@ -152,6 +156,19 @@ function renderWeeklyReview(){
   `;
 }
 
+// Escala de mensagens pro dia — em vez de "tudo ou nada" (perfeito ou
+// nada), reconhece o esforço em vários níveis.
+function dayQualityBadge(entry){
+  if(!entry || !entry.total) return '';
+  const pct = entry.done / entry.total;
+  if(entry.perfect) return '<span class="badge-perfect">🎉 dia perfeito</span>';
+  if(entry.total > 0 && entry.done === entry.total - 1) return '<span class="badge-almost">⭐ dia quase perfeito</span>';
+  if(pct >= 0.6) return '<span class="badge-good">👍 dia muito bom</span>';
+  if(pct >= 0.3) return '<span class="badge-progress">🌱 dia em progresso</span>';
+  if(pct > 0) return '<span class="badge-started">💛 começou o dia</span>';
+  return '';
+}
+
 function hairLabel(status){
   if(status === 'washed') return '<span class="hair-history-washed">💧 Lavou</span>';
   if(status === 'not-washed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
@@ -187,25 +204,4 @@ function renderHistory(){
       const pointsEarnedThatDay = tasks.reduce((s,t)=>{
         const st = state.checkedToday[t.id];
         if(st === 'done') return s + t.pts;
-        if(st === 'help') return s + taskHelpPoints(t);
-        return s;
-      }, 0);
-      const perfect = total>0 && done===total;
-      entry = { done, total, pointsEarnedThatDay, perfect, hair:getHairStatus(iso) };
-    } else {
-      entry = state.history[iso];
-    }
-    const hair = getHairStatus(iso) || (entry && entry.hair) || null;
-    if(!entry){
-      return `<tr${isToday?' class="today-row"':''}>
-        <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
-        <td>—</td>
-        <td class="pts-cell">—</td>
-        <td>${hairLabel(hair)}</td>
-        <td>${(isToday||!adultUnlocked)?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
-      </tr>`;
-    }
-    const perfectBadge = entry.perfect
-      ? '<span class="badge-perfect">dia perfeito</span>'
-      : (entry.total > 0 && entry.done === entry.total - 1 ? '<span class="badge-almost">quase lá! 🌟</span>' : '');
-    const editCell = (isToday||
+        if(st ==

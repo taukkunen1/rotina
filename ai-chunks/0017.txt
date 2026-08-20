@@ -1,4 +1,12 @@
-day;
+((daysEquivalent/cycleDays)*100);
+
+  renderMiniPacus(stageFloat);
+
+  const milestones = [
+    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
+  ];
+  const milestoneHtml = milestones.map(([day,label])=>{
+    const active = daysEquivalent >= day;
     const current = stage >= day && (stage === day || (stage > day && day === 23));
     return `<span class="pet-milestone ${active?'active':''} ${current?'current':''}">${label} <small>dia ${day}</small></span>`;
   }).join('');
@@ -185,9 +193,4 @@ function render(){
   const PERIOD_ORDER = ['manha','tarde','noite'];
   const periodsObj = getPeriodsFor(todayISO());
 
-  Object.entries(periodsObj).forEach(([key, period])=>{
-    const div = document.createElement('div');
-    div.className = 'period ' + key;
-
-    const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    const doneCount = applicable.filter(t=>isCountedDone(state.checkedToday[
+  Object.entries(periods

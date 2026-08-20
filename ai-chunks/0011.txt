@@ -1,4 +1,10 @@
-ludes(iso)) state.petPerfectBonusDays.push(iso);
+  hair: hairByDay[iso],
+    };
+    state.hairByDate[iso] = hairByDay[iso];
+
+    if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
+    if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
+    if(!state.petPerfectBonusDays.includes(iso)) state.petPerfectBonusDays.push(iso);
   });
 
   state.petCompletedDays.sort();
@@ -173,11 +179,4 @@ function reconcileState(state){
 
   // limpeza: remove qualquer registro de histórico com data no futuro (só pode
   // ter vindo de uma sessão anterior de teste de data) — evita que isso
-  // inflacione o crescimento do Pacus ou bagunce as tabelas depois
-  let cleaned = false;
-  if(!TEST_DATE_OVERRIDE){
-    const realToday = todayISO();
-    Object.keys(state.history).forEach(iso=>{
-      if(iso > realToday){ delete state.history[iso]; cleaned = true; }
-    });
-    if(state.las
+  // inflacione o c

@@ -1,4 +1,13 @@
-g = !!t.runningSince;
+(sec).padStart(2,'0')}`;
+  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
+function renderCustomTimers(){
+  const el = document.getElementById('customTimersSection');
+  if(!el) return;
+
+  const cardsHtml = state.customTimers.map(t=>{
+    const running = !!t.runningSince;
     const remaining = customTimerRemainingNow(t);
     const totalMin = Math.round(t.totalSeconds/60);
     return `
@@ -151,7 +160,4 @@ function buildPacusSVG(stageFloat){
     const len = gillLen-(i*2);
     const delay = (i*0.18).toFixed(2);
     gills += `<g class="pacus-gill" style="animation-delay:${delay}s; transform-origin:${74-i*2}px ${y}px;">
-      <path d="M${74-i*2} ${y} Q ${60-len*0.6} ${y-len*0.5} ${50-len/2} ${y-len*0.15}" stroke="#ef8fb3" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <path d="M${74-i*2} ${y} Q ${58-len*0.5} ${y+len*0.15} ${48-len/2} ${y+len*0.35}" stroke="#f3a7c6" stroke-width="2.3" fill="none" stroke-linecap="round"/>
-    </g>
-    <
+      <path d="M${74-i*2} ${y} Q ${60-len*0.6} ${y-len*0.5

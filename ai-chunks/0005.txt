@@ -1,4 +1,16 @@
-center; }
+rint","Bradley Hand",cursive;
+    font-size:1.5rem;
+    color:var(--yellow);
+    margin-bottom:6px;
+  }
+  .celebration-stage{
+    font-size:1rem;
+    color:var(--chalk);
+    margin-bottom:18px;
+  }
+  .celebration-stage b{ color:var(--green); }
+
+  .breathing-card{ text-align:center; }
   .breathing-circle{
     width:110px;
     height:110px;
@@ -306,10 +318,4 @@ center; }
 
       <div id="weeklyNewsAnnouncement"></div>
 
-      <div id="familyGameNightAnnouncement"></div>
-
-      <section class="pet-section" id="petSection"></section>
-
-      <div style="text-align:center; margin-top:8px; margin-bottom:8px;">
-        <button class="icon-btn" id="breathingBtn" title="Uma pausa calma de 30 segundos">🌬️ Pausa pra respirar</button>
-      </div>
+      <div id="familyGameNightAnnouncement"></di

@@ -1,4 +1,16 @@
-eçou a jogar');
+0 : 0;
+  return gt.usedSeconds + running;
+}
+
+function gameTimerIsRunning(){
+  return !!state.gameTimer.runningSince;
+}
+
+function startGameTimer(){
+  if(gameTimerIsRunning()) return;
+  if(!isManhaComplete()) return;
+  state.gameTimer.runningSince = Date.now();
+  addLog('🎮 começou a jogar');
   saveState(state);
   renderGameTimer();
   startGameTimerTicking();
@@ -224,13 +236,4 @@ function formatHMS(totalSeconds){
   const h = Math.floor(s/3600);
   const m = Math.floor((s%3600)/60);
   const sec = s%60;
-  if(h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-}
-
-function renderCustomTimers(){
-  const el = document.getElementById('customTimersSection');
-  if(!el) return;
-
-  const cardsHtml = state.customTimers.map(t=>{
-    const runnin
+  if(h > 0) return `${h}:${String(m).padStart(2,'0')}:${String

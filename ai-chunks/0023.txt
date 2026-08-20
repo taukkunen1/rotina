@@ -1,4 +1,24 @@
-EventListener('click', ()=>{
+;
+    breathingTimeoutId = setTimeout(()=>{
+      phaseIdx++;
+      if(phaseIdx >= phases.length){ phaseIdx = 0; cycle++; }
+      nextPhase();
+    }, phases[phaseIdx].duration);
+  }
+  nextPhase();
+}
+function closeBreathingExercise(){
+  clearTimeout(breathingTimeoutId);
+  document.getElementById('breathingOverlay').classList.remove('open');
+  document.getElementById('breathingCircle').classList.remove('breathing');
+}
+document.getElementById('breathingBtn').addEventListener('click', startBreathingExercise);
+document.getElementById('breathingCloseBtn').addEventListener('click', closeBreathingExercise);
+document.getElementById('breathingOverlay').addEventListener('click', e=>{
+  if(e.target.id === 'breathingOverlay') closeBreathingExercise();
+});
+
+document.getElementById('editBtn').addEventListener('click', ()=>{
   if(CONFIG.editorPin){
     const entered = prompt('Digite o PIN pra editar:');
     if(entered === null) return; // cancelou
@@ -166,24 +186,4 @@ function doPost(e) {
   var it = DriveApp.getFiles();
   while(it.hasNext()) {
     var f = it.next();
-    if (/^rotina-hector-backup-\d{4}-\d{2}-\d{2}[.]json$/.test(f.getName())) allBackups.push(f);
-  }
-  allBackups.sort(function(a,b){ return b.getDateCreated().getTime() - a.getDateCreated().getTime(); });
-  for (var i=30; i<allBackups.length; i++) allBackups[i].setTrashed(true);
-
-  return ContentService.createTextOutput(JSON.stringify({ok:true, revision:nextRevision})).setMimeType(ContentService.MimeType.JSON);
-}`;
-
-function renderDriveSync(){
-  const el = document.getElementById('driveSyncSection');
-  if(!el) return;
-  if(!adultUnlocked){ el.innerHTML=''; return; }
-
-  const configured = !!APPS_SCRIPT_URL;
-
-  let statusHtml, actionsHtml;
-
-  if(!configured){
-    statusHtml = `Ainda não configurado neste arquivo.`;
-    actionsHtml = `
-      <button class="icon-btn" id="driveSetupInfoBtn">como con
+    if (/^roti
