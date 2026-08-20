@@ -1,4 +1,33 @@
-rescimento do Pacus ou bagunce as tabelas depois
+ !state.history["2026-08-19"].total){
+      const tasks19 = allTasks("2026-08-19");
+      state.history["2026-08-19"].total = tasks19.length;
+    }
+    state.backfillGapDaysV1Applied = true;
+  }
+  if(!state.gameTimer || typeof state.gameTimer !== "object"){
+    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
+  }
+  if(state.gameTimer.bonusSeconds === undefined) state.gameTimer.bonusSeconds = 0;
+  if(!state.gameTimer.redemptions || typeof state.gameTimer.redemptions !== "object") state.gameTimer.redemptions = {};
+  if(!Array.isArray(state.customTimers) || state.customTimers.length !== 2){
+    state.customTimers = [
+      { id:"ct1", label:"Timer 1", totalSeconds:300, remainingSeconds:300, runningSince:null, finished:false },
+      { id:"ct2", label:"Timer 2", totalSeconds:300, remainingSeconds:300, runningSince:null, finished:false },
+    ];
+  }
+  state.customTimers.forEach(t=>{
+    if(t.totalSeconds === undefined) t.totalSeconds = 300;
+    if(t.remainingSeconds === undefined) t.remainingSeconds = t.totalSeconds;
+    if(t.runningSince === undefined) t.runningSince = null;
+    if(t.finished === undefined) t.finished = false;
+  });
+  if(state.historyCorrectionV2Applied === undefined) state.historyCorrectionV2Applied = false;
+
+  seedKnownPerfectDays(state);
+
+  // limpeza: remove qualquer registro de histórico com data no futuro (só pode
+  // ter vindo de uma sessão anterior de teste de data) — evita que isso
+  // inflacione o crescimento do Pacus ou bagunce as tabelas depois
   let cleaned = false;
   if(!TEST_DATE_OVERRIDE){
     const realToday = todayISO();
@@ -148,48 +177,4 @@ function saveState(state, options={}){
    (sem precisar clicar em nada). Se estiver offline, o arquivo continua
    funcionando normal com os dados salvos localmente.
    IMPORTANTE: essas variáveis precisam existir ANTES de carregar
-   CONFIG/state, porque o carregamento pode precisar salvar de volta
-   (limpezas, correções automáticas) e isso já chama scheduleAutoPush.
-   E a sincronização fica SUSPENSA durante esse carregamento inicial —
-   nesse momento ainda nem todo o resto do código rodou, então tentar
-   sincronizar/renderizar tão cedo pode travar. Ela é reativada logo
-   depois, uma vez que CONFIG e state já estão prontos. */
-let suppressAutoPush = true;
-let pushInFlight = false;
-let pushPending = false;
-
-let CONFIG = loadConfig();
-let state = loadState();
-
-suppressAutoPush = false;
-
-function scheduleAutoPush(){
-  if(!APPS_SCRIPT_URL || suppressAutoPush) return;
-  if(pushInFlight){ pushPending = true; return; }
-  doAutoPush();
-}
-
-async function doAutoPush(){
-  if(!APPS_SCRIPT_URL) return;
-  pushInFlight = true;
-  try{
-    const payload = {
-      appVersion: APP_VERSION,
-      config: CONFIG,
-      state: state,
-      baseRevision: Number(state.driveRevision)||0,
-      clientRevision: Number(state.revision)||0,
-      clientUpdatedAt: state.updatedAt || new Date().toISOString(),
-      exportedAt: new Date().toISOString()
-    };
-    const res = await fetch(DATA_ENDPOINT, {
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify(payload)
-    });
-    const result = await res.json();
-    if(result.ok){
-      state.driveRevision = Number(result.revision)||state.driveRevision;
-      state.driveLastSyncISO = todayISO();
-      state.driveConflictCount = 0;
-      try{ localStorage.setItem(STOR
+   CONFIG/state, porque o ca

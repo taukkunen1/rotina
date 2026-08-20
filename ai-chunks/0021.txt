@@ -1,4 +1,44 @@
-começar!</div>';
+e ? ` (${note})` : ''}`);
+        saveState(state);
+        bumpTotal(delta, btn);
+        fireConfetti(btn, 10);
+        picker.classList.remove('open');
+        noteInput.value = '';
+        renderLog();
+      });
+    });
+  });
+
+  // comportamentos extras que os pais adicionarem no editor, além dos 6 fixos
+  const extraEl = document.getElementById('behaviorExtra');
+  if(extraEl){
+    CONFIG.badHabits.forEach(h=>{
+      const isPositive = h.pts >= 0;
+      const btn = document.createElement('button');
+      btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
+      btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
+      btn.addEventListener('click', ()=>{
+        const delta = addPoints(h.pts);
+        addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`, true);
+        saveState(state);
+        bumpTotal(delta, btn);
+        renderLog();
+      });
+      extraEl.appendChild(btn);
+    });
+  }
+}
+
+function renderLog(){
+  const logEl = document.getElementById('logList');
+  // compatibilidade: entradas antigas eram só texto puro (sem marcação
+  // de quem fez) — tratamos essas como ação dele, pra não sumir nada.
+  const normalize = l => typeof l === 'string' ? { text:l, parent:false } : l;
+  const entries = state.log.map(normalize);
+  const visible = adultUnlocked ? entries : entries.filter(l => !l.parent);
+  logEl.innerHTML = visible.length
+    ? visible.map(l=>`<div>${l.text}</div>`).join('')
+    : '<div>Nada ainda hoje — bora começar!</div>';
 }
 
 function fireConfetti(originEl, count){
@@ -154,30 +194,4 @@ function renderEditorPeriod(key, elId, periodsObj){
   el.innerHTML = '';
   const list = periodsObj[key].tasks;
   list.forEach((task, idx)=>{
-    const row = document.createElement('div');
-    row.className = 'edit-row edit-row-task';
-    row.innerHTML = `
-      <div class="edit-row-main">
-        <span class="reorder-group">
-          <button type="button" class="reorder-btn" data-dir="up" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
-          <button type="button" class="reorder-btn" data-dir="down" ${idx===list.length-1?'disabled':''} title="Mover pra baixo">▼</button>
-        </span>
-        <input type="text" value="${escapeAttr(task.txt)}" data-field="txt" placeholder="nome da tarefa">
-        ${stepperHTML('pts', task.pts)}
-        <button class="del" title="remover">🗑</button>
-      </div>
-      <input type="text" class="sub-input" value="${escapeAttr(task.sub||'')}" data-field="sub" placeholder="descrição (opcional)">
-    `;
-    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ task.txt = e.target.value; });
-    wireStepper(row, task, 'pts');
-    row.querySelector('[data-field=sub]').addEventListener('input', e=>{ task.sub = e.target.value; });
-    row.querySelector('.del').addEventListener('click', ()=>{
-      periodsObj[key].tasks = periodsObj[key].tasks.filter(t=>t!==task);
-      renderEditorPeriod(key, elId, periodsObj);
-    });
-    row.querySelectorAll('.reorder-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const dir = btn.getAttribute('data-dir');
-        const i = list.indexOf(task);
-        const swapWith = dir === 'up' ? i-1 : i+1;
-        if(swapWith < 0 || swapWith >= list.leng
+    const row = document.createE

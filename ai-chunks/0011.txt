@@ -1,4 +1,44 @@
-  hair: hairByDay[iso],
+cISO:null, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, hairByDate:{} };
+  return reconcileState(state);
+}
+
+function applyHistoryCorrection_v2(state){
+  // Correção pontual, aplicada só UMA VEZ (por causa da flag abaixo) —
+  // depois disso nunca mais mexe sozinha nesses dias, pra não apagar
+  // edições feitas manualmente depois. Cobre 09/08 a 12/08: todos os
+  // dias foram completos; dia 12 teve -10 Pacus Points por causa de uma
+  // briga na escola; saldo final confirmado até 12/08: 170 Pacus Points.
+  if(state.historyCorrectionV2Applied) return;
+
+  const hairByDay = {
+    "2026-08-09": "not-washed",
+    "2026-08-10": "washed",
+    "2026-08-11": "not-washed",
+    "2026-08-12": "washed",
+  };
+  const pointsPenaltyByDay = {
+    "2026-08-12": 10, // brigou na escola
+  };
+
+  if(!state.history) state.history = {};
+  if(!state.hairByDate) state.hairByDate = {};
+  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
+
+  Object.keys(hairByDay).forEach(iso => {
+    const tasks = allTasks(iso);
+    const total = tasks.length;
+    const rawPoints = tasks.reduce((sum, task) => sum + (Number(task.pts) || 0), 0);
+    const penalty = pointsPenaltyByDay[iso] || 0;
+    const netPoints = Math.max(0, rawPoints - penalty);
+
+    state.history[iso] = {
+      done: total,
+      total: total,
+      pointsEarnedThatDay: netPoints,
+      perfect: true,
+      screenMinutes: CONFIG.perfectDayBonusMinutes || 30,
+      periodsCompleted: 3,
+      hair: hairByDay[iso],
     };
     state.hairByDate[iso] = hairByDay[iso];
 
@@ -150,33 +190,4 @@ function reconcileState(state){
       }
     });
     // 19/08 tinha registro, mas com total 0 (bug do mesmo tipo) — recalcula certo
-    if(state.history["2026-08-19"] && !state.history["2026-08-19"].total){
-      const tasks19 = allTasks("2026-08-19");
-      state.history["2026-08-19"].total = tasks19.length;
-    }
-    state.backfillGapDaysV1Applied = true;
-  }
-  if(!state.gameTimer || typeof state.gameTimer !== "object"){
-    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
-  }
-  if(state.gameTimer.bonusSeconds === undefined) state.gameTimer.bonusSeconds = 0;
-  if(!state.gameTimer.redemptions || typeof state.gameTimer.redemptions !== "object") state.gameTimer.redemptions = {};
-  if(!Array.isArray(state.customTimers) || state.customTimers.length !== 2){
-    state.customTimers = [
-      { id:"ct1", label:"Timer 1", totalSeconds:300, remainingSeconds:300, runningSince:null, finished:false },
-      { id:"ct2", label:"Timer 2", totalSeconds:300, remainingSeconds:300, runningSince:null, finished:false },
-    ];
-  }
-  state.customTimers.forEach(t=>{
-    if(t.totalSeconds === undefined) t.totalSeconds = 300;
-    if(t.remainingSeconds === undefined) t.remainingSeconds = t.totalSeconds;
-    if(t.runningSince === undefined) t.runningSince = null;
-    if(t.finished === undefined) t.finished = false;
-  });
-  if(state.historyCorrectionV2Applied === undefined) state.historyCorrectionV2Applied = false;
-
-  seedKnownPerfectDays(state);
-
-  // limpeza: remove qualquer registro de histórico com data no futuro (só pode
-  // ter vindo de uma sessão anterior de teste de data) — evita que isso
-  // inflacione o c
+    if(state.history["2026-08-19"] &&

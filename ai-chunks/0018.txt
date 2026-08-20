@@ -1,4 +1,49 @@
-Obj).forEach(([key, period])=>{
+
+  if(state.history[iso]) state.history[iso].hair = status;
+  saveState(state);
+  renderHair();
+  renderHistory();
+}
+
+function renderHair(){
+  const section = document.getElementById('hairSection');
+  if(!section) return;
+  const status = getHairStatus(todayISO());
+  const washedBtn = document.getElementById('hairWashedBtn');
+  const notWashedBtn = document.getElementById('hairNotWashedBtn');
+  const statusEl = document.getElementById('hairStatus');
+  washedBtn.classList.toggle('active-washed', status === 'washed');
+  notWashedBtn.classList.toggle('active-notwashed', status === 'not-washed');
+  statusEl.innerHTML = status === 'washed'
+    ? 'Hoje: <b class="hair-history-washed">💧 cabelo lavado</b>'
+    : status === 'not-washed'
+      ? 'Hoje: <b class="hair-history-notwashed">○ não lavou</b>'
+      : 'Hoje: ainda não registrado';
+}
+
+function render(){
+  document.getElementById('totalPoints').textContent = state.totalPoints;
+
+  renderPet();
+  renderHair();
+  renderGameTimer();
+  renderCustomTimers();
+
+  const weekendEl = document.getElementById('weekendIndicator');
+  if(weekendEl){
+    weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
+      ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
+      : '';
+  }
+
+  renderLightDayBanner();
+
+  const periodsEl = document.getElementById('periods');
+  periodsEl.innerHTML = '';
+  const PERIOD_ORDER = ['manha','tarde','noite'];
+  const periodsObj = getPeriodsFor(todayISO());
+
+  Object.entries(periodsObj).forEach(([key, period])=>{
     const div = document.createElement('div');
     div.className = 'period ' + key;
 
@@ -135,39 +180,4 @@ let testPanelOpen = false;
 let adultUnlocked = false;
 
 function renderTestModeBanner(){
-  const el = document.getElementById('testModeBanner');
-  if(!el) return;
-  if(!TEST_DATE_OVERRIDE){ el.innerHTML=''; return; }
-  el.innerHTML = `
-    <div class="test-mode-banner">
-      🧪 MODO TESTE ATIVO — data simulada: ${formatDateBR(TEST_DATE_OVERRIDE)}
-      <button id="bannerRealDateBtn">voltar pra data real</button>
-    </div>
-  `;
-  document.getElementById('bannerRealDateBtn').addEventListener('click', ()=>{
-    setTestDate(null);
-    state = loadState();
-    render();
-  });
-}
-
-function renderTestPanel(){
-  const el = document.getElementById('testPanel');
-  if(!el) return;
-  if(!testPanelOpen){ el.style.display='none'; el.innerHTML=''; return; }
-  el.style.display='block';
-
-  const realToday = (()=>{
-    const d = new Date();
-    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-  })();
-  const usingOverride = !!TEST_DATE_OVERRIDE;
-
-  el.innerHTML = `
-    <div class="test-panel">
-      <h3>🧪 Modo de teste</h3>
-      <div class="hint">Ferramentas só pra conferir se o crescimento do Pacus e o histórico estão funcionando. Não mexe nas tarefas de verdade — só simula dias.</div>
-      <div class="test-date">Data simulada agora: <b>${formatDateBR(todayISO())}/${todayISO().split('-')[0]}</b>${usingOverride ? ' (modo teste ativo)' : ' (data real do sistema)'}</div>
-      <div class="test-row">
-        <button class="icon-btn" id="testCompleteDayBtn">✅ completar tudo hoje</button>
-        <button class="icon-btn" id="testPrevDayBtn">◀ dia anterior</button
+  const el = document.getElem

@@ -1,4 +1,43 @@
-((daysEquivalent/cycleDays)*100);
+começa,
+// dispensável só por hoje.
+const PACUS_NIGHT_MESSAGE = "Não esqueça de desenhar na lousa hoje! 🎨";
+let pacusDialogueTickHandle = null;
+function isEveningNow(){
+  const start = periodStartTime(CONFIG.periods.noite.time);
+  if(!start) return false;
+  const now = new Date();
+  const startToday = new Date(now);
+  startToday.setHours(start.hour, start.minute, 0, 0);
+  return now >= startToday;
+}
+function renderPacusDialogue(){
+  const el = document.getElementById('pacusDialogue');
+  if(!el) return;
+  const dismissedToday = state.pacusDialogueDismissedDate === todayISO();
+  if(!isEveningNow() || dismissedToday){ el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="pacus-dialogue">
+      <span class="pacus-dialogue-text">💬 ${PACUS_NIGHT_MESSAGE}</span>
+      <button class="pacus-dialogue-close" id="pacusDialogueCloseBtn" title="Ok, entendi!">✕</button>
+    </div>
+  `;
+  document.getElementById('pacusDialogueCloseBtn').addEventListener('click', ()=>{
+    state.pacusDialogueDismissedDate = todayISO();
+    saveState(state);
+    renderPacusDialogue();
+  });
+}
+function startPacusDialogueTicking(){
+  if(pacusDialogueTickHandle) return;
+  pacusDialogueTickHandle = setInterval(renderPacusDialogue, 30000);
+}
+
+function renderPet(){
+  const el = document.getElementById('petSection');
+  const data = computePetStage();
+  const { stage, stageFloat, daysEquivalent, cycleDays, maxStage, canGrowToday } = data;
+  const stageInfo = CONFIG.pet.stages[stage];
+  const progressPct = Math.round((daysEquivalent/cycleDays)*100);
 
   renderMiniPacus(stageFloat);
 
@@ -149,48 +188,3 @@ function setHairStatus(status){
   if(!state.hairByDate) state.hairByDate = {};
   state.hairByDate[iso] = status;
   if(!state.history) state.history = {};
-  if(state.history[iso]) state.history[iso].hair = status;
-  saveState(state);
-  renderHair();
-  renderHistory();
-}
-
-function renderHair(){
-  const section = document.getElementById('hairSection');
-  if(!section) return;
-  const status = getHairStatus(todayISO());
-  const washedBtn = document.getElementById('hairWashedBtn');
-  const notWashedBtn = document.getElementById('hairNotWashedBtn');
-  const statusEl = document.getElementById('hairStatus');
-  washedBtn.classList.toggle('active-washed', status === 'washed');
-  notWashedBtn.classList.toggle('active-notwashed', status === 'not-washed');
-  statusEl.innerHTML = status === 'washed'
-    ? 'Hoje: <b class="hair-history-washed">💧 cabelo lavado</b>'
-    : status === 'not-washed'
-      ? 'Hoje: <b class="hair-history-notwashed">○ não lavou</b>'
-      : 'Hoje: ainda não registrado';
-}
-
-function render(){
-  document.getElementById('totalPoints').textContent = state.totalPoints;
-
-  renderPet();
-  renderHair();
-  renderGameTimer();
-  renderCustomTimers();
-
-  const weekendEl = document.getElementById('weekendIndicator');
-  if(weekendEl){
-    weekendEl.innerHTML = (CONFIG.periodsWeekend && isWeekendISO(todayISO()))
-      ? `<div class="weekend-indicator">🏖️ Hoje é rotina de fim de semana</div>`
-      : '';
-  }
-
-  renderLightDayBanner();
-
-  const periodsEl = document.getElementById('periods');
-  periodsEl.innerHTML = '';
-  const PERIOD_ORDER = ['manha','tarde','noite'];
-  const periodsObj = getPeriodsFor(todayISO());
-
-  Object.entries(periods

@@ -1,4 +1,43 @@
-= 'help') return s + taskHelpPoints(t);
+</span>';
+  return '';
+}
+
+function hairLabel(status){
+  if(status === 'washed') return '<span class="hair-history-washed">💧 Lavou</span>';
+  if(status === 'not-washed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
+  return '<span class="hair-history-unknown">— Não registrado</span>';
+}
+
+let historyShowAll = false;
+
+function renderHistory(){
+  const body = document.getElementById('historyBody');
+  const start = CONFIG.historyStartDate || todayISO();
+  const startDate = new Date(start+"T00:00:00");
+  const today = new Date(todayISO()+"T00:00:00");
+
+  const rows = [];
+  for(let d = new Date(startDate); d <= today; d.setDate(d.getDate()+1)){
+    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+    rows.push(iso);
+  }
+
+  const HISTORY_VISIBLE_DAYS = 30;
+  const hiddenCount = Math.max(0, rows.length - HISTORY_VISIBLE_DAYS);
+  const visibleRows = historyShowAll ? rows : rows.slice(-HISTORY_VISIBLE_DAYS);
+
+  body.innerHTML = visibleRows.map(iso=>{
+    const isToday = iso === todayISO();
+    let entry;
+    if(isToday){
+      const tasks = allTasks();
+      const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+      const total = applicable.length;
+      const done = applicable.filter(t=>isCountedDone(state.checkedToday[t.id])).length;
+      const pointsEarnedThatDay = tasks.reduce((s,t)=>{
+        const st = state.checkedToday[t.id];
+        if(st === 'done') return s + t.pts;
+        if(st === 'help') return s + taskHelpPoints(t);
         return s;
       }, 0);
       const perfect = total>0 && done===total;
@@ -141,44 +180,4 @@ function renderPositiveBehaviors(){
         const noteInput = document.getElementById(`behaviorNote_${b.id}`);
         const note = noteInput.value.trim();
         const delta = addPoints(pts);
-        addLog(`${b.emoji} +${pts} Pacus — ${b.praise}${note ? ` (${note})` : ''}`);
-        saveState(state);
-        bumpTotal(delta, btn);
-        fireConfetti(btn, 10);
-        picker.classList.remove('open');
-        noteInput.value = '';
-        renderLog();
-      });
-    });
-  });
-
-  // comportamentos extras que os pais adicionarem no editor, além dos 6 fixos
-  const extraEl = document.getElementById('behaviorExtra');
-  if(extraEl){
-    CONFIG.badHabits.forEach(h=>{
-      const isPositive = h.pts >= 0;
-      const btn = document.createElement('button');
-      btn.className = 'bad-btn' + (isPositive ? ' positive' : '');
-      btn.innerHTML = `${h.txt}<span class="minus">${isPositive?'+':'−'}${Math.abs(h.pts)}</span>`;
-      btn.addEventListener('click', ()=>{
-        const delta = addPoints(h.pts);
-        addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`, true);
-        saveState(state);
-        bumpTotal(delta, btn);
-        renderLog();
-      });
-      extraEl.appendChild(btn);
-    });
-  }
-}
-
-function renderLog(){
-  const logEl = document.getElementById('logList');
-  // compatibilidade: entradas antigas eram só texto puro (sem marcação
-  // de quem fez) — tratamos essas como ação dele, pra não sumir nada.
-  const normalize = l => typeof l === 'string' ? { text:l, parent:false } : l;
-  const entries = state.log.map(normalize);
-  const visible = adultUnlocked ? entries : entries.filter(l => !l.parent);
-  logEl.innerHTML = visible.length
-    ? visible.map(l=>`<div>${l.text}</div>`).join('')
-    : '<div>Nada ainda hoje — bora 
+        addLog(`${b.emoji} +${pts} Pacus — ${b.praise}${not

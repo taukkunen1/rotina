@@ -1,4 +1,46 @@
-;
+rBad();
+    } else if(kind === 'reward'){
+      draft.rewards.push({ id: uid('r'), txt:'', cost:10 });
+      renderEditorRewards();
+    } else if(kind === 'schedule'){
+      draft.schedule.push({ id: uid('sc'), label:'', days:[], start:'09:00', end:'10:00', period:'tarde', pts:3 });
+      renderEditorSchedule();
+    }
+  });
+});
+
+document.getElementById('celebrationCloseBtn').addEventListener('click', closeEvolutionCelebration);
+document.getElementById('evolutionCelebration').addEventListener('click', e=>{
+  if(e.target.id === 'evolutionCelebration') closeEvolutionCelebration();
+});
+
+/* ---------- pausa pra respirar (30s, sem pontos, só pra acalmar) ---------- */
+let breathingTimeoutId = null;
+function startBreathingExercise(){
+  const overlay = document.getElementById('breathingOverlay');
+  const circle = document.getElementById('breathingCircle');
+  const label = document.getElementById('breathingLabel');
+  overlay.classList.add('open');
+  circle.classList.remove('breathing');
+  void circle.offsetWidth;
+  circle.classList.add('breathing');
+
+  const phases = [
+    { text:'Inspire...', duration:4000 },
+    { text:'Segure...', duration:2000 },
+    { text:'Expire...', duration:4000 },
+  ];
+  let cycle = 0;
+  let phaseIdx = 0;
+
+  function nextPhase(){
+    if(cycle >= 3){
+      label.textContent = 'Prontinho! 😊';
+      circle.classList.remove('breathing');
+      breathingTimeoutId = setTimeout(closeBreathingExercise, 1500);
+      return;
+    }
+    label.textContent = phases[phaseIdx].text;
     breathingTimeoutId = setTimeout(()=>{
       phaseIdx++;
       if(phaseIdx >= phases.length){ phaseIdx = 0; cycle++; }
@@ -154,36 +196,3 @@ const APPS_SCRIPT_CODE = `function doGet(e) {
       .addMetaTag('viewport','width=device-width, initial-scale=1');
   }
   return HtmlService.createHtmlOutput('Ainda não encontrei o arquivo rotina-hector.html (nem o arquivo legado rotina-hector-app.html) no seu Drive.');
-}
-
-function doPost(e) {
-  var incoming = JSON.parse(e.postData.contents || '{}');
-  var files = DriveApp.getFilesByName('rotina-hector-backup.json');
-  var file = files.hasNext() ? files.next() : DriveApp.createFile('rotina-hector-backup.json','{}',MimeType.PLAIN_TEXT);
-  var current = {};
-  try { current = JSON.parse(file.getBlob().getDataAsString() || '{}'); } catch(err) {}
-  var currentRevision = Number(current.revision || (current.state && current.state.driveRevision) || 0);
-  var baseRevision = Number(incoming.baseRevision || 0);
-
-  if (currentRevision > 0 && baseRevision !== currentRevision) {
-    return ContentService.createTextOutput(JSON.stringify({conflict:true, revision:currentRevision, data:current})).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  var nextRevision = currentRevision + 1;
-  incoming.revision = nextRevision;
-  incoming.serverUpdatedAt = new Date().toISOString();
-  if (incoming.state) incoming.state.driveRevision = nextRevision;
-  file.setContent(JSON.stringify(incoming, null, 2));
-
-  var backupDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'America/Sao_Paulo', 'yyyy-MM-dd');
-  var backupName = 'rotina-hector-backup-' + backupDate + '.json';
-  var backups = DriveApp.getFilesByName(backupName);
-  if (!backups.hasNext()) {
-    DriveApp.createFile(backupName, JSON.stringify(incoming, null, 2), MimeType.PLAIN_TEXT);
-  }
-
-  var allBackups = [];
-  var it = DriveApp.getFiles();
-  while(it.hasNext()) {
-    var f = it.next();
-    if (/^roti

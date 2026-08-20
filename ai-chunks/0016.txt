@@ -1,4 +1,33 @@
-} ${50-len/2} ${y-len*0.15}" stroke="#ef8fb3" stroke-width="3" fill="none" stroke-linecap="round"/>
+class="pacus-bubble" cx="151" cy="165" r="3" fill="#e8a3c0" opacity=".45" style="animation-delay:1s;"/>
+    <circle class="pacus-bubble" cx="118" cy="182" r="2.4" fill="#e8a3c0" opacity=".4" style="animation-delay:1.9s;"/>
+  </svg>`;
+}
+
+function buildPacusSVG(stageFloat){
+  const s = Math.max(0, Math.min(23, stageFloat));
+  const hatch = Math.max(0, Math.min(1, (s-8)/6));
+  const growth = Math.max(0, Math.min(1, (s-14)/9));
+  const adult = Math.max(0, Math.min(1, (s-21)/2));
+  const scale = 0.30 + hatch*0.22 + growth*0.42 + adult*0.06;
+  const bodyW = 45 + growth*10 + adult*4;
+  const bodyH = 30 + growth*5 + adult*3;
+  const gillLen = 12 + growth*11 + adult*4;
+  const faceY = 92 - hatch*7;
+  const bodyY = 128 - hatch*5;
+  const gid = uid('pacus');
+  const shell = hatch < 1 ? `
+    <path d="M62 151 Q45 158 54 174 Q70 184 85 170" fill="#f6ecd9" stroke="#e88aa8" stroke-width="2.5" opacity="${1-hatch*.55}"/>
+    <path d="M158 151 Q175 158 166 174 Q150 184 135 170" fill="#f6ecd9" stroke="#e88aa8" stroke-width="2.5" opacity="${1-hatch*.55}"/>` : '';
+
+  // guelras com dois filamentos cada, balançando devagar (efeito de água)
+  const gillCount = 2 + Math.floor(Math.min(2,growth*2));
+  let gills = '';
+  for(let i=0;i<gillCount;i++){
+    const y = faceY-6+i*8;
+    const len = gillLen-(i*2);
+    const delay = (i*0.18).toFixed(2);
+    gills += `<g class="pacus-gill" style="animation-delay:${delay}s; transform-origin:${74-i*2}px ${y}px;">
+      <path d="M${74-i*2} ${y} Q ${60-len*0.6} ${y-len*0.5} ${50-len/2} ${y-len*0.15}" stroke="#ef8fb3" stroke-width="3" fill="none" stroke-linecap="round"/>
       <path d="M${74-i*2} ${y} Q ${58-len*0.5} ${y+len*0.15} ${48-len/2} ${y+len*0.35}" stroke="#f3a7c6" stroke-width="2.3" fill="none" stroke-linecap="round"/>
     </g>
     <g class="pacus-gill" style="animation-delay:${delay}s; transform-origin:${146+i*2}px ${y}px;">
@@ -133,43 +162,4 @@ function wirePacusInteraction(){
   });
 }
 
-// Fala noturna do Pacus — aparece sozinha quando a Noite começa,
-// dispensável só por hoje.
-const PACUS_NIGHT_MESSAGE = "Não esqueça de desenhar na lousa hoje! 🎨";
-let pacusDialogueTickHandle = null;
-function isEveningNow(){
-  const start = periodStartTime(CONFIG.periods.noite.time);
-  if(!start) return false;
-  const now = new Date();
-  const startToday = new Date(now);
-  startToday.setHours(start.hour, start.minute, 0, 0);
-  return now >= startToday;
-}
-function renderPacusDialogue(){
-  const el = document.getElementById('pacusDialogue');
-  if(!el) return;
-  const dismissedToday = state.pacusDialogueDismissedDate === todayISO();
-  if(!isEveningNow() || dismissedToday){ el.innerHTML = ''; return; }
-  el.innerHTML = `
-    <div class="pacus-dialogue">
-      <span class="pacus-dialogue-text">💬 ${PACUS_NIGHT_MESSAGE}</span>
-      <button class="pacus-dialogue-close" id="pacusDialogueCloseBtn" title="Ok, entendi!">✕</button>
-    </div>
-  `;
-  document.getElementById('pacusDialogueCloseBtn').addEventListener('click', ()=>{
-    state.pacusDialogueDismissedDate = todayISO();
-    saveState(state);
-    renderPacusDialogue();
-  });
-}
-function startPacusDialogueTicking(){
-  if(pacusDialogueTickHandle) return;
-  pacusDialogueTickHandle = setInterval(renderPacusDialogue, 30000);
-}
-
-function renderPet(){
-  const el = document.getElementById('petSection');
-  const data = computePetStage();
-  const { stage, stageFloat, daysEquivalent, cycleDays, maxStage, canGrowToday } = data;
-  const stageInfo = CONFIG.pet.stages[stage];
-  const progressPct = Math.round
+// Fala noturna do Pacus — aparece sozinha quando a Noite 
