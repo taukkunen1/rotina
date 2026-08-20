@@ -2087,7 +2087,7 @@ const DEFAULT_CONFIG = {
   editorPin: "",
   badHabits: [],
   rewards: [
-    { id:"r1", txt:"1 hora de tela", cost:50, grantsHours:1, maxPerDay:2 },
+    { id:"r1", txt:"1 hora de tela", cost:100, grantsHours:1, maxPerDay:2 },
     { id:"r2", txt:"Hot Wheels (brinquedo)", cost:500 },
     { id:"r3", txt:"Passeio Especial (você escolhe)", cost:650 },
   ],
@@ -2398,7 +2398,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return applyEconomyRebalanceV1(moveUniformToTardeV1(applyTaskTiersV1(splitBagunçaV1(addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))))))))))))));
+  return fixScreenTimeCostV1(applyEconomyRebalanceV1(moveUniformToTardeV1(applyTaskTiersV1(splitBagunçaV1(addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))))))))))))));
 }
 
 // Reforça pontos de tarefas mais chatas — roda uma vez só, não desfaz
@@ -2689,6 +2689,19 @@ function applyEconomyRebalanceV1(cfg){
     });
   }
   cfg.economyRebalanceV1Applied = true;
+  return cfg;
+}
+
+// Correção: tempo de tela estava barato demais em 50 — sobe pra 100.
+// Hot Wheels continua 500 no CONFIG (preço "de verdade"), mas fica 300
+// pra ele até a primeira compra, calculado na hora (effectiveRewardCost).
+function fixScreenTimeCostV1(cfg){
+  if(!cfg || cfg.fixScreenTimeCostV1Applied) return cfg;
+  if(Array.isArray(cfg.rewards)){
+    const r1 = cfg.rewards.find(r=>r.id === 'r1');
+    if(r1) r1.cost = 100;
+  }
+  cfg.fixScreenTimeCostV1Applied = true;
   return cfg;
 }
 
@@ -4594,11 +4607,22 @@ function renderHistory(){
   }
 }
 
+// Hot Wheels: fica em 300 pontos até a primeira compra — depois disso,
+// passa a valer o preço "de verdade" (o do CONFIG, hoje 500).
+function effectiveRewardCost(r){
+  if(r.id === 'r2'){
+    const everBought = (state.lifetimeRedemptions && state.lifetimeRedemptions[r.id]) || 0;
+    if(everBought === 0) return 300;
+  }
+  return r.cost;
+}
+
 function renderRewards(){
   const rEl = document.getElementById('rewards');
   rEl.innerHTML = '';
   CONFIG.rewards.forEach(r=>{
-    const canAfford = state.totalPoints >= r.cost;
+    const cost = effectiveRewardCost(r);
+    const canAfford = state.totalPoints >= cost;
     const redeemedToday = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
     const atDailyLimit = r.maxPerDay != null && redeemedToday >= r.maxPerDay;
     const capNote = r.maxPerDay != null ? `<span class="cap-note">${redeemedToday}/${r.maxPerDay} hoje</span>` : '';
@@ -4606,23 +4630,25 @@ function renderRewards(){
     div.className = 'reward';
     div.innerHTML = `
       <div class="name">${r.txt}</div>
-      <span class="cost">${r.cost} PP</span>
+      <span class="cost">${cost} PP</span>
       ${capNote}
       <button ${(canAfford && !atDailyLimit) ? '' : 'disabled'}>${atDailyLimit ? 'Limite hoje' : 'Resgatar'}</button>
     `;
     div.querySelector('button').addEventListener('click', (evt)=>{
-      if(state.totalPoints < r.cost) return;
+      if(state.totalPoints < cost) return;
       const redeemed = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
       if(r.maxPerDay != null && redeemed >= r.maxPerDay) return;
 
-      const delta = addPoints(-r.cost);
-      addLog(`🎁 Resgatou: ${r.txt} (−${r.cost})`);
+      const delta = addPoints(-cost);
+      addLog(`🎁 Resgatou: ${r.txt} (−${cost})`);
       if(r.grantsHours){
         addGameTimerBonusHours(r.grantsHours);
         addLog(`🎮 +${r.grantsHours}h de jogo hoje (bônus da recompensa)`);
       }
       if(!state.gameTimer.redemptions) state.gameTimer.redemptions = {};
       state.gameTimer.redemptions[r.id] = redeemed + 1;
+      if(!state.lifetimeRedemptions) state.lifetimeRedemptions = {};
+      state.lifetimeRedemptions[r.id] = (state.lifetimeRedemptions[r.id] || 0) + 1;
 
       saveState(state);
       bumpTotal(delta, evt.currentTarget);
