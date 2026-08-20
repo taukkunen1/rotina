@@ -2053,7 +2053,6 @@ const DEFAULT_CONFIG = {
         { id:"m1", txt:"Arrumar a cama", pts:2, sub:"até às 12h", tier:"responsabilidade" },
         { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h", tier:"essencial" },
         { id:"m3", txt:"Escovar os dentes", pts:2, sub:"até às 12h", tier:"essencial" },
-        { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 12h", tier:"essencial" },
         { id:"m5", txt:"Duolingo", sub:"5 lições", pts:5, tier:"extra" },
         { id:"m8", txt:"Arrumar a mochila", pts:2, sub:"até às 12h", tier:"essencial" },
         { id:"t_djf7hbb", txt:"Levar Lixo", pts:4, sub:"até às 12h", tier:"responsabilidade" },
@@ -2066,6 +2065,7 @@ const DEFAULT_CONFIG = {
         { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h", external:true, tier:"essencial" },
         { id:"t3", txt:"Escovar os dentes", pts:2, sub:"até às 18h", tier:"essencial" },
         { id:"t5", txt:"Arrumar a mochila", pts:2, sub:"até às 18h", tier:"essencial" },
+        { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 18h", tier:"essencial" },
         { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h", external:true, tier:"essencial" },
         { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h", tier:"essencial" },
       ]
@@ -2405,7 +2405,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return applyTaskTiersV1(splitBagunçaV1(addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))))))))))));
+  return moveUniformToTardeV1(applyTaskTiersV1(splitBagunçaV1(addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))))))))))));
 }
 
 // Reforça pontos de tarefas mais chatas — roda uma vez só, não desfaz
@@ -2451,8 +2451,8 @@ function applyPointRebalanceV2(cfg){
 // higiene em sequência, foco cognitivo com mente descansada, sair por
 // último, água fácil fechando o bloco (efeito do final).
 const TASK_ORDER_V1 = {
-  manha: ["m1","m4","m3","m7","m5","m8","t_djf7hbb","m2"],
-  tarde: ["t2","t3","t5","t4","t1"],
+  manha: ["m1","m4","m3","m5","m8","t_djf7hbb","m2"],
+  tarde: ["t2","t3","t5","m7","t4","t1"],
   noite: ["n5_cartas","n5_carrinhos","n5_bolinhas","n5_caixas","n5_sala","n1","n4","n6","n7","t_ci3brlt","n2"],
 };
 function applyTaskOrderV1(cfg){
@@ -2634,6 +2634,28 @@ function applyTaskTiersV1(cfg){
     });
   });
   cfg.taskTiersV1Applied = true;
+  return cfg;
+}
+
+// "Vestir o uniforme" muda de Manhã pra Tarde — escola dele é à tarde,
+// faz mais sentido vestir mais perto da hora de sair.
+function moveUniformToTardeV1(cfg){
+  if(!cfg || cfg.moveUniformToTardeV1Applied) return cfg;
+  ['periods','periodsWeekend'].forEach(key=>{
+    const p = cfg[key];
+    if(!p || !p.manha || !p.tarde) return;
+    const idx = p.manha.tasks.findIndex(t=>t.id === 'm7');
+    if(idx >= 0){
+      const [task] = p.manha.tasks.splice(idx, 1);
+      task.sub = "até às 18h";
+      if(!p.tarde.tasks.some(t=>t.id === 'm7')){
+        const beforeSchool = p.tarde.tasks.findIndex(t=>t.id === 't4');
+        if(beforeSchool >= 0) p.tarde.tasks.splice(beforeSchool, 0, task);
+        else p.tarde.tasks.push(task);
+      }
+    }
+  });
+  cfg.moveUniformToTardeV1Applied = true;
   return cfg;
 }
 
