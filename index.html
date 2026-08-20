@@ -919,17 +919,17 @@
 
   .mark-group{
     display:flex;
-    gap:5px;
+    gap:4px;
     flex-shrink:0;
     margin-top:1px;
   }
   .mark-btn{
-    width:30px; height:30px;
+    width:27px; height:27px;
     border-radius:7px;
     border:1px solid var(--line);
     background:rgba(255,255,255,.03);
     color:var(--chalk-dim);
-    font-size:.9rem;
+    font-size:.82rem;
     line-height:1;
     cursor:pointer;
     font-family:inherit;
@@ -942,8 +942,12 @@
   .mark-btn:hover{ border-color:rgba(242,237,225,.4); color:var(--chalk); transform:scale(1.06); }
   .mark-btn:active{ transform:scale(.92); }
   .mark-done.active{ background:var(--green); border-color:var(--green); color:#132015; font-weight:bold; animation:markPop .3s ease; }
+  .mark-help.active{ background:var(--blue); border-color:var(--blue); color:#0f2733; font-weight:bold; animation:markPop .3s ease; }
   .mark-na.active{ background:var(--chalk-dim); border-color:var(--chalk-dim); color:#1b2e28; font-weight:bold; }
   .mark-x.active{ background:var(--red); border-color:var(--red); color:#2a1414; font-weight:bold; }
+  .task.helped .txt{ color:var(--blue); }
+  .task.helped .pts{ color:var(--blue); border-color:rgba(79,195,247,.4); }
+  .tier-badge{ font-size:.6rem; margin-right:4px; vertical-align:middle; }
   @keyframes markPop{
     0%{ transform:scale(1); }
     40%{ transform:scale(1.35); }
@@ -2046,40 +2050,40 @@ const DEFAULT_CONFIG = {
     manha: {
       label: "Manhã", time: "8:20 – 12:00",
       tasks: [
-        { id:"m1", txt:"Arrumar a cama", pts:2, sub:"até às 12h" },
-        { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h" },
-        { id:"m3", txt:"Escovar os dentes", pts:2, sub:"até às 12h" },
-        { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 12h" },
-        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:5 },
-        { id:"m8", txt:"Arrumar a mochila", pts:2, sub:"até às 12h" },
-        { id:"t_djf7hbb", txt:"Levar Lixo", pts:4, sub:"até às 12h" },
-        { id:"m2", txt:"Beber 1 copo de água", pts:1, sub:"até às 12h" },
+        { id:"m1", txt:"Arrumar a cama", pts:2, sub:"até às 12h", tier:"responsabilidade" },
+        { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h", tier:"essencial" },
+        { id:"m3", txt:"Escovar os dentes", pts:2, sub:"até às 12h", tier:"essencial" },
+        { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 12h", tier:"essencial" },
+        { id:"m5", txt:"Duolingo", sub:"5 lições", pts:5, tier:"extra" },
+        { id:"m8", txt:"Arrumar a mochila", pts:2, sub:"até às 12h", tier:"essencial" },
+        { id:"t_djf7hbb", txt:"Levar Lixo", pts:4, sub:"até às 12h", tier:"responsabilidade" },
+        { id:"m2", txt:"Beber 1 copo de água", pts:1, sub:"até às 12h", tier:"essencial" },
       ]
     },
     tarde: {
       label: "Tarde", time: "12:00 – 18:00",
       tasks: [
-        { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h", external:true },
-        { id:"t3", txt:"Escovar os dentes", pts:2, sub:"até às 18h" },
-        { id:"t5", txt:"Arrumar a mochila", pts:2, sub:"até às 18h" },
-        { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h", external:true },
-        { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h" },
+        { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h", external:true, tier:"essencial" },
+        { id:"t3", txt:"Escovar os dentes", pts:2, sub:"até às 18h", tier:"essencial" },
+        { id:"t5", txt:"Arrumar a mochila", pts:2, sub:"até às 18h", tier:"essencial" },
+        { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h", external:true, tier:"essencial" },
+        { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h", tier:"essencial" },
       ]
     },
     noite: {
       label: "Noite", time: "18:00 – 22:00",
       tasks: [
-        { id:"n5_cartas", txt:"Guardar as cartas de bafo", pts:1, fullPenalty:true, sub:"na caixinha delas" },
-        { id:"n5_carrinhos", txt:"Guardar os carrinhos", pts:1, fullPenalty:true, sub:"na caixa/prateleira" },
-        { id:"n5_bolinhas", txt:"Guardar as bolinhas de gude", pts:1, fullPenalty:true, sub:"no potinho" },
-        { id:"n5_caixas", txt:"Guardar as caixas", pts:1, fullPenalty:true, sub:"no lugar certo ou no lixo" },
-        { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:3, fullPenalty:true, sub:"conferência final — nada espalhado" },
-        { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h", external:true },
-        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4 },
-        { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h" },
-        { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)" },
-        { id:"t_ci3brlt", txt:"Ler Livro", pts:4, sub:"3 capítulo do livro de casa (até às 22h)" },
-        { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h" },
+        { id:"n5_cartas", txt:"Guardar as cartas de bafo", pts:1, fullPenalty:true, sub:"na caixinha delas", tier:"responsabilidade" },
+        { id:"n5_carrinhos", txt:"Guardar os carrinhos", pts:1, fullPenalty:true, sub:"na caixa/prateleira", tier:"responsabilidade" },
+        { id:"n5_bolinhas", txt:"Guardar as bolinhas de gude", pts:1, fullPenalty:true, sub:"no potinho", tier:"responsabilidade" },
+        { id:"n5_caixas", txt:"Guardar as caixas", pts:1, fullPenalty:true, sub:"no lugar certo ou no lixo", tier:"responsabilidade" },
+        { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:3, fullPenalty:true, sub:"conferência final — nada espalhado", tier:"responsabilidade" },
+        { id:"n1", txt:"Jantar", pts:1, sub:"até às 22h", external:true, tier:"essencial" },
+        { id:"n4", txt:"Tomar banho", sub:"levar a roupa suja pro cesto + pegar a toalha + abrir janela banheiro (até às 22h)", pts:4, tier:"essencial" },
+        { id:"n6", txt:"Escovar os dentes", pts:2, sub:"até às 22h", tier:"essencial" },
+        { id:"n7", txt:"Momento Criativo", pts:5, sub:"Desenhar, montar Lego, pintar... (30–40 min)", tier:"extra" },
+        { id:"t_ci3brlt", txt:"Ler Livro", pts:4, sub:"3 capítulo do livro de casa (até às 22h)", tier:"extra" },
+        { id:"n2", txt:"Beber 1 copo de água", pts:1, sub:"até às 22h", tier:"essencial" },
       ]
     },
   },
@@ -2208,6 +2212,7 @@ function getPeriodsFor(dateISO){
       txt: s.label,
       sub: `${s.start}–${s.end}`,
       pts: s.pts != null ? s.pts : 3,
+      tier: 'responsabilidade',
     });
   });
   todaysExceptions.forEach(s=>{
@@ -2217,6 +2222,7 @@ function getPeriodsFor(dateISO){
       txt: s.label,
       sub: `${s.start}–${s.end}`,
       pts: s.pts != null ? s.pts : 3,
+      tier: 'responsabilidade',
     });
   });
   return merged;
@@ -2229,6 +2235,12 @@ function allTasks(dateISO){
     ...periods.tarde.tasks,
     ...periods.noite.tasks,
   ];
+}
+
+// Regra 4: pedir ajuda / dividir a tarefa também conta como cumprida —
+// não é uma falha, é um jeito válido de fazer.
+function isCountedDone(status){
+  return status === 'done' || status === 'help';
 }
 
 // Reordenação pessoal (autonomia > pontos, segundo os estudos), por
@@ -2352,7 +2364,7 @@ function renderInvisibleWinsCard(){
   const el = document.getElementById('invisibleWinsCard');
   if(!el) return;
   const tasks = allTasks(todayISO());
-  const doneTasks = tasks.filter(t => state.checkedToday[t.id] === 'done');
+  const doneTasks = tasks.filter(t => isCountedDone(state.checkedToday[t.id]));
   const hasNotDone = Object.values(state.checkedToday).includes('x');
   const recovered = state.freshStartActiveDate === todayISO();
 
@@ -2393,7 +2405,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return splitBagunçaV1(addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))))))))));
+  return applyTaskTiersV1(splitBagunçaV1(addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))))))))))));
 }
 
 // Reforça pontos de tarefas mais chatas — roda uma vez só, não desfaz
@@ -2592,6 +2604,36 @@ function splitBagunçaV1(cfg){
     }
   });
   cfg.splitBagunçaV1Applied = true;
+  return cfg;
+}
+
+// Classificação em 4 níveis: 🔴 essencial (precisa acontecer, mas ele
+// escolhe quando/ordem/ajuda), 🟡 responsabilidade (esperado, gera
+// pontos normal), 🟢 extra (opcional, bônus maior). 🌟 iniciativa já é
+// coberta pelo "Vi algo legal!" — não precisa de tarefa fixa.
+const TASK_TIERS = {
+  m1:"responsabilidade", m4:"essencial", m3:"essencial", m7:"essencial",
+  m5:"extra", m8:"essencial", t_djf7hbb:"responsabilidade", m2:"essencial",
+  t2:"essencial", t3:"essencial", t5:"essencial", t4:"essencial", t1:"essencial",
+  n5_cartas:"responsabilidade", n5_carrinhos:"responsabilidade", n5_bolinhas:"responsabilidade",
+  n5_caixas:"responsabilidade", n5_sala:"responsabilidade",
+  n1:"essencial", n4:"essencial", n6:"essencial", n7:"extra", t_ci3brlt:"extra", n2:"essencial",
+};
+function applyTaskTiersV1(cfg){
+  if(!cfg || cfg.taskTiersV1Applied) return cfg;
+  ['periods','periodsWeekend'].forEach(key=>{
+    const p = cfg[key];
+    if(!p) return;
+    ['manha','tarde','noite'].forEach(period=>{
+      if(p[period] && Array.isArray(p[period].tasks)){
+        p[period].tasks.forEach(t=>{
+          if(TASK_TIERS[t.id]) t.tier = TASK_TIERS[t.id];
+          else if(!t.tier) t.tier = 'responsabilidade'; // compromissos fixos (Inglês, Escoteiros, Jogos)
+        });
+      }
+    });
+  });
+  cfg.taskTiersV1Applied = true;
   return cfg;
 }
 
@@ -2917,11 +2959,12 @@ function periodsCompletedFrom(checkedMap, dateISO){
   return count;
 }
 
-// Tempo de tela só desbloqueia depois que a Manhã inteira estiver feita.
+// Regra 1: tempo de tela só desbloqueia com as missões ESSENCIAIS feitas
+// (não a lista inteira da Manhã — extras como Duolingo não travam o jogo).
 function isManhaComplete(dateISO){
   const periods = getPeriodsFor(dateISO || todayISO());
-  const applicable = periods.manha.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  return applicable.length > 0 && applicable.every(t=>state.checkedToday[t.id] === 'done');
+  const essential = periods.manha.tasks.filter(t=>t.tier === 'essencial' && state.checkedToday[t.id] !== 'na');
+  return essential.length > 0 && essential.every(t=>isCountedDone(state.checkedToday[t.id]));
 }
 
 function registerPetDayCompletion(dateISO){
@@ -2953,7 +2996,7 @@ function isDayPerfect(dateISO){
   if(dateISO === todayISO()){
     const tasks = allTasks(dateISO);
     const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    return applicable.length > 0 && applicable.every(t=>state.checkedToday[t.id] === 'done');
+    return applicable.length > 0 && applicable.every(t=>isCountedDone(state.checkedToday[t.id]));
   }
   return !!(state.history[dateISO] && state.history[dateISO].perfect);
 }
@@ -2964,7 +3007,7 @@ function hasDayProgress(dateISO){
   if(dateISO === todayISO()){
     const tasks = allTasks(dateISO);
     const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    return applicable.some(t=>state.checkedToday[t.id] === 'done');
+    return applicable.some(t=>isCountedDone(state.checkedToday[t.id]));
   }
   const entry = state.history[dateISO];
   return !!(entry && entry.done > 0);
@@ -2982,10 +3025,13 @@ function closeOutDay(state, dateISO){
   const tasks = allTasks(dateISO);
   const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
   const total = applicable.length;
-  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-  const pointsEarnedThatDay = tasks
-    .filter(t=>state.checkedToday[t.id] === 'done')
-    .reduce((s,t)=>s+t.pts, 0);
+  const done = applicable.filter(t=>isCountedDone(state.checkedToday[t.id])).length;
+  const pointsEarnedThatDay = tasks.reduce((s,t)=>{
+    const st = state.checkedToday[t.id];
+    if(st === 'done') return s + t.pts;
+    if(st === 'help') return s + taskHelpPoints(t);
+    return s;
+  }, 0);
   const perfect = total > 0 && done === total;
   if(done > 0) registerPetDayCompletion(dateISO);
   if(perfect) registerPetPerfectBonus(dateISO);
@@ -3231,6 +3277,13 @@ function notDonePenalty(pts){
 // vez de metade — reforço maior pras tarefas mais chatas/resistidas.
 function taskNotDonePenalty(task){
   return task.fullPenalty ? task.pts : notDonePenalty(task.pts);
+}
+
+// Regra 4: pedir ajuda ou dividir a tarefa continua valendo — metade dos
+// pontos, arredondado pra cima (pedir ajuda direito é uma habilidade,
+// não uma falha).
+function taskHelpPoints(task){
+  return Math.max(1, Math.ceil(task.pts/2));
 }
 
 /* ===================== TIMER DE TEMPO DE JOGO (diário) ===================== */
@@ -3960,7 +4013,7 @@ function liveTodayEntry(){
   const tasks = allTasks();
   const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
   const total = applicable.length;
-  const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+  const done = applicable.filter(t=>isCountedDone(state.checkedToday[t.id])).length;
   const perfect = total>0 && done===total;
   return { total, done, perfect };
 }
@@ -4023,7 +4076,7 @@ function render(){
     div.className = 'period ' + key;
 
     const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    const doneCount = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
+    const doneCount = applicable.filter(t=>isCountedDone(state.checkedToday[t.id])).length;
     const remaining = applicable.length - doneCount;
     const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
 
@@ -4052,15 +4105,18 @@ function render(){
     ul.className = 'tasks';
     const orderedTasks = getEffectiveTaskOrder(key, period.tasks);
     const nextSuggestedId = orderedTasks.find(t => !t.external && !state.checkedToday[t.id])?.id;
+    const tierBadge = { essencial:'🔴', responsabilidade:'🟡', extra:'🟢' };
+    const tierTitle = { essencial:'Essencial — precisa acontecer, mas você escolhe quando/ordem/ajuda', responsabilidade:'Responsabilidade — esperado, gera pontos', extra:'Extra — opcional, bônus maior' };
     orderedTasks.forEach((task, idx)=>{
       const li = document.createElement('li');
-      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | undefined
+      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | 'help' | undefined
       const isSuggested = task.id === nextSuggestedId;
       const lightDay = isLightDay(todayISO());
       li.className = 'task'
         + (status === 'done' ? ' done' : '')
         + (status === 'na' ? ' na' : '')
         + (status === 'x' ? ' notdone' : '')
+        + (status === 'help' ? ' helped' : '')
         + (isSuggested ? ' suggested' : '');
       li.innerHTML = `
         <span class="task-reorder">
@@ -4069,11 +4125,12 @@ function render(){
         </span>
         <span class="mark-group" data-id="${task.id}">
           <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
+          <button type="button" class="mark-btn mark-help ${status==='help'?'active':''}" data-status="help" title="Pedi ajuda / fizemos junto">🤝</button>
           <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
           <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="${lightDay ? 'Não feito (dia leve, sem perder ponto)' : 'Não feito, perde metade dos pontos'}">✕</button>
         </span>
-        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
-        <span class="pts">${status==='na' ? 'n/a' : status==='x' ? (lightDay ? 'dia leve' : '−'+taskNotDonePenalty(task)) : '+'+task.pts}</span>
+        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}${task.tier ? `<span class="tier-badge" title="${tierTitle[task.tier]||''}">${tierBadge[task.tier]||''}</span>` : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
+        <span class="pts">${status==='na' ? 'n/a' : status==='help' ? '+'+taskHelpPoints(task) : status==='x' ? (lightDay ? 'dia leve' : '−'+taskNotDonePenalty(task)) : '+'+task.pts}</span>
       `;
       ul.appendChild(li);
     });
@@ -4375,8 +4432,13 @@ function renderHistory(){
       const tasks = allTasks();
       const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
       const total = applicable.length;
-      const done = applicable.filter(t=>state.checkedToday[t.id] === 'done').length;
-      const pointsEarnedThatDay = tasks.filter(t=>state.checkedToday[t.id]==='done').reduce((s,t)=>s+t.pts,0);
+      const done = applicable.filter(t=>isCountedDone(state.checkedToday[t.id])).length;
+      const pointsEarnedThatDay = tasks.reduce((s,t)=>{
+        const st = state.checkedToday[t.id];
+        if(st === 'done') return s + t.pts;
+        if(st === 'help') return s + taskHelpPoints(t);
+        return s;
+      }, 0);
       const perfect = total>0 && done===total;
       entry = { done, total, pointsEarnedThatDay, perfect, hair:getHairStatus(iso) };
     } else {
@@ -4590,16 +4652,17 @@ function fireConfetti(originEl, count){
 function onMarkClick(e){
   const btn = e.currentTarget;
   const id = btn.closest('.mark-group').getAttribute('data-id');
-  const clickedStatus = btn.getAttribute('data-status'); // 'done', 'na', or 'x'
+  const clickedStatus = btn.getAttribute('data-status'); // 'done', 'help', 'na', or 'x'
   const task = allTasks().find(t=>t.id===id);
   if(!task) return;
 
-  const current = state.checkedToday[id]; // undefined | 'done' | 'na' | 'x'
+  const current = state.checkedToday[id]; // undefined | 'done' | 'help' | 'na' | 'x'
   let totalDelta = 0;
   const lightDay = isLightDay(todayISO());
 
   // desfazer o efeito do estado anterior nos pontos
   if(current === 'done') totalDelta += addPoints(-task.pts);
+  else if(current === 'help') totalDelta += addPoints(-taskHelpPoints(task));
   else if(current === 'x' && !lightDay) totalDelta += addPoints(taskNotDonePenalty(task));
 
   if(current === clickedStatus){
@@ -4612,6 +4675,12 @@ function onMarkClick(e){
       totalDelta += addPoints(task.pts);
       addLog(`+${task.pts} · ${task.txt}`);
       fireConfetti(btn);
+    } else if(clickedStatus === 'help'){
+      const helpPts = taskHelpPoints(task);
+      totalDelta += addPoints(helpPts);
+      state.helpRequestsCount = (Number(state.helpRequestsCount)||0) + 1;
+      addLog(`🤝 +${helpPts} · pediu ajuda em: ${task.txt} — isso é uma habilidade, não uma falha!`);
+      fireConfetti(btn, 8);
     } else if(clickedStatus === 'na'){
       addLog(`n/a · ${task.txt}`);
     } else if(lightDay){
