@@ -1199,26 +1199,19 @@
     letter-spacing:.5px;
   }
   table.history-table td.pts-cell{ color:var(--green); }
-  .badge-perfect{
+  .badge-perfect, .badge-almost, .badge-good, .badge-progress, .badge-started{
     display:inline-block;
-    background:rgba(255,217,61,.15);
-    color:var(--yellow);
-    border:1px solid rgba(255,217,61,.4);
     border-radius:999px;
     padding:1px 8px;
     font-size:.68rem;
     margin-left:6px;
+    border:1px solid;
   }
-  .badge-almost{
-    display:inline-block;
-    background:rgba(79,195,247,.15);
-    color:var(--blue);
-    border:1px solid rgba(79,195,247,.4);
-    border-radius:999px;
-    padding:1px 8px;
-    font-size:.68rem;
-    margin-left:6px;
-  }
+  .badge-perfect{ background:rgba(255,217,61,.15); color:var(--yellow); border-color:rgba(255,217,61,.4); }
+  .badge-almost{ background:rgba(79,195,247,.15); color:var(--blue); border-color:rgba(79,195,247,.4); }
+  .badge-good{ background:rgba(95,216,117,.15); color:var(--green); border-color:rgba(95,216,117,.4); }
+  .badge-progress{ background:rgba(255,159,67,.15); color:var(--orange); border-color:rgba(255,159,67,.4); }
+  .badge-started{ background:rgba(255,126,185,.15); color:var(--pink); border-color:rgba(255,126,185,.4); }
   tr.today-row td{ color:var(--chalk); font-weight:bold; }
   .edit-day-btn{
     padding:3px 7px;
@@ -4464,6 +4457,19 @@ function renderWeeklyReview(){
   `;
 }
 
+// Escala de mensagens pro dia — em vez de "tudo ou nada" (perfeito ou
+// nada), reconhece o esforço em vários níveis.
+function dayQualityBadge(entry){
+  if(!entry || !entry.total) return '';
+  const pct = entry.done / entry.total;
+  if(entry.perfect) return '<span class="badge-perfect">🎉 dia perfeito</span>';
+  if(entry.total > 0 && entry.done === entry.total - 1) return '<span class="badge-almost">⭐ dia quase perfeito</span>';
+  if(pct >= 0.6) return '<span class="badge-good">👍 dia muito bom</span>';
+  if(pct >= 0.3) return '<span class="badge-progress">🌱 dia em progresso</span>';
+  if(pct > 0) return '<span class="badge-started">💛 começou o dia</span>';
+  return '';
+}
+
 function hairLabel(status){
   if(status === 'washed') return '<span class="hair-history-washed">💧 Lavou</span>';
   if(status === 'not-washed') return '<span class="hair-history-notwashed">○ Não lavou</span>';
@@ -4517,9 +4523,7 @@ function renderHistory(){
         <td>${(isToday||!adultUnlocked)?'':`<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`}</td>
       </tr>`;
     }
-    const perfectBadge = entry.perfect
-      ? '<span class="badge-perfect">dia perfeito</span>'
-      : (entry.total > 0 && entry.done === entry.total - 1 ? '<span class="badge-almost">quase lá! 🌟</span>' : '');
+    const perfectBadge = dayQualityBadge(entry);
     const editCell = (isToday||!adultUnlocked) ? '' : `<button class="icon-btn edit-day-btn" data-date="${iso}" title="Editar este dia">✏️</button>`;
     return `<tr${isToday?' class="today-row"':''}>
       <td>${formatDateBR(iso)}${isToday?' (hoje)':''}</td>
