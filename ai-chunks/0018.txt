@@ -1,4 +1,30 @@
-orderedTasks.forEach((task, idx)=>{
+plicable.length === 0){ progressMsg = 'nada marcado ainda'; }
+    else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
+    else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
+    else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
+
+    // prévia da próxima etapa quando termina esse período — saber o que
+    // vem a seguir ajuda a reduzir a sensação de surpresa na transição.
+    let nextPreviewHtml = '';
+    if(pct === 100 && applicable.length > 0){
+      const idx = PERIOD_ORDER.indexOf(key);
+      const nextKey = idx >= 0 && idx < PERIOD_ORDER.length-1 ? PERIOD_ORDER[idx+1] : null;
+      if(nextKey && periodsObj[nextKey]){
+        const nextPeriod = periodsObj[nextKey];
+        const firstTask = nextPeriod.tasks[0];
+        nextPreviewHtml = `<div class="next-period-preview">➡️ A seguir: <b>${nextPeriod.label}</b>${firstTask ? ` — começando com ${taskIcon(firstTask.txt)} ${firstTask.txt}` : ''}</div>`;
+      } else if(!nextKey){
+        nextPreviewHtml = `<div class="next-period-preview">🎉 Terminou tudo por hoje!</div>`;
+      }
+    }
+
+    const ul = document.createElement('ul');
+    ul.className = 'tasks';
+    const orderedTasks = getEffectiveTaskOrder(key, period.tasks);
+    const nextSuggestedId = orderedTasks.find(t => !t.external && !state.checkedToday[t.id])?.id;
+    const tierBadge = { essencial:'🔴', responsabilidade:'🟡', extra:'🟢' };
+    const tierTitle = { essencial:'Essencial — precisa acontecer, mas você escolhe quando/ordem/ajuda', responsabilidade:'Responsabilidade — esperado, gera pontos', extra:'Extra — opcional, bônus maior' };
+    orderedTasks.forEach((task, idx)=>{
       const li = document.createElement('li');
       const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | 'help' | undefined
       const isSuggested = task.id === nextSuggestedId;
@@ -145,47 +171,4 @@ function renderTestPanel(){
 
   document.getElementById('testCompleteDayBtn').addEventListener('click', ()=>{
     allTasks().forEach(t=>{
-      if(state.checkedToday[t.id] !== 'done'){
-        addPoints(t.pts);
-      }
-      state.checkedToday[t.id] = 'done';
-    });
-    syncPetCompletionFromDay(todayISO());
-    addLog('🧪 (teste) todas as tarefas de hoje marcadas como feitas', true);
-    saveState(state);
-    render();
-  });
-
-  document.getElementById('testPrevDayBtn').addEventListener('click', ()=>{
-    goToTestDate(shiftISODate(todayISO(), -1));
-  });
-  document.getElementById('testNextDayBtn').addEventListener('click', ()=>{
-    goToTestDate(shiftISODate(todayISO(), 1));
-  });
-  document.getElementById('testGoDateBtn').addEventListener('click', ()=>{
-    const val = document.getElementById('testDatePicker').value;
-    if(val) goToTestDate(val);
-  });
-  document.getElementById('testResetDateBtn').addEventListener('click', ()=>{
-    goToTestDate(realToday);
-    setTestDate(null);
-    state = loadState();
-    render();
-  });
-}
-
-// Aviso pontual pra contar a novidade dos Jogos em Família — some pra
-// sempre depois que ele der "combinado!" (fica guardado no estado).
-function renderFamilyGameNightAnnouncement(){
-  const el = document.getElementById('familyGameNightAnnouncement');
-  if(!el) return;
-  if(state.familyGameNightAnnouncementSeen){ el.innerHTML=''; return; }
-
-  el.innerHTML = `
-    <div class="family-announcement">
-      <div class="title">🕹️ Novidade na família!</div>
-      <div class="msg">A partir de agora, toda <b>quinta-feira à noite, das 21h às 23h</b>, é hora de <b>Jogos em Família</b>! 🎲🎉</div>
-      <button class="dismiss-btn" id="familyGameNightDismissBtn">bora! 🤝</button>
-    </div>
-  `;
-  document.get
+   

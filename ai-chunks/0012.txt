@@ -1,4 +1,44 @@
-ia com as missões ESSENCIAIS feitas
+OutDay(state, state.lastDate);
+
+    // se ficou mais de um dia sem abrir o app, os dias pulados no meio
+    // nunca tinham registro nenhum — agora registramos como "app não
+    // aberto" (sem tarefa marcada), não como um dia que falhou.
+    if(state.lastDate){
+      let cursor = new Date(state.lastDate+"T00:00:00");
+      cursor.setDate(cursor.getDate()+1);
+      const todayDate = new Date(todayISO()+"T00:00:00");
+      while(cursor < todayDate){
+        const iso = cursor.getFullYear()+"-"+String(cursor.getMonth()+1).padStart(2,'0')+"-"+String(cursor.getDate()).padStart(2,'0');
+        if(!state.history[iso]){
+          const skippedTasks = allTasks(iso);
+          state.history[iso] = { done:0, total:skippedTasks.length, pointsEarnedThatDay:0, perfect:false, screenMinutes:0, periodsCompleted:0, hair:null };
+        }
+        cursor.setDate(cursor.getDate()+1);
+      }
+    }
+
+    state.checkedToday = {};
+    state.log = [];
+    state.lastDate = todayISO();
+    // zera o tempo de jogo usado — é uma cota que renova todo dia
+    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
+    saveState(state);
+  } else if(cleaned){
+    saveState(state);
+  }
+  return state;
+}
+
+function periodsCompletedFrom(checkedMap, dateISO){
+  let count = 0;
+  Object.values(getPeriodsFor(dateISO || todayISO())).forEach(period=>{
+    const applicable = period.tasks.filter(t=>checkedMap[t.id] !== 'na');
+    if(applicable.length>0 && applicable.every(t=>checkedMap[t.id]==='done')) count++;
+  });
+  return count;
+}
+
+// Regra 1: tempo de tela só desbloqueia com as missões ESSENCIAIS feitas
 // (não a lista inteira da Manhã — extras como Duolingo não travam o jogo).
 function isManhaComplete(dateISO){
   const periods = getPeriodsFor(dateISO || todayISO());
@@ -149,55 +189,4 @@ async function doAutoPush(){
       CONFIG = merged.config;
       state = merged.state;
       state.driveRevision = Number(result.revision)||Number(server.state?.driveRevision)||0;
-      state.driveLastSyncISO = todayISO();
-      saveState(state);
-      saveConfig(CONFIG);
-      render();
-    }
-  }catch(err){
-    renderDriveSync();
-  } finally {
-    pushInFlight = false;
-    if(pushPending){
-      pushPending = false;
-      doAutoPush();
-    }
-  }
-}
-
-function isValidPeriodsConfig(cfg){
-  try{
-    const p = cfg && cfg.periods;
-    return !!(
-      p &&
-      p.manha && Array.isArray(p.manha.tasks) && p.manha.tasks.length > 0 &&
-      p.tarde && Array.isArray(p.tarde.tasks) && p.tarde.tasks.length > 0 &&
-      p.noite && Array.isArray(p.noite.tasks) && p.noite.tasks.length > 0
-    );
-  }catch(e){
-    return false;
-  }
-}
-
-function sanitizeRemoteConfig(remoteConfig){
-  if(!isValidPeriodsConfig(remoteConfig)) return null;
-  const safe = JSON.parse(JSON.stringify(remoteConfig));
-  if(!safe.periodsWeekend) safe.periodsWeekend = null;
-  if(!Array.isArray(safe.badHabits)) safe.badHabits = [];
-  if(!Array.isArray(safe.rewards)) safe.rewards = [];
-  if(!Array.isArray(safe.schedule)) safe.schedule = [];
-  if(!Array.isArray(safe.scheduleExceptions)) safe.scheduleExceptions = [];
-  if(!safe.pet || !Array.isArray(safe.pet.stages) || safe.pet.stages.length < 2) {
-    safe.pet = JSON.parse(JSON.stringify(DEFAULT_CONFIG.pet));
-  }
-  return stripLegacyHairTask(safe);
-}
-
-function mergeRemoteData(remote){
-  const remoteState = remote.state || {};
-  const localState = state || {};
-  const merged = JSON.parse(JSON.stringify(remoteState));
-  merged.history = {...(remoteState.history||{})};
-  Object.entries(localState.history||{}).forEach(([iso,entry])=>{
-    const remoteEntry = merged.history[iso];
-    if(!remoteEn
+      state.driveLastSyncISO = t

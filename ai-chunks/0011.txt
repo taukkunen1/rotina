@@ -127,6 +127,24 @@ function reconcileState(state){
     if(state.history["2026-08-18"]) state.history["2026-08-18"].hair = "washed";
     state.hairCorrectionAug1718Applied = true;
   }
+  if(!state.backfillGapDaysV1Applied){
+    ["2026-08-17","2026-08-18"].forEach(iso=>{
+      if(!state.history[iso] || !state.history[iso].total){
+        const tasks = allTasks(iso);
+        state.history[iso] = {
+          done:0, total:tasks.length, pointsEarnedThatDay:0, perfect:false,
+          screenMinutes:0, periodsCompleted:0,
+          hair: (state.hairByDate && state.hairByDate[iso]) || null,
+        };
+      }
+    });
+    // 19/08 tinha registro, mas com total 0 (bug do mesmo tipo) — recalcula certo
+    if(state.history["2026-08-19"] && !state.history["2026-08-19"].total){
+      const tasks19 = allTasks("2026-08-19");
+      state.history["2026-08-19"].total = tasks19.length;
+    }
+    state.backfillGapDaysV1Applied = true;
+  }
   if(!state.gameTimer || typeof state.gameTimer !== "object"){
     state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
   }
@@ -162,26 +180,4 @@ function reconcileState(state){
 
   if(state.lastDate !== todayISO()){
     // fecha o dia anterior no histórico antes de zerar o checklist
-    closeOutDay(state, state.lastDate);
-    state.checkedToday = {};
-    state.log = [];
-    state.lastDate = todayISO();
-    // zera o tempo de jogo usado — é uma cota que renova todo dia
-    state.gameTimer = { date: todayISO(), usedSeconds: 0, runningSince: null, bonusSeconds: 0, redemptions: {} };
-    saveState(state);
-  } else if(cleaned){
-    saveState(state);
-  }
-  return state;
-}
-
-function periodsCompletedFrom(checkedMap, dateISO){
-  let count = 0;
-  Object.values(getPeriodsFor(dateISO || todayISO())).forEach(period=>{
-    const applicable = period.tasks.filter(t=>checkedMap[t.id] !== 'na');
-    if(applicable.length>0 && applicable.every(t=>checkedMap[t.id]==='done')) count++;
-  });
-  return count;
-}
-
-// Regra 1: tempo de tela só desbloque
+    close

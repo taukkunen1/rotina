@@ -1,4 +1,48 @@
-ativa de hoje (dia de escola ou fim de semana)
+rPin){
+      alert('PIN incorreto.');
+      return;
+    }
+  }
+  adultUnlocked = true;
+  openEditor();
+  render();
+});
+document.getElementById('adultTestBtn').addEventListener('click', ()=>{
+  closeEditor();
+  testPanelOpen = !testPanelOpen;
+  renderTestPanel();
+});
+document.getElementById('closeBtn').addEventListener('click', closeEditor);
+document.getElementById('cancelBtn').addEventListener('click', closeEditor);
+document.getElementById('overlay').addEventListener('click', e=>{
+  if(e.target.id === 'overlay') closeEditor();
+});
+
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  // limpa linhas vazias (sem nome) antes de salvar
+  ['manha','tarde','noite'].forEach(k=>{
+    draft.periods[k].tasks = draft.periods[k].tasks.filter(t=>t.txt.trim() !== '');
+  });
+  if(draft.periodsWeekend){
+    ['manha','tarde','noite'].forEach(k=>{
+      draft.periodsWeekend[k].tasks = draft.periodsWeekend[k].tasks.filter(t=>t.txt.trim() !== '');
+    });
+  }
+  draft.badHabits = draft.badHabits.filter(h=>h.txt.trim() !== '');
+  draft.rewards = draft.rewards.filter(r=>r.txt.trim() !== '');
+  draft.schedule = (draft.schedule || []).filter(s=>s.label.trim() !== '' && s.days.length > 0);
+
+  const pinVal = document.getElementById('editorPinInput').value.trim();
+  draft.editorPin = pinVal;
+
+  const gameLimitVal = parseFloat(document.getElementById('gameLimitInput').value);
+  draft.screenDailyLimitHours = isNaN(gameLimitVal) || gameLimitVal < 0 ? 2 : gameLimitVal;
+
+  CONFIG = draft;
+  saveConfig(CONFIG);
+
+  // remove do estado marcado de hoje qualquer tarefa que não existe mais
+  // na rotina ativa de hoje (dia de escola ou fim de semana)
   const validIds = new Set(allTasks().map(t=>t.id));
   Object.keys(state.checkedToday).forEach(id=>{
     if(!validIds.has(id)) delete state.checkedToday[id];
@@ -143,28 +187,4 @@ function renderDriveSync(){
     `;
   } else {
     statusHtml = state.driveLastSyncISO
-      ? `Sincronizado ✓ — ${formatDateBR(state.driveLastSyncISO)}${state.driveConflictCount ? ` · ${state.driveConflictCount} conflito(s) resolvido(s)` : ''}.`
-      : `Sincronização automática ativa — aguardando primeira sincronização.`;
-    actionsHtml = `
-      <button class="icon-btn primary" id="driveSaveBtn">☁️⬆️ forçar salvar agora</button>
-      <button class="icon-btn primary" id="driveLoadBtn">☁️⬇️ forçar carregar agora</button>
-    `;
-  }
-
-  el.innerHTML = `
-    <div class="drive-sync">
-      <h3>☁️ Sincronizado com Google Drive</h3>
-      <div class="hint">O Drive guarda os dados, o histórico e uma cópia diária. O app continua funcionando offline e sincroniza quando a conexão volta.</div>
-      <div class="status">${statusHtml}</div>
-      <div class="drive-sync-row">${actionsHtml}</div>
-      <div id="driveSetupInfo" style="display:none;" class="drive-setup">
-        <b>Passo a passo:</b>
-        <ol>
-          <li>Acesse <code>script.google.com</code> → "Novo projeto".</li>
-          <li>Apague o código de exemplo e cole o código do Apps Script (botão "ver código" ao lado).</li>
-          <li>Clique em "Implantar" → "Nova implantação".</li>
-          <li>Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer pessoa".</li>
-          <li>Implante, autorize (é a sua própria conta), e copie a URL gerada (termina em <code>/exec</code>).</li>
-          <li>Cole essa URL na constante <code>APPS_SCRIPT_URL</code> no início do arquivo HTML.</li>
-          <li>No seu Google Drive, salve o arquivo do app com o nome exato <code>rotina-hector.html</code>.</li>
-          <li>Em todos os ap
+      ? `Sincronizad

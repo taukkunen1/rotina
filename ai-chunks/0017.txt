@@ -1,4 +1,40 @@
-"pet-day-progress-head"><span>Progresso do Pacus</span><b>${progressPct}%</b></div>
+small>dia ${day}</small></span>`;
+  }).join('');
+
+  let caption;
+  if(stage === maxStage){
+    caption = `Pacus adulto! <b>Ciclo concluído em 31/08.</b> 🎉`;
+  } else if(canGrowToday && isDayPerfect(todayISO())){
+    caption = `<b>Dia perfeito!</b> O Pacus ganha um empurrãozinho <b>extra</b> de crescimento hoje! ✨`;
+  } else if(canGrowToday){
+    caption = `<b>Boa!</b> O Pacus vai evoluir mais um pouco hoje.`;
+  } else if(daysEquivalent === 0){
+    caption = `Complete um dia inteiro de tarefas pra começar a rachar o ovo.`;
+  } else {
+    const nextMilestone = milestones.find(([day]) => day > daysEquivalent);
+    if(nextMilestone){
+      const diasFaltando = nextMilestone[0] - daysEquivalent;
+      caption = `Faltam <b>${diasFaltando} ${diasFaltando===1?'dia':'dias'}</b> para virar <b>${nextMilestone[1]}</b>.`;
+    } else {
+      caption = `Quase lá! O Pacus está quase adulto.`;
+    }
+  }
+
+  const previousProgress = Number(el.dataset.pacusProgress ?? daysEquivalent);
+  const grewNow = daysEquivalent > previousProgress;
+  el.dataset.pacusProgress = String(daysEquivalent);
+
+  el.innerHTML = `
+    <div class="pet-mascot-wrap" id="pacusInteractive" title="Toque no Pacus!">
+      ${buildPetVisual(stageFloat)}
+      <span class="pet-accessory">🌿</span>
+      <span class="pet-reaction-bubble" id="petReactionBubble"></span>
+    </div>
+    <div id="pacusDialogue"></div>
+    <div class="pet-name">${CONFIG.pet.name}</div>
+    <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
+    <div class="pet-day-progress">
+      <div class="pet-day-progress-head"><span>Progresso do Pacus</span><b>${progressPct}%</b></div>
       <div class="pet-day-track" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
     </div>
     <div class="pet-milestones">${milestoneHtml}</div>
@@ -157,30 +193,4 @@ function render(){
     const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
 
     let progressMsg;
-    if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
-    else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
-    else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
-    else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
-
-    // prévia da próxima etapa quando termina esse período — saber o que
-    // vem a seguir ajuda a reduzir a sensação de surpresa na transição.
-    let nextPreviewHtml = '';
-    if(pct === 100 && applicable.length > 0){
-      const idx = PERIOD_ORDER.indexOf(key);
-      const nextKey = idx >= 0 && idx < PERIOD_ORDER.length-1 ? PERIOD_ORDER[idx+1] : null;
-      if(nextKey && periodsObj[nextKey]){
-        const nextPeriod = periodsObj[nextKey];
-        const firstTask = nextPeriod.tasks[0];
-        nextPreviewHtml = `<div class="next-period-preview">➡️ A seguir: <b>${nextPeriod.label}</b>${firstTask ? ` — começando com ${taskIcon(firstTask.txt)} ${firstTask.txt}` : ''}</div>`;
-      } else if(!nextKey){
-        nextPreviewHtml = `<div class="next-period-preview">🎉 Terminou tudo por hoje!</div>`;
-      }
-    }
-
-    const ul = document.createElement('ul');
-    ul.className = 'tasks';
-    const orderedTasks = getEffectiveTaskOrder(key, period.tasks);
-    const nextSuggestedId = orderedTasks.find(t => !t.external && !state.checkedToday[t.id])?.id;
-    const tierBadge = { essencial:'🔴', responsabilidade:'🟡', extra:'🟢' };
-    const tierTitle = { essencial:'Essencial — precisa acontecer, mas você escolhe quando/ordem/ajuda', responsabilidade:'Responsabilidade — esperado, gera pontos', extra:'Extra — opcional, bônus maior' };
-    
+    if(ap

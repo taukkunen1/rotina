@@ -1,4 +1,44 @@
-t} (dia leve, sem perder ponto)`);
+dChild(piece);
+    setTimeout(()=>piece.remove(), 950);
+  }
+}
+
+function onMarkClick(e){
+  const btn = e.currentTarget;
+  const id = btn.closest('.mark-group').getAttribute('data-id');
+  const clickedStatus = btn.getAttribute('data-status'); // 'done', 'help', 'na', or 'x'
+  const task = allTasks().find(t=>t.id===id);
+  if(!task) return;
+
+  const current = state.checkedToday[id]; // undefined | 'done' | 'help' | 'na' | 'x'
+  let totalDelta = 0;
+  const lightDay = isLightDay(todayISO());
+
+  // desfazer o efeito do estado anterior nos pontos
+  if(current === 'done') totalDelta += addPoints(-task.pts);
+  else if(current === 'help') totalDelta += addPoints(-taskHelpPoints(task));
+  else if(current === 'x' && !lightDay) totalDelta += addPoints(taskNotDonePenalty(task));
+
+  if(current === clickedStatus){
+    // clicou de novo no mesmo estado: volta pra pendente
+    delete state.checkedToday[id];
+    addLog(`(desmarcado) ${task.txt}`);
+  } else {
+    state.checkedToday[id] = clickedStatus;
+    if(clickedStatus === 'done'){
+      totalDelta += addPoints(task.pts);
+      addLog(`+${task.pts} · ${task.txt}`);
+      fireConfetti(btn);
+    } else if(clickedStatus === 'help'){
+      const helpPts = taskHelpPoints(task);
+      totalDelta += addPoints(helpPts);
+      state.helpRequestsCount = (Number(state.helpRequestsCount)||0) + 1;
+      addLog(`🤝 +${helpPts} · pediu ajuda em: ${task.txt} — isso é uma habilidade, não uma falha!`);
+      fireConfetti(btn, 8);
+    } else if(clickedStatus === 'na'){
+      addLog(`n/a · ${task.txt}`);
+    } else if(lightDay){
+      addLog(`✕ não realizado · ${task.txt} (dia leve, sem perder ponto)`);
     } else {
       const penalty = taskNotDonePenalty(task);
       totalDelta += addPoints(-penalty);
@@ -142,45 +182,4 @@ function wireStepper(row, obj, field, allowNegative){
   row.querySelectorAll('.step-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const delta = parseInt(btn.getAttribute('data-step'));
-      const next = (obj[field]||0) + delta;
-      obj[field] = allowNegative ? next : Math.max(0, next);
-      input.value = obj[field];
-    });
-  });
-}
-
-function renderEditorBad(){
-  const el = document.getElementById('editBad');
-  el.innerHTML = '';
-  draft.badHabits.forEach(h=>{
-    const row = document.createElement('div');
-    row.className = 'edit-row';
-    row.innerHTML = `
-      <input type="text" value="${escapeAttr(h.txt)}" data-field="txt" placeholder="hábito (ex: brigou -10, ajudou +5)">
-      ${stepperHTML('pts', h.pts, true)}
-      <button class="del" title="remover">🗑</button>
-    `;
-    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ h.txt = e.target.value; });
-    wireStepper(row, h, 'pts', true);
-    row.querySelector('.del').addEventListener('click', ()=>{
-      draft.badHabits = draft.badHabits.filter(x=>x!==h);
-      renderEditorBad();
-    });
-    el.appendChild(row);
-  });
-}
-
-function renderEditorSchedule(){
-  const el = document.getElementById('editSchedule');
-  el.innerHTML = '';
-  const dayOrder = ['seg','ter','qua','qui','sex','sab','dom'];
-  const dayShort = {seg:'S',ter:'T',qua:'Q',qui:'Q',sex:'S',sab:'S',dom:'D'};
-  const periodLabels = {manha:'Manhã', tarde:'Tarde', noite:'Noite'};
-  draft.schedule.forEach(item=>{
-    if(item.pts == null) item.pts = 3;
-    if(!item.period) item.period = 'tarde';
-    const row = document.createElement('div');
-    row.className = 'edit-row-task';
-    const dayChips = dayOrder.map(d=>
-      `<button type="button" class="day-chip ${item.days.includes(d)?'active':''}" data-day="${d}" title="${WEEKDAY_LABELS[d]}">${dayShort[d]}</button>`
- 
+      const next = (obj[field]||0) 

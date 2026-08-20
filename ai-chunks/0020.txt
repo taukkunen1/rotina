@@ -1,4 +1,43 @@
->
+matDateBR(iso)}${isToday?' (hoje)':''}</td>
+      <td>${entry.done}/${entry.total}${perfectBadge}</td>
+      <td class="pts-cell">${entry.pointsEarnedThatDay}</td>
+      <td>${hairLabel(hair)}</td>
+      <td>${editCell}</td>
+    </tr>`;
+  }).join('');
+
+  body.querySelectorAll('.edit-day-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> openDayEditor(btn.getAttribute('data-date')));
+  });
+
+  const toggleEl = document.getElementById('historyToggle');
+  if(toggleEl){
+    if(hiddenCount > 0){
+      toggleEl.innerHTML = historyShowAll
+        ? `<button class="icon-btn" id="historyToggleBtn">mostrar só os últimos ${HISTORY_VISIBLE_DAYS} dias</button>`
+        : `<button class="icon-btn" id="historyToggleBtn">mostrar histórico completo (+${hiddenCount} dias)</button>`;
+      document.getElementById('historyToggleBtn').addEventListener('click', ()=>{
+        historyShowAll = !historyShowAll;
+        renderHistory();
+      });
+    } else {
+      toggleEl.innerHTML = '';
+    }
+  }
+}
+
+function renderRewards(){
+  const rEl = document.getElementById('rewards');
+  rEl.innerHTML = '';
+  CONFIG.rewards.forEach(r=>{
+    const canAfford = state.totalPoints >= r.cost;
+    const redeemedToday = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
+    const atDailyLimit = r.maxPerDay != null && redeemedToday >= r.maxPerDay;
+    const capNote = r.maxPerDay != null ? `<span class="cap-note">${redeemedToday}/${r.maxPerDay} hoje</span>` : '';
+    const div = document.createElement('div');
+    div.className = 'reward';
+    div.innerHTML = `
+      <div class="name">${r.txt}</div>
       <span class="cost">${r.cost} PP</span>
       ${capNote}
       <button ${(canAfford && !atDailyLimit) ? '' : 'disabled'}>${atDailyLimit ? 'Limite hoje' : 'Resgatar'}</button>
@@ -144,44 +183,4 @@ function fireConfetti(originEl, count){
     piece.style.left = originX+'px';
     piece.style.top = originY+'px';
     piece.style.background = colors[i % colors.length];
-    document.body.appendChild(piece);
-    setTimeout(()=>piece.remove(), 950);
-  }
-}
-
-function onMarkClick(e){
-  const btn = e.currentTarget;
-  const id = btn.closest('.mark-group').getAttribute('data-id');
-  const clickedStatus = btn.getAttribute('data-status'); // 'done', 'help', 'na', or 'x'
-  const task = allTasks().find(t=>t.id===id);
-  if(!task) return;
-
-  const current = state.checkedToday[id]; // undefined | 'done' | 'help' | 'na' | 'x'
-  let totalDelta = 0;
-  const lightDay = isLightDay(todayISO());
-
-  // desfazer o efeito do estado anterior nos pontos
-  if(current === 'done') totalDelta += addPoints(-task.pts);
-  else if(current === 'help') totalDelta += addPoints(-taskHelpPoints(task));
-  else if(current === 'x' && !lightDay) totalDelta += addPoints(taskNotDonePenalty(task));
-
-  if(current === clickedStatus){
-    // clicou de novo no mesmo estado: volta pra pendente
-    delete state.checkedToday[id];
-    addLog(`(desmarcado) ${task.txt}`);
-  } else {
-    state.checkedToday[id] = clickedStatus;
-    if(clickedStatus === 'done'){
-      totalDelta += addPoints(task.pts);
-      addLog(`+${task.pts} · ${task.txt}`);
-      fireConfetti(btn);
-    } else if(clickedStatus === 'help'){
-      const helpPts = taskHelpPoints(task);
-      totalDelta += addPoints(helpPts);
-      state.helpRequestsCount = (Number(state.helpRequestsCount)||0) + 1;
-      addLog(`🤝 +${helpPts} · pediu ajuda em: ${task.txt} — isso é uma habilidade, não uma falha!`);
-      fireConfetti(btn, 8);
-    } else if(clickedStatus === 'na'){
-      addLog(`n/a · ${task.txt}`);
-    } else if(lightDay){
-      addLog(`✕ não realizado · ${task.tx
+    document.body.appen

@@ -1,4 +1,54 @@
- pct = limit > 0 ? Math.min(100, Math.round((used/limit)*100)) : 100;
+e.gameTimer.runningSince)/1000;
+  state.gameTimer.usedSeconds += elapsed;
+  state.gameTimer.runningSince = null;
+  addLog('⏸️ parou de jogar');
+  saveState(state);
+  renderGameTimer();
+  stopGameTimerTicking();
+}
+
+// enquanto está rodando, "descarrega" o tempo periodicamente pro estado
+// salvo — assim não perde o progresso se a página fechar sem clicar em parar
+function flushGameTimer(){
+  if(!gameTimerIsRunning()) return;
+  const elapsed = (Date.now() - state.gameTimer.runningSince)/1000;
+  state.gameTimer.usedSeconds += elapsed;
+  state.gameTimer.runningSince = Date.now();
+  saveState(state);
+}
+
+function formatMinSec(totalSeconds){
+  const s = Math.max(0, Math.round(totalSeconds));
+  const h = Math.floor(s/3600);
+  const m = Math.floor((s%3600)/60);
+  if(h > 0) return `${h}h ${String(m).padStart(2,'0')}min`;
+  return `${m} min`;
+}
+
+function startGameTimerTicking(){
+  if(gameTimerTickHandle) return;
+  let flushCounter = 0;
+  gameTimerTickHandle = setInterval(()=>{
+    updateGameTimerDisplay();
+    flushCounter++;
+    if(flushCounter >= 20){ // ~20s, descarrega pro estado salvo
+      flushCounter = 0;
+      flushGameTimer();
+    }
+  }, 1000);
+}
+function stopGameTimerTicking(){
+  if(gameTimerTickHandle){ clearInterval(gameTimerTickHandle); gameTimerTickHandle = null; }
+}
+
+function updateGameTimerDisplay(){
+  const usedEl = document.getElementById('gameTimerUsed');
+  const barEl = document.getElementById('gameTimerBarFill');
+  if(!usedEl || !barEl) return;
+  const limit = gameTimerDailyLimitSeconds();
+  const used = gameTimerSecondsUsedNow();
+  const remaining = limit - used;
+  const pct = limit > 0 ? Math.min(100, Math.round((used/limit)*100)) : 100;
   usedEl.innerHTML = remaining > 0
     ? `<b>${formatMinSec(remaining)}</b> restantes hoje`
     : `<b>tempo de hoje acabou</b>`;
@@ -179,35 +229,4 @@ function renderCustomTimers(){
     const remaining = customTimerRemainingNow(t);
     const totalMin = Math.round(t.totalSeconds/60);
     return `
-      <div class="custom-timer ${t.finished?'finished':''}">
-        <input type="text" class="custom-timer-label" id="customTimerLabel_${t.id}" value="${escapeAttr(t.label)}" maxlength="20">
-        <div class="custom-timer-display" id="customTimerDisplay_${t.id}">${formatHMS(remaining)}</div>
-        <div class="custom-timer-setrow">
-          <input type="number" min="0" step="1" id="customTimerMin_${t.id}" value="${totalMin}" ${running?'disabled':''}>
-          <span>min</span>
-          <button class="custom-timer-btn secondary" id="customTimerSetBtn_${t.id}" ${running?'disabled':''}>definir</button>
-        </div>
-        <div class="custom-timer-btns">
-          <button class="custom-timer-btn" id="customTimerStartBtn_${t.id}" ${(running||remaining<=0)?'disabled':''}>▶️ Iniciar</button>
-          <button class="custom-timer-btn secondary" id="customTimerPauseBtn_${t.id}" ${running?'':'disabled'}>⏸️ Pausar</button>
-          <button class="custom-timer-btn secondary" id="customTimerResetBtn_${t.id}">↺ Reiniciar</button>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  el.innerHTML = `
-    <div class="custom-timers-wrap">
-      <div class="custom-timers">${cardsHtml}</div>
-    </div>
-  `;
-
-  state.customTimers.forEach(t=>{
-    document.getElementById('customTimerLabel_'+t.id).addEventListener('change', e=>{
-      t.label = e.target.value.trim() || t.label;
-      saveState(state);
-    });
-    document.getElementById('customTimerSetBtn_'+t.id).addEventListener('click', ()=>{
-      const val = parseFloat(document.getElementById('customTimerMin_'+t.id).value);
-      setCustomTimerMinutes(t.id, isNaN(val) ? 0 : val);
-    });
+      <div class="custom-timer ${t.finished?'fin

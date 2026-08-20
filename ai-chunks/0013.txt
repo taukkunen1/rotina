@@ -1,4 +1,55 @@
-try || JSON.stringify(entry) !== JSON.stringify(remoteEntry)){
+odayISO();
+      saveState(state);
+      saveConfig(CONFIG);
+      render();
+    }
+  }catch(err){
+    renderDriveSync();
+  } finally {
+    pushInFlight = false;
+    if(pushPending){
+      pushPending = false;
+      doAutoPush();
+    }
+  }
+}
+
+function isValidPeriodsConfig(cfg){
+  try{
+    const p = cfg && cfg.periods;
+    return !!(
+      p &&
+      p.manha && Array.isArray(p.manha.tasks) && p.manha.tasks.length > 0 &&
+      p.tarde && Array.isArray(p.tarde.tasks) && p.tarde.tasks.length > 0 &&
+      p.noite && Array.isArray(p.noite.tasks) && p.noite.tasks.length > 0
+    );
+  }catch(e){
+    return false;
+  }
+}
+
+function sanitizeRemoteConfig(remoteConfig){
+  if(!isValidPeriodsConfig(remoteConfig)) return null;
+  const safe = JSON.parse(JSON.stringify(remoteConfig));
+  if(!safe.periodsWeekend) safe.periodsWeekend = null;
+  if(!Array.isArray(safe.badHabits)) safe.badHabits = [];
+  if(!Array.isArray(safe.rewards)) safe.rewards = [];
+  if(!Array.isArray(safe.schedule)) safe.schedule = [];
+  if(!Array.isArray(safe.scheduleExceptions)) safe.scheduleExceptions = [];
+  if(!safe.pet || !Array.isArray(safe.pet.stages) || safe.pet.stages.length < 2) {
+    safe.pet = JSON.parse(JSON.stringify(DEFAULT_CONFIG.pet));
+  }
+  return stripLegacyHairTask(safe);
+}
+
+function mergeRemoteData(remote){
+  const remoteState = remote.state || {};
+  const localState = state || {};
+  const merged = JSON.parse(JSON.stringify(remoteState));
+  merged.history = {...(remoteState.history||{})};
+  Object.entries(localState.history||{}).forEach(([iso,entry])=>{
+    const remoteEntry = merged.history[iso];
+    if(!remoteEntry || JSON.stringify(entry) !== JSON.stringify(remoteEntry)){
       const localUpdated = entry.updatedAt || localState.updatedAt || '';
       const remoteUpdated = remoteEntry.updatedAt || remoteState.updatedAt || '';
       if(localUpdated >= remoteUpdated) merged.history[iso] = entry;
@@ -159,54 +210,4 @@ function startGameTimer(){
 
 function stopGameTimer(){
   if(!gameTimerIsRunning()) return;
-  const elapsed = (Date.now() - state.gameTimer.runningSince)/1000;
-  state.gameTimer.usedSeconds += elapsed;
-  state.gameTimer.runningSince = null;
-  addLog('⏸️ parou de jogar');
-  saveState(state);
-  renderGameTimer();
-  stopGameTimerTicking();
-}
-
-// enquanto está rodando, "descarrega" o tempo periodicamente pro estado
-// salvo — assim não perde o progresso se a página fechar sem clicar em parar
-function flushGameTimer(){
-  if(!gameTimerIsRunning()) return;
-  const elapsed = (Date.now() - state.gameTimer.runningSince)/1000;
-  state.gameTimer.usedSeconds += elapsed;
-  state.gameTimer.runningSince = Date.now();
-  saveState(state);
-}
-
-function formatMinSec(totalSeconds){
-  const s = Math.max(0, Math.round(totalSeconds));
-  const h = Math.floor(s/3600);
-  const m = Math.floor((s%3600)/60);
-  if(h > 0) return `${h}h ${String(m).padStart(2,'0')}min`;
-  return `${m} min`;
-}
-
-function startGameTimerTicking(){
-  if(gameTimerTickHandle) return;
-  let flushCounter = 0;
-  gameTimerTickHandle = setInterval(()=>{
-    updateGameTimerDisplay();
-    flushCounter++;
-    if(flushCounter >= 20){ // ~20s, descarrega pro estado salvo
-      flushCounter = 0;
-      flushGameTimer();
-    }
-  }, 1000);
-}
-function stopGameTimerTicking(){
-  if(gameTimerTickHandle){ clearInterval(gameTimerTickHandle); gameTimerTickHandle = null; }
-}
-
-function updateGameTimerDisplay(){
-  const usedEl = document.getElementById('gameTimerUsed');
-  const barEl = document.getElementById('gameTimerBarFill');
-  if(!usedEl || !barEl) return;
-  const limit = gameTimerDailyLimitSeconds();
-  const used = gameTimerSecondsUsedNow();
-  const remaining = limit - used;
-  const
+  const elapsed = (Date.now() - stat
