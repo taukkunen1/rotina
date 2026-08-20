@@ -1,4 +1,18 @@
-"down" data-period="${key}" data-task="${task.id}" ${idx===orderedTasks.length-1?'disabled':''} title="Mover pra baixo">▼</button>
+orderedTasks.forEach((task, idx)=>{
+      const li = document.createElement('li');
+      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | 'help' | undefined
+      const isSuggested = task.id === nextSuggestedId;
+      const lightDay = isLightDay(todayISO());
+      li.className = 'task'
+        + (status === 'done' ? ' done' : '')
+        + (status === 'na' ? ' na' : '')
+        + (status === 'x' ? ' notdone' : '')
+        + (status === 'help' ? ' helped' : '')
+        + (isSuggested ? ' suggested' : '');
+      li.innerHTML = `
+        <span class="task-reorder">
+          <button type="button" class="mini-reorder-btn" data-dir="up" data-period="${key}" data-task="${task.id}" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
+          <button type="button" class="mini-reorder-btn" data-dir="down" data-period="${key}" data-task="${task.id}" ${idx===orderedTasks.length-1?'disabled':''} title="Mover pra baixo">▼</button>
         </span>
         <span class="mark-group" data-id="${task.id}">
           <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
@@ -174,24 +188,4 @@ function renderFamilyGameNightAnnouncement(){
       <button class="dismiss-btn" id="familyGameNightDismissBtn">bora! 🤝</button>
     </div>
   `;
-  document.getElementById('familyGameNightDismissBtn').addEventListener('click', ()=>{
-    state.familyGameNightAnnouncementSeen = true;
-    saveState(state);
-    renderFamilyGameNightAnnouncement();
-  });
-}
-
-// Notícia da semana — aviso único (some pra sempre depois de visto).
-function renderWeeklyNewsAnnouncement(){
-  const el = document.getElementById('weeklyNewsAnnouncement');
-  if(!el) return;
-  if(state.weeklyNewsSeen){ el.innerHTML=''; return; }
-
-  el.innerHTML = `
-    <div class="family-announcement">
-      <div class="title">🏆 Notícia da semana!</div>
-      <div class="msg">Você acertou a aposta com a Walda — respondeu certinho o que é ser uma <b>pessoa autêntica</b>! <b>+5 Pacus Points</b> de bônus! 🎉</div>
-      <button class="dismiss-btn" id="weeklyNewsDismissBtn">demais! 🌟</button>
-    </div>
-  `;
-  document.getElement
+  document.get

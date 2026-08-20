@@ -1,4 +1,28 @@
-t || amount === 0) return;
+t} (dia leve, sem perder ponto)`);
+    } else {
+      const penalty = taskNotDonePenalty(task);
+      totalDelta += addPoints(-penalty);
+      addLog(`✕ não realizado · ${task.txt} (−${penalty})`);
+    }
+  }
+
+  const completedNow = syncPetCompletionFromDay(todayISO());
+  if(completedNow){
+    addLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
+  }
+  saveState(state);
+  bumpTotal(totalDelta, btn);
+  render();
+}
+
+document.getElementById('hairWashedBtn').addEventListener('click', ()=> setHairStatus('washed'));
+document.getElementById('hairNotWashedBtn').addEventListener('click', ()=> setHairStatus('not-washed'));
+
+document.getElementById('addPointsBtn').addEventListener('click', ()=>{
+  const raw = prompt('Quantos Pacus Points adicionar?', '5');
+  if(raw === null) return;
+  const amount = parseInt(raw, 10);
+  if(!amount || amount === 0) return;
   const delta = addPoints(amount);
   addLog(`${amount>0?'+':''}${amount} · ajuste manual`, true);
   saveState(state);
@@ -159,20 +183,4 @@ function renderEditorSchedule(){
     row.className = 'edit-row-task';
     const dayChips = dayOrder.map(d=>
       `<button type="button" class="day-chip ${item.days.includes(d)?'active':''}" data-day="${d}" title="${WEEKDAY_LABELS[d]}">${dayShort[d]}</button>`
-    ).join('');
-    const periodOptions = Object.entries(periodLabels).map(([k,l])=>
-      `<option value="${k}" ${item.period===k?'selected':''}>${l}</option>`
-    ).join('');
-    row.innerHTML = `
-      <div class="edit-row-main">
-        <input type="text" value="${escapeAttr(item.label)}" data-field="label" placeholder="nome (ex: Inglês)">
-        <button class="del" title="remover">🗑</button>
-      </div>
-      <div class="day-chip-row">${dayChips}</div>
-      <div class="edit-row-main">
-        <input type="time" value="${item.start}" data-field="start" style="flex:1;">
-        <span style="color:var(--chalk-dim); font-size:.8rem;">até</span>
-        <input type="time" value="${item.end}" data-field="end" style="flex:1;">
-      </div>
-      <div class="edit-row-main">
-        <select data-field="period" style="fl
+ 

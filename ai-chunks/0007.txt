@@ -32,7 +32,6 @@ const DEFAULT_CONFIG = {
         { id:"m1", txt:"Arrumar a cama", pts:2, sub:"até às 12h", tier:"responsabilidade" },
         { id:"m4", txt:"Lavar o rosto", pts:1, sub:"até às 12h", tier:"essencial" },
         { id:"m3", txt:"Escovar os dentes", pts:2, sub:"até às 12h", tier:"essencial" },
-        { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 12h", tier:"essencial" },
         { id:"m5", txt:"Duolingo", sub:"5 lições", pts:5, tier:"extra" },
         { id:"m8", txt:"Arrumar a mochila", pts:2, sub:"até às 12h", tier:"essencial" },
         { id:"t_djf7hbb", txt:"Levar Lixo", pts:4, sub:"até às 12h", tier:"responsabilidade" },
@@ -45,6 +44,7 @@ const DEFAULT_CONFIG = {
         { id:"t2", txt:"Almoçar", pts:1, sub:"até às 18h", external:true, tier:"essencial" },
         { id:"t3", txt:"Escovar os dentes", pts:2, sub:"até às 18h", tier:"essencial" },
         { id:"t5", txt:"Arrumar a mochila", pts:2, sub:"até às 18h", tier:"essencial" },
+        { id:"m7", txt:"Vestir o uniforme", pts:1, sub:"até às 18h", tier:"essencial" },
         { id:"t4", txt:"Ir para a escola", pts:5, sub:"até às 18h", external:true, tier:"essencial" },
         { id:"t1", txt:"Beber 1 copo de água", pts:1, sub:"até às 18h", tier:"essencial" },
       ]

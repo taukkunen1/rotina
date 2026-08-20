@@ -1,4 +1,26 @@
-.screenDailyLimitHours || 2}h por dia.</div>
+ pct = limit > 0 ? Math.min(100, Math.round((used/limit)*100)) : 100;
+  usedEl.innerHTML = remaining > 0
+    ? `<b>${formatMinSec(remaining)}</b> restantes hoje`
+    : `<b>tempo de hoje acabou</b>`;
+  barEl.style.width = pct + '%';
+  barEl.classList.toggle('over-limit', used >= limit);
+}
+
+function renderGameTimer(){
+  const el = document.getElementById('gameTimerSection');
+  if(!el) return;
+  const running = gameTimerIsRunning();
+  const limit = gameTimerDailyLimitSeconds();
+  const used = gameTimerSecondsUsedNow();
+  const remaining = limit - used;
+  const pct = limit > 0 ? Math.min(100, Math.round((used/limit)*100)) : 100;
+  const manhaOk = isManhaComplete();
+  const locked = !manhaOk && !running;
+
+  el.innerHTML = `
+    <div class="game-timer">
+      <h3>🎮 Tempo de Jogo</h3>
+      <div class="hint">Cota de ${CONFIG.screenDailyLimitHours || 2}h por dia.</div>
       ${locked ? `<div class="game-timer-locked">🔒 Termine as tarefas da Manhã pra desbloquear</div>` : ''}
       <div class="game-timer-used" id="gameTimerUsed">${remaining > 0 ? `<b>${formatMinSec(remaining)}</b> restantes hoje` : `<b>tempo de hoje acabou</b>`}</div>
       <div class="game-timer-track"><div class="game-timer-fill ${used>=limit?'over-limit':''}" id="gameTimerBarFill" style="width:${pct}%"></div></div>
@@ -189,19 +211,3 @@ function renderCustomTimers(){
       const val = parseFloat(document.getElementById('customTimerMin_'+t.id).value);
       setCustomTimerMinutes(t.id, isNaN(val) ? 0 : val);
     });
-    document.getElementById('customTimerStartBtn_'+t.id).addEventListener('click', ()=> startCustomTimer(t.id));
-    document.getElementById('customTimerPauseBtn_'+t.id).addEventListener('click', ()=> pauseCustomTimer(t.id));
-    document.getElementById('customTimerResetBtn_'+t.id).addEventListener('click', ()=> resetCustomTimer(t.id));
-  });
-
-  if(anyCustomTimerRunning()) startCustomTimerTicking(); else stopCustomTimerTicking();
-}
-
-/* ---------------- render principal ---------------- */
-/* ===================== PACUS, O AXOLOTE ===================== */
-function getPetCycle(){
-  const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
-  const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
-  const start = new Date(startISO+"T00:00:00");
-  const end = new Date(endISO+"T00:00:00");
-  c

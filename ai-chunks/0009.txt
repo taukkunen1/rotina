@@ -20,7 +20,7 @@ function stripLegacyHairTask(cfg){
   // senha do site: recurso removido — limpa de qualquer config que já
   // tinha isso salvo, pra garantir que ninguém peça senha nunca mais.
   if(cfg && cfg.sitePin !== undefined) delete cfg.sitePin;
-  return applyTaskTiersV1(splitBagunçaV1(addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg))))))))))));
+  return moveUniformToTardeV1(applyTaskTiersV1(splitBagunçaV1(addOutingRewardV1(fixFamilyGameNightV4(fixFamilyGameNightV3(fixFamilyGameNightV2(addFamilyGameNightV1(markExternalTasksV1(addCreativeTaskV1(applyTaskOrderV1(applyPointRebalanceV2(applyPointRebalanceV1(cfg)))))))))))));
 }
 
 // Reforça pontos de tarefas mais chatas — roda uma vez só, não desfaz
@@ -66,8 +66,8 @@ function applyPointRebalanceV2(cfg){
 // higiene em sequência, foco cognitivo com mente descansada, sair por
 // último, água fácil fechando o bloco (efeito do final).
 const TASK_ORDER_V1 = {
-  manha: ["m1","m4","m3","m7","m5","m8","t_djf7hbb","m2"],
-  tarde: ["t2","t3","t5","t4","t1"],
+  manha: ["m1","m4","m3","m5","m8","t_djf7hbb","m2"],
+  tarde: ["t2","t3","t5","m7","t4","t1"],
   noite: ["n5_cartas","n5_carrinhos","n5_bolinhas","n5_caixas","n5_sala","n1","n4","n6","n7","t_ci3brlt","n2"],
 };
 function applyTaskOrderV1(cfg){
@@ -207,5 +207,4 @@ function splitBagunçaV1(cfg){
     { id:"n5_caixas", txt:"Guardar as caixas", pts:1, fullPenalty:true, sub:"no lugar certo ou no lixo" },
     { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:3, fullPenalty:true, sub:"conferência final — nada espalhado" },
   ];
-  ['periods','periodsWeekend'].forEach(key=>{
-   
+  ['periods','periodsWeeken

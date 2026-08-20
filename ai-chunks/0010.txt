@@ -1,4 +1,5 @@
- const p = cfg[key];
+d'].forEach(key=>{
+    const p = cfg[key];
     if(p && p.noite && Array.isArray(p.noite.tasks)){
       const idx = p.noite.tasks.findIndex(t=>t.id === 'n5');
       if(idx >= 0){
@@ -39,6 +40,28 @@ function applyTaskTiersV1(cfg){
     });
   });
   cfg.taskTiersV1Applied = true;
+  return cfg;
+}
+
+// "Vestir o uniforme" muda de Manhã pra Tarde — escola dele é à tarde,
+// faz mais sentido vestir mais perto da hora de sair.
+function moveUniformToTardeV1(cfg){
+  if(!cfg || cfg.moveUniformToTardeV1Applied) return cfg;
+  ['periods','periodsWeekend'].forEach(key=>{
+    const p = cfg[key];
+    if(!p || !p.manha || !p.tarde) return;
+    const idx = p.manha.tasks.findIndex(t=>t.id === 'm7');
+    if(idx >= 0){
+      const [task] = p.manha.tasks.splice(idx, 1);
+      task.sub = "até às 18h";
+      if(!p.tarde.tasks.some(t=>t.id === 'm7')){
+        const beforeSchool = p.tarde.tasks.findIndex(t=>t.id === 't4');
+        if(beforeSchool >= 0) p.tarde.tasks.splice(beforeSchool, 0, task);
+        else p.tarde.tasks.push(task);
+      }
+    }
+  });
+  cfg.moveUniformToTardeV1Applied = true;
   return cfg;
 }
 
@@ -178,30 +201,4 @@ function applyHistoryCorrection_v2(state){
 
     if(!state.petCompletedDays.includes(iso)) state.petCompletedDays.push(iso);
     if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
-    if(!state.petPerfectBonusDays.includes(iso)) state.petPerfectBonusDays.push(iso);
-  });
-
-  state.petCompletedDays.sort();
-  state.petLastCompletionISO = state.petCompletedDays.length
-    ? state.petCompletedDays[state.petCompletedDays.length - 1]
-    : null;
-
-  // saldo confirmado até 12/08 — hoje (13/08) ainda não foi jogado
-  state.totalPoints = 170;
-
-  state.historyCorrectionV2Applied = true;
-}
-
-// Correção 13-14/08: tudo feito exceto "Arrumar a bagunça" (penalidade
-// cheia). Mesmo sem ser perfeito, conta pro crescimento do Pacus. Roda
-// uma vez.
-function applyHistoryCorrection_v3(state){
-  if(state.historyCorrectionV3Applied) return;
-
-  const days = ["2026-08-13", "2026-08-14"];
-  if(!state.history) state.history = {};
-  if(!Array.isArray(state.petCompletedDays)) state.petCompletedDays = [];
-
-  let totalDelta = 0;
-  days.forEach(iso=>{
-    cons
+    if(!state.petPerfectBonusDays.inc

@@ -1,4 +1,21 @@
-med + 1;
+>
+      <span class="cost">${r.cost} PP</span>
+      ${capNote}
+      <button ${(canAfford && !atDailyLimit) ? '' : 'disabled'}>${atDailyLimit ? 'Limite hoje' : 'Resgatar'}</button>
+    `;
+    div.querySelector('button').addEventListener('click', (evt)=>{
+      if(state.totalPoints < r.cost) return;
+      const redeemed = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
+      if(r.maxPerDay != null && redeemed >= r.maxPerDay) return;
+
+      const delta = addPoints(-r.cost);
+      addLog(`🎁 Resgatou: ${r.txt} (−${r.cost})`);
+      if(r.grantsHours){
+        addGameTimerBonusHours(r.grantsHours);
+        addLog(`🎮 +${r.grantsHours}h de jogo hoje (bônus da recompensa)`);
+      }
+      if(!state.gameTimer.redemptions) state.gameTimer.redemptions = {};
+      state.gameTimer.redemptions[r.id] = redeemed + 1;
 
       saveState(state);
       bumpTotal(delta, evt.currentTarget);
@@ -167,28 +184,4 @@ function onMarkClick(e){
     } else if(clickedStatus === 'na'){
       addLog(`n/a · ${task.txt}`);
     } else if(lightDay){
-      addLog(`✕ não realizado · ${task.txt} (dia leve, sem perder ponto)`);
-    } else {
-      const penalty = taskNotDonePenalty(task);
-      totalDelta += addPoints(-penalty);
-      addLog(`✕ não realizado · ${task.txt} (−${penalty})`);
-    }
-  }
-
-  const completedNow = syncPetCompletionFromDay(todayISO());
-  if(completedNow){
-    addLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
-  }
-  saveState(state);
-  bumpTotal(totalDelta, btn);
-  render();
-}
-
-document.getElementById('hairWashedBtn').addEventListener('click', ()=> setHairStatus('washed'));
-document.getElementById('hairNotWashedBtn').addEventListener('click', ()=> setHairStatus('not-washed'));
-
-document.getElementById('addPointsBtn').addEventListener('click', ()=>{
-  const raw = prompt('Quantos Pacus Points adicionar?', '5');
-  if(raw === null) return;
-  const amount = parseInt(raw, 10);
-  if(!amoun
+      addLog(`✕ não realizado · ${task.tx

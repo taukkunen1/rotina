@@ -1,4 +1,14 @@
-ne';
+arelhos, abra e salve como favorito essa <b>mesma URL do Apps Script</b> (a que termina em <code>/exec</code>) — não o arquivo local. A partir daí, atualizar é só substituir o conteúdo do <code>rotina-hector.html</code> no Drive; todo aparelho já abre a versão nova sozinho.</li>
+        </ol>
+      </div>
+      <textarea id="driveCodeBox" readonly style="display:none; width:100%; height:180px; margin-top:10px; background:rgba(0,0,0,.3); color:var(--chalk); border:1px solid var(--line); border-radius:8px; padding:10px; font-family:monospace; font-size:.72rem;"></textarea>
+    </div>
+  `;
+
+  if(!configured){
+    document.getElementById('driveSetupInfoBtn').addEventListener('click', ()=>{
+      const info = document.getElementById('driveSetupInfo');
+      info.style.display = info.style.display === 'none' ? 'block' : 'none';
     });
     document.getElementById('driveCopyCodeBtn').addEventListener('click', ()=>{
       const box = document.getElementById('driveCodeBox');

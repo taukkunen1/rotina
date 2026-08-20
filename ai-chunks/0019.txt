@@ -1,4 +1,24 @@
-ById('weeklyNewsDismissBtn').addEventListener('click', ()=>{
+ElementById('familyGameNightDismissBtn').addEventListener('click', ()=>{
+    state.familyGameNightAnnouncementSeen = true;
+    saveState(state);
+    renderFamilyGameNightAnnouncement();
+  });
+}
+
+// Notícia da semana — aviso único (some pra sempre depois de visto).
+function renderWeeklyNewsAnnouncement(){
+  const el = document.getElementById('weeklyNewsAnnouncement');
+  if(!el) return;
+  if(state.weeklyNewsSeen){ el.innerHTML=''; return; }
+
+  el.innerHTML = `
+    <div class="family-announcement">
+      <div class="title">🏆 Notícia da semana!</div>
+      <div class="msg">Você acertou a aposta com a Walda — respondeu certinho o que é ser uma <b>pessoa autêntica</b>! <b>+5 Pacus Points</b> de bônus! 🎉</div>
+      <button class="dismiss-btn" id="weeklyNewsDismissBtn">demais! 🌟</button>
+    </div>
+  `;
+  document.getElementById('weeklyNewsDismissBtn').addEventListener('click', ()=>{
     state.weeklyNewsSeen = true;
     saveState(state);
     renderWeeklyNewsAnnouncement();
@@ -179,21 +199,4 @@ function renderRewards(){
     const div = document.createElement('div');
     div.className = 'reward';
     div.innerHTML = `
-      <div class="name">${r.txt}</div>
-      <span class="cost">${r.cost} PP</span>
-      ${capNote}
-      <button ${(canAfford && !atDailyLimit) ? '' : 'disabled'}>${atDailyLimit ? 'Limite hoje' : 'Resgatar'}</button>
-    `;
-    div.querySelector('button').addEventListener('click', (evt)=>{
-      if(state.totalPoints < r.cost) return;
-      const redeemed = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
-      if(r.maxPerDay != null && redeemed >= r.maxPerDay) return;
-
-      const delta = addPoints(-r.cost);
-      addLog(`🎁 Resgatou: ${r.txt} (−${r.cost})`);
-      if(r.grantsHours){
-        addGameTimerBonusHours(r.grantsHours);
-        addLog(`🎮 +${r.grantsHours}h de jogo hoje (bônus da recompensa)`);
-      }
-      if(!state.gameTimer.redemptions) state.gameTimer.redemptions = {};
-      state.gameTimer.redemptions[r.id] = redee
+      <div class="name">${r.txt}</div

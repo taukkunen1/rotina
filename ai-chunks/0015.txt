@@ -1,4 +1,19 @@
-onst totalDays = Math.max(1, Math.round((end-start)/86400000)+1);
+    document.getElementById('customTimerStartBtn_'+t.id).addEventListener('click', ()=> startCustomTimer(t.id));
+    document.getElementById('customTimerPauseBtn_'+t.id).addEventListener('click', ()=> pauseCustomTimer(t.id));
+    document.getElementById('customTimerResetBtn_'+t.id).addEventListener('click', ()=> resetCustomTimer(t.id));
+  });
+
+  if(anyCustomTimerRunning()) startCustomTimerTicking(); else stopCustomTimerTicking();
+}
+
+/* ---------------- render principal ---------------- */
+/* ===================== PACUS, O AXOLOTE ===================== */
+function getPetCycle(){
+  const startISO = CONFIG.pet.growthStartDate || CONFIG.historyStartDate || "2026-08-09";
+  const endISO = CONFIG.pet.growthEndDate || "2026-08-31";
+  const start = new Date(startISO+"T00:00:00");
+  const end = new Date(endISO+"T00:00:00");
+  const totalDays = Math.max(1, Math.round((end-start)/86400000)+1);
   return { startISO, endISO, start, end, totalDays };
 }
 
@@ -129,14 +144,4 @@ function buildPacusSVG(stageFloat){
       </radialGradient>
     </defs>
     ${shell}
-    <g transform="translate(110 115) scale(${scale.toFixed(3)}) translate(-110 -115)">
-      <g class="pacus-idle">
-        ${sparkle}
-        ${legs}
-        <ellipse cx="110" cy="${bodyY+bodyH+4}" rx="${18+growth*9}" ry="${7+growth*3}" fill="url(#${gid}-body)"/>
-        <ellipse cx="110" cy="${bodyY}" rx="${bodyW}" ry="${bodyH}" fill="url(#${gid}-body)"/>
-        <ellipse cx="110" cy="${bodyY+8}" rx="${bodyW*.68}" ry="${bodyH*.52}" fill="#fff" opacity=".3"/>
-        ${gills}
-        <circle cx="110" cy="${faceY}" r="32" fill="url(#${gid}-body)"/>
-        <g class="pacus-eye" style="transform-origin:97px ${faceY-4}px;"><circle cx="97" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="98" cy="${faceY-5.5}" r="1.4" fill="#fff"/></g>
-        <g class="pacus-eye" style="transform-origin:123px ${faceY-4}px; animation-delay:.08s;"><circle cx="123" cy="${fac
+    <g transform="translate(110 115) 

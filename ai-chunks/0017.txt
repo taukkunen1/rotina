@@ -1,4 +1,23 @@
-); }
+"pet-day-progress-head"><span>Progresso do Pacus</span><b>${progressPct}%</b></div>
+      <div class="pet-day-track" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
+    </div>
+    <div class="pet-milestones">${milestoneHtml}</div>
+    <div class="pet-caption">${caption}</div>
+    <div id="petEvolvedBanner"></div>
+    <div class="streak-strip">${buildStreakStrip()}</div>
+  `;
+
+  wirePacusInteraction();
+  renderPacusDialogue();
+  startPacusDialogueTicking();
+
+  if(grewNow){
+    const mascotEl = el.querySelector('.pet-mascot');
+    if(mascotEl){
+      mascotEl.classList.remove('pet-growth-burst');
+      void mascotEl.offsetWidth;
+      mascotEl.classList.add('pet-growth-burst');
+      if(stage < 9){ mascotEl.classList.add('pet-hatch-crack'); }
     }
   }
 
@@ -164,18 +183,4 @@ function render(){
     const nextSuggestedId = orderedTasks.find(t => !t.external && !state.checkedToday[t.id])?.id;
     const tierBadge = { essencial:'🔴', responsabilidade:'🟡', extra:'🟢' };
     const tierTitle = { essencial:'Essencial — precisa acontecer, mas você escolhe quando/ordem/ajuda', responsabilidade:'Responsabilidade — esperado, gera pontos', extra:'Extra — opcional, bônus maior' };
-    orderedTasks.forEach((task, idx)=>{
-      const li = document.createElement('li');
-      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | 'help' | undefined
-      const isSuggested = task.id === nextSuggestedId;
-      const lightDay = isLightDay(todayISO());
-      li.className = 'task'
-        + (status === 'done' ? ' done' : '')
-        + (status === 'na' ? ' na' : '')
-        + (status === 'x' ? ' notdone' : '')
-        + (status === 'help' ? ' helped' : '')
-        + (isSuggested ? ' suggested' : '');
-      li.innerHTML = `
-        <span class="task-reorder">
-          <button type="button" class="mini-reorder-btn" data-dir="up" data-period="${key}" data-task="${task.id}" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
-          <button type="button" class="mini-reorder-btn" data-dir=
+    

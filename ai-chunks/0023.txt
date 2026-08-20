@@ -1,4 +1,25 @@
-ment.getElementById('dayHair').value = getHairStatus(dateISO) || entry.hair || '';
+ativa de hoje (dia de escola ou fim de semana)
+  const validIds = new Set(allTasks().map(t=>t.id));
+  Object.keys(state.checkedToday).forEach(id=>{
+    if(!validIds.has(id)) delete state.checkedToday[id];
+  });
+  saveState(state);
+
+  closeEditor();
+  render();
+});
+
+/* ===================== EDITOR DE DIA ANTERIOR ===================== */
+let editingDate = null;
+
+function openDayEditor(dateISO){
+  editingDate = dateISO;
+  const entry = state.history[dateISO] || { done:0, total:0, pointsEarnedThatDay:0, perfect:false, screenMinutes:0 };
+  document.getElementById('dayEditorTitle').textContent = 'Editar ' + formatDateBR(dateISO);
+  document.getElementById('dayDone').value = entry.done;
+  document.getElementById('dayTotal').value = entry.total;
+  document.getElementById('dayPoints').value = entry.pointsEarnedThatDay;
+  document.getElementById('dayHair').value = getHairStatus(dateISO) || entry.hair || '';
   document.getElementById('dayOverlay').classList.add('open');
 }
 function closeDayEditor(){
@@ -146,14 +167,4 @@ function renderDriveSync(){
           <li>Implante, autorize (é a sua própria conta), e copie a URL gerada (termina em <code>/exec</code>).</li>
           <li>Cole essa URL na constante <code>APPS_SCRIPT_URL</code> no início do arquivo HTML.</li>
           <li>No seu Google Drive, salve o arquivo do app com o nome exato <code>rotina-hector.html</code>.</li>
-          <li>Em todos os aparelhos, abra e salve como favorito essa <b>mesma URL do Apps Script</b> (a que termina em <code>/exec</code>) — não o arquivo local. A partir daí, atualizar é só substituir o conteúdo do <code>rotina-hector.html</code> no Drive; todo aparelho já abre a versão nova sozinho.</li>
-        </ol>
-      </div>
-      <textarea id="driveCodeBox" readonly style="display:none; width:100%; height:180px; margin-top:10px; background:rgba(0,0,0,.3); color:var(--chalk); border:1px solid var(--line); border-radius:8px; padding:10px; font-family:monospace; font-size:.72rem;"></textarea>
-    </div>
-  `;
-
-  if(!configured){
-    document.getElementById('driveSetupInfoBtn').addEventListener('click', ()=>{
-      const info = document.getElementById('driveSetupInfo');
-      info.style.display = info.style.display === 'none' ? 'block' : 'no
+          <li>Em todos os ap

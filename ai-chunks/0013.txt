@@ -1,4 +1,14 @@
-otalPoints)||0, Number(localState.totalPoints)||0);
+try || JSON.stringify(entry) !== JSON.stringify(remoteEntry)){
+      const localUpdated = entry.updatedAt || localState.updatedAt || '';
+      const remoteUpdated = remoteEntry.updatedAt || remoteState.updatedAt || '';
+      if(localUpdated >= remoteUpdated) merged.history[iso] = entry;
+    }
+  });
+  merged.petCompletedDays = [...new Set([...(remoteState.petCompletedDays||[]), ...(localState.petCompletedDays||[])])].sort();
+  merged.petPerfectBonusDays = [...new Set([...(remoteState.petPerfectBonusDays||[]), ...(localState.petPerfectBonusDays||[])])].sort();
+  merged.historyCorrectionV2Applied = !!(remoteState.historyCorrectionV2Applied || localState.historyCorrectionV2Applied);
+  merged.hairByDate = {...(remoteState.hairByDate||{}), ...(localState.hairByDate||{})};
+  merged.totalPoints = Math.max(Number(remoteState.totalPoints)||0, Number(localState.totalPoints)||0);
   merged.lastSeenPetStage = Math.max(Number(remoteState.lastSeenPetStage)||0, Number(localState.lastSeenPetStage)||0);
   merged.log = [...(localState.log||[]), ...(remoteState.log||[])].slice(0,30);
   merged.revision = Math.max(Number(localState.revision)||0, Number(remoteState.revision)||0)+1;
@@ -199,26 +209,4 @@ function updateGameTimerDisplay(){
   const limit = gameTimerDailyLimitSeconds();
   const used = gameTimerSecondsUsedNow();
   const remaining = limit - used;
-  const pct = limit > 0 ? Math.min(100, Math.round((used/limit)*100)) : 100;
-  usedEl.innerHTML = remaining > 0
-    ? `<b>${formatMinSec(remaining)}</b> restantes hoje`
-    : `<b>tempo de hoje acabou</b>`;
-  barEl.style.width = pct + '%';
-  barEl.classList.toggle('over-limit', used >= limit);
-}
-
-function renderGameTimer(){
-  const el = document.getElementById('gameTimerSection');
-  if(!el) return;
-  const running = gameTimerIsRunning();
-  const limit = gameTimerDailyLimitSeconds();
-  const used = gameTimerSecondsUsedNow();
-  const remaining = limit - used;
-  const pct = limit > 0 ? Math.min(100, Math.round((used/limit)*100)) : 100;
-  const manhaOk = isManhaComplete();
-  const locked = !manhaOk && !running;
-
-  el.innerHTML = `
-    <div class="game-timer">
-      <h3>🎮 Tempo de Jogo</h3>
-      <div class="hint">Cota de ${CONFIG
+  const
