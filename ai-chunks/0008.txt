@@ -1,4 +1,4 @@
-itura rápida)
+eitura rápida)
 const ICON_RULES = [
   [/cama/i, "🛏️"], [/água/i, "💧"], [/dente/i, "🦷"], [/rosto|banho/i, "🧼"],
   [/duolingo|inglês|idioma/i, "🗣️"], [/ler|livro|capítulo/i, "📖"],
@@ -204,4 +204,4 @@ function renderInvisibleWinsCard(){
 
   el.innerHTML = `
     <div class="wins-card">
-      <div class="wins-ti
+      <div class="wins-t

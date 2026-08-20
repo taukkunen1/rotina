@@ -1,4 +1,22 @@
-rBad();
+&quot;').replace(/</g,'&lt;');
+}
+
+document.querySelectorAll('.add-row-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const kind = btn.getAttribute('data-add');
+    const weekendMap = {manhaWeekend:'manha', tardeWeekend:'tarde', noiteWeekend:'noite'};
+    const weekendElMap = {manhaWeekend:'editManhaWeekend', tardeWeekend:'editTardeWeekend', noiteWeekend:'editNoiteWeekend'};
+    if(kind === 'manha' || kind === 'tarde' || kind === 'noite'){
+      draft.periods[kind].tasks.push({ id: uid('t'), txt:'', pts:1, sub:'' });
+      renderEditorPeriod(kind, {manha:'editManha', tarde:'editTarde', noite:'editNoite'}[kind]);
+    } else if(weekendMap[kind]){
+      const periodKey = weekendMap[kind];
+      if(!draft.periodsWeekend) return;
+      draft.periodsWeekend[periodKey].tasks.push({ id: uid('we'), txt:'', pts:1, sub:'' });
+      renderEditorPeriod(periodKey, weekendElMap[kind], draft.periodsWeekend);
+    } else if(kind === 'bad'){
+      draft.badHabits.push({ id: uid('b'), txt:'', pts:1 });
+      renderEditorBad();
     } else if(kind === 'reward'){
       draft.rewards.push({ id: uid('r'), txt:'', cost:10 });
       renderEditorRewards();
@@ -175,24 +193,4 @@ document.getElementById('daySaveBtn').addEventListener('click', ()=>{
 /* ===================== SINCRONIZAÇÃO COM GOOGLE DRIVE (via Apps Script) ===================== */
 
 const APPS_SCRIPT_CODE = `function doGet(e) {
-  if (e.parameter.data === '1') {
-    var files = DriveApp.getFilesByName('rotina-hector-backup.json');
-    if (files.hasNext()) {
-      var file = files.next();
-      var raw = file.getBlob().getDataAsString();
-      try {
-        var data = JSON.parse(raw);
-        return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
-      } catch(err) {}
-    }
-    return ContentService.createTextOutput(JSON.stringify({error:'not_found'})).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  var appFiles = DriveApp.getFilesByName('rotina-hector.html');
-  if (!appFiles.hasNext()) appFiles = DriveApp.getFilesByName('rotina-hector-app.html');
-  if (appFiles.hasNext()) {
-    return HtmlService.createHtmlOutput(appFiles.next().getBlob().getDataAsString())
-      .setTitle('Rotina do Hector')
-      .addMetaTag('viewport','width=device-width, initial-scale=1');
-  }
-  return HtmlService.createHtmlOutput('Ainda não encontrei o arquivo rotina-hector.html (nem o arquivo legado rotina-hector-app.html) no seu Drive.');
+  if (e.parameter.data 

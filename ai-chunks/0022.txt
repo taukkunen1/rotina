@@ -1,4 +1,30 @@
-lement('div');
+od('manha', 'editManhaWeekend', draft.periodsWeekend);
+      renderEditorPeriod('tarde', 'editTardeWeekend', draft.periodsWeekend);
+      renderEditorPeriod('noite', 'editNoiteWeekend', draft.periodsWeekend);
+    }
+    weekendBody.style.display = weekendToggle.checked ? 'block' : 'none';
+    if(!weekendToggle.checked) draft.periodsWeekend = null;
+  };
+
+  document.getElementById('editorPinInput').value = draft.editorPin || '';
+  document.getElementById('gameLimitInput').value = draft.screenDailyLimitHours ?? 2;
+  if(!Array.isArray(draft.schedule)) draft.schedule = [];
+  renderEditorSchedule();
+
+  document.getElementById('overlay').classList.add('open');
+}
+function closeEditor(){
+  document.getElementById('overlay').classList.remove('open');
+  draft = null;
+}
+
+function renderEditorPeriod(key, elId, periodsObj){
+  periodsObj = periodsObj || draft.periods;
+  const el = document.getElementById(elId);
+  el.innerHTML = '';
+  const list = periodsObj[key].tasks;
+  list.forEach((task, idx)=>{
+    const row = document.createElement('div');
     row.className = 'edit-row edit-row-task';
     row.innerHTML = `
       <div class="edit-row-main">
@@ -153,22 +179,4 @@ function renderEditorRewards(){
 }
 
 function escapeAttr(s){
-  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
-}
-
-document.querySelectorAll('.add-row-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    const kind = btn.getAttribute('data-add');
-    const weekendMap = {manhaWeekend:'manha', tardeWeekend:'tarde', noiteWeekend:'noite'};
-    const weekendElMap = {manhaWeekend:'editManhaWeekend', tardeWeekend:'editTardeWeekend', noiteWeekend:'editNoiteWeekend'};
-    if(kind === 'manha' || kind === 'tarde' || kind === 'noite'){
-      draft.periods[kind].tasks.push({ id: uid('t'), txt:'', pts:1, sub:'' });
-      renderEditorPeriod(kind, {manha:'editManha', tarde:'editTarde', noite:'editNoite'}[kind]);
-    } else if(weekendMap[kind]){
-      const periodKey = weekendMap[kind];
-      if(!draft.periodsWeekend) return;
-      draft.periodsWeekend[periodKey].tasks.push({ id: uid('we'), txt:'', pts:1, sub:'' });
-      renderEditorPeriod(periodKey, weekendElMap[kind], draft.periodsWeekend);
-    } else if(kind === 'bad'){
-      draft.badHabits.push({ id: uid('b'), txt:'', pts:1 });
-      renderEdito
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'

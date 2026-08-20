@@ -1,4 +1,13 @@
-cISO:null, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, hairByDate:{} };
+startTimeRemainingTicking(){
+  if(timeRemainingTickHandle) return;
+  timeRemainingTickHandle = setInterval(updateTimeRemainingDisplays, 30000);
+}
+
+function loadState(){
+  let raw = null;
+  try{ raw = localStorage.getItem(STORAGE_STATE_KEY); }catch(e){}
+  let state = raw ? JSON.parse(raw) : null;
+  if(!state) state = { totalPoints:120, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveLastSyncISO:null, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, hairByDate:{} };
   return reconcileState(state);
 }
 
@@ -179,15 +188,4 @@ function reconcileState(state){
     state.hairCorrectionAug1718Applied = true;
   }
   if(!state.backfillGapDaysV1Applied){
-    ["2026-08-17","2026-08-18"].forEach(iso=>{
-      if(!state.history[iso] || !state.history[iso].total){
-        const tasks = allTasks(iso);
-        state.history[iso] = {
-          done:0, total:tasks.length, pointsEarnedThatDay:0, perfect:false,
-          screenMinutes:0, periodsCompleted:0,
-          hair: (state.hairByDate && state.hairByDate[iso]) || null,
-        };
-      }
-    });
-    // 19/08 tinha registro, mas com total 0 (bug do mesmo tipo) — recalcula certo
-    if(state.history["2026-08-19"] &&
+    ["2026

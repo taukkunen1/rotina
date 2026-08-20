@@ -1,4 +1,20 @@
-começa,
+ning');
+    void wrap.offsetWidth;
+    wrap.classList.add('spinning');
+
+    const bubble = document.getElementById('petReactionBubble');
+    if(bubble){
+      const pick = PACUS_REACTIONS[Math.floor(Math.random()*PACUS_REACTIONS.length)];
+      bubble.textContent = pick;
+      bubble.classList.remove('show');
+      void bubble.offsetWidth;
+      bubble.classList.add('show');
+    }
+    if(Math.random() < 0.25) fireConfetti(wrap, 10);
+  });
+}
+
+// Fala noturna do Pacus — aparece sozinha quando a Noite começa,
 // dispensável só por hoje.
 const PACUS_NIGHT_MESSAGE = "Não esqueça de desenhar na lousa hoje! 🎨";
 let pacusDialogueTickHandle = null;
@@ -173,18 +189,4 @@ function buildStreakStrip(){
 function liveTodayEntry(){
   const tasks = allTasks();
   const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  const total = applicable.length;
-  const done = applicable.filter(t=>isCountedDone(state.checkedToday[t.id])).length;
-  const perfect = total>0 && done===total;
-  return { total, done, perfect };
-}
-
-function getHairStatus(dateISO){
-  return state.hairByDate && state.hairByDate[dateISO] ? state.hairByDate[dateISO] : null;
-}
-
-function setHairStatus(status){
-  const iso = todayISO();
-  if(!state.hairByDate) state.hairByDate = {};
-  state.hairByDate[iso] = status;
-  if(!state.history) state.history = {};
+  c

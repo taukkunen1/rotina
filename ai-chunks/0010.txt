@@ -1,4 +1,4 @@
-ullPenalty:true, sub:"no potinho" },
+has de gude", pts:1, fullPenalty:true, sub:"no potinho" },
     { id:"n5_caixas", txt:"Guardar as caixas", pts:1, fullPenalty:true, sub:"no lugar certo ou no lixo" },
     { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:3, fullPenalty:true, sub:"conferência final — nada espalhado" },
   ];
@@ -109,6 +109,19 @@ function applyEconomyRebalanceV1(cfg){
   return cfg;
 }
 
+// Correção: tempo de tela estava barato demais em 50 — sobe pra 100.
+// Hot Wheels continua 500 no CONFIG (preço "de verdade"), mas fica 300
+// pra ele até a primeira compra, calculado na hora (effectiveRewardCost).
+function fixScreenTimeCostV1(cfg){
+  if(!cfg || cfg.fixScreenTimeCostV1Applied) return cfg;
+  if(Array.isArray(cfg.rewards)){
+    const r1 = cfg.rewards.find(r=>r.id === 'r1');
+    if(r1) r1.cost = 100;
+  }
+  cfg.fixScreenTimeCostV1Applied = true;
+  return cfg;
+}
+
 function loadConfig(){
   try{
     const raw = localStorage.getItem(STORAGE_CONFIG_KEY);
@@ -190,13 +203,4 @@ function updateTimeRemainingDisplays(){
     el.className = 'time-remaining urgency-' + info.urgency;
   });
 }
-function startTimeRemainingTicking(){
-  if(timeRemainingTickHandle) return;
-  timeRemainingTickHandle = setInterval(updateTimeRemainingDisplays, 30000);
-}
-
-function loadState(){
-  let raw = null;
-  try{ raw = localStorage.getItem(STORAGE_STATE_KEY); }catch(e){}
-  let state = raw ? JSON.parse(raw) : null;
-  if(!state) state = { totalPoints:120, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveLastSyn
+function 

@@ -1,4 +1,11 @@
-rregamento pode precisar salvar de volta
+ Sempre que o arquivo abre, ele tenta buscar a versão mais nova salva
+   no Drive (via Apps Script) e usa ela — assim, não importa em qual
+   aparelho vocês abrirem, todos mostram a mesma coisa. Sempre que algo
+   muda aqui, ele também manda a atualização pro Drive sozinho, na hora
+   (sem precisar clicar em nada). Se estiver offline, o arquivo continua
+   funcionando normal com os dados salvos localmente.
+   IMPORTANTE: essas variáveis precisam existir ANTES de carregar
+   CONFIG/state, porque o carregamento pode precisar salvar de volta
    (limpezas, correções automáticas) e isso já chama scheduleAutoPush.
    E a sincronização fica SUSPENSA durante esse carregamento inicial —
    nesse momento ainda nem todo o resto do código rodou, então tentar
@@ -185,19 +192,4 @@ function bumpTotal(delta, anchorEl){
     const deltaEl = document.getElementById('pointsDelta');
     if(deltaEl){
       const rect = (anchorEl || el).getBoundingClientRect();
-      deltaEl.style.left = (rect.left + rect.width/2) + 'px';
-      deltaEl.style.top = (rect.top - 6) + 'px';
-      deltaEl.classList.remove('show-up','show-down');
-      void deltaEl.offsetWidth;
-      deltaEl.textContent = (delta>0?'+':'−') + Math.abs(delta);
-      deltaEl.classList.add(delta>0?'show-up':'show-down');
-    }
-  }
-}
-
-// 1 Pacus Point ≈ R$0,06 (dentro da faixa combinada de R$0,05–0,08) — o
-// saldo nunca passa de 1000 pontos, equivalente a uns R$60 no máximo.
-const MAX_POINTS = 1000;
-const POINT_VALUE_BRL = 0.06;
-
-func
+      deltaEl.style.left = (rect.lef

@@ -1,4 +1,13 @@
-class="pacus-bubble" cx="151" cy="165" r="3" fill="#e8a3c0" opacity=".45" style="animation-delay:1s;"/>
+     <ellipse cx="93" cy="106" rx="12" ry="18" fill="#fff" opacity=".5"/>
+        <g transform="translate(110 138) scale(${embryoScale.toFixed(2)}) translate(-110 -138)" opacity="${embryoOpacity.toFixed(2)}">
+          <ellipse cx="110" cy="138" rx="26" ry="20" fill="#f6c7dc"/>
+          <circle cx="110" cy="122" r="15" fill="#f6c7dc"/>
+        </g>
+        ${crackSvg}${shellBreak}
+      </g>
+    </g>
+    <circle class="pacus-bubble" cx="72" cy="169" r="4" fill="#e8a3c0" opacity=".55"/>
+    <circle class="pacus-bubble" cx="151" cy="165" r="3" fill="#e8a3c0" opacity=".45" style="animation-delay:1s;"/>
     <circle class="pacus-bubble" cx="118" cy="182" r="2.4" fill="#e8a3c0" opacity=".4" style="animation-delay:1.9s;"/>
   </svg>`;
 }
@@ -146,20 +155,4 @@ function wirePacusInteraction(){
   const wrap = document.getElementById('pacusInteractive');
   if(!wrap) return;
   wrap.addEventListener('click', ()=>{
-    wrap.classList.remove('spinning');
-    void wrap.offsetWidth;
-    wrap.classList.add('spinning');
-
-    const bubble = document.getElementById('petReactionBubble');
-    if(bubble){
-      const pick = PACUS_REACTIONS[Math.floor(Math.random()*PACUS_REACTIONS.length)];
-      bubble.textContent = pick;
-      bubble.classList.remove('show');
-      void bubble.offsetWidth;
-      bubble.classList.add('show');
-    }
-    if(Math.random() < 0.25) fireConfetti(wrap, 10);
-  });
-}
-
-// Fala noturna do Pacus — aparece sozinha quando a Noite 
+    wrap.classList.remove('spin

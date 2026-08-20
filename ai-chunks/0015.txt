@@ -1,4 +1,23 @@
-.connect(ctx.destination);
+;
+  t.runningSince = null;
+  t.finished = false;
+  saveState(state);
+  renderCustomTimers();
+}
+
+function playBeep(){
+  try{
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(!Ctx) return;
+    const ctx = new Ctx();
+    [0, 220, 440].forEach(delay=>{
+      setTimeout(()=>{
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = 880;
+        gain.gain.value = 0.15;
+        osc.connect(gain); gain.connect(ctx.destination);
         osc.start();
         osc.stop(ctx.currentTime + 0.18);
       }, delay);
@@ -170,13 +189,4 @@ function buildEggSVG(progress){
     <g class="pacus-idle">
       <g transform="rotate(${wobble} 110 130)">
         <ellipse cx="110" cy="130" rx="48" ry="60" fill="url(#${gid}-shell)" stroke="#e88aa8" stroke-width="3"/>
-        <ellipse cx="93" cy="106" rx="12" ry="18" fill="#fff" opacity=".5"/>
-        <g transform="translate(110 138) scale(${embryoScale.toFixed(2)}) translate(-110 -138)" opacity="${embryoOpacity.toFixed(2)}">
-          <ellipse cx="110" cy="138" rx="26" ry="20" fill="#f6c7dc"/>
-          <circle cx="110" cy="122" r="15" fill="#f6c7dc"/>
-        </g>
-        ${crackSvg}${shellBreak}
-      </g>
-    </g>
-    <circle class="pacus-bubble" cx="72" cy="169" r="4" fill="#e8a3c0" opacity=".55"/>
-    <circle 
+   
