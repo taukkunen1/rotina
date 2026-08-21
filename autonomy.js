@@ -17,13 +17,7 @@
     { key:'pendencia', icon:'🧩', text:'Tentar resolver uma pequena pendência antes de pedir ajuda.' }
   ];
 
-  const LEVELS = [
-    'Pequeno desafio',
-    'Algo que dá um friozinho',
-    'Um passo fora do confortável',
-    'Desafio corajoso',
-    'Grande passo'
-  ];
+  const LEVELS = ['Pequeno desafio','Algo que dá um friozinho','Um passo fora do confortável','Desafio corajoso','Grande passo'];
 
   function missionForDay(iso){
     const n=Number(iso.replaceAll('-', ''))||0;
@@ -36,11 +30,7 @@
     const today=TODAY();
     if(state.autonomy.date!==today){
       const previousLevel=Number(state.autonomy?.courage?.level)||1;
-      state.autonomy={
-        date:today,
-        courage:{level:previousLevel,practiced:false},
-        mission:{key:missionForDay(today).key,status:null}
-      };
+      state.autonomy={date:today,courage:{level:previousLevel,practiced:false},mission:{key:missionForDay(today).key,status:null}};
     }
     state.autonomy.courage ||= {level:1,practiced:false};
     state.autonomy.mission ||= {key:missionForDay(today).key,status:null};
@@ -52,9 +42,7 @@
     try{
       if(typeof saveState==='function') saveState(state);
       else if(typeof STORAGE_STATE_KEY!=='undefined') localStorage.setItem(STORAGE_STATE_KEY,JSON.stringify(state));
-    }catch(error){
-      console.warn('Autonomy save failed',error);
-    }
+    }catch(error){ console.warn('Autonomy save failed',error); }
   }
 
   function mountAutonomy(){
@@ -64,7 +52,18 @@
 
     const section=document.createElement('section');
     section.id='autonomy-tools';
-    section.innerHTML='<div class="autonomy-heading">🌱 Autonomia e coragem</div><div class="autonomy-grid"><article class="autonomy-card" id="courage-card"></article><article class="autonomy-card" id="mission-card"></article></div>';
+    section.innerHTML=`
+      <div class="autonomy-heading">🌱 Autonomia e coragem</div>
+      <div class="autonomy-grid">
+        <article class="autonomy-card" id="courage-card"></article>
+        <article class="autonomy-card" id="mission-card"></article>
+      </div>
+      <article class="board-reminder" aria-label="Lembretes da lousa">
+        <div class="board-reminder-title">🧑‍🎨 Lembretes da lousa</div>
+        <p>🧩 <strong>Problema meu, solução minha:</strong> anote um pequeno problema de hoje e pense em opções antes de pedir que um adulto resolva.</p>
+        <p>🙂 <strong>Como estou me sentindo?</strong> desenhe um rosto na lousa mostrando como você está hoje.</p>
+        <div class="board-reminder-note">Sem pontos e sem cobrança automática. É uma prática diária na lousa.</div>
+      </article>`;
     host.appendChild(section);
 
     section.addEventListener('click',event=>{
@@ -98,23 +97,7 @@
     missionCard.innerHTML=`<h3>🦅 Missão Independente</h3><span class="mission-icon">${mission.icon}</span><p>${mission.text}</p><div class="autonomy-actions"><button class="autonomy-btn primary" data-autonomy-action="independent">✓ Consegui sozinho</button><button class="autonomy-btn help" data-autonomy-action="help">🤝 Precisei de ajuda</button></div><div class="autonomy-status">${status}</div>`;
   }
 
-  function loadInterfaceModule(){
-    if(window.RotinaUI){
-      window.RotinaUI.start();
-      return;
-    }
-    if(document.querySelector('script[data-rotina-ui]')) return;
-    const script=document.createElement('script');
-    script.src='app-ui.js';
-    script.defer=true;
-    script.dataset.rotinaUi='1';
-    script.onload=()=>window.RotinaUI?.start();
-    script.onerror=()=>console.warn('Interface module failed to load');
-    document.head.appendChild(script);
-  }
-
   function start(){
-    loadInterfaceModule();
     let tries=0;
     const timer=setInterval(()=>{
       tries++;
