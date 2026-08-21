@@ -39,22 +39,28 @@
 .adult-back:hover{color:var(--chalk,#e8ece8)}
 .adult-page-header h1{margin:0;color:var(--chalk,#e8ece8);font-size:1.7rem}
 .adult-page-header p{margin:8px 0 0;color:var(--chalk-dim,#aab5b0)}
-#adult-status{flex:0 0 auto;padding:8px 12px;border:1px solid rgba(113,214,138,.35);border-radius:999px;background:rgba(113,214,138,.08);color:var(--ui-positive);font-size:.8rem;white-space:nowrap}
+#adult-status,#history-status{flex:0 0 auto;padding:8px 12px;border:1px solid rgba(113,214,138,.35);border-radius:999px;background:rgba(113,214,138,.08);color:var(--ui-positive);font-size:.8rem;white-space:nowrap}
 .adult-card{margin:14px 0;padding:22px;border:1px solid var(--line,#31453e);border-radius:14px;background:rgba(255,255,255,.018)}
 .adult-card h2{margin:0 0 16px;font-size:1.1rem;color:var(--chalk,#e8ece8)}
 .adult-card p{color:var(--chalk-dim,#aab5b0)}
-.adult-card button,.adult-file-button{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 14px;border:1px solid var(--line,#31453e);border-radius:9px;background:rgba(255,255,255,.04);color:var(--chalk,#e8ece8);font:inherit;font-size:.85rem;cursor:pointer;text-decoration:none}
-.adult-card button:hover,.adult-file-button:hover{border-color:var(--ui-focus);background:rgba(242,200,75,.08)}
+.adult-card button,.adult-file-button,.adult-page-link{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 14px;border:1px solid var(--line,#31453e);border-radius:9px;background:rgba(255,255,255,.04);color:var(--chalk,#e8ece8);font:inherit;font-size:.85rem;cursor:pointer;text-decoration:none}
+.adult-card button:hover,.adult-file-button:hover,.adult-page-link:hover{border-color:var(--ui-focus);background:rgba(242,200,75,.08)}
 .adult-actions{display:flex;gap:10px;flex-wrap:wrap}
 .adult-note{margin:12px 0 0;font-size:.82rem}
 #adult-today{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .adult-metric{padding:16px;border:1px solid var(--line,#31453e);border-radius:11px;background:rgba(255,255,255,.02)}
 .adult-metric strong{display:block;font-size:1.3rem;color:var(--ui-positive)}
 .adult-metric span{display:block;margin-top:4px;color:var(--chalk-dim,#aab5b0);font-size:.8rem}
-.adult-history-list{display:grid;gap:8px}
-.adult-history-list article{display:grid;grid-template-columns:minmax(110px,1fr) minmax(120px,1fr) minmax(90px,.7fr);align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line,#31453e);border-radius:9px;background:rgba(255,255,255,.015)}
-.adult-history-list strong{color:var(--chalk,#e8ece8)}
-.adult-history-list span{color:var(--chalk-dim,#aab5b0);font-size:.86rem}
 .adult-sync-info{margin:0;padding:14px;border:1px solid var(--line,#31453e);border-radius:10px;background:rgba(0,0,0,.12);color:var(--chalk-dim,#aab5b0);font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap}
 
-@media(max-width:650px){.autonomy-grid{grid-template-columns:1fr}#compact-game-timer{display:none}.adult-page-shell{width:min(100% - 20px,980px);padding-top:14px}.adult-page-header{display:block;padding:18px}.adult-page-header h1{font-size:1.4rem}#adult-status{display:inline-flex;margin-top:14px}#adult-today{grid-template-columns:1fr}.adult-history-list article{grid-template-columns:1fr;gap:5px}}
+/* Histórico completo */
+.history-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
+.history-toolbar .adult-note{margin:0}
+.history-list-full{display:grid;gap:8px}
+.history-row{display:grid;grid-template-columns:minmax(150px,1.4fr) minmax(100px,.8fr) minmax(90px,.7fr);align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line,#31453e);border-radius:10px;background:rgba(255,255,255,.015)}
+.history-date strong,.history-stat strong{display:block;color:var(--chalk,#e8ece8)}
+.history-date span,.history-stat span{display:block;margin-top:4px;color:var(--chalk-dim,#aab5b0);font-size:.8rem}
+.history-stat strong{color:var(--ui-positive);font-size:1.05rem}
+.history-empty{margin:0;padding:18px;border:1px dashed var(--line,#31453e);border-radius:10px;text-align:center}
+
+@media(max-width:650px){.autonomy-grid{grid-template-columns:1fr}#compact-game-timer{display:none}.adult-page-shell{width:min(100% - 20px,980px);padding-top:14px}.adult-page-header{display:block;padding:18px}.adult-page-header h1{font-size:1.4rem}#adult-status,#history-status{display:inline-flex;margin-top:14px}#adult-today{grid-template-columns:1fr}.history-toolbar{align-items:flex-start;flex-direction:column}.history-row{grid-template-columns:1fr;gap:8px}}
