@@ -1,4 +1,4 @@
-name: Reparar histórico e crescimento do PACUS
+name: Reparar crescimento e cenário do PACUS
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: rotina-data-repair
+  group: rotina-pacus-repair
   cancel-in-progress: true
 
 jobs:
@@ -18,21 +18,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Aplicar calendário real do PACUS
+      - name: Aplicar calendário independente e cenário leve
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path('index.html')
           text = p.read_text(encoding='utf-8')
 
-          new = '''function computePetStage(){
-  // Crescimento determinado pelo calendário real, na escala visual 0..23.
+          start_marker = 'function computePetStage(){'
+          end_marker = '\nfunction svgAttrs(){'
+          start = text.find(start_marker)
+          end = text.find(end_marker, start)
+          if start < 0 or end < 0:
+              raise SystemExit('Bloco computePetStage não encontrado.')
+
+          new_compute = '''function computePetStage(){
+  // O PACUS cresce exclusivamente pelo calendário. Tarefas, pontos,
+  // dias perfeitos ou dias não feitos nunca alteram este crescimento.
   const maxStage = 23;
   const iso = todayISO();
   const startISO = "2026-08-09";
   const babyISO = "2026-08-21";
   const endISO = "2026-08-31";
-  let stageFloat;
+  let stageFloat = 0;
+
   if(iso <= startISO){
     stageFloat = 0;
   } else if(iso < babyISO){
@@ -48,35 +57,86 @@ jobs:
     const current = new Date(iso+"T00:00:00");
     stageFloat = 14 + 9 * (current-baby)/(end-baby);
   }
+
   stageFloat = Math.max(0, Math.min(maxStage, stageFloat));
   const daysEquivalent = Math.round(stageFloat);
   const stage = Math.floor(stageFloat + 1e-9);
-  return { stage, stageFloat, unitsCompleted:daysEquivalent, totalUnits:maxStage,
-    maxStage, daysEquivalent, cycleDays:maxStage, todayPerfect:false,
-    canGrowToday:false, completedDays:[] };
+  return {
+    stage, stageFloat, unitsCompleted:daysEquivalent, totalUnits:maxStage,
+    maxStage, daysEquivalent, cycleDays:maxStage,
+    todayPerfect:false, canGrowToday:false, completedDays:[]
+  };
 }'''
+          text = text[:start] + new_compute + text[end:]
 
-          if 'const babyISO = "2026-08-21";' not in text:
-              marker = 'function computePetStage(){'
-              start = text.find(marker)
-              if start < 0:
-                  raise SystemExit('computePetStage não encontrado.')
-              brace = text.find('{', start)
-              depth = 0
-              end = None
-              for i in range(brace, len(text)):
-                  if text[i] == '{': depth += 1
-                  elif text[i] == '}':
-                      depth -= 1
-                      if depth == 0:
-                          end = i + 1
-                          break
-              if end is None:
-                  raise SystemExit('Fim de computePetStage não encontrado.')
-              text = text[:start] + new + text[end:]
+          old_caption = '''  if(stage === maxStage){
+    caption = `Pacus adulto! <b>Ciclo concluído em 31/08.</b> 🎉`;
+  } else if(canGrowToday && isDayPerfect(todayISO())){
+    caption = `<b>Dia perfeito!</b> O Pacus ganha um empurrãozinho <b>extra</b> de crescimento hoje! ✨`;
+  } else if(canGrowToday){
+    caption = `<b>Boa!</b> O Pacus vai evoluir mais um pouco hoje.`;
+  } else if(daysEquivalent === 0){
+    caption = `Complete um dia inteiro de tarefas pra começar a rachar o ovo.`;
+  } else {
+    const nextMilestone = milestones.find(([day]) => day > daysEquivalent);
+    if(nextMilestone){
+      const diasFaltando = nextMilestone[0] - daysEquivalent;
+      caption = `Faltam <b>${diasFaltando} ${diasFaltando===1?'dia':'dias'}</b> para virar <b>${nextMilestone[1]}</b>.`;
+    } else {
+      caption = `Quase lá! O Pacus está quase adulto.`;
+    }
+  }'''
+          new_caption = '''  if(stage === maxStage){
+    caption = `Pacus adulto! <b>Chegou ao tamanho completo em 31/08.</b> 🎉`;
+  } else {
+    const nextMilestone = milestones.find(([day]) => day > daysEquivalent);
+    if(nextMilestone){
+      const diasFaltando = nextMilestone[0] - daysEquivalent;
+      caption = `O PACUS cresce todos os dias. Faltam <b>${diasFaltando} ${diasFaltando===1?'dia':'dias'}</b> para virar <b>${nextMilestone[1]}</b>.`;
+    } else {
+      caption = `O PACUS continua crescendo todos os dias até ficar adulto em <b>31/08</b>.`;
+    }
+  }'''
+          if old_caption in text:
+              text = text.replace(old_caption, new_caption, 1)
+
+          old_wrap = '''    <div class="pet-mascot-wrap" id="pacusInteractive" title="Toque no Pacus!">
+      ${buildPetVisual(stageFloat)}
+      <span class="pet-accessory">🌿</span>'''
+          new_wrap = '''    <div class="pacus-scene">
+      <span class="pacus-scene-glow"></span>
+      <span class="pacus-scene-bubble bubble-a"></span>
+      <span class="pacus-scene-bubble bubble-b"></span>
+      <span class="pacus-scene-plant plant-left">🌱</span>
+      <span class="pacus-scene-plant plant-right">🌿</span>
+      <div class="pet-mascot-wrap" id="pacusInteractive" title="Toque no Pacus!">
+      ${buildPetVisual(stageFloat)}
+      <span class="pet-accessory">🌿</span>'''
+          if old_wrap in text and '<div class="pacus-scene">' not in text:
+              text = text.replace(old_wrap, new_wrap, 1)
+              text = text.replace('''      <span class="pet-reaction-bubble" id="petReactionBubble"></span>
+    </div>
+    <div id="pacusDialogue"></div>''', '''      <span class="pet-reaction-bubble" id="petReactionBubble"></span>
+      </div>
+    </div>
+    <div id="pacusDialogue"></div>''', 1)
+
+          css = '''\n/* Cenário leve do PACUS */
+.pacus-scene{position:relative;display:grid;place-items:center;min-height:210px;overflow:hidden;border-radius:28px;background:radial-gradient(ellipse at 50% 38%,rgba(74,169,150,.14),transparent 58%);}
+.pacus-scene-glow{position:absolute;width:180px;height:120px;border-radius:50%;background:rgba(120,218,182,.10);filter:blur(18px);}
+.pacus-scene-plant{position:absolute;bottom:20px;font-size:28px;opacity:.42;pointer-events:none;}
+.pacus-scene .plant-left{left:25%;transform:rotate(-12deg);}
+.pacus-scene .plant-right{right:25%;transform:rotate(10deg);}
+.pacus-scene-bubble{position:absolute;border:1px solid rgba(145,220,203,.32);border-radius:50%;width:9px;height:9px;opacity:.55;animation:pacusSceneFloat 5s ease-in-out infinite;}
+.pacus-scene .bubble-a{left:31%;bottom:38px;}
+.pacus-scene .bubble-b{right:30%;bottom:62px;width:6px;height:6px;animation-delay:1.8s;}
+@keyframes pacusSceneFloat{0%,100%{transform:translateY(0);opacity:.25}50%{transform:translateY(-28px);opacity:.75}}
+'''
+          if '/* Cenário leve do PACUS */' not in text:
+              text = text.replace('</style>', css + '\n</style>', 1)
 
           p.write_text(text, encoding='utf-8')
-          print('Renderizador do PACUS alinhado ao calendário 09/08-31/08.')
+          print('PACUS agora cresce apenas pela data e ganhou cenário leve.')
           PY
       - name: Commitar correção
         run: |
@@ -84,5 +144,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m "fix: usar calendário real no crescimento do PACUS"
+          git commit -m "fix: PACUS cresce por data e recebe cenário leve"
           git push
