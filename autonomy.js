@@ -47,14 +47,14 @@
       <article class="autonomy-card" id="courage-card"></article>
       <aside class="board-reminder" aria-label="Lembrete diário das atividades da lousa">
         <div class="board-reminder-head">
-          <span class="board-reminder-bell">🔔</span>
-          <div><div class="board-reminder-title">Lembrete da lousa</div><div class="board-reminder-subtitle">Antes de terminar o dia, lembre destas duas atividades.</div></div>
+          <span class="board-reminder-bell" aria-hidden="true">🔔</span>
+          <div><div class="board-reminder-title">Lembrete de hoje</div><div class="board-reminder-subtitle">Antes de encerrar o dia, passe pela lousa.</div></div>
         </div>
         <div class="board-reminder-list">
-          <div class="board-reminder-item"><span class="board-reminder-number">1</span><div><strong>Problema meu, solução minha</strong><span>Anote um pequeno problema e pense em opções antes de pedir que um adulto resolva.</span></div></div>
-          <div class="board-reminder-item"><span class="board-reminder-number">2</span><div><strong>Como estou me sentindo?</strong><span>Desenhe na lousa um rosto mostrando como você está se sentindo hoje.</span></div></div>
+          <div class="board-reminder-item"><span class="board-reminder-number">1</span><div><strong>Problema meu, solução minha</strong><span>Anote um pequeno problema, pense em opções e escolha o que parece melhor antes de pedir que um adulto resolva.</span></div></div>
+          <div class="board-reminder-item"><span class="board-reminder-number">2</span><div><strong>Como estou me sentindo?</strong><span>Desenhe um rosto mostrando como você está se sentindo hoje.</span></div></div>
         </div>
-        <div class="board-reminder-note">📝 As duas atividades são feitas na lousa. Sem pontos e sem registro no site.</div>
+        <div class="board-reminder-note">As duas atividades ficam somente na lousa. Sem pontos, cobrança automática ou registro no site.</div>
       </aside>`;
     host.onclick=event=>{
       const button=event.target.closest('button[data-autonomy-action]');
