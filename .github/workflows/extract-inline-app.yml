@@ -1,0 +1,96 @@
+name: Extrair app inline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/extract-inline-app.yml'
+      - '.github/extract-inline-app.trigger'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: extract-inline-app
+  cancel-in-progress: false
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Extrair o script principal sem alterar o conteúdo
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          index = Path('index.html')
+          app = Path('app.js')
+          storage = Path('storage.js')
+
+          html = index.read_text(encoding='utf-8')
+
+          matches = list(re.finditer(
+              r'<script(?![^>]*\bsrc\s*=)[^>]*>(.*?)</script>',
+              html,
+              flags=re.IGNORECASE | re.DOTALL
+          ))
+
+          if not matches:
+              raise SystemExit('Nenhum script inline encontrado.')
+
+          main = matches[-1]
+          code = main.group(1)
+
+          # Guard against reruns after migration. The real application script is large.
+          if len(code) < 10000:
+              raise SystemExit('O script principal já parece ter sido extraído; nenhuma alteração feita.')
+
+          # Preserve the application code byte-for-byte, apart from the script tag itself.
+          app.write_text(code, encoding='utf-8')
+
+          replacement = '<script src="app.js"></script>'
+          html = html[:main.start()] + replacement + html[main.end():]
+          index.write_text(html, encoding='utf-8')
+
+          # storage.js must stop dynamically injecting app.js now that index owns loading order.
+          storage_text = storage.read_text(encoding='utf-8')
+          marker = "  // The legacy index is still being split into modules. Load the transition\n"
+          if marker in storage_text:
+              storage_text = storage_text[:storage_text.index(marker)] + "})();\n"
+          storage.write_text(storage_text, encoding='utf-8')
+
+      - name: Validar JavaScript extraído
+        run: |
+          node --check app.js
+          node --check storage.js
+
+      - name: Validar estrutura resultante
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          html = Path('index.html').read_text(encoding='utf-8')
+          if not re.search(r'<script\s+src="app\.js"></script>', html):
+              raise SystemExit('index.html não carrega app.js')
+          inline = re.findall(r'<script(?![^>]*\bsrc\s*=)[^>]*>(.*?)</script>', html, re.I | re.S)
+          if any(len(x) > 10000 for x in inline):
+              raise SystemExit('Ainda existe um script inline grande no index.html')
+          print('OK: script principal extraído para app.js')
+
+      - name: Commitar migração
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html app.js storage.js
+          if git diff --cached --quiet; then
+            echo 'Nenhuma alteração necessária.'
+            exit 0
+          fi
+          git commit -m "Extrair lógica inline para app.js"
+          git push
