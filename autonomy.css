@@ -1,0 +1,81 @@
+/* Autonomia e coragem */
+#autonomy-tools{
+  margin:16px 0 4px;
+  padding:16px;
+  border:1px solid rgba(247,244,236,.14);
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(95,216,117,.06),rgba(79,195,247,.035));
+  animation:autonomyEnter .45s ease both;
+}
+.autonomy-heading{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:0 0 14px;
+  color:var(--chalk);
+  font-size:.88rem;
+  letter-spacing:.04em;
+}
+.autonomy-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.autonomy-card{
+  min-width:0;
+  background:rgba(9,20,16,.36);
+  border:1px solid rgba(247,244,236,.16);
+  border-radius:12px;
+  padding:15px;
+  transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease,background .22s ease;
+}
+.autonomy-card:hover{transform:translateY(-2px);border-color:rgba(95,216,117,.45);box-shadow:0 10px 24px rgba(0,0,0,.18);}
+.autonomy-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.autonomy-card h3{margin:0;color:var(--chalk);font-size:1rem;line-height:1.3;}
+.autonomy-level{font-size:.7rem;color:var(--green);border:1px solid rgba(95,216,117,.35);background:rgba(95,216,117,.08);padding:3px 7px;border-radius:999px;white-space:nowrap;}
+.autonomy-level-name{margin:0 0 10px;color:var(--yellow);font-size:.82rem;font-weight:bold;}
+.autonomy-copy{margin:10px 0;color:var(--chalk-dim);font-size:.8rem;line-height:1.5;min-height:2.4em;}
+.autonomy-steps{display:flex;align-items:center;gap:7px;margin:10px 0 12px;}
+.autonomy-step{position:relative;flex:1;height:9px;border-radius:999px;background:rgba(247,244,236,.1);border:1px solid rgba(247,244,236,.14);overflow:visible;transition:background .35s ease,border-color .35s ease,transform .25s ease,box-shadow .35s ease;}
+.autonomy-step i{display:none;}
+.autonomy-step.active{background:var(--green);border-color:rgba(95,216,117,.8);box-shadow:0 0 10px rgba(95,216,117,.25);}
+.autonomy-step.new-step{animation:newAutonomyStep .55s cubic-bezier(.2,.9,.25,1.3);}
+.autonomy-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.autonomy-btn{
+  appearance:none;
+  border:1px solid rgba(247,244,236,.2);
+  background:rgba(255,255,255,.035);
+  color:var(--chalk);
+  border-radius:8px;
+  padding:8px 10px;
+  min-height:36px;
+  font:inherit;
+  font-size:.76rem;
+  cursor:pointer;
+  transition:transform .15s ease,background .2s ease,border-color .2s ease,color .2s ease,box-shadow .2s ease;
+}
+.autonomy-btn:hover{transform:translateY(-1px);border-color:rgba(247,244,236,.45);background:rgba(255,255,255,.07);}
+.autonomy-btn:active{transform:scale(.96);}
+.autonomy-btn.primary{color:#102418;background:rgba(95,216,117,.82);border-color:rgba(95,216,117,.9);font-weight:bold;}
+.autonomy-btn.primary:hover{background:var(--green);box-shadow:0 5px 16px rgba(95,216,117,.18);}
+.autonomy-btn.help{color:var(--blue);border-color:rgba(79,195,247,.32);}
+.autonomy-btn.help.selected{background:rgba(79,195,247,.12);border-color:var(--blue);color:var(--chalk);}
+.autonomy-btn.selected{box-shadow:0 0 0 2px rgba(255,255,255,.12),0 6px 18px rgba(95,216,117,.14);}
+.mission-icon{font-size:1.35rem;animation:missionFloat 3s ease-in-out infinite;transform-origin:center bottom;}
+.mission-text{color:var(--chalk);}
+.autonomy-status{min-height:1.4em;margin-top:9px;font-size:.78rem;color:var(--chalk-dim);animation:statusIn .3s ease;}
+.autonomy-status.independent{color:var(--green);font-weight:bold;}
+.autonomy-status.help{color:var(--blue);}
+.autonomy-pop{animation:autonomyPop .38s ease both;}
+.autonomy-pop-help{animation:autonomyPopHelp .38s ease both;}
+.autonomy-card-bump{animation:cardBump .42s ease both;}
+.board-reminder{margin-top:12px;padding:13px 14px;border-top:1px dashed rgba(247,244,236,.2);color:var(--chalk-dim);}
+.board-reminder-title{color:var(--blue);font-size:.78rem;font-weight:bold;margin-bottom:7px;}
+.board-reminder p{margin:6px 0;font-size:.76rem;line-height:1.5;}
+.board-reminder strong{color:var(--chalk);}
+.board-reminder-note{margin-top:9px;font-size:.7rem;color:rgba(247,244,236,.55);}
+@keyframes autonomyEnter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes newAutonomyStep{0%{transform:scaleX(.2);filter:brightness(1.6)}55%{transform:scaleX(1.12)}100%{transform:scaleX(1);filter:brightness(1)}}
+@keyframes autonomyPop{0%{transform:scale(1)}45%{transform:scale(1.07)}100%{transform:scale(1)}}
+@keyframes autonomyPopHelp{0%{transform:scale(1)}45%{transform:scale(1.05);box-shadow:0 0 0 5px rgba(79,195,247,.08)}100%{transform:scale(1)}}
+@keyframes cardBump{0%{transform:scale(1)}45%{transform:scale(1.012);border-color:rgba(95,216,117,.7)}100%{transform:scale(1)}}
+@keyframes missionFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-4px) rotate(2deg)}}
+@keyframes statusIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:680px){.autonomy-grid{grid-template-columns:1fr}.autonomy-copy{min-height:auto}}
+@media(prefers-reduced-motion:reduce){#autonomy-tools,.autonomy-card,.mission-icon,.autonomy-step.new-step,.autonomy-pop,.autonomy-pop-help,.autonomy-card-bump,.autonomy-status{animation:none!important;transition:none!important}}
