@@ -1,0 +1,53 @@
+/* Tema global: cores mais vivas, mantendo contraste e hierarquia visual */
+:root{
+  --board:#101d1a;
+  --board-edge:#08110f;
+  --chalk:#fffdf6;
+  --chalk-dim:#c4d0ca;
+  --yellow:#ffd84d;
+  --pink:#ff6fb5;
+  --blue:#4fd6ff;
+  --orange:#ff9d4d;
+  --green:#55e887;
+  --red:#ff6678;
+  --wood:#b8733f;
+  --wood-dark:#71401f;
+  --line:rgba(226,255,242,.20);
+  --focus:#ffe785;
+}
+body{
+  background:
+    radial-gradient(circle at 12% 5%, rgba(79,214,255,.11), transparent 27%),
+    radial-gradient(circle at 88% 10%, rgba(255,111,181,.10), transparent 25%),
+    radial-gradient(circle at 50% 100%, rgba(85,232,135,.08), transparent 35%),
+    var(--board);
+}
+.board-frame{box-shadow:0 22px 60px rgba(0,0,0,.58),0 0 30px rgba(79,214,255,.06),inset 0 0 0 6px var(--wood-dark)}
+.board-inner{border-color:var(--wood);box-shadow:inset 0 0 28px rgba(255,216,77,.025)}
+.topbar{background:linear-gradient(135deg,rgba(12,31,27,.98),rgba(16,38,33,.94));border-bottom-color:rgba(255,216,77,.24)}
+.topbar h1{text-shadow:0 0 18px rgba(255,216,77,.35)}
+.pacus-total{background:linear-gradient(135deg,rgba(79,214,255,.10),rgba(85,232,135,.08));border-color:rgba(79,214,255,.32);box-shadow:0 0 18px rgba(79,214,255,.06)}
+.pacus-total .num{color:var(--green);text-shadow:0 0 12px rgba(85,232,135,.38)}
+.icon-btn{border-color:rgba(79,214,255,.30);background:rgba(79,214,255,.045);color:var(--chalk)}
+.icon-btn:hover{border-color:var(--blue);background:rgba(79,214,255,.13);box-shadow:0 0 14px rgba(79,214,255,.12)}
+.icon-btn.primary{color:#241e08;border-color:var(--yellow);background:linear-gradient(135deg,var(--yellow),#ffbf45);box-shadow:0 5px 16px rgba(255,190,69,.18)}
+.icon-btn.primary:hover{background:linear-gradient(135deg,#ffe77a,var(--orange));transform:translateY(-1px)}
+.block,.block-collapsible,.focus-card,.hair-section,.adult-card{border-color:rgba(79,214,255,.20);box-shadow:0 8px 24px rgba(0,0,0,.10)}
+.btn,.fresh-start-btn,.recovery-mission-btn,.game-timer-btn{box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.btn.save,.fresh-start-btn{background:linear-gradient(135deg,var(--green),#35c978);color:#092116}
+.recovery-mission-btn{background:linear-gradient(135deg,var(--yellow),var(--orange));color:#2b2108}
+.period-title,.period h2,.focus-step .focus-label{color:var(--yellow);text-shadow:0 0 10px rgba(255,216,77,.16)}
+.task.done{background:linear-gradient(90deg,rgba(85,232,135,.14),rgba(79,214,255,.05));border-color:rgba(85,232,135,.38)}
+.task.done .check{color:var(--green)}
+.task:hover{border-color:rgba(79,214,255,.45);background:rgba(79,214,255,.055)}
+.points{color:var(--yellow);text-shadow:0 0 8px rgba(255,216,77,.25)}
+.weekend-indicator{background:rgba(255,157,77,.13);border-color:rgba(255,157,77,.48);color:#ffc48d}
+.light-day-banner{background:rgba(79,214,255,.11);border-color:rgba(79,214,255,.42);color:#9ce9ff}
+.game-timer,.wins-card{box-shadow:0 0 22px rgba(255,111,181,.05)}
+.game-timer-fill{background:linear-gradient(90deg,var(--pink),#b77cff)}
+.game-timer-btn{background:linear-gradient(135deg,var(--pink),#c36cff);color:#2a0d21}
+.hair-btn:hover,.timer-btn:hover{box-shadow:0 0 14px rgba(79,214,255,.20)}
+.adult-page-header{background:linear-gradient(135deg,rgba(79,214,255,.07),rgba(255,111,181,.05))}
+.adult-page-link{background:linear-gradient(135deg,rgba(79,214,255,.14),rgba(85,232,135,.12));border-color:rgba(79,214,255,.38)}
+.adult-page-link:hover{border-color:var(--yellow);box-shadow:0 0 18px rgba(255,216,77,.12)}
+@media (prefers-reduced-motion:no-preference){.icon-btn,.adult-page-link,.task{transition:transform .15s ease,background .15s ease,border-color .15s ease,box-shadow .15s ease}.task:hover{transform:translateY(-1px)}}
