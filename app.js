@@ -1245,8 +1245,7 @@ async function doAutoPush(){
       state.driveLastSyncISO = todayISO();
       state.driveConflictCount = 0;
       try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
-      renderDriveSync();
-    } else if(result.conflict && result.data){
+        } else if(result.conflict && result.data){
       state.driveConflictCount = (Number(state.driveConflictCount)||0)+1;
       const server = result.data;
       const merged = mergeRemoteData(server);
@@ -1259,8 +1258,7 @@ async function doAutoPush(){
       render();
     }
   }catch(err){
-    renderDriveSync();
-  } finally {
+    } finally {
     pushInFlight = false;
     if(pushPending){
       pushPending = false;
@@ -1367,8 +1365,7 @@ async function pullAndMergeFromDrive(){
       }
     }
   }catch(err){
-    renderDriveSync();
-  }
+    }
   suppressAutoPush = false;
 }
 async function autoPullOnStartup(){
@@ -1605,7 +1602,6 @@ function setCustomTimerMinutes(id, minutes){
   t.remainingSeconds = secs;
   t.finished = false;
   saveState(state);
-  renderCustomTimers();
 }
 
 function startCustomTimer(id){
@@ -1614,7 +1610,6 @@ function startCustomTimer(id){
   t.runningSince = Date.now();
   t.finished = false;
   saveState(state);
-  renderCustomTimers();
   startCustomTimerTicking();
 }
 
@@ -1624,7 +1619,6 @@ function pauseCustomTimer(id){
   t.remainingSeconds = customTimerRemainingNow(t);
   t.runningSince = null;
   saveState(state);
-  renderCustomTimers();
 }
 
 function resetCustomTimer(id){
@@ -1634,7 +1628,6 @@ function resetCustomTimer(id){
   t.runningSince = null;
   t.finished = false;
   saveState(state);
-  renderCustomTimers();
 }
 
 function playBeep(){
@@ -2198,7 +2191,6 @@ function setHairStatus(status){
   if(state.history[iso]) state.history[iso].hair = status;
   saveState(state);
   renderHair();
-  renderHistory();
 }
 
 function renderHair(){
@@ -2223,7 +2215,6 @@ function render(){
   renderPet();
   renderHair();
   renderGameTimer();
-  renderCustomTimers();
 
   const weekendEl = document.getElementById('weekendIndicator');
   if(weekendEl){
@@ -2340,16 +2331,9 @@ function render(){
   renderPositiveBehaviors();
 
   renderRewards();
-  renderLog();
-  renderHistory();
-  renderAchievementMural();
   renderWeeklyReview();
   renderFamilyGameNightAnnouncement();
   renderWeeklyNewsAnnouncement();
-  renderBackupReminder();
-  renderTestPanel();
-  renderTestModeBanner();
-  renderDriveSync();
 }
 
 function daysBetween(isoA, isoB){
@@ -2523,8 +2507,7 @@ function renderBackupReminder(){
   document.getElementById('backupReminderDismissBtn').addEventListener('click', ()=>{
     state.backupReminderDismissedFor = today;
     saveState(state);
-    renderBackupReminder();
-  });
+    });
 }
 
 function renderWeeklyReview(){
@@ -2658,8 +2641,7 @@ function renderHistory(){
         : `<button class="icon-btn" id="historyToggleBtn">mostrar histórico completo (+${hiddenCount} dias)</button>`;
       document.getElementById('historyToggleBtn').addEventListener('click', ()=>{
         historyShowAll = !historyShowAll;
-        renderHistory();
-      });
+            });
     } else {
       toggleEl.innerHTML = '';
     }
@@ -2712,8 +2694,7 @@ function renderRewards(){
       saveState(state);
       bumpTotal(delta, evt.currentTarget);
       renderRewards();
-      renderLog();
-      renderGameTimer();
+          renderGameTimer();
     });
     rEl.appendChild(div);
   });
@@ -2779,8 +2760,7 @@ function renderPositiveBehaviors(){
         fireConfetti(btn, 10);
         picker.classList.remove('open');
         noteInput.value = '';
-        renderLog();
-      });
+            });
     });
   });
 
@@ -2797,8 +2777,7 @@ function renderPositiveBehaviors(){
         addLog(`${isPositive?'+':'−'}${Math.abs(h.pts)} · ${h.txt}`, true);
         saveState(state);
         bumpTotal(delta, btn);
-        renderLog();
-      });
+            });
       extraEl.appendChild(btn);
     });
   }
@@ -3229,7 +3208,6 @@ document.getElementById('editBtn').addEventListener('click', ()=>{
 document.getElementById('adultTestBtn').addEventListener('click', ()=>{
   closeEditor();
   testPanelOpen = !testPanelOpen;
-  renderTestPanel();
 });
 document.getElementById('closeBtn').addEventListener('click', closeEditor);
 document.getElementById('cancelBtn').addEventListener('click', closeEditor);
@@ -3269,59 +3247,6 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   saveState(state);
 
   closeEditor();
-  render();
-});
-
-/* ===================== EDITOR DE DIA ANTERIOR ===================== */
-let editingDate = null;
-
-function openDayEditor(dateISO){
-  editingDate = dateISO;
-  const entry = state.history[dateISO] || { done:0, total:0, pointsEarnedThatDay:0, perfect:false, screenMinutes:0 };
-  document.getElementById('dayEditorTitle').textContent = 'Editar ' + formatDateBR(dateISO);
-  document.getElementById('dayDone').value = entry.done;
-  document.getElementById('dayTotal').value = entry.total;
-  document.getElementById('dayPoints').value = entry.pointsEarnedThatDay;
-  document.getElementById('dayHair').value = getHairStatus(dateISO) || entry.hair || '';
-  document.getElementById('dayOverlay').classList.add('open');
-}
-function closeDayEditor(){
-  document.getElementById('dayOverlay').classList.remove('open');
-  editingDate = null;
-}
-document.getElementById('dayCloseBtn').addEventListener('click', closeDayEditor);
-document.getElementById('dayCancelBtn').addEventListener('click', closeDayEditor);
-document.getElementById('dayOverlay').addEventListener('click', e=>{
-  if(e.target.id === 'dayOverlay') closeDayEditor();
-});
-
-document.getElementById('daySaveBtn').addEventListener('click', ()=>{
-  if(!editingDate) return;
-  const oldEntry = state.history[editingDate];
-  const oldPoints = oldEntry ? oldEntry.pointsEarnedThatDay : 0;
-
-  const done = Math.max(0, parseInt(document.getElementById('dayDone').value,10) || 0);
-  const total = Math.max(0, parseInt(document.getElementById('dayTotal').value,10) || 0);
-  const pointsEarnedThatDay = Math.max(0, parseInt(document.getElementById('dayPoints').value,10) || 0);
-  const hair = document.getElementById('dayHair').value || null;
-  const perfect = total > 0 && done >= total;
-
-  if(!state.hairByDate) state.hairByDate = {};
-  if(hair) state.hairByDate[editingDate] = hair; else delete state.hairByDate[editingDate];
-  state.history[editingDate] = { done, total, pointsEarnedThatDay, perfect, screenMinutes: perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0, hair };
-  if(perfect) registerPetDayCompletion(editingDate);
-
-  // ajusta o saldo total pela diferença de pontos daquele dia
-  const delta = pointsEarnedThatDay - oldPoints;
-  let appliedDelta = 0;
-  if(delta !== 0){
-    appliedDelta = addPoints(delta);
-    addLog(`✏️ ajuste em ${formatDateBR(editingDate)}: ${delta>0?'+':''}${delta}`, true);
-  }
-
-  saveState(state);
-  closeDayEditor();
-  bumpTotal(appliedDelta);
   render();
 });
 
@@ -3469,8 +3394,7 @@ async function driveSave(){
 
     state.driveLastSyncISO = todayISO();
     saveState(state);
-    renderDriveSync();
-    alert('Salvo no Google Drive!');
+      alert('Salvo no Google Drive!');
   }catch(err){
     alert('Não consegui salvar no Google Drive. Confira se a URL do Apps Script está certa e se a implantação está ativa.');
   }
@@ -3511,7 +3435,6 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
   state.lastBackupISO = todayISO();
   state.backupReminderDismissedFor = null;
   saveState(state);
-  renderBackupReminder();
 });
 
 document.getElementById('importBtn').addEventListener('click', ()=>{
