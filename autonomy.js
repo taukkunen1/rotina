@@ -54,31 +54,109 @@
     }catch(err){ console.warn('Autonomy save failed', err); }
   }
 
+  function addStyles(){
+    if (document.getElementById('clean-dashboard-style')) return;
+    const style = document.createElement('style');
+    style.id = 'clean-dashboard-style';
+    style.textContent = `
+      /* Hierarquia visual: poucas cores chamativas e apenas para informação útil. */
+      .content > #customTimersSection,
+      .content > .block-collapsible:has(#customTimersSection),
+      .content > .block-collapsible:has(#positiveBehaviors),
+      .content > .block-collapsible:has(#achievementMuralSection){display:none !important;}
+
+      .topbar h1{color:var(--chalk) !important;text-shadow:none !important;}
+      .topbar{background:rgba(19,32,25,.97) !important;}
+      .pacus-total .num{color:var(--green) !important;}
+      .icon-btn.primary{color:var(--chalk) !important;border-color:var(--line) !important;}
+      .icon-btn.primary:hover{background:rgba(255,255,255,.06) !important;}
+      .weekend-indicator,.light-day-banner{color:var(--chalk-dim) !important;background:rgba(255,255,255,.025) !important;border-color:var(--line) !important;}
+      .focus-step .focus-label{color:var(--yellow) !important;}
+
+      #autonomy-tools{margin:16px 0 4px;padding:14px 0 0;border-top:1px dashed var(--line);}
+      .autonomy-heading{text-align:center;font-family:"Segoe Print","Bradley Hand",cursive;color:var(--chalk);font-size:1.05rem;margin:0 0 10px;}
+      .autonomy-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+      .autonomy-card{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center;}
+      .autonomy-card h3{margin:0 0 7px;font-family:"Segoe Print","Bradley Hand",cursive;font-weight:normal;font-size:1.05rem;color:var(--chalk);}
+      .autonomy-card p{margin:5px 0;color:var(--chalk-dim);font-size:.8rem;line-height:1.45;}
+      .autonomy-steps{display:flex;gap:5px;justify-content:center;margin:10px 0;}
+      .autonomy-step{width:26px;height:8px;border-radius:99px;background:rgba(255,255,255,.09);border:1px solid var(--line);}
+      .autonomy-step.active{background:var(--green);border-color:var(--green);}
+      .autonomy-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:10px;}
+      .autonomy-btn{font:inherit;font-size:.78rem;padding:8px 11px;border-radius:8px;cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--chalk);}
+      .autonomy-btn.primary{background:rgba(95,216,117,.12);border-color:rgba(95,216,117,.55);color:var(--green);}
+      .autonomy-btn.help{background:rgba(255,255,255,.04);border-color:var(--line);color:var(--chalk-dim);}
+      .autonomy-status{min-height:18px;margin-top:8px;font-size:.75rem;color:var(--green);}
+      .mission-icon{font-size:1.5rem;display:block;margin-bottom:3px;}
+
+      #adult-tools{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line);}
+      #adult-tools h3{margin:0 0 10px;font-size:1rem;color:var(--chalk);}
+      #adult-tools .adult-tools-group{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02);}
+      #adult-tools footer{margin:0;text-align:center;color:var(--chalk-dim);font-size:.72rem;}
+      #adult-tools #driveSyncSection{margin:0;}
+      #adult-tools details{margin:0;border-top:0;padding-top:0;}
+      @media(max-width:650px){.autonomy-grid{grid-template-columns:1fr;}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function moveToAdultPanel(){
+    const overlay = document.getElementById('overlay');
+    if (!overlay || document.getElementById('adult-tools')) return;
+
+    const editor = overlay.querySelector('.editor');
+    const anchor = editor?.querySelector('.editor-footer');
+    if (!editor || !anchor) return;
+
+    const tools = document.createElement('section');
+    tools.id = 'adult-tools';
+    tools.innerHTML = '<h3>🔧 Administração</h3>';
+
+    const history = document.querySelector('.content details:has(#logList)');
+    if (history){
+      const group = document.createElement('div');
+      group.className = 'adult-tools-group';
+      history.querySelector('summary').textContent = '📝 Histórico de hoje';
+      group.appendChild(history);
+      tools.appendChild(group);
+    }
+
+    const drive = document.getElementById('driveSyncSection');
+    if (drive){
+      const group = document.createElement('div');
+      group.className = 'adult-tools-group';
+      group.appendChild(drive);
+      tools.appendChild(group);
+    }
+
+    const footer = document.querySelector('.content > footer');
+    if (footer){
+      const group = document.createElement('div');
+      group.className = 'adult-tools-group';
+      group.appendChild(footer);
+      tools.appendChild(group);
+    }
+
+    editor.insertBefore(tools, anchor);
+  }
+
+  function removeDistractions(){
+    const selectors = [
+      '.content > .block-collapsible:has(#customTimersSection)',
+      '.content > .block-collapsible:has(#positiveBehaviors)',
+      '.content > .block-collapsible:has(#achievementMuralSection)'
+    ];
+    selectors.forEach(selector => document.querySelector(selector)?.remove());
+  }
+
   function mount(){
     if (document.getElementById('autonomy-tools')) return;
     const host = document.querySelector('.content');
     if (!host) return;
 
-    const style = document.createElement('style');
-    style.textContent = `
-      #autonomy-tools{margin:16px 0 4px;padding:14px 0 0;border-top:1px dashed var(--line);}
-      .autonomy-heading{text-align:center;font-family:"Segoe Print","Bradley Hand",cursive;color:var(--blue);font-size:1.05rem;margin:0 0 10px;}
-      .autonomy-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-      .autonomy-card{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center;}
-      .autonomy-card h3{margin:0 0 7px;font-family:"Segoe Print","Bradley Hand",cursive;font-weight:normal;font-size:1.05rem;color:var(--yellow);}
-      .autonomy-card p{margin:5px 0;color:var(--chalk-dim);font-size:.8rem;line-height:1.45;}
-      .autonomy-steps{display:flex;gap:5px;justify-content:center;margin:10px 0;}
-      .autonomy-step{width:26px;height:8px;border-radius:99px;background:rgba(255,255,255,.09);border:1px solid var(--line);}
-      .autonomy-step.active{background:var(--yellow);border-color:var(--yellow);}
-      .autonomy-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:10px;}
-      .autonomy-btn{font:inherit;font-size:.78rem;padding:8px 11px;border-radius:8px;cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--chalk);}
-      .autonomy-btn.primary{background:rgba(95,216,117,.14);border-color:rgba(95,216,117,.55);color:var(--green);}
-      .autonomy-btn.help{background:rgba(79,195,247,.09);border-color:rgba(79,195,247,.45);color:var(--blue);}
-      .autonomy-status{min-height:18px;margin-top:8px;font-size:.75rem;color:var(--green);}
-      .mission-icon{font-size:1.5rem;display:block;margin-bottom:3px;}
-      @media(max-width:650px){.autonomy-grid{grid-template-columns:1fr;}}
-    `;
-    document.head.appendChild(style);
+    addStyles();
+    removeDistractions();
+    moveToAdultPanel();
 
     const section = document.createElement('section');
     section.id = 'autonomy-tools';
