@@ -1,304 +1,55 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<script src="storage.js"></script>
+<meta name="rotina-app-version" content="2026-08-21-storage-fix">
+<script>
+(function(){
+  'use strict';
+  var migrationKey = 'hector_rotina_remote_storage_migrated_v1';
+  var legacyKeys = ['hector_rotina_config_v3','hector_rotina_state_v3'];
+  try {
+    if (localStorage.getItem(migrationKey) !== 'done') {
+      legacyKeys.forEach(function(key){ localStorage.removeItem(key); });
+      localStorage.setItem(migrationKey, 'done');
+    }
+  } catch (e) { console.warn('Legacy storage cleanup skipped', e); }
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Rotina do Hector — Pacus</title>
-<style>
-  /* Arquivo local, sem instalação — abre no navegador. Tudo é editado
-     pela tela ("Editar tudo"), dados ficam salvos no navegador.
-     DEFAULT_CONFIG só vale na primeira abertura. */
-
-  :root{
-    --board:#16241f;
-    --board-edge:#0e1712;
-    --chalk:#f7f4ec;
-    --chalk-dim:#c7c0b0;
-    --yellow:#ffd93d;
-    --pink:#ff7eb9;
-    --blue:#4fc3f7;
-    --orange:#ff9f43;
-    --green:#5fd875;
-    --red:#ff6b6b;
-    --wood:#8a5a34;
-    --wood-dark:#6b4324;
-    --line:rgba(247,244,236,.18);
-    --focus:#ffe08a;
-  }
-
-  *{box-sizing:border-box;}
-  ::selection{ background:var(--yellow); color:#1b2e28; }
-
-  :focus-visible{
-    outline:2px solid var(--focus);
-    outline-offset:2px;
-    border-radius:4px;
-  }
-
-  body{
-    margin:0;
-    min-height:100vh;
-    font-family:Verdana, Geneva, sans-serif;
-    color:var(--chalk);
-    background:
-      radial-gradient(ellipse at 15% 0%, rgba(255,255,255,.05), transparent 55%),
-      radial-gradient(ellipse at 85% 100%, rgba(255,255,255,.04), transparent 55%),
-      var(--board);
-    padding:20px 14px 50px;
-  }
-
-  body::before{
-    content:"";
-    position:fixed; inset:0; pointer-events:none; opacity:.04;
-    background-image:
-      repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 3px),
-      repeating-linear-gradient(90deg, #fff 0 1px, transparent 1px 3px);
-    mix-blend-mode:overlay;
-  }
-
-  .board-frame{
-    max-width:1040px;
-    margin:0 auto;
-    background:var(--board-edge);
-    border-radius:12px;
-    padding:8px;
-    box-shadow:0 20px 50px rgba(0,0,0,.5), inset 0 0 0 6px var(--wood-dark);
-  }
-
-  .board-inner{
-    border:3px solid var(--wood);
-    border-radius:8px;
-    padding:0 0 24px;
-    position:relative;
-    overflow:hidden;
-  }
-
-  /* ---------- topbar: fica visível ao rolar ---------- */
-  .topbar{
-    position:sticky;
-    top:0;
-    z-index:20;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    padding:14px 18px;
-    background:linear-gradient(180deg, rgba(19,32,25,.97), rgba(19,32,25,.9));
-    border-bottom:2px dashed var(--line);
-    backdrop-filter:blur(2px);
-  }
-
-  .topbar h1{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-weight:normal;
-    font-size:1.5rem;
-    margin:0;
-    color:var(--yellow);
-    text-shadow:0 0 12px rgba(255,217,61,.2);
-    white-space:nowrap;
-  }
-
-  .topbar-right{
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
-
-  .pacus-total{
-    position:relative;
-    display:flex;
-    align-items:baseline;
-    gap:7px;
-    background:rgba(255,255,255,.05);
-    border:1px solid var(--line);
-    border-radius:999px;
-    padding:6px 16px;
-  }
-  .pacus-total .label{
-    font-size:.68rem;
-    color:var(--chalk-dim);
-    text-transform:uppercase;
-    letter-spacing:1px;
-  }
-  .pacus-total .num{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-size:1.5rem;
-    color:var(--green);
-    transition:transform .15s ease;
-    min-width:1.4ch;
-    text-align:right;
-  }
-  .pacus-total .num.bump{ transform:scale(1.3); }
-
-  .points-delta{
-    position:fixed;
-    z-index:900;
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-size:1.4rem;
-    font-weight:bold;
-    pointer-events:none;
-    opacity:0;
-    padding:4px 12px;
-    border-radius:999px;
-    box-shadow:0 4px 14px rgba(0,0,0,.4);
-    white-space:nowrap;
-  }
-  .points-delta.show-up{
-    color:var(--green);
-    background:rgba(22,36,31,.95);
-    border:2px solid var(--green);
-    animation:pointsFloatUp 1.4s ease-out forwards;
-  }
-  .points-delta.show-down{
-    color:var(--red);
-    background:rgba(22,36,31,.95);
-    border:2px solid var(--red);
-    animation:pointsFloatDown 1.4s ease-out forwards;
-  }
-  @keyframes pointsFloatUp{
-    0%{ opacity:0; transform:translate(-50%,6px) scale(.7); }
-    15%{ opacity:1; transform:translate(-50%,-6px) scale(1.25); }
-    35%{ transform:translate(-50%,-10px) scale(1); }
-    100%{ opacity:0; transform:translate(-50%,-46px) scale(1); }
-  }
-  @keyframes pointsFloatDown{
-    0%{ opacity:0; transform:translate(-50%,-6px) scale(.7); }
-    15%{ opacity:1; transform:translate(-50%,6px) scale(1.25); }
-    35%{ transform:translate(-50%,10px) scale(1); }
-    100%{ opacity:0; transform:translate(-50%,46px) scale(1); }
-  }
-
-  .mini-pacus{
-    position:fixed;
-    right:14px;
-    bottom:14px;
-    z-index:80;
-    width:64px;
-    height:64px;
-    border-radius:50%;
-    background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.08), var(--board-edge) 70%);
-    border:2px solid var(--pink);
-    box-shadow:0 6px 20px rgba(0,0,0,.5);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    opacity:0;
-    transform:scale(.6) translateY(10px);
-    pointer-events:none;
-    transition:opacity .25s ease, transform .25s ease;
-    overflow:hidden;
-  }
-  .mini-pacus.visible{
-    opacity:1;
-    transform:scale(1) translateY(0);
-    pointer-events:auto;
-    cursor:pointer;
-  }
-  .mini-pacus .pet-mascot{ width:82%; height:82%; }
-  @media (max-width:500px){
-    .mini-pacus{ width:54px; height:54px; right:10px; bottom:10px; }
-  }
-
-  .icon-btn{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    background:none;
-    border:1px solid var(--line);
-    color:var(--chalk-dim);
-    font-size:.78rem;
-    padding:7px 12px;
-    border-radius:8px;
-    cursor:pointer;
-    font-family:inherit;
-    transition:border-color .15s, color .15s, background .15s;
-  }
-  .icon-btn:hover{ color:var(--chalk); border-color:rgba(242,237,225,.4); background:rgba(255,255,255,.04); }
-  .icon-btn.danger:hover{ color:var(--red); border-color:var(--red); }
-  .icon-btn.primary{ color:var(--yellow); border-color:rgba(255,217,61,.4); }
-  .icon-btn.primary:hover{ background:rgba(255,217,61,.1); }
-
-  .content{ padding:18px 18px 0; }
-
-  .weekend-indicator{
-    text-align:center;
-    font-size:.75rem;
-    color:var(--orange);
-    background:rgba(255,159,67,.1);
-    border:1px solid rgba(255,159,67,.35);
-    border-radius:8px;
-    padding:6px 10px;
-    margin-bottom:14px;
-  }
-
-  .light-day-banner{
-    text-align:center;
-    font-size:.78rem;
-    color:var(--blue);
-    background:rgba(79,195,247,.08);
-    border:1px solid rgba(79,195,247,.3);
-    border-radius:10px;
-    padding:9px 12px;
-    margin-bottom:14px;
-  }
-
-  .focus-card{
-    background:rgba(255,255,255,.03);
-    border:1px solid var(--line);
-    border-radius:12px;
-    padding:12px 16px;
-    margin-bottom:16px;
-  }
-  .focus-step{
-    display:flex;
-    align-items:baseline;
-    gap:8px;
-    padding:3px 0;
-  }
-  .focus-step .focus-label{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    font-size:.85rem;
-    color:var(--yellow);
-    min-width:64px;
-    flex-shrink:0;
-  }
-  .focus-step.dim .focus-label{ color:var(--chalk-dim); }
-  .focus-step.dim{ opacity:.65; font-size:.9rem; }
-  .focus-task{ font-size:.92rem; color:var(--chalk); }
-
-  .fresh-start-card{
-    text-align:center;
-    background:rgba(95,216,117,.08);
-    border:1px dashed rgba(95,216,117,.5);
-    border-radius:12px;
-    padding:14px 16px;
-    margin-bottom:14px;
-  }
-  .fresh-start-msg{ font-size:.85rem; color:var(--chalk); margin-bottom:10px; }
-  .fresh-start-btn{
-    background:var(--green);
-    color:#132015;
-    border:none;
-    padding:9px 20px;
-    border-radius:8px;
-    font-size:.85rem;
-    font-weight:bold;
-    cursor:pointer;
-    font-family:inherit;
-  }
-
-  .recovery-mission-card{
-    text-align:center;
-    background:rgba(255,217,61,.08);
-    border:1px dashed rgba(255,217,61,.5);
-    border-radius:12px;
-    padding:14px 16px;
-    margin-bottom:14px;
-  }
-  .recovery-mission-title{
-    font-family:"Segoe Print","Bradley Hand",cursive;
-    color:var(--yellow);
-    
+<title>Rotina do Pacus</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<span class="points-delta" id="pointsDelta"></span>
+<div class="mini-pacus" id="miniPacus"></div>
+<div class="overlay" id="evolutionCelebration" style="z-index:700; align-items:center;"><div class="celebration-card" id="celebrationCard"><div class="celebration-mascot" id="celebrationMascot"></div><div class="celebration-title">🎉 Pacus evoluiu! 🎉</div><div class="celebration-stage" id="celebrationStage"></div><button class="btn save" id="celebrationCloseBtn">continuar</button></div></div>
+<div class="overlay" id="breathingOverlay" style="z-index:700; align-items:center;"><div class="celebration-card breathing-card"><div class="breathing-circle" id="breathingCircle"></div><div class="breathing-label" id="breathingLabel">Prepara...</div><button class="btn" id="breathingCloseBtn">fechar</button></div></div>
+<div class="board-frame"><div class="board-inner">
+<div id="testModeBanner"></div>
+<div class="topbar"><h1>🥚 Rotina do Pacus</h1><div class="topbar-right"><div class="pacus-total"><span class="label">Pacus Points</span><span class="num" id="totalPoints">0</span></div><button class="icon-btn primary" id="addPointsBtn" title="Ajuste manual de Pacus Points">+ pontos</button><a class="icon-btn primary" href="adultos.html" title="Abrir Área dos Adultos">🔒 Área dos adultos</a></div></div>
+<section class="block" id="testPanel" style="display:none;"></section>
+<div id="legacyRuntimeMounts" hidden aria-hidden="true"><div id="customTimersSection"></div><div id="positiveBehaviors"></div><div id="logList"></div><div id="achievementMuralSection"></div><div id="historyTable"><div id="historyBody"></div></div><div id="historyToggle"></div><div id="driveSyncSection"></div><button id="exportBtn" type="button"></button><button id="importBtn" type="button"></button><input id="importFile" type="file"><button id="resetBtn" type="button"></button><div id="backupReminder"></div></div>
+<div class="content"><div id="weeklyNewsAnnouncement"></div><div id="familyGameNightAnnouncement"></div><section class="pet-section" id="petSection"></section><div style="text-align:center; margin-top:8px; margin-bottom:8px;"><button class="icon-btn" id="breathingBtn" title="Uma pausa calma de 30 segundos">🌬️ Pausa pra respirar</button></div><div id="weekendIndicator"></div><div id="lightDayBanner"></div><div id="focusCard"></div><div id="freshStartArea"></div><div class="periods" id="periods"></div><div id="invisibleWinsCard"></div>
+<section class="hair-section" id="hairSection"><div class="hair-head"><div class="hair-title">🧴 Lavar o cabelo</div></div><div class="hair-actions"><button type="button" class="hair-btn" id="hairWashedBtn">💧 Lavei o cabelo</button><button type="button" class="hair-btn" id="hairNotWashedBtn">○ Não lavei</button></div><div class="hair-status" id="hairStatus">Hoje: ainda não registrado</div></section>
+<section class="block" id="gameTimerSection"></section>
+<details class="block-collapsible"><summary>🎁 Loja de Recompensas</summary><div class="block-collapsible-body"><div class="rewards" id="rewards"></div><div id="pointValueNote" style="text-align:center; font-size:.68rem; color:var(--chalk-dim); margin-top:10px;"></div></div></details>
+<details class="block-collapsible"><summary>🗓️ Resumo semanal em família</summary><section class="block-collapsible-body" id="weeklyReviewSection"></section></details>
+</div></div></div>
+<div class="overlay" id="overlay"><div class="editor"><div class="editor-head"><h2>Editar tudo</h2><button class="icon-btn" id="closeBtn">fechar ✕</button></div>
+<div class="editor-section"><h3>🌅 Manhã</h3><div class="hint">Tarefa, pontos e (opcional) um detalhe menor embaixo do nome.</div><div id="editManha"></div><button class="add-row-btn" data-add="manha">+ adicionar tarefa</button></div>
+<div class="editor-section"><h3>☀️ Tarde</h3><div id="editTarde"></div><button class="add-row-btn" data-add="tarde">+ adicionar tarefa</button></div>
+<div class="editor-section"><h3>🌙 Noite</h3><div id="editNoite"></div><button class="add-row-btn" data-add="noite">+ adicionar tarefa</button></div>
+<div class="editor-section"><h3>🏖️ Rotina de fim de semana</h3><div class="hint">Se ativado, sábado e domingo usam essa lista em vez da rotina de dia de escola.</div><label style="display:flex; align-items:center; gap:8px; font-size:.85rem; margin-bottom:12px;"><input type="checkbox" id="weekendToggle" style="width:16px; height:16px;">Usar rotina diferente no fim de semana</label><div id="weekendEditorBody" style="display:none;"><h3 style="font-size:.95rem; margin-top:14px;">🌅 Manhã (fim de semana)</h3><div id="editManhaWeekend"></div><button class="add-row-btn" data-add="manhaWeekend">+ adicionar tarefa</button><h3 style="font-size:.95rem; margin-top:14px;">☀️ Tarde (fim de semana)</h3><div id="editTardeWeekend"></div><button class="add-row-btn" data-add="tardeWeekend">+ adicionar tarefa</button><h3 style="font-size:.95rem; margin-top:14px;">🌙 Noite (fim de semana)</h3><div id="editNoiteWeekend"></div><button class="add-row-btn" data-add="noiteWeekend">+ adicionar tarefa</button></div></div>
+<div class="editor-section"><h3>🌟 Outros comportamentos (extra)</h3><div class="hint">Aqui dá pra adicionar outros, se precisar.</div><div id="editBad"></div><button class="add-row-btn" data-add="bad">+ adicionar comportamento</button></div>
+<div class="editor-section"><h3>🎁 Recompensas</h3><div id="editRewards"></div><button class="add-row-btn" data-add="reward">+ adicionar recompensa</button></div>
+<div class="editor-section"><h3>📅 Compromissos Fixos</h3><div class="hint">Aparecem na lista do dia certo e valem pontos como qualquer tarefa.</div><div id="editSchedule"></div><button class="add-row-btn" data-add="schedule">+ adicionar compromisso</button></div>
+<div class="editor-section"><h3>🎮 Tempo de Jogo</h3><div class="hint">Cota diária de tempo de jogo.</div><div class="edit-row"><label style="flex:1; font-size:.85rem;">Horas de jogo por dia</label><input type="number" min="0" step="0.5" id="gameLimitInput" style="width:70px;"></div></div>
+<div class="editor-section"><h3>🔒 Segurança</h3><div class="hint">PIN pra pedir antes de abrir "Editar tudo".</div><div class="edit-row"><input type="text" inputmode="numeric" id="editorPinInput" placeholder="ex: 1234 (deixe vazio pra não pedir PIN)" maxlength="8"></div></div>
+<div class="editor-footer"><button class="btn" id="adultTestBtn">🧪 modo teste</button><button class="btn" id="cancelBtn">fechar</button><button class="btn save" id="saveBtn">salvar tudo</button></div></div></div>
+<script src="app.js"></script><script src="./autonomy.js?v=20260821-1"></script>
+</body></html>
