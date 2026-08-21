@@ -36,24 +36,14 @@
     }
   }
 
-  window.RotinaStorage = Object.freeze({
-    CONFIG_KEY,
-    STATE_KEY,
-    APPS_SCRIPT_URL,
-    DATA_ENDPOINT,
-    readJSON,
-    writeJSON,
-    remove
-  });
+  window.RotinaStorage = Object.freeze({CONFIG_KEY,STATE_KEY,APPS_SCRIPT_URL,DATA_ENDPOINT,readJSON,writeJSON,remove});
 
-  // The legacy index is still being split into modules. Load the transition
-  // UI layer explicitly so phase-1 cleanup is actually applied on the main page.
   if(location.pathname.endsWith('/index.html') || location.pathname.endsWith('/rotina/') || location.pathname.endsWith('/rotina')){
-    if(!document.querySelector('script[data-rotina-ui]')){
+    if(!document.querySelector('script[data-rotina-app]')){
       const script=document.createElement('script');
-      script.src='app-ui.js';
+      script.src='app.js';
       script.defer=true;
-      script.dataset.rotinaUi='1';
+      script.dataset.rotinaApp='1';
       document.head.appendChild(script);
     }
   }
