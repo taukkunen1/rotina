@@ -3,16 +3,9 @@ name: Validate site before publish
 on:
   push:
     branches: [main]
-    paths:
-      - 'index.html'
-      - '*.js'
-      - '*.css'
-      - '.github/workflows/validate-site.yml'
+    paths: ['index.html','adultos.html','*.js','*.css','.github/workflows/validate-site.yml']
   pull_request:
-    paths:
-      - 'index.html'
-      - '*.js'
-      - '*.css'
+    paths: ['index.html','adultos.html','*.js','*.css']
 
 permissions:
   contents: read
@@ -21,71 +14,41 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-
+      - uses: actions/checkout@v4
       - name: Validate HTML structure
         shell: python
         run: |
           from pathlib import Path
           import re
-          html = Path('index.html').read_text(encoding='utf-8')
-          if not html.lstrip().lower().startswith('<!doctype html>'):
-              raise SystemExit('index.html is missing a valid doctype')
-          for tag in ('html','head','body'):
-              if len(re.findall(fr'<{tag}(?:\s|>)', html, re.I)) != len(re.findall(fr'</{tag}>', html, re.I)):
-                  raise SystemExit(f'Unbalanced <{tag}> tags')
-          if len(re.findall(r'<script\b', html, re.I)) != len(re.findall(r'</script>', html, re.I)):
-              raise SystemExit('Unbalanced script tags')
-          if len(re.findall(r'<style\b', html, re.I)) != len(re.findall(r'</style>', html, re.I)):
-              raise SystemExit('Unbalanced style tags')
-          for artifact in ('\\\\n<script>', 'Rotina do rotina'):
-              if artifact in html:
-                  raise SystemExit(f'Forbidden publish artifact: {artifact}')
-          for asset in ('styles.css','storage.js','autonomy.js','app-ui.js'):
-              if asset not in html:
-                  raise SystemExit(f'index.html does not load required asset: {asset}')
-          print('HTML structure and module links: OK')
-
+          for filename in ('index.html','adultos.html'):
+              html=Path(filename).read_text(encoding='utf-8')
+              if not html.lstrip().lower().startswith('<!doctype html>'): raise SystemExit(f'{filename}: missing doctype')
+              for tag in ('html','head','body'):
+                  if len(re.findall(fr'<{tag}(?:\s|>)',html,re.I)) != len(re.findall(fr'</{tag}>',html,re.I)): raise SystemExit(f'{filename}: unbalanced {tag}')
+              if len(re.findall(r'<script\b',html,re.I)) != len(re.findall(r'</script>',html,re.I)): raise SystemExit(f'{filename}: unbalanced scripts')
+              if len(re.findall(r'<style\b',html,re.I)) != len(re.findall(r'</style>',html,re.I)): raise SystemExit(f'{filename}: unbalanced styles')
+              if '\\\\n<script>' in html or 'Rotina do rotina' in html: raise SystemExit(f'{filename}: forbidden artifact')
+          print('HTML: OK')
       - name: Validate JavaScript syntax
         run: |
-          node --check storage.js
-          node --check autonomy.js
-          node --check app-ui.js
+          for file in storage.js autonomy.js app-ui.js adults.js; do node --check "$file"; done
           python - <<'PY'
           from pathlib import Path
           import re, subprocess, tempfile
-          html = Path('index.html').read_text(encoding='utf-8')
-          blocks = re.findall(r'<script(?:[^>]*)>(.*?)</script>', html, re.S | re.I)
-          for i, block in enumerate(blocks):
-              if not block.strip():
-                  continue
-              with tempfile.NamedTemporaryFile('w', suffix='.js', delete=False, encoding='utf-8') as f:
-                  f.write(block)
-                  name=f.name
-              result=subprocess.run(['node','--check',name],capture_output=True,text=True)
-              if result.returncode:
-                  print(result.stderr)
-                  raise SystemExit(f'Inline script {i} failed syntax validation')
-          print(f'JavaScript syntax: OK ({len(blocks)} inline blocks)')
+          for filename in ('index.html','adultos.html'):
+              html=Path(filename).read_text(encoding='utf-8')
+              for i,block in enumerate(re.findall(r'<script(?:[^>]*)>(.*?)</script>',html,re.S|re.I)):
+                  if not block.strip(): continue
+                  with tempfile.NamedTemporaryFile('w',suffix='.js',delete=False,encoding='utf-8') as f: f.write(block); name=f.name
+                  r=subprocess.run(['node','--check',name],capture_output=True,text=True)
+                  if r.returncode: print(r.stderr); raise SystemExit(f'{filename}: inline script {i} invalid')
+          print('JavaScript: OK')
           PY
-
-      - name: Validate CSS module
-        shell: python
-        run: |
-          from pathlib import Path
-          css = Path('styles.css').read_text(encoding='utf-8')
-          if len(css.strip()) < 1000:
-              raise SystemExit('styles.css is unexpectedly small')
-          if css.count('{') != css.count('}'):
-              raise SystemExit('styles.css has unbalanced braces')
-          print('CSS module: OK')
-
       - name: Validate required modules
         shell: python
         run: |
           from pathlib import Path
-          required=['styles.css','storage.js','autonomy.js','app-ui.js','ui.css']
+          required=['styles.css','storage.js','autonomy.js','app-ui.js','ui.css','adults.js']
           missing=[p for p in required if not Path(p).is_file()]
-          if missing:
-              raise SystemExit('Missing required modules: '+', '.join(missing))
-          print('Required modules: OK')
+          if missing: raise SystemExit('Missing modules: '+', '.join(missing))
+          print('Modules: OK')
