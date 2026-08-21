@@ -1,0 +1,1 @@
+trigger automatic 23:59 task completion
