@@ -31,7 +31,9 @@ jobs:
           print('HTML: OK')
       - name: Validate JavaScript syntax
         run: |
-          for file in storage.js autonomy.js app-ui.js adults.js history.js apps-script/Code.gs; do node --check "$file"; done
+          for file in storage.js autonomy.js app-ui.js adults.js history.js; do node --check "$file"; done
+          cp apps-script/Code.gs /tmp/apps-script-check.js
+          node --check /tmp/apps-script-check.js
           python - <<'PY'
           from pathlib import Path
           import re, subprocess, tempfile
