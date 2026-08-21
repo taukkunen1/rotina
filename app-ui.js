@@ -43,57 +43,26 @@
     });
   }
 
-  function moveNamedToAdult(label, tools){
-    const el=sectionByText(label);
-    if(!el||el.closest('#adult-tools')) return;
-    const group=document.createElement('div');
-    group.className='adult-tools-group';
-    group.appendChild(el);
-    tools.appendChild(group);
-  }
-
-  function moveToolsToAdult(){
-    const overlay=document.getElementById('overlay');
-    if(!overlay||document.getElementById('adult-tools')) return false;
-    const editor=overlay.querySelector('.editor');
-    const anchor=editor?.querySelector('.editor-footer');
-    if(!editor||!anchor) return false;
-
-    const tools=document.createElement('section');
-    tools.id='adult-tools';
-    tools.innerHTML='<h3>🔒 Painel dos adultos</h3>';
-    moveNamedToAdult('Histórico de hoje',tools);
-    moveNamedToAdult('Histórico dos dias',tools);
-
-    const drive=document.getElementById('driveSyncSection');
-    if(drive){
-      const group=document.createElement('div');
-      group.className='adult-tools-group';
-      group.appendChild(drive);
-      tools.appendChild(group);
-    }
-
-    const footer=document.querySelector('.content > footer');
-    if(footer){
-      const group=document.createElement('div');
-      group.className='adult-tools-group';
-      group.appendChild(footer);
-      tools.appendChild(group);
-    }
-
-    editor.insertBefore(tools,anchor);
-    return true;
-  }
-
   function hideAdultOnlyOnMain(){
     ['Histórico de hoje','Histórico dos dias'].forEach(label => {
       const el=sectionByText(label);
-      if(el&&!el.closest('#adult-tools')) el.style.display='none';
+      if(el) el.style.display='none';
     });
     const drive=document.getElementById('driveSyncSection');
-    if(drive&&!drive.closest('#adult-tools')) drive.style.display='none';
+    if(drive) drive.style.display='none';
     const footer=document.querySelector('.content > footer');
-    if(footer&&!footer.closest('#adult-tools')) footer.style.display='none';
+    if(footer) footer.style.display='none';
+  }
+
+  function addAdultsLink(){
+    if(document.getElementById('adults-page-link')) return;
+    const target=document.querySelector('.topbar-right') || document.querySelector('header') || document.body;
+    const link=document.createElement('a');
+    link.id='adults-page-link';
+    link.href='adultos.html';
+    link.textContent='🔒 Adultos';
+    link.setAttribute('aria-label','Abrir painel dos adultos');
+    target.appendChild(link);
   }
 
   function start(){
@@ -106,9 +75,7 @@
         removeMainDistractions();
         moveTimerCompact();
         hideAdultOnlyOnMain();
-        const adultTimer=setInterval(()=>{
-          if(moveToolsToAdult()||tries>100) clearInterval(adultTimer);
-        },250);
+        addAdultsLink();
       }
       if(tries>100) clearInterval(timer);
     },100);
