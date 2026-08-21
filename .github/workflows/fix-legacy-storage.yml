@@ -2,8 +2,6 @@ name: Fix legacy local storage
 
 on:
   push:
-    paths:
-      - '.github/workflows/fix-legacy-storage.yml'
   workflow_dispatch:
 
 permissions:
