@@ -3278,6 +3278,7 @@ function mergeRemoteData(remote){
   });
   merged.petCompletedDays = [...new Set([...(remoteState.petCompletedDays||[]), ...(localState.petCompletedDays||[])])].sort();
   merged.petPerfectBonusDays = [...new Set([...(remoteState.petPerfectBonusDays||[]), ...(localState.petPerfectBonusDays||[])])].sort();
+  merged.petMaxDaysEquivalentEverSeen = Math.max(Number(remoteState.petMaxDaysEquivalentEverSeen)||0, Number(localState.petMaxDaysEquivalentEverSeen)||0);
   merged.historyCorrectionV2Applied = !!(remoteState.historyCorrectionV2Applied || localState.historyCorrectionV2Applied);
   merged.hairByDate = {...(remoteState.hairByDate||{}), ...(localState.hairByDate||{})};
   merged.totalPoints = Math.max(Number(remoteState.totalPoints)||0, Number(localState.totalPoints)||0);
@@ -3727,7 +3728,18 @@ function computePetStage(){
     if(completed.has(iso)) validDays.push(iso);
     if(perfectBonus.has(iso)) bonusDays++;
   }
-  const completedDays = Math.min(cycle.totalDays, validDays.length + bonusDays);
+  const rawCompletedDays = Math.min(cycle.totalDays, validDays.length + bonusDays);
+
+  // trava de segurança: o progresso do Pacus nunca pode andar pra trás na
+  // tela, mesmo que uma sincronização ou uma aba antiga em cache recalcule
+  // um valor menor por engano — sempre usamos o maior já visto.
+  const previousHWM = Number(state.petMaxDaysEquivalentEverSeen) || 0;
+  if(rawCompletedDays > previousHWM){
+    state.petMaxDaysEquivalentEverSeen = rawCompletedDays;
+    try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+  }
+  const completedDays = Math.max(rawCompletedDays, Number(state.petMaxDaysEquivalentEverSeen) || 0);
+
   const stageFloat = Math.min(maxStage, completedDays);
   const stage = Math.min(maxStage, completedDays);
   const todayHasProgress = hasDayProgress(todayISO());
