@@ -1,0 +1,77 @@
+name: Validate site before publish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - '*.js'
+      - '*.css'
+      - '.github/workflows/validate-site.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - '*.js'
+      - '*.css'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate HTML structure and forbidden artifacts
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          html = Path('index.html').read_text(encoding='utf-8')
+          if not html.lstrip().lower().startswith('<!doctype html>'):
+              raise SystemExit('index.html is missing a valid doctype')
+          for tag in ('html','head','body'):
+              if len(re.findall(fr'<{tag}(?:\s|>)', html, re.I)) != len(re.findall(fr'</{tag}>', html, re.I)):
+                  raise SystemExit(f'Unbalanced <{tag}> tags')
+          if len(re.findall(r'<script\b', html, re.I)) != len(re.findall(r'</script>', html, re.I)):
+              raise SystemExit('Unbalanced script tags')
+          if len(re.findall(r'<style\b', html, re.I)) != len(re.findall(r'</style>', html, re.I)):
+              raise SystemExit('Unbalanced style tags')
+          for artifact in ('\\\\n<script>', 'Rotina do rotina', '${APP_VERSION}'):
+              if artifact in html:
+                  raise SystemExit(f'Forbidden publish artifact: {artifact}')
+          print('HTML structure: OK')
+
+      - name: Validate JavaScript syntax
+        run: |
+          node --check autonomy.js
+          node --check app-ui.js
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess, tempfile
+          html = Path('index.html').read_text(encoding='utf-8')
+          blocks = re.findall(r'<script(?:[^>]*)>(.*?)</script>', html, re.S | re.I)
+          for i, block in enumerate(blocks):
+              if not block.strip():
+                  continue
+              with tempfile.NamedTemporaryFile('w', suffix='.js', delete=False, encoding='utf-8') as f:
+                  f.write(block)
+                  name=f.name
+              result=subprocess.run(['node','--check',name],capture_output=True,text=True)
+              if result.returncode:
+                  print(result.stderr)
+                  raise SystemExit(f'Inline script {i} failed syntax validation')
+          print(f'JavaScript syntax: OK ({len(blocks)} inline blocks)')
+          PY
+
+      - name: Validate required modules
+        shell: python
+        run: |
+          from pathlib import Path
+          required=['autonomy.js','app-ui.js','ui.css']
+          missing=[p for p in required if not Path(p).is_file()]
+          if missing:
+              raise SystemExit('Missing required modules: '+', '.join(missing))
+          print('Required modules: OK')
