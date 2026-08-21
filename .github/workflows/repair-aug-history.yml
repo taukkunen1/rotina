@@ -18,83 +18,70 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Aplicar calendário do PACUS
+      - name: Aplicar calendário real do PACUS
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
           p = Path('index.html')
           text = p.read_text(encoding='utf-8')
 
-          old_v1 = '''  if(!state.growthMatchCalendarDayV1Applied){
-    // Correção pedida: crescimento alinhado ao dia do calendário — 9/08
-    // é o dia 0, hoje (21/08) é o dia 12 do ciclo de 23. Esse é um ajuste
-    // intencional dos pais, então força o valor (não é regressão real).
-    state.petMaxDaysEquivalentEverSeen = 12;
-    state.growthMatchCalendarDayV1Applied = true;
-  }
-'''
-          old_v2 = '''  // Calendário real do PACUS:
-  // 09/08 a 20/08 = tamanho Bebê fixo.
-  // 21/08 a 31/08 = crescimento linear até Adulto completo.
-  // O progresso visual é baseado no calendário, não na contagem antiga de 23 dias.
-  CONFIG.pet = CONFIG.pet || {};
-  CONFIG.pet.growthStartDate = "2026-08-09";
-  CONFIG.pet.growthEndDate = "2026-08-31";
-  CONFIG.pet.babyUntilDate = "2026-08-20";
-  CONFIG.pet.adultStartDate = "2026-08-21";
-  CONFIG.pet.growthDays = 11;
-  if(!state.growthMatchCalendarDayV2Applied){
-    // Hoje (21/08) deve continuar no tamanho Bebê. O primeiro incremento
-    // acontece a partir de 22/08 e 31/08 representa 100% Adulto.
-    state.petMaxDaysEquivalentEverSeen = 0;
-    state.growthMatchCalendarDayV2Applied = true;
-  }
-'''
-          new = '''  // Calendário real do PACUS: 09/08 é o início, mas o tamanho fica
-  // Bebê até 21/08. De 21/08 a 31/08 há 10 intervalos de crescimento;
-  // 21/08 = 0% adulto e 31/08 = 100% adulto completo.
-  CONFIG.pet = CONFIG.pet || {};
-  CONFIG.pet.growthStartDate = "2026-08-09";
-  CONFIG.pet.growthEndDate = "2026-08-31";
-  CONFIG.pet.babyUntilDate = "2026-08-21";
-  CONFIG.pet.adultStartDate = "2026-08-21";
-  CONFIG.pet.growthDays = 11;
-  const pacusCalendarGrowth = getPacusCalendarGrowth(todayISO());
-  // Converte o progresso do calendário para a escala histórica de 23 dias
-  // usada pelo renderizador atual, sem depender de tarefas concluídas.
-  state.petMaxDaysEquivalentEverSeen = pacusCalendarGrowth * 23;
-  state.growthMatchCalendarDayV3Applied = true;
-'''
-          if 'state.growthMatchCalendarDayV3Applied' not in text:
-              if old_v2 in text:
-                  text = text.replace(old_v2, new, 1)
-              elif old_v1 in text:
-                  text = text.replace(old_v1, new, 1)
-              else:
-                  raise SystemExit('Âncora do crescimento do PACUS não encontrada.')
+          old = re.compile(r'function computePetStage\(\)\{.*?\n\}', re.S)
+          new = '''function computePetStage(){
+  // Crescimento é determinado pelo calendário real, não pelo número de
+  // tarefas históricas. A escala visual continua sendo 0..23.
+  const maxStage = 23;
+  const iso = todayISO();
+  const startISO = "2026-08-09";
+  const babyISO = "2026-08-21";
+  const endISO = "2026-08-31";
+  let stageFloat;
 
-          marker = 'function registerPetDayCompletion(dateISO){'
-          helper = '''function getPacusCalendarGrowth(dateISO){
-  const iso = dateISO || todayISO();
-  const babyUntil = "2026-08-21";
-  const adultStart = "2026-08-21";
-  const adultEnd = "2026-08-31";
-  if(iso <= babyUntil) return 0;
-  if(iso >= adultEnd) return 1;
-  const start = new Date(adultStart + "T00:00:00");
-  const end = new Date(adultEnd + "T00:00:00");
-  const current = new Date(iso + "T00:00:00");
-  return Math.max(0, Math.min(1, (current - start) / (end - start)));
-}
+  if(iso <= startISO){
+    stageFloat = 0;
+  } else if(iso < babyISO){
+    // 09/08 -> Ovo (0) e 21/08 -> Bebê (14).
+    const start = new Date(startISO+"T00:00:00");
+    const baby = new Date(babyISO+"T00:00:00");
+    const current = new Date(iso+"T00:00:00");
+    stageFloat = 14 * (current-start)/(baby-start);
+  } else if(iso >= endISO){
+    stageFloat = 23;
+  } else {
+    // 21/08 -> Bebê (14). Os 10 intervalos até 31/08 levam ao Adulto (23).
+    const baby = new Date(babyISO+"T00:00:00");
+    const end = new Date(endISO+"T00:00:00");
+    const current = new Date(iso+"T00:00:00");
+    stageFloat = 14 + 9 * (current-baby)/(end-baby);
+  }
 
-'''
-          if 'function getPacusCalendarGrowth(dateISO)' not in text:
-              if marker not in text:
-                  raise SystemExit('Ponto de inserção do progresso não encontrado.')
-              text = text.replace(marker, helper + marker, 1)
+  stageFloat = Math.max(0, Math.min(maxStage, stageFloat));
+  const daysEquivalent = Math.round(stageFloat);
+  const stage = Math.floor(stageFloat + 1e-9);
+  return {
+    stage,
+    stageFloat,
+    unitsCompleted: daysEquivalent,
+    totalUnits: maxStage,
+    maxStage,
+    daysEquivalent,
+    cycleDays: maxStage,
+    todayPerfect: false,
+    canGrowToday: false,
+    completedDays: []
+  };
+}'''
+          if 'const babyISO = "2026-08-21";' not in text:
+              text, count = old.subn(new, text, count=1)
+              if count != 1:
+                  raise SystemExit('computePetStage não encontrado.')
+
+          # Remove a trava antiga que preservava 17/23 ou qualquer outro valor
+          # calculado antes do calendário real.
+          text = re.sub(r'\n\s*// trava de segurança: o progresso do Pacus nunca pode andar pra trás.*?const completedDays = Math\.max\(rawCompletedDays, Number\(state\.petMaxDaysEquivalentEverSeen\) \|\| 0\);', '', text, flags=re.S)
 
           p.write_text(text, encoding='utf-8')
-          print('Calendário do PACUS aplicado.')
+          print('Renderizador do PACUS alinhado ao calendário 09/08-31/08.')
           PY
       - name: Commitar correção
         run: |
@@ -102,5 +89,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m "fix: PACUS bebê até 21 e adulto em 31 de agosto"
+          git commit -m "fix: usar calendário real no crescimento do PACUS"
           git push
