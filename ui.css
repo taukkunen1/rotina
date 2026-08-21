@@ -1,0 +1,34 @@
+:root{
+  --ui-positive: var(--green);
+  --ui-focus: var(--yellow);
+  --ui-danger: var(--red);
+}
+
+#autonomy-tools{margin:16px 0 4px;padding:14px 0 0;border-top:1px dashed var(--line)}
+.autonomy-heading{text-align:center;color:var(--chalk);font-size:1.05rem;margin:0 0 10px}
+.autonomy-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.autonomy-card{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+.autonomy-card h3{margin:0 0 7px;font-weight:normal;font-size:1.05rem;color:var(--chalk)}
+.autonomy-card p{margin:5px 0;color:var(--chalk-dim);font-size:.8rem;line-height:1.45}
+.autonomy-steps{display:flex;gap:5px;justify-content:center;margin:10px 0}
+.autonomy-step{width:26px;height:8px;border-radius:99px;background:rgba(255,255,255,.09);border:1px solid var(--line)}
+.autonomy-step.active{background:var(--ui-positive);border-color:var(--ui-positive)}
+.autonomy-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.autonomy-btn{font:inherit;font-size:.78rem;padding:8px 11px;border-radius:8px;cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--chalk)}
+.autonomy-btn.primary{background:rgba(95,216,117,.12);border-color:rgba(95,216,117,.55);color:var(--ui-positive)}
+.autonomy-btn.help{color:var(--chalk-dim)}
+.autonomy-status{min-height:18px;margin-top:8px;font-size:.75rem;color:var(--ui-positive)}
+.mission-icon{font-size:1.5rem;display:block;margin-bottom:3px}
+
+#adult-tools{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line)}
+#adult-tools h3{margin:0 0 10px;font-size:1rem;color:var(--chalk)}
+#adult-tools .adult-tools-group{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02)}
+
+#compact-game-timer{display:flex;align-items:center;gap:6px;margin-left:8px;font-size:.72rem;color:var(--chalk-dim)}
+#compact-game-timer .game-timer{margin:0;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.035);border:1px solid var(--line);display:flex;align-items:center;gap:6px}
+#compact-game-timer .game-timer h3,#compact-game-timer .hint,#compact-game-timer .game-timer-track{display:none}
+#compact-game-timer .game-timer-used{margin:0;font-size:.72rem;white-space:nowrap}
+#compact-game-timer .game-timer-btn{padding:5px 8px;font-size:.68rem;background:transparent;color:var(--chalk);border:1px solid var(--line)}
+#compact-game-timer .game-timer-locked{margin:0;padding:4px 7px;font-size:.68rem;background:transparent;border:0}
+
+@media(max-width:650px){.autonomy-grid{grid-template-columns:1fr}#compact-game-timer{display:none}}
