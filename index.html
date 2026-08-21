@@ -3014,6 +3014,14 @@ function reconcileState(state){
 
   seedKnownPerfectDays(state);
 
+  if(!state.manualAdjustAug21Applied){
+    state.totalPoints = 461;
+    // 57% do ciclo de 23 dias = 13 dias — usa a marca d'água (nunca deixa
+    // o progresso ficar abaixo disso, e nunca sobrescreve dados reais).
+    state.petMaxDaysEquivalentEverSeen = Math.max(Number(state.petMaxDaysEquivalentEverSeen)||0, 13);
+    state.manualAdjustAug21Applied = true;
+  }
+
   // limpeza: remove qualquer registro de histórico com data no futuro (só pode
   // ter vindo de uma sessão anterior de teste de data) — evita que isso
   // inflacione o crescimento do Pacus ou bagunce as tabelas depois
