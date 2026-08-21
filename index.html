@@ -3021,6 +3021,13 @@ function reconcileState(state){
     state.petMaxDaysEquivalentEverSeen = Math.max(Number(state.petMaxDaysEquivalentEverSeen)||0, 13);
     state.manualAdjustAug21Applied = true;
   }
+  if(!state.growthMatchCalendarDayV1Applied){
+    // Correção pedida: crescimento alinhado ao dia do calendário — 9/08
+    // é o dia 0, hoje (21/08) é o dia 12 do ciclo de 23. Esse é um ajuste
+    // intencional dos pais, então força o valor (não é regressão real).
+    state.petMaxDaysEquivalentEverSeen = 12;
+    state.growthMatchCalendarDayV1Applied = true;
+  }
 
   // limpeza: remove qualquer registro de histórico com data no futuro (só pode
   // ter vindo de uma sessão anterior de teste de data) — evita que isso
