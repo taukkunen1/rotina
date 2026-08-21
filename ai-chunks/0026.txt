@@ -1,57 +1,51 @@
 
 <script>
-/* ===================== REVISION CONTROL + DOMAIN-AWARE CONFLICT MERGE ===================== */
+/* ===================== REVISION CONTROL + STEPS 3–5 ===================== */
 (function(){
-  const BASELINE_KEY='hector_rotina_drive_baseline_v1', MAX_RETRIES=2;
+  const BASELINE_KEY='hector_rotina_drive_baseline_v1';
+  const MAX_RETRIES=2, SYNC_INTERVAL_MS=20000;
+  let syncTimer=null, syncInFlight=false, lastObservedRevision=0;
   const clone=v=>v==null?v:JSON.parse(JSON.stringify(v));
   const equal=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
   const isObject=v=>v&&typeof v==='object'&&!Array.isArray(v);
-  const lower=k=>String(k||'').toLowerCase();
   function getBaseline(){try{return JSON.parse(localStorage.getItem(BASELINE_KEY)||'null');}catch(e){return null;}}
   function setBaseline(config,appState,revision){try{localStorage.setItem(BASELINE_KEY,JSON.stringify({config:clone(config),state:clone(appState),revision:Number(revision||0)}));}catch(e){}}
-  function keyedArray(a){
-    if(!Array.isArray(a))return null;
-    const ids=['id','taskId','task_id','key','date','iso','day'];
-    const id=ids.find(k=>a.every(x=>isObject(x)&&x[k]!=null));
-    return id||null;
-  }
-  function mergeHistory(base,local,remote){
-    const all=[]; const seen=new Set();
-    [base,remote,local].forEach(list=>(Array.isArray(list)?list:[]).forEach(x=>{
-      const key=isObject(x)?(x.id||x.date||x.iso||JSON.stringify(x)):JSON.stringify(x);
-      if(!seen.has(key)){seen.add(key);all.push(clone(x));}
-    }));
-    return all;
-  }
-  function mergeKeyedArray(base,local,remote,key){
-    const bm=new Map((Array.isArray(base)?base:[]).map(x=>[String(x[key]),x]));
-    const lm=new Map((Array.isArray(local)?local:[]).map(x=>[String(x[key]),x]));
-    const rm=new Map((Array.isArray(remote)?remote:[]).map(x=>[String(x[key]),x]));
-    const ids=[...new Set([...bm.keys(),...rm.keys(),...lm.keys()])];
-    return ids.map(id=>mergeValue(bm.get(id),lm.get(id),rm.get(id),key));
-  }
-  function isCompletionKey(k){return /(done|completed|checked|conclu|finish)/i.test(String(k||''));}
-  function isHistoryKey(k){return /(history|hist[oó]rico|log|events|streak)/i.test(String(k||''));}
-  function mergeValue(base,local,remote,field){
-    if(equal(local,base))return clone(remote);
-    if(equal(remote,base))return clone(local);
-    if(equal(local,remote))return clone(local);
-    if(isCompletionKey(field)&&typeof local==='boolean'&&typeof remote==='boolean')return local||remote;
-    if(isHistoryKey(field)&&Array.isArray(local)&&Array.isArray(remote))return mergeHistory(base,local,remote);
+  function snapshot(){return {config:clone(CONFIG),state:clone(state)};}
+  function hasPendingLocalChanges(){const b=getBaseline();if(!b)return false;return !equal(CONFIG,b.config)||!equal(state,b.state);}
+
+  function mergeValue(base,local,remote,key){
+    if(equal(local,base)) return clone(remote);
+    if(equal(remote,base)) return clone(local);
+    if(equal(local,remote)) return clone(local);
+    if(typeof local==='boolean'&&typeof remote==='boolean') return local||remote;
     if(Array.isArray(local)&&Array.isArray(remote)){
-      const key=keyedArray(local)||keyedArray(remote);
-      if(key)return mergeKeyedArray(base,local,remote,key);
-      return mergeHistory(base,local,remote);
+      const idKeys=['id','taskId','date','iso','day'];
+      const idKey=idKeys.find(k=>local.some(x=>isObject(x)&&x[k]!=null)||remote.some(x=>isObject(x)&&x[k]!=null));
+      if(idKey){const bm=new Map((Array.isArray(base)?base:[]).filter(isObject).map(x=>[String(x[idKey]),x]));const lm=new Map(local.filter(isObject).map(x=>[String(x[idKey]),x]));const rm=new Map(remote.filter(isObject).map(x=>[String(x[idKey]),x]));const ids=[...new Set([...bm.keys(),...lm.keys(),...rm.keys()])];return ids.map(id=>mergeValue(bm.get(id),lm.get(id),rm.get(id),id));}
+      const out=[],n=Math.max(local.length,remote.length,Array.isArray(base)?base.length:0);for(let i=0;i<n;i++)out[i]=mergeValue(Array.isArray(base)?base[i]:undefined,local[i],remote[i],key);return out;
     }
-    if(isObject(local)&&isObject(remote)){
-      const out={},keys=new Set([...Object.keys(isObject(base)?base:{}),...Object.keys(local),...Object.keys(remote)]);
-      keys.forEach(k=>out[k]=mergeValue(isObject(base)?base[k]:undefined,local[k],remote[k],k));return out;
-    }
+    if(isObject(local)&&isObject(remote)){const out={},keys=new Set([...Object.keys(isObject(base)?base:{}),...Object.keys(local),...Object.keys(remote)]);keys.forEach(k=>out[k]=mergeValue(isObject(base)?base[k]:undefined,local[k],remote[k],k));return out;}
     return clone(remote);
   }
+
   async function postBackup(payload){const res=await fetch(DATA_ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});if(!res.ok)throw new Error('Falha ao salvar');return res.json();}
-  window.driveSave=async function(options){options=options||{};const silent=!!options.silent;let attempts=0;try{while(attempts<=MAX_RETRIES){const localConfig=clone(CONFIG),localState=clone(state),base=getBaseline(),baseRevision=Number((base&&base.revision)||state.driveRevision||0),data=await postBackup({config:localConfig,state:localState,baseRevision,exportedAt:new Date().toISOString()});if(data&&data.ok){const revision=Number(data.revision||baseRevision+1);state.driveRevision=revision;state.driveLastSyncISO=todayISO();saveState(state);setBaseline(CONFIG,state,revision);if(typeof renderDriveSync==='function')renderDriveSync();if(!silent)alert(attempts?'Conflito resolvido e alterações sincronizadas!':'Salvo no Google Drive!');return{ok:true,revision,merged:attempts>0};}if(!(data&&data.conflict))throw new Error((data&&data.error)||'Falha ao salvar');if(attempts>=MAX_RETRIES)throw new Error('Conflito persistente');const remote=data.data||{},remoteRevision=Number(data.revision||remote.revision||0),baseline=base||{config:{},state:{},revision:baseRevision};CONFIG=mergeValue(baseline.config||{},localConfig||{},remote.config||{},'config');state=mergeValue(baseline.state||{},localState||{},remote.state||{},'state');state.driveRevision=remoteRevision;saveConfig(CONFIG);saveState(state);setBaseline(remote.config||{},remote.state||{},remoteRevision);if(typeof render==='function')render();attempts++;}}catch(err){console.error('Drive sync error',err);if(!silent)alert('Não consegui sincronizar agora. As alterações locais foram preservadas para nova tentativa.');return{ok:false,error:err};}};
-  window.driveLoad=async function(){try{const res=await fetch(DATA_ENDPOINT,{method:'GET',cache:'no-store'});if(!res.ok)throw new Error('Falha ao carregar');const backup=await res.json();if(backup.error==='not_found'){alert('Nenhum backup encontrado no Google Drive ainda.');return;}if(!confirm('Isso vai substituir os dados atuais pelos que estão salvos no Google Drive. Continuar?'))return;if(backup.config){CONFIG=backup.config;saveConfig(CONFIG);}if(backup.state)state=backup.state;state.driveRevision=Number(backup.revision||(backup.state&&backup.state.driveRevision)||0);state.driveLastSyncISO=todayISO();saveState(state);setBaseline(CONFIG,state,state.driveRevision);if(typeof render==='function')render();alert('Dados carregados e revisão sincronizada!');}catch(err){console.error('Drive load error',err);alert('Não consegui carregar do Google Drive. Confira a implantação do Apps Script.');}};
-  setTimeout(()=>{const b=getBaseline();if(!b&&typeof state!=='undefined'&&state&&Number(state.driveRevision||0)>0)setBaseline(CONFIG,state,state.driveRevision);},0);
+
+  window.driveSave=async function(options){options=options||{};const silent=!!options.silent;let attempts=0;try{while(attempts<=MAX_RETRIES){const localConfig=clone(CONFIG),localState=clone(state),base=getBaseline(),baseRevision=Number((base&&base.revision)||state.driveRevision||0);const data=await postBackup({config:localConfig,state:localState,baseRevision,exportedAt:new Date().toISOString()});if(data&&data.ok){const revision=Number(data.revision||baseRevision+1);state.driveRevision=revision;state.driveLastSyncISO=todayISO();saveState(state);setBaseline(CONFIG,state,revision);lastObservedRevision=revision;if(typeof renderDriveSync==='function')renderDriveSync();if(!silent)alert(attempts?'Conflito resolvido e alterações sincronizadas!':'Salvo no Google Drive!');return {ok:true,revision,merged:attempts>0};}if(!(data&&data.conflict))throw new Error((data&&data.error)||'Falha ao salvar');if(attempts>=MAX_RETRIES)throw new Error('Conflito persistente');const remote=data.data||{},remoteRevision=Number(data.revision||remote.revision||0),baseline=base||{config:{},state:{},revision:baseRevision};CONFIG=mergeValue(baseline.config||{},localConfig||{},remote.config||{});state=mergeValue(baseline.state||{},localState||{},remote.state||{});state.driveRevision=remoteRevision;saveConfig(CONFIG);saveState(state);setBaseline(remote.config||{},remote.state||{},remoteRevision);if(typeof render==='function')render();attempts++;}}catch(err){console.error('Drive sync error',err);if(!silent)alert('Não consegui sincronizar agora. As alterações locais foram preservadas para nova tentativa.');return {ok:false,error:err};}};
+
+  async function fetchRemote(){const res=await fetch(DATA_ENDPOINT+'?t='+Date.now(),{method:'GET',cache:'no-store'});if(!res.ok)throw new Error('Falha ao carregar');return res.json();}
+  async function pullRemote(options){options=options||{};const remote=await fetchRemote();if(!remote||remote.error==='not_found')return {ok:false,empty:true};const remoteRevision=Number(remote.revision||(remote.state&&remote.state.driveRevision)||0),localRevision=Number((state&&state.driveRevision)||0);if(remoteRevision<=localRevision){lastObservedRevision=Math.max(lastObservedRevision,remoteRevision);return {ok:true,changed:false,revision:remoteRevision};}
+    const pending=hasPendingLocalChanges();
+    if(pending){const local=snapshot(),base=getBaseline()||{config:{},state:{},revision:localRevision};CONFIG=mergeValue(base.config||{},local.config||{},remote.config||{});state=mergeValue(base.state||{},local.state||{},remote.state||{});state.driveRevision=remoteRevision;saveConfig(CONFIG);saveState(state);setBaseline(remote.config||{},remote.state||{},remoteRevision);if(typeof render==='function')render();lastObservedRevision=remoteRevision;const result=await window.driveSave({silent:true});return {ok:!!result.ok,changed:true,merged:true,revision:Number((result&&result.revision)||remoteRevision)};}
+    if(remote.config){CONFIG=remote.config;saveConfig(CONFIG);}if(remote.state)state=remote.state;state.driveRevision=remoteRevision;state.driveLastSyncISO=todayISO();saveState(state);setBaseline(CONFIG,state,remoteRevision);lastObservedRevision=remoteRevision;if(typeof render==='function')render();if(typeof renderDriveSync==='function')renderDriveSync();return {ok:true,changed:true,revision:remoteRevision};
+  }
+
+  async function periodicSync(){if(syncInFlight||document.hidden)return;syncInFlight=true;try{await pullRemote({silent:true});}catch(err){console.warn('Periodic sync skipped',err);}finally{syncInFlight=false;}}
+  window.startPeriodicSync=function(){if(syncTimer)return;periodicSync();syncTimer=setInterval(periodicSync,SYNC_INTERVAL_MS);};
+  window.stopPeriodicSync=function(){if(syncTimer){clearInterval(syncTimer);syncTimer=null;}};
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)periodicSync();});
+
+  window.driveLoad=async function(){try{const remote=await fetchRemote();if(remote.error==='not_found'){alert('Nenhum backup encontrado no Google Drive ainda.');return;}if(!confirm('Isso vai substituir os dados atuais pelos que estão salvos no Google Drive. Continuar?'))return;if(remote.config){CONFIG=remote.config;saveConfig(CONFIG);}if(remote.state)state=remote.state;state.driveRevision=Number(remote.revision||(remote.state&&remote.state.driveRevision)||0);state.driveLastSyncISO=todayISO();saveState(state);setBaseline(CONFIG,state,state.driveRevision);lastObservedRevision=state.driveRevision;if(typeof render==='function')render();if(typeof renderDriveSync==='function')renderDriveSync();alert('Dados carregados e revisão sincronizada!');}catch(err){console.error('Drive load error',err);alert('Não consegui carregar do Google Drive. Confira a implantação do Apps Script.');}};
+
+  setTimeout(()=>{const b=getBaseline();if(!b&&typeof state!=='undefined'&&state&&Number(state.driveRevision||0)>0)setBaseline(CONFIG,state,state.driveRevision);window.startPeriodicSync();},0);
 })();
 </script>
