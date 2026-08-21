@@ -6,10 +6,10 @@
 <script>
 (function(){
   'use strict';
-  var migrationKey = 'hector_rotina_remote_storage_migrated_v1';
+  var migrationKey = 'rotina_rotina_remote_storage_migrated_v1';
   var legacyKeys = [
-    'hector_rotina_config_v3',
-    'hector_rotina_state_v3'
+    'rotina_rotina_config_v3',
+    'rotina_rotina_state_v3'
   ];
   try {
     if (localStorage.getItem(migrationKey) !== 'done') {
@@ -26,7 +26,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Rotina do Hector — Pacus</title>
+<title>Rotina do Pacus</title>
 <style>
   /* Arquivo local, sem instalação — abre no navegador. Tudo é editado
      pela tela ("Editar tudo"), dados ficam salvos no navegador.
@@ -1775,6 +1775,12 @@
     .topbar{ flex-wrap:wrap; }
     .topbar h1{ font-size:1.25rem; }
   }
+
+/* parent-history-only-v1 */
+.today-history-parent-only{display:none!important;}
+.adult-history-card{margin:14px 0;padding:12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.025);}
+.adult-history-card .adult-history-title{font-family:"Segoe Print","Bradley Hand",cursive;color:var(--yellow);margin:0 0 8px;font-size:1rem;}
+
 </style>
 </head>
 <body>
@@ -1806,7 +1812,7 @@
     <div id="testModeBanner"></div>
 
     <div class="topbar">
-      <h1>🥚 Rotina do Hector</h1>
+      <h1>🥚 Rotina do rotina</h1>
       <div class="topbar-right">
         <div class="pacus-total">
           <span class="label">Pacus Points</span>
@@ -1909,7 +1915,7 @@
 
       <footer>
         <div id="backupReminder"></div>
-        Rotina do Hector · ${APP_VERSION}<br>
+        Rotina do rotina · ${APP_VERSION}<br>
         Funciona offline. O Google Drive é a fonte de sincronização quando configurado.
         <br>
         <button class="icon-btn" id="exportBtn" style="margin-top:8px;">⬇️ exportar backup</button>
@@ -2183,8 +2189,8 @@ const DEFAULT_CONFIG = {
     ],
   }};
 
-const STORAGE_CONFIG_KEY = "hector_rotina_config_v3";
-const STORAGE_STATE_KEY  = "hector_rotina_state_v3";
+const STORAGE_CONFIG_KEY = "rotina_rotina_config_v3";
+const STORAGE_STATE_KEY  = "rotina_rotina_state_v3";
 const APP_VERSION = "2026.08.11-pacus-v4";
 
 /* Sincronização com Google Drive via Apps Script — guarda os dados
@@ -2756,7 +2762,7 @@ function saveConfig(cfg){
 let TEST_DATE_OVERRIDE = null; // string ISO "yyyy-mm-dd" ou null (usa a data real do sistema)
 // IMPORTANTE: o modo de teste nunca fica salvo entre aberturas do arquivo —
 // toda vez que a página abre, começa sempre na data real do sistema.
-try{ localStorage.removeItem('hector_rotina_testdate_v1'); }catch(e){}
+try{ localStorage.removeItem('rotina_rotina_testdate_v1'); }catch(e){}
 
 function todayISO(){
   if(TEST_DATE_OVERRIDE) return TEST_DATE_OVERRIDE;
@@ -5386,7 +5392,7 @@ document.getElementById('daySaveBtn').addEventListener('click', ()=>{
 
 const APPS_SCRIPT_CODE = `function doGet(e) {
   if (e.parameter.data === '1') {
-    var files = DriveApp.getFilesByName('rotina-hector-backup.json');
+    var files = DriveApp.getFilesByName('rotina-rotina-backup.json');
     if (files.hasNext()) {
       var file = files.next();
       var raw = file.getBlob().getDataAsString();
@@ -5398,20 +5404,20 @@ const APPS_SCRIPT_CODE = `function doGet(e) {
     return ContentService.createTextOutput(JSON.stringify({error:'not_found'})).setMimeType(ContentService.MimeType.JSON);
   }
 
-  var appFiles = DriveApp.getFilesByName('rotina-hector.html');
-  if (!appFiles.hasNext()) appFiles = DriveApp.getFilesByName('rotina-hector-app.html');
+  var appFiles = DriveApp.getFilesByName('rotina-rotina.html');
+  if (!appFiles.hasNext()) appFiles = DriveApp.getFilesByName('rotina-rotina-app.html');
   if (appFiles.hasNext()) {
     return HtmlService.createHtmlOutput(appFiles.next().getBlob().getDataAsString())
-      .setTitle('Rotina do Hector')
+      .setTitle('Rotina do rotina')
       .addMetaTag('viewport','width=device-width, initial-scale=1');
   }
-  return HtmlService.createHtmlOutput('Ainda não encontrei o arquivo rotina-hector.html (nem o arquivo legado rotina-hector-app.html) no seu Drive.');
+  return HtmlService.createHtmlOutput('Ainda não encontrei o arquivo rotina-rotina.html (nem o arquivo legado rotina-rotina-app.html) no seu Drive.');
 }
 
 function doPost(e) {
   var incoming = JSON.parse(e.postData.contents || '{}');
-  var files = DriveApp.getFilesByName('rotina-hector-backup.json');
-  var file = files.hasNext() ? files.next() : DriveApp.createFile('rotina-hector-backup.json','{}',MimeType.PLAIN_TEXT);
+  var files = DriveApp.getFilesByName('rotina-rotina-backup.json');
+  var file = files.hasNext() ? files.next() : DriveApp.createFile('rotina-rotina-backup.json','{}',MimeType.PLAIN_TEXT);
   var current = {};
   try { current = JSON.parse(file.getBlob().getDataAsString() || '{}'); } catch(err) {}
   var currentRevision = Number(current.revision || (current.state && current.state.driveRevision) || 0);
@@ -5428,7 +5434,7 @@ function doPost(e) {
   file.setContent(JSON.stringify(incoming, null, 2));
 
   var backupDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'America/Sao_Paulo', 'yyyy-MM-dd');
-  var backupName = 'rotina-hector-backup-' + backupDate + '.json';
+  var backupName = 'rotina-rotina-backup-' + backupDate + '.json';
   var backups = DriveApp.getFilesByName(backupName);
   if (!backups.hasNext()) {
     DriveApp.createFile(backupName, JSON.stringify(incoming, null, 2), MimeType.PLAIN_TEXT);
@@ -5438,7 +5444,7 @@ function doPost(e) {
   var it = DriveApp.getFiles();
   while(it.hasNext()) {
     var f = it.next();
-    if (/^rotina-hector-backup-\d{4}-\d{2}-\d{2}[.]json$/.test(f.getName())) allBackups.push(f);
+    if (/^rotina-rotina-backup-\d{4}-\d{2}-\d{2}[.]json$/.test(f.getName())) allBackups.push(f);
   }
   allBackups.sort(function(a,b){ return b.getDateCreated().getTime() - a.getDateCreated().getTime(); });
   for (var i=30; i<allBackups.length; i++) allBackups[i].setTrashed(true);
@@ -5486,8 +5492,8 @@ function renderDriveSync(){
           <li>Tipo: "App da Web". Executar como: "Eu". Quem tem acesso: "Qualquer pessoa".</li>
           <li>Implante, autorize (é a sua própria conta), e copie a URL gerada (termina em <code>/exec</code>).</li>
           <li>Cole essa URL na constante <code>APPS_SCRIPT_URL</code> no início do arquivo HTML.</li>
-          <li>No seu Google Drive, salve o arquivo do app com o nome exato <code>rotina-hector.html</code>.</li>
-          <li>Em todos os aparelhos, abra e salve como favorito essa <b>mesma URL do Apps Script</b> (a que termina em <code>/exec</code>) — não o arquivo local. A partir daí, atualizar é só substituir o conteúdo do <code>rotina-hector.html</code> no Drive; todo aparelho já abre a versão nova sozinho.</li>
+          <li>No seu Google Drive, salve o arquivo do app com o nome exato <code>rotina-rotina.html</code>.</li>
+          <li>Em todos os aparelhos, abra e salve como favorito essa <b>mesma URL do Apps Script</b> (a que termina em <code>/exec</code>) — não o arquivo local. A partir daí, atualizar é só substituir o conteúdo do <code>rotina-rotina.html</code> no Drive; todo aparelho já abre a versão nova sozinho.</li>
         </ol>
       </div>
       <textarea id="driveCodeBox" readonly style="display:none; width:100%; height:180px; margin-top:10px; background:rgba(0,0,0,.3); color:var(--chalk); border:1px solid var(--line); border-radius:8px; padding:10px; font-family:monospace; font-size:.72rem;"></textarea>
@@ -5559,7 +5565,7 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'rotina-hector-backup-' + todayISO() + '.json';
+  a.download = 'rotina-rotina-backup-' + todayISO() + '.json';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -5626,5 +5632,6 @@ window.addEventListener('error', function(e){
   if(!document.getElementById('__fatalReloadBtn')) showFatalErrorBanner(e.error);
 });
 </script>
+\n<script>\n/* parent-history-only-v1: mantém o histórico de hoje fora do painel principal\n   e o injeta apenas dentro da Área dos Adultos. */\n(function(){\n  function norm(s){ return (s||'').replace(/\\s+/g,' ').trim(); }\n  function findTodayBlock(){\n    var all=[].slice.call(document.querySelectorAll('details,section,article,div'));\n    for(var i=0;i<all.length;i++){\n      var e=all[i];\n      if(norm(e.textContent).indexOf('Histórico de hoje')===0){\n        var parent=e.parentElement;\n        if(!parent || norm(parent.textContent).indexOf('Histórico de hoje')!==0) return e;\n      }\n    }\n    return null;\n  }\n  function findAdultHost(){\n    var all=[].slice.call(document.querySelectorAll('details,section,article,div,[role="dialog"]'));\n    for(var i=0;i<all.length;i++){\n      var t=norm(all[i].textContent);\n      if(t.indexOf('Área dos adultos')>=0 && t.length<1200) return all[i];\n    }\n    return null;\n  }\n  function move(){\n    var block=findTodayBlock();\n    if(!block) return false;\n    block.classList.add('today-history-parent-only');\n    block.setAttribute('aria-hidden','true');\n    var host=findAdultHost();\n    if(!host) return false;\n    var old=host.querySelector('.adult-history-card');\n    if(old) old.remove();\n    var card=document.createElement('div');\n    card.className='adult-history-card';\n    var title=document.createElement('div');\n    title.className='adult-history-title';\n    title.textContent='Histórico de hoje';\n    var clone=block.cloneNode(true);\n    clone.classList.remove('today-history-parent-only');\n    clone.removeAttribute('aria-hidden');\n    clone.querySelectorAll('[id]').forEach(function(n){ n.id='adult-'+n.id; });\n    card.appendChild(title);\n    card.appendChild(clone);\n    host.appendChild(card);\n    return true;\n  }\n  function boot(){\n    move();\n    var obs=new MutationObserver(function(){ move(); });\n    obs.observe(document.body,{childList:true,subtree:true});\n  }\n  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();\n})();\n</script>\n
 </body>
 </html>
