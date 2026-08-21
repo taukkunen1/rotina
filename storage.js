@@ -1,7 +1,6 @@
 (() => {
   'use strict';
 
-  // Central persistence facade. Existing inline logic will delegate here in stages.
   const CONFIG_KEY = 'hector_rotina_config_v3';
   const STATE_KEY = 'hector_rotina_state_v3';
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec';
@@ -46,4 +45,16 @@
     writeJSON,
     remove
   });
+
+  // The legacy index is still being split into modules. Load the transition
+  // UI layer explicitly so phase-1 cleanup is actually applied on the main page.
+  if(location.pathname.endsWith('/index.html') || location.pathname.endsWith('/rotina/') || location.pathname.endsWith('/rotina')){
+    if(!document.querySelector('script[data-rotina-ui]')){
+      const script=document.createElement('script');
+      script.src='app-ui.js';
+      script.defer=true;
+      script.dataset.rotinaUi='1';
+      document.head.appendChild(script);
+    }
+  }
 })();
