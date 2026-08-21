@@ -1,4 +1,24 @@
-&quot;').replace(/</g,'&lt;');
+TML = '';
+  draft.rewards.forEach(r=>{
+    const row = document.createElement('div');
+    row.className = 'edit-row';
+    row.innerHTML = `
+      <input type="text" value="${escapeAttr(r.txt)}" data-field="txt" placeholder="recompensa">
+      ${stepperHTML('cost', r.cost)}
+      <button class="del" title="remover">🗑</button>
+    `;
+    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ r.txt = e.target.value; });
+    wireStepper(row, r, 'cost');
+    row.querySelector('.del').addEventListener('click', ()=>{
+      draft.rewards = draft.rewards.filter(x=>x!==r);
+      renderEditorRewards();
+    });
+    el.appendChild(row);
+  });
+}
+
+function escapeAttr(s){
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 }
 
 document.querySelectorAll('.add-row-btn').forEach(btn=>{
@@ -173,24 +193,4 @@ document.getElementById('daySaveBtn').addEventListener('click', ()=>{
 
   if(!state.hairByDate) state.hairByDate = {};
   if(hair) state.hairByDate[editingDate] = hair; else delete state.hairByDate[editingDate];
-  state.history[editingDate] = { done, total, pointsEarnedThatDay, perfect, screenMinutes: perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0, hair };
-  if(perfect) registerPetDayCompletion(editingDate);
-
-  // ajusta o saldo total pela diferença de pontos daquele dia
-  const delta = pointsEarnedThatDay - oldPoints;
-  let appliedDelta = 0;
-  if(delta !== 0){
-    appliedDelta = addPoints(delta);
-    addLog(`✏️ ajuste em ${formatDateBR(editingDate)}: ${delta>0?'+':''}${delta}`, true);
-  }
-
-  saveState(state);
-  closeDayEditor();
-  bumpTotal(appliedDelta);
-  render();
-});
-
-/* ===================== SINCRONIZAÇÃO COM GOOGLE DRIVE (via Apps Script) ===================== */
-
-const APPS_SCRIPT_CODE = `function doGet(e) {
-  if (e.parameter.data 
+  state.hist

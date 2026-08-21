@@ -1,4 +1,34 @@
-so+"T00:00:00");
+k');
+      const dir = btn.getAttribute('data-dir');
+      const periodTasks = getPeriodsFor(todayISO())[periodKey].tasks;
+      moveTaskInOrder(periodKey, periodTasks, taskId, dir);
+      render();
+    });
+  });
+
+  renderPositiveBehaviors();
+
+  renderRewards();
+  renderLog();
+  renderHistory();
+  renderAchievementMural();
+  renderWeeklyReview();
+  renderFamilyGameNightAnnouncement();
+  renderWeeklyNewsAnnouncement();
+  renderBackupReminder();
+  renderTestPanel();
+  renderTestModeBanner();
+  renderDriveSync();
+}
+
+function daysBetween(isoA, isoB){
+  const a = new Date(isoA+"T00:00:00");
+  const b = new Date(isoB+"T00:00:00");
+  return Math.round((b-a)/86400000);
+}
+
+function shiftISODate(iso, deltaDays){
+  const d = new Date(iso+"T00:00:00");
   d.setDate(d.getDate()+deltaDays);
   return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
 }
@@ -194,20 +224,4 @@ function renderWeeklyReview(){
 
   const rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
 
-  el.innerHTML = `
-    <div class="weekly-review">
-      <div class="wr-head">
-        <span class="wr-range">${rangeLabel}</span>
-      </div>
-      <div class="wr-stats">
-        <div class="wr-stat"><span class="wr-num">${perfectDays}/7</span><span class="wr-label">dias completos</span></div>
-        <div class="wr-stat"><span class="wr-num">${totalPointsWeek}</span><span class="wr-label">Pacus Points ganhos</span></div>
-        <div class="wr-stat"><span class="wr-num">${totalScreenMin}</span><span class="wr-label">min de tela ganhos</span></div>
-      </div>
-    </div>
-  `;
-}
-
-// Escala de mensagens pro dia — em vez de "tudo ou nada" (perfeito ou
-// nada), reconhece o esforço em vários níveis.
-function dayQualityBadge(entry){
+  el.i

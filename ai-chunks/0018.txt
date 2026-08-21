@@ -1,4 +1,20 @@
-onst total = applicable.length;
+) cls = 'streak-cell partial';
+      else cls = 'streak-cell none';
+    }
+    if(entry && entry.done > 0) progressDays++;
+    if(isToday) cls += ' today';
+    return `<span class="${cls}" title="${formatDateBR(iso)}"><span class="streak-letter">${letter}</span></span>`;
+  }).join('');
+  const summary = progressDays > 0
+    ? `Você teve progresso em <b>${progressDays} dos últimos 7 dias</b>.`
+    : `Todo começo é assim — o próximo dia é uma nova chance.`;
+  return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${cells}</div><div class="streak-summary">${summary}</div>`;
+}
+
+function liveTodayEntry(){
+  const tasks = allTasks();
+  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+  const total = applicable.length;
   const done = applicable.filter(t=>isCountedDone(state.checkedToday[t.id])).length;
   const perfect = total>0 && done===total;
   return { total, done, perfect };
@@ -147,34 +163,4 @@ function render(){
   periodsEl.querySelectorAll('.mini-reorder-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const periodKey = btn.getAttribute('data-period');
-      const taskId = btn.getAttribute('data-task');
-      const dir = btn.getAttribute('data-dir');
-      const periodTasks = getPeriodsFor(todayISO())[periodKey].tasks;
-      moveTaskInOrder(periodKey, periodTasks, taskId, dir);
-      render();
-    });
-  });
-
-  renderPositiveBehaviors();
-
-  renderRewards();
-  renderLog();
-  renderHistory();
-  renderAchievementMural();
-  renderWeeklyReview();
-  renderFamilyGameNightAnnouncement();
-  renderWeeklyNewsAnnouncement();
-  renderBackupReminder();
-  renderTestPanel();
-  renderTestModeBanner();
-  renderDriveSync();
-}
-
-function daysBetween(isoA, isoB){
-  const a = new Date(isoA+"T00:00:00");
-  const b = new Date(isoB+"T00:00:00");
-  return Math.round((b-a)/86400000);
-}
-
-function shiftISODate(iso, deltaDays){
-  const d = new Date(i
+      const taskId = btn.getAttribute('data-tas

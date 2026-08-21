@@ -1,4 +1,24 @@
-ning');
+rdsHtml = milestones.map(m=>`
+    <div class="mural-card ${m.reached?'reached':''}">
+      <div class="mural-stage">${m.label}</div>
+      <div class="mural-date">${m.reached ? formatDateBR(m.date) : '—'}</div>
+    </div>
+  `).join('');
+  el.innerHTML = `
+    <div class="achievement-mural">
+      <div class="mural-grid">${cardsHtml}</div>
+    </div>
+  `;
+}
+
+// Toque no Pacus: gira em 3D e mostra uma reaçãozinha fofa — pura
+// diversão, não mexe em pontos nem no formato/crescimento dele.
+const PACUS_REACTIONS = ['💕','😊','🥰','✨','👋','🫧','😄','💗'];
+function wirePacusInteraction(){
+  const wrap = document.getElementById('pacusInteractive');
+  if(!wrap) return;
+  wrap.addEventListener('click', ()=>{
+    wrap.classList.remove('spinning');
     void wrap.offsetWidth;
     wrap.classList.add('spinning');
 
@@ -173,20 +193,4 @@ function buildStreakStrip(){
     if(entry && entry.total > 0){
       if(entry.perfect) cls = 'streak-cell perfect';
       else if(entry.done === entry.total - 1) cls = 'streak-cell almost';
-      else if(entry.done > 0) cls = 'streak-cell partial';
-      else cls = 'streak-cell none';
-    }
-    if(entry && entry.done > 0) progressDays++;
-    if(isToday) cls += ' today';
-    return `<span class="${cls}" title="${formatDateBR(iso)}"><span class="streak-letter">${letter}</span></span>`;
-  }).join('');
-  const summary = progressDays > 0
-    ? `Você teve progresso em <b>${progressDays} dos últimos 7 dias</b>.`
-    : `Todo começo é assim — o próximo dia é uma nova chance.`;
-  return `<div class="streak-title">Últimos 7 dias</div><div class="streak-row">${cells}</div><div class="streak-summary">${summary}</div>`;
-}
-
-function liveTodayEntry(){
-  const tasks = allTasks();
-  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  c
+      else if(entry.done > 0

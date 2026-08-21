@@ -1,4 +1,21 @@
-======= BACKUP LOCAL (exportar / importar) ===================== */
+onst res = await fetch(DATA_ENDPOINT, { method: 'GET' });
+    if(!res.ok) throw new Error('Falha ao carregar');
+    const backup = await res.json();
+    if(backup.error === 'not_found'){ alert('Nenhum backup encontrado no Google Drive ainda.'); return; }
+
+    if(!confirm('Isso vai substituir os dados atuais pelos que estão salvos no Google Drive. Continuar?')) return;
+
+    if(backup.config){ CONFIG = backup.config; saveConfig(CONFIG); }
+    if(backup.state){ state = backup.state; saveState(state); }
+
+    render();
+    alert('Dados carregados do Google Drive!');
+  }catch(err){
+    alert('Não consegui carregar do Google Drive. Confira se a URL do Apps Script está certa e se a implantação está ativa.');
+  }
+}
+
+/* ===================== BACKUP LOCAL (exportar / importar) ===================== */
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const backup = { config: CONFIG, state: state, exportedAt: new Date().toISOString() };
   const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});

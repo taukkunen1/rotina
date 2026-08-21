@@ -1,4 +1,7 @@
-t + rect.width/2) + 'px';
+ document.getElementById('pointsDelta');
+    if(deltaEl){
+      const rect = (anchorEl || el).getBoundingClientRect();
+      deltaEl.style.left = (rect.left + rect.width/2) + 'px';
       deltaEl.style.top = (rect.top - 6) + 'px';
       deltaEl.classList.remove('show-up','show-down');
       void deltaEl.offsetWidth;
@@ -220,11 +223,4 @@ function pauseCustomTimer(id){
   if(!t || !t.runningSince) return;
   t.remainingSeconds = customTimerRemainingNow(t);
   t.runningSince = null;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function resetCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t) return;
-  t.remainingSeconds = t.totalSeconds
+  saveStat

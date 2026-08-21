@@ -1,4 +1,16 @@
-   </div>
+
+  el.innerHTML = `
+    <div class="behavior-grid">
+      ${POSITIVE_BEHAVIORS.map(b => `
+        <div class="behavior-card">
+          <button type="button" class="behavior-btn" data-id="${b.id}">${b.emoji} ${b.label}</button>
+          <div class="behavior-picker" id="behaviorPicker_${b.id}">
+            <input type="text" class="behavior-note" id="behaviorNote_${b.id}" placeholder="detalhe (opcional)" maxlength="60">
+            <div class="behavior-pts-row">
+              <button type="button" class="behavior-pts-btn" data-pts="1">+1</button>
+              <button type="button" class="behavior-pts-btn" data-pts="2">+2</button>
+              <button type="button" class="behavior-pts-btn" data-pts="3">+3</button>
+            </div>
           </div>
         </div>
       `).join('')}
@@ -176,18 +188,4 @@ function openEditor(){
   const weekendToggle = document.getElementById('weekendToggle');
   const weekendBody = document.getElementById('weekendEditorBody');
   weekendToggle.checked = !!draft.periodsWeekend;
-  weekendBody.style.display = draft.periodsWeekend ? 'block' : 'none';
-  if(draft.periodsWeekend){
-    renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
-    renderEditorPeriod('tarde', 'editTardeWeekend', draft.periodsWeekend);
-    renderEditorPeriod('noite', 'editNoiteWeekend', draft.periodsWeekend);
-  }
-  weekendToggle.onchange = ()=>{
-    if(weekendToggle.checked && !draft.periodsWeekend){
-      // clona a rotina de dia de escola como ponto de partida
-      draft.periodsWeekend = JSON.parse(JSON.stringify(draft.periods));
-      // gera ids novos pra não colidir com os da rotina de semana
-      Object.values(draft.periodsWeekend).forEach(period=>{
-        period.tasks.forEach(t=>{ t.id = uid('we'); });
-      });
-      renderEditorPeri
+  weekendBody.style.display = dra

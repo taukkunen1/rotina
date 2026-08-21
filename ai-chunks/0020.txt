@@ -1,4 +1,20 @@
+nnerHTML = `
+    <div class="weekly-review">
+      <div class="wr-head">
+        <span class="wr-range">${rangeLabel}</span>
+      </div>
+      <div class="wr-stats">
+        <div class="wr-stat"><span class="wr-num">${perfectDays}/7</span><span class="wr-label">dias completos</span></div>
+        <div class="wr-stat"><span class="wr-num">${totalPointsWeek}</span><span class="wr-label">Pacus Points ganhos</span></div>
+        <div class="wr-stat"><span class="wr-num">${totalScreenMin}</span><span class="wr-label">min de tela ganhos</span></div>
+      </div>
+    </div>
+  `;
+}
 
+// Escala de mensagens pro dia — em vez de "tudo ou nada" (perfeito ou
+// nada), reconhece o esforço em vários níveis.
+function dayQualityBadge(entry){
   if(!entry || !entry.total) return '';
   const pct = entry.done / entry.total;
   if(entry.perfect) return '<span class="badge-perfect">🎉 dia perfeito</span>';
@@ -166,16 +182,3 @@ const POSITIVE_BEHAVIORS = [
 function renderPositiveBehaviors(){
   const el = document.getElementById('positiveBehaviors');
   if(!el) return;
-
-  el.innerHTML = `
-    <div class="behavior-grid">
-      ${POSITIVE_BEHAVIORS.map(b => `
-        <div class="behavior-card">
-          <button type="button" class="behavior-btn" data-id="${b.id}">${b.emoji} ${b.label}</button>
-          <div class="behavior-picker" id="behaviorPicker_${b.id}">
-            <input type="text" class="behavior-note" id="behaviorNote_${b.id}" placeholder="detalhe (opcional)" maxlength="60">
-            <div class="behavior-pts-row">
-              <button type="button" class="behavior-pts-btn" data-pts="1">+1</button>
-              <button type="button" class="behavior-pts-btn" data-pts="2">+2</button>
-              <button type="button" class="behavior-pts-btn" data-pts="3">+3</button>
-         

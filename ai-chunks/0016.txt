@@ -1,4 +1,19 @@
-     <ellipse cx="93" cy="106" rx="12" ry="18" fill="#fff" opacity=".5"/>
+ stroke-width="2.4" fill="none" opacity="${(p-.78)/.22}"/>` : '';
+  // silhueta do filhote crescendo por dentro, visível através da casca
+  const embryoOpacity = Math.max(0, p-0.3)*0.55;
+  const embryoScale = 0.5 + p*0.5;
+  return `<svg class="pet-mascot pet-egg" ${svgAttrs()}>
+    <defs>
+      <radialGradient id="${gid}-shell" cx="36%" cy="30%" r="78%">
+        <stop offset="0%" stop-color="#fffaf1"/>
+        <stop offset="55%" stop-color="#f9ecd9"/>
+        <stop offset="100%" stop-color="#eed7bd"/>
+      </radialGradient>
+    </defs>
+    <g class="pacus-idle">
+      <g transform="rotate(${wobble} 110 130)">
+        <ellipse cx="110" cy="130" rx="48" ry="60" fill="url(#${gid}-shell)" stroke="#e88aa8" stroke-width="3"/>
+        <ellipse cx="93" cy="106" rx="12" ry="18" fill="#fff" opacity=".5"/>
         <g transform="translate(110 138) scale(${embryoScale.toFixed(2)}) translate(-110 -138)" opacity="${embryoOpacity.toFixed(2)}">
           <ellipse cx="110" cy="138" rx="26" ry="20" fill="#f6c7dc"/>
           <circle cx="110" cy="122" r="15" fill="#f6c7dc"/>
@@ -135,24 +150,4 @@ function renderAchievementMural(){
   const el = document.getElementById('achievementMuralSection');
   if(!el) return;
   const milestones = getMilestoneDates();
-  const cardsHtml = milestones.map(m=>`
-    <div class="mural-card ${m.reached?'reached':''}">
-      <div class="mural-stage">${m.label}</div>
-      <div class="mural-date">${m.reached ? formatDateBR(m.date) : '—'}</div>
-    </div>
-  `).join('');
-  el.innerHTML = `
-    <div class="achievement-mural">
-      <div class="mural-grid">${cardsHtml}</div>
-    </div>
-  `;
-}
-
-// Toque no Pacus: gira em 3D e mostra uma reaçãozinha fofa — pura
-// diversão, não mexe em pontos nem no formato/crescimento dele.
-const PACUS_REACTIONS = ['💕','😊','🥰','✨','👋','🫧','😄','💗'];
-function wirePacusInteraction(){
-  const wrap = document.getElementById('pacusInteractive');
-  if(!wrap) return;
-  wrap.addEventListener('click', ()=>{
-    wrap.classList.remove('spin
+  const ca

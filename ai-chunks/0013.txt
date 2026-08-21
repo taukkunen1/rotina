@@ -117,6 +117,7 @@ function mergeRemoteData(remote){
   });
   merged.petCompletedDays = [...new Set([...(remoteState.petCompletedDays||[]), ...(localState.petCompletedDays||[])])].sort();
   merged.petPerfectBonusDays = [...new Set([...(remoteState.petPerfectBonusDays||[]), ...(localState.petPerfectBonusDays||[])])].sort();
+  merged.petMaxDaysEquivalentEverSeen = Math.max(Number(remoteState.petMaxDaysEquivalentEverSeen)||0, Number(localState.petMaxDaysEquivalentEverSeen)||0);
   merged.historyCorrectionV2Applied = !!(remoteState.historyCorrectionV2Applied || localState.historyCorrectionV2Applied);
   merged.hairByDate = {...(remoteState.hairByDate||{}), ...(localState.hairByDate||{})};
   merged.totalPoints = Math.max(Number(remoteState.totalPoints)||0, Number(localState.totalPoints)||0);
@@ -189,7 +190,4 @@ function bumpTotal(delta, anchorEl){
   el.classList.add('bump');
 
   if(delta){
-    const deltaEl = document.getElementById('pointsDelta');
-    if(deltaEl){
-      const rect = (anchorEl || el).getBoundingClientRect();
-      deltaEl.style.left = (rect.lef
+    const deltaEl =
