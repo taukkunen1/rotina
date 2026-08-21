@@ -11,6 +11,10 @@
   function localData() {
     return { config: storage.readJSON(storage.CONFIG_KEY, {}), state: storage.readJSON(storage.STATE_KEY, {}), revision: 0, serverUpdatedAt: null };
   }
+  function formatDate(date) {
+    const [year, month, day] = String(date).split('-');
+    return year && month && day ? `${day}/${month}/${year}` : String(date);
+  }
   async function loadRemote() {
     try {
       const response = await fetch(storage.DATA_ENDPOINT, { cache: 'no-store' });
@@ -39,7 +43,7 @@
   function renderHistory() {
     const entries = historyEntries();
     if (!entries.length) { $('adult-history').innerHTML = '<p>Sem histórico disponível.</p>'; return; }
-    $('adult-history').innerHTML = `<div class="adult-history-list">${entries.map(([date, item]) => `<article><strong>${esc(date)}</strong><span>${Number(item.done || 0)}/${Number(item.total || 0)} tarefas</span><span>${esc(item.pointsEarnedThatDay ?? 0)} pontos</span></article>`).join('')}</div>`;
+    $('adult-history').innerHTML = `<div class="adult-history-list">${entries.map(([date, item]) => `<article><strong>${esc(formatDate(date))}</strong><span>${Number(item.done || 0)}/${Number(item.total || 0)} tarefas</span><span>${esc(item.pointsEarnedThatDay ?? 0)} pontos</span></article>`).join('')}</div>`;
   }
   function renderSync() {
     $('sync-info').textContent = `Revisão: ${data.revision || 'local'}\nAtualizado: ${data.serverUpdatedAt || 'não informado'}\nHistórico: ${historyEntries().length} dia(s)`;
