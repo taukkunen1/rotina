@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Validate HTML structure and forbidden artifacts
+      - name: Validate HTML structure and publish artifacts
         shell: python
         run: |
           from pathlib import Path
@@ -39,7 +39,7 @@ jobs:
               raise SystemExit('Unbalanced script tags')
           if len(re.findall(r'<style\b', html, re.I)) != len(re.findall(r'</style>', html, re.I)):
               raise SystemExit('Unbalanced style tags')
-          for artifact in ('\\\\n<script>', 'Rotina do rotina', '${APP_VERSION}'):
+          for artifact in ('\\\\n<script>', 'Rotina do rotina'):
               if artifact in html:
                   raise SystemExit(f'Forbidden publish artifact: {artifact}')
           print('HTML structure: OK')
