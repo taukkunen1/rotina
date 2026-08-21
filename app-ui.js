@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const LEGACY_LABELS = [
+  const REMOVED_LABELS = [
     'Timers',
     'Vi algo legal',
     'Mural de Conquistas do Pacus',
@@ -25,20 +25,15 @@
     }) || null;
   }
 
-  function hideSection(label){
-    const el=sectionByText(label);
-    if(el){
-      el.hidden=true;
-      el.setAttribute('data-main-hidden','true');
-    }
+  function removeNode(node){
+    if(node && node.parentNode) node.parentNode.removeChild(node);
   }
 
-  function hideMainDistractions(){
-    LEGACY_LABELS.forEach(hideSection);
-    const drive=document.getElementById('driveSyncSection');
-    if(drive) drive.hidden=true;
-    const footer=document.querySelector('.content > footer');
-    if(footer) footer.hidden=true;
+  function removeLegacyMainUi(){
+    REMOVED_LABELS.forEach(label => removeNode(sectionByText(label)));
+    removeNode(document.getElementById('driveSyncSection'));
+    removeNode(document.querySelector('.content > footer'));
+    removeNode(document.getElementById('dayOverlay'));
   }
 
   function moveTimerCompact(){
@@ -68,16 +63,17 @@
 
   function apply(){
     loadStyles();
-    hideMainDistractions();
     moveTimerCompact();
     addAdultsLink();
+    removeLegacyMainUi();
   }
 
   function start(){
-    apply();
-    const observer=new MutationObserver(apply);
-    observer.observe(document.documentElement,{childList:true,subtree:true});
-    setTimeout(()=>observer.disconnect(),5000);
+    // Espera a inicialização do aplicativo terminar antes de remover os
+    // contêineres legados que ainda eram consultados durante o bootstrap.
+    setTimeout(apply, 0);
+    setTimeout(apply, 300);
+    setTimeout(apply, 1000);
   }
 
   window.RotinaUI={start};
