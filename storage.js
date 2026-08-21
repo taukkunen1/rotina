@@ -36,5 +36,14 @@
     }
   }
 
+  function loadCompactTimer(){
+    if(document.querySelector('link[data-compact-timer]')||document.getElementById('compactTimerScript')) return;
+    const css=document.createElement('link');
+    css.rel='stylesheet';css.href='compact-timer.css?v=20260821-1';css.dataset.compactTimer='1';document.head.appendChild(css);
+    const script=document.createElement('script');
+    script.src='compact-timer.js?v=20260821-1';script.id='compactTimerScript';script.defer=true;document.head.appendChild(script);
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',loadCompactTimer,{once:true}); else loadCompactTimer();
   window.RotinaStorage = Object.freeze({CONFIG_KEY,STATE_KEY,APPS_SCRIPT_URL,DATA_ENDPOINT,readJSON,writeJSON,remove});
 })();
