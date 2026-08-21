@@ -3,7 +3,7 @@
 /* ===================== REVISION CONTROL + DOMAIN-AWARE MERGE + PERIODIC SYNC ===================== */
 (function(){
   const BASELINE_KEY='hector_rotina_drive_baseline_v1';
-  const MAX_RETRIES=2, SYNC_INTERVAL_MS=20000;
+  const MAX_RETRIES=2, SYNC_INTERVAL_MS=10000;
   let syncTimer=null, syncInFlight=false, lastObservedRevision=0;
   const clone=v=>v==null?v:JSON.parse(JSON.stringify(v));
   const equal=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
