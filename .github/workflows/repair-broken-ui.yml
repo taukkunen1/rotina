@@ -1,0 +1,100 @@
+name: Reparar interface quebrada
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ai-chunks/repair-broken-ui.trigger
+
+permissions:
+  contents: write
+
+concurrency:
+  group: repair-broken-ui
+  cancel-in-progress: true
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reparar estrutura visual
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          # 1. Corrige os artefatos textuais introduzidos por substituições automáticas.
+          s = s.replace('🥚 Rotina do rotina', '🥚 Rotina do Pacus')
+          s = s.replace('Rotina do rotina · ${APP_VERSION}', 'Rotina do Pacus')
+          # Quebras literais foram inseridas fora de scripts por workflow anterior.
+          s = re.sub(r'(<body>)\\\\n+', r'\\1\\n', s)
+          s = re.sub(r'(</div>)\\\\n+(?=</body>)', r'\\1\\n', s)
+
+          # 2. Remove completamente as duas seções descartadas.
+          for label in ('Vi algo legal!', 'Mural de Conquistas do Pacus'):
+              pattern = re.compile(
+                  r'<details\\b[^>]*>.*?<summary[^>]*>.*?' + re.escape(label) +
+                  r'.*?</summary>.*?</details>', re.I | re.S
+              )
+              s, n = pattern.subn('', s)
+
+          # 3. Histórico de hoje: remove do painel principal e deixa pronto para mover ao modal adulto.
+          today_pattern = re.compile(
+              r'(<details\\b[^>]*>\\s*<summary[^>]*>\\s*📝\\s*Histórico de hoje\\s*</summary>.*?</details>)',
+              re.I | re.S
+          )
+          m = today_pattern.search(s)
+          if m:
+              block = m.group(1)
+              if 'today-history-parent-only' not in block:
+                  block = block.replace('<details', '<details class="today-history-parent-only"', 1)
+                  s = s[:m.start()] + block + s[m.end():]
+
+          # 4. Timers avulsos saem da coluna principal. O mini timer continua flutuante.
+          timer_pattern = re.compile(
+              r'<details\\b[^>]*>\\s*<summary[^>]*>\\s*⏱️\\s*Timers\\s*</summary>.*?</details>',
+              re.I | re.S
+          )
+          s, _ = timer_pattern.subn('', s)
+
+          # 5. Conteúdo técnico não aparece no painel infantil.
+          if 'main-child-cleanup-v2' not in s:
+              css = '''\n/* main-child-cleanup-v2 */\n.today-history-parent-only{display:none!important;}\n#driveSyncSection{display:none!important;}\n.content > footer{display:none!important;}\n'''
+              s = s.replace('</style>', css + '\n</style>', 1)
+
+          # 6. Move o histórico para dentro da Área dos Adultos quando o DOM estiver pronto.
+          marker = '// parent-history-relocation-v2'
+          if marker not in s:
+              js = '''\n''' + marker + '''\nfunction mountTodayHistoryForAdults(){\n  const history = document.querySelector('.today-history-parent-only');\n  const editor = document.querySelector('#editorOverlay .editor') || document.querySelector('.overlay .editor');\n  if(!history || !editor || history.dataset.parentMounted === '1') return;\n  const section = document.createElement('div');\n  section.className = 'editor-section adult-history-card';\n  section.innerHTML = '<h3 class="adult-history-title">📝 Histórico de hoje</h3>';\n  history.classList.remove('today-history-parent-only');\n  history.classList.add('adult-history-mounted');\n  history.open = true;\n  section.appendChild(history);\n  const footer = editor.querySelector('.editor-footer');\n  editor.insertBefore(section, footer || null);\n  history.dataset.parentMounted = '1';\n}\ndocument.addEventListener('DOMContentLoaded', mountTodayHistoryForAdults);\n'''
+              s = s.replace('</body>', '<script>' + js + '</script>\n</body>', 1)
+
+          # 7. Remove referências visíveis antigas do cabeçalho e rodapé sem tocar nos dados legados.
+          s = s.replace('<title>Rotina do Hector — Pacus</title>', '<title>Rotina do Pacus</title>')
+
+          # Validações básicas para evitar outro commit que destrua a interface.
+          if '${APP_VERSION}' in s:
+              raise SystemExit('Artefato ${APP_VERSION} ainda presente.')
+          if re.search(r'<summary[^>]*>.*Vi algo legal!', s, re.I | re.S):
+              raise SystemExit('Seção Vi algo legal ainda presente.')
+          if re.search(r'<summary[^>]*>.*Mural de Conquistas do Pacus', s, re.I | re.S):
+              raise SystemExit('Mural ainda presente.')
+          if s.count('<script') != s.count('</script>'):
+              raise SystemExit('Tags script desequilibradas.')
+          if s.count('<style') != s.count('</style>'):
+              raise SystemExit('Tags style desequilibradas.')
+
+          p.write_text(s, encoding='utf-8')
+          print('UI reparada e validada.')
+          PY
+      - name: Commitar reparo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "fix: reparar interface e isolar painel adulto"
+          git push
