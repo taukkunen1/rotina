@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+
+<meta name="rotina-app-version" content="2026-08-21-storage-fix">
+<script>
+(function(){
+  'use strict';
+  var migrationKey = 'hector_rotina_remote_storage_migrated_v1';
+  var legacyKeys = [
+    'hector_rotina_config_v3',
+    'hector_rotina_state_v3'
+  ];
+  try {
+    if (localStorage.getItem(migrationKey) !== 'done') {
+      legacyKeys.forEach(function(key){ localStorage.removeItem(key); });
+      localStorage.setItem(migrationKey, 'done');
+    }
+  } catch (e) {
+    console.warn('Legacy storage cleanup skipped', e);
+  }
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
