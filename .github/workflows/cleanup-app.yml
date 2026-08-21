@@ -1,0 +1,65 @@
+name: Limpeza segura do app.js
+
+on:
+  push:
+    paths:
+      - '.github/workflows/cleanup-app.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remover referências comprovadamente legadas
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('app.js')
+          s = p.read_text(encoding='utf-8')
+
+          # Chamadas da renderização principal que pertencem a áreas removidas
+          for call in [
+              '  renderCustomTimers();\n',
+              '  renderLog();\n',
+              '  renderHistory();\n',
+              '  renderAchievementMural();\n',
+              '  renderBackupReminder();\n',
+              '  renderTestPanel();\n',
+              '  renderTestModeBanner();\n',
+              '  renderDriveSync();\n',
+          ]:
+              s = s.replace(call, '')
+
+          # O editor de dia anterior foi removido do HTML. Remove o bloco inteiro,
+          # incluindo listeners que apontariam para elementos inexistentes.
+          start = '/* ===================== EDITOR DE DIA ANTERIOR ===================== */'
+          end = '/* ===================== SINCRONIZAÇÃO COM GOOGLE DRIVE (via Apps Script) ====================='
+          a = s.find(start)
+          b = s.find(end)
+          if a != -1 and b != -1 and b > a:
+              s = s[:a] + s[b:]
+
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Validar sintaxe
+        run: node --check app.js
+      - name: Confirmar remoção do editor legado
+        run: |
+          ! grep -q 'EDITOR DE DIA ANTERIOR' app.js
+          ! grep -q "getElementById('dayOverlay')" app.js
+      - name: Commit da limpeza
+        run: |
+          if git diff --quiet -- app.js; then
+            echo 'Nenhuma alteração necessária.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app.js
+          git commit -m 'Limpar referências legadas do app.js'
+          git push
