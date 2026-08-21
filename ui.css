@@ -7,7 +7,7 @@
 #autonomy-tools{margin:16px 0 4px;padding:14px 0 0;border-top:1px dashed var(--line)}
 .autonomy-heading{text-align:center;color:var(--chalk);font-size:1.05rem;margin:0 0 10px}
 .autonomy-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.autonomy-card{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+.autonomy-card,.board-reminder{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
 .autonomy-card h3{margin:0 0 7px;font-weight:normal;font-size:1.05rem;color:var(--chalk)}
 .autonomy-card p{margin:5px 0;color:var(--chalk-dim);font-size:.8rem;line-height:1.45}
 .autonomy-steps{display:flex;gap:5px;justify-content:center;margin:10px 0}
@@ -19,6 +19,11 @@
 .autonomy-btn.help{color:var(--chalk-dim)}
 .autonomy-status{min-height:18px;margin-top:8px;font-size:.75rem;color:var(--ui-positive)}
 .mission-icon{font-size:1.5rem;display:block;margin-bottom:3px}
+.board-reminder{margin-top:12px;text-align:left;border-style:dashed;background:rgba(79,195,247,.035)}
+.board-reminder-title{text-align:center;color:var(--ui-focus);font-size:.98rem;margin-bottom:8px}
+.board-reminder p{margin:8px 0;color:var(--chalk-dim);font-size:.82rem;line-height:1.45}
+.board-reminder strong{color:var(--chalk)}
+.board-reminder-note{margin-top:10px;padding-top:9px;border-top:1px solid var(--line);font-size:.72rem;color:var(--chalk-dim);text-align:center}
 
 #adult-tools{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line)}
 #adult-tools h3{margin:0 0 10px;font-size:1rem;color:var(--chalk)}
