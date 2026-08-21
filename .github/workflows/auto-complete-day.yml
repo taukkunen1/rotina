@@ -1,0 +1,96 @@
+name: Fechar tarefas automaticamente às 23:59
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ai-chunks/**
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar fechamento automático do dia
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          text = p.read_text(encoding='utf-8')
+          marker = 'function autoCompleteTodayAt2359(){'
+          if marker in text:
+              print('Fechamento automático já instalado.')
+              raise SystemExit(0)
+
+          anchor = 'const PACUS_NIGHT_MESSAGE = "Não esqueça de desenhar na lousa hoje! 🎨";'
+          code = r'''// Fechamento automático do dia: às 23:59 todas as tarefas aplicáveis
+// passam para concluídas e o histórico daquele dia é gravado como completo.
+let autoDayCloseTimer = null;
+function autoCompleteTodayAt2359(){
+  const now = new Date();
+  if(now.getHours() < 23 || (now.getHours() === 23 && now.getMinutes() < 59)) return false;
+  const iso = todayISO();
+  if(!state.autoCompletedTaskDates || typeof state.autoCompletedTaskDates !== 'object') state.autoCompletedTaskDates = {};
+  if(state.autoCompletedTaskDates[iso]) return false;
+
+  const tasks = allTasks(iso);
+  const applicable = tasks.filter(t => state.checkedToday[t.id] !== 'na');
+  applicable.forEach(t => { state.checkedToday[t.id] = true; });
+  const total = applicable.length;
+  const previous = (state.history && state.history[iso]) || {};
+  const pointsEarnedThatDay = applicable.reduce((sum, task) => sum + (Number(task.pts) || 0), 0);
+  if(!state.history || typeof state.history !== 'object') state.history = {};
+  state.history[iso] = {
+    ...previous,
+    done: total,
+    total,
+    perfect: total > 0,
+    pointsEarnedThatDay,
+    periodsCompleted: 3,
+    hair: (state.hairByDate && state.hairByDate[iso]) || previous.hair || null,
+    autoCompletedAt: now.toISOString()
+  };
+  state.autoCompletedTaskDates[iso] = true;
+  saveState(state);
+  if(typeof render === 'function') render();
+  if(typeof window.driveSave === 'function') window.driveSave({silent:true});
+  return true;
+}
+
+function scheduleAutoDayClose(){
+  if(autoDayCloseTimer) clearTimeout(autoDayCloseTimer);
+  const now = new Date();
+  const target = new Date(now);
+  target.setHours(23, 59, 0, 0);
+  if(target <= now) target.setDate(target.getDate() + 1);
+  autoDayCloseTimer = setTimeout(() => {
+    autoCompleteTodayAt2359();
+    scheduleAutoDayClose();
+  }, Math.max(1000, target.getTime() - Date.now() + 250));
+}
+
+setTimeout(() => {
+  autoCompleteTodayAt2359();
+  scheduleAutoDayClose();
+}, 0);
+document.addEventListener('visibilitychange', () => {
+  if(!document.hidden) autoCompleteTodayAt2359();
+});
+
+'''
+          if anchor not in text:
+              raise SystemExit('Âncora do diálogo do PACUS não encontrada.')
+          p.write_text(text.replace(anchor, code + anchor, 1), encoding='utf-8')
+          print('Fechamento automático instalado.')
+          PY
+      - name: Commitar alteração
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "feat: concluir tarefas e atualizar histórico às 23:59"
+          git push
