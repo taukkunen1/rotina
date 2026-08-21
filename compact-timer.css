@@ -1,0 +1,17 @@
+/* Cronômetro compacto da rotina */
+.compact-timer{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid rgba(120,220,170,.28);border-radius:14px;background:rgba(8,28,22,.62);box-shadow:0 6px 18px rgba(0,0,0,.12);white-space:nowrap}
+.compact-timer.is-running{border-color:rgba(104,211,145,.72);box-shadow:0 0 0 3px rgba(104,211,145,.08)}
+.timer-readout{font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.04em;color:var(--chalk,#e7eee8);min-width:62px;text-align:center;font-size:1rem}
+.timer-controls{display:flex;gap:4px}
+.timer-btn{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.035);color:var(--chalk,#e7eee8);cursor:pointer;font-weight:800;transition:transform .15s ease,background .15s ease,border-color .15s ease}
+.timer-btn:hover{transform:translateY(-1px);background:rgba(104,211,145,.14);border-color:rgba(104,211,145,.5)}
+.timer-btn.primary{background:rgba(104,211,145,.18);border-color:rgba(104,211,145,.52);color:#a7f3c4}
+.timer-set{display:flex;align-items:center;gap:3px;padding-left:6px;border-left:1px solid rgba(255,255,255,.1)}
+.timer-set label{display:flex;align-items:center;gap:2px;color:var(--chalk-dim,#9ba9a0);font-size:.64rem}
+.timer-set input{width:38px;padding:4px 2px;border:1px solid rgba(255,255,255,.16);border-radius:6px;background:rgba(0,0,0,.12);color:var(--chalk,#e7eee8);font:inherit;text-align:center;font-variant-numeric:tabular-nums}
+.timer-set input:focus{outline:none;border-color:rgba(104,211,145,.65)}
+.timer-set-sep{color:var(--chalk-dim,#9ba9a0);font-weight:700}
+@keyframes compactTimerPulse{0%,100%{opacity:1}50%{opacity:.62}}
+.compact-timer.is-finished .timer-readout{color:#ffd56b;animation:compactTimerPulse 1s ease infinite}
+@media(max-width:760px){.compact-timer{order:3;width:100%;justify-content:center}.topbar-right{flex-wrap:wrap}.timer-set{padding-left:4px}.timer-btn{width:28px;height:28px}}
+@media(prefers-reduced-motion:reduce){.timer-btn{transition:none}.compact-timer.is-finished .timer-readout{animation:none}}
