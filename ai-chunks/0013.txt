@@ -106,10 +106,18 @@ function mergeRemoteData(remote){
   const remoteState = remote.state || {};
   const localState = state || {};
   const merged = JSON.parse(JSON.stringify(remoteState));
+  // Mescla o histórico dia a dia: se um dia existe só de um lado, ele
+  // SEMPRE fica (não é conflito de verdade, só falta de sincronização).
+  // Só usa data/hora pra decidir quando os DOIS lados têm um registro
+  // diferente pro mesmo dia.
   merged.history = {...(remoteState.history||{})};
   Object.entries(localState.history||{}).forEach(([iso,entry])=>{
     const remoteEntry = merged.history[iso];
-    if(!remoteEntry || JSON.stringify(entry) !== JSON.stringify(remoteEntry)){
+    if(!remoteEntry){
+      merged.history[iso] = entry;
+      return;
+    }
+    if(JSON.stringify(entry) !== JSON.stringify(remoteEntry)){
       const localUpdated = entry.updatedAt || localState.updatedAt || '';
       const remoteUpdated = remoteEntry.updatedAt || remoteState.updatedAt || '';
       if(localUpdated >= remoteUpdated) merged.history[iso] = entry;
@@ -142,32 +150,22 @@ async function autoPullOnStartup(){
     if(res.ok){
       const backup = await res.json();
       if(backup && backup.config && backup.state){
-        const localRevision = Number(state.driveRevision)||0;
-        const localDirty = (Number(state.revision)||0) > localRevision;
         const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
-        if(localDirty && remoteRevision !== localRevision){
+        const localRevision = Number(state.driveRevision)||0;
+        // SEMPRE mescla (nunca substitui de uma vez) — mesmo quando o Drive
+        // parece "mais novo", os dados locais podem ter progresso que o
+        // Drive ainda não tem (ex: uma aba antiga sincronizando antes).
+        // mergeRemoteData usa união/máximo em tudo que é progresso
+        // acumulado, então nunca perde o que já foi conquistado.
+        if(remoteRevision !== localRevision || JSON.stringify(backup.config) !== JSON.stringify(CONFIG)){
           const merged = mergeRemoteData(backup);
           CONFIG = merged.config;
           state = merged.state;
-          state.driveRevision = remoteRevision;
+          state.driveRevision = Math.max(remoteRevision, localRevision);
+          state.driveLastSyncISO = todayISO();
           saveConfig(CONFIG);
           saveState(state);
           render();
-        } else if(remoteRevision >= localRevision){
-          const remoteConfig = sanitizeRemoteConfig(backup.config);
-          if(remoteConfig){
-            CONFIG = remoteConfig;
-            state = reconcileState(backup.state);
-            state.driveRevision = remoteRevision;
-            state.driveLastSyncISO = todayISO();
-            try{ localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(CONFIG)); }catch(e){}
-            try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
-            render();
-          }else{
-            // Nunca substituir uma rotina válida por um backup remoto vazio/incompleto.
-            // O app continua com a configuração local que já funcionava.
-            render();
-          }
         }
       }
     }
@@ -190,4 +188,5 @@ function bumpTotal(delta, anchorEl){
   el.classList.add('bump');
 
   if(delta){
-    const deltaEl =
+    const deltaEl = document.getElementById('pointsDelta');
+    if

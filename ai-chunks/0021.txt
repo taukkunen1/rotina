@@ -1,6 +1,4 @@
-
-  el.innerHTML = `
-    <div class="behavior-grid">
+id">
       ${POSITIVE_BEHAVIORS.map(b => `
         <div class="behavior-card">
           <button type="button" class="behavior-btn" data-id="${b.id}">${b.emoji} ${b.label}</button>
@@ -188,4 +186,5 @@ function openEditor(){
   const weekendToggle = document.getElementById('weekendToggle');
   const weekendBody = document.getElementById('weekendEditorBody');
   weekendToggle.checked = !!draft.periodsWeekend;
-  weekendBody.style.display = dra
+  weekendBody.style.display = draft.periodsWeekend ? 'block' : 'none';
+  if(draf

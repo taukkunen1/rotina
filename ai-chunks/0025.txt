@@ -1,4 +1,4 @@
-onst res = await fetch(DATA_ENDPOINT, { method: 'GET' });
+ 'GET' });
     if(!res.ok) throw new Error('Falha ao carregar');
     const backup = await res.json();
     if(backup.error === 'not_found'){ alert('Nenhum backup encontrado no Google Drive ainda.'); return; }

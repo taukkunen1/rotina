@@ -1,4 +1,4 @@
-ory[editingDate] = { done, total, pointsEarnedThatDay, perfect, screenMinutes: perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0, hair };
+hatDay, perfect, screenMinutes: perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0, hair };
   if(perfect) registerPetDayCompletion(editingDate);
 
   // ajusta o saldo total pela diferença de pontos daquele dia
@@ -168,4 +168,4 @@ async function driveSave(){
 
 async function driveLoad(){
   try{
-    c
+    const res = await fetch(DATA_ENDPOINT, { method:

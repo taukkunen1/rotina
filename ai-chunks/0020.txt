@@ -1,6 +1,4 @@
-nnerHTML = `
-    <div class="weekly-review">
-      <div class="wr-head">
+    <div class="wr-head">
         <span class="wr-range">${rangeLabel}</span>
       </div>
       <div class="wr-stats">
@@ -182,3 +180,6 @@ const POSITIVE_BEHAVIORS = [
 function renderPositiveBehaviors(){
   const el = document.getElementById('positiveBehaviors');
   if(!el) return;
+
+  el.innerHTML = `
+    <div class="behavior-gr

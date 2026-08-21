@@ -1,5 +1,4 @@
-ft.periodsWeekend ? 'block' : 'none';
-  if(draft.periodsWeekend){
+t.periodsWeekend){
     renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
     renderEditorPeriod('tarde', 'editTardeWeekend', draft.periodsWeekend);
     renderEditorPeriod('noite', 'editNoiteWeekend', draft.periodsWeekend);
@@ -173,4 +172,6 @@ function renderEditorSchedule(){
 
 function renderEditorRewards(){
   const el = document.getElementById('editRewards');
-  el.innerH
+  el.innerHTML = '';
+  draft.rewards.forEach(r=>{
+    cons

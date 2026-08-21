@@ -1,6 +1,4 @@
-TML = '';
-  draft.rewards.forEach(r=>{
-    const row = document.createElement('div');
+t row = document.createElement('div');
     row.className = 'edit-row';
     row.innerHTML = `
       <input type="text" value="${escapeAttr(r.txt)}" data-field="txt" placeholder="recompensa">
@@ -193,4 +191,4 @@ document.getElementById('daySaveBtn').addEventListener('click', ()=>{
 
   if(!state.hairByDate) state.hairByDate = {};
   if(hair) state.hairByDate[editingDate] = hair; else delete state.hairByDate[editingDate];
-  state.hist
+  state.history[editingDate] = { done, total, pointsEarnedT

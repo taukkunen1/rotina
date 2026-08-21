@@ -1,5 +1,4 @@
-) cls = 'streak-cell partial';
-      else cls = 'streak-cell none';
+ 'streak-cell none';
     }
     if(entry && entry.done > 0) progressDays++;
     if(isToday) cls += ' today';
@@ -163,4 +162,5 @@ function render(){
   periodsEl.querySelectorAll('.mini-reorder-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const periodKey = btn.getAttribute('data-period');
-      const taskId = btn.getAttribute('data-tas
+      const taskId = btn.getAttribute('data-task');
+      const dir = btn.getAttribute('data-d

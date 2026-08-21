@@ -1,5 +1,4 @@
-k');
-      const dir = btn.getAttribute('data-dir');
+ir');
       const periodTasks = getPeriodsFor(todayISO())[periodKey].tasks;
       moveTaskInOrder(periodKey, periodTasks, taskId, dir);
       render();
@@ -224,4 +223,6 @@ function renderWeeklyReview(){
 
   const rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
 
-  el.i
+  el.innerHTML = `
+    <div class="weekly-review">
+  
