@@ -2,7 +2,8 @@
   'use strict';
 
   function loadScript(src, marker, onload){
-    if(document.querySelector(`script[${marker}]`)) return;
+    const normalized=src.replace(/^\.\//,'');
+    if(document.querySelector(`script[${marker}], script[src$="${normalized}"]`)) return;
     const script=document.createElement('script');
     script.src=src;
     script.defer=true;
@@ -13,7 +14,8 @@
   }
 
   function start(){
-    loadScript('app-ui.js','data-rotina-ui',()=>window.RotinaUI?.start());
+    if(window.RotinaUI) window.RotinaUI.start();
+    else loadScript('app-ui.js','data-rotina-ui',()=>window.RotinaUI?.start());
     loadScript('autonomy.js','data-rotina-autonomy');
   }
 
