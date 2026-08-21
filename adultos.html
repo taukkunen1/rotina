@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel dos Adultos · Rotina</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="ui.css">
+</head>
+<body class="adult-page">
+  <main class="adult-page-shell">
+    <header class="adult-page-header">
+      <div>
+        <a class="adult-back" href="index.html">← Voltar para a rotina</a>
+        <h1>🔒 Painel dos Adultos</h1>
+        <p>Histórico, acompanhamento, sincronização e backup.</p>
+      </div>
+      <div id="adult-status" aria-live="polite">Carregando dados…</div>
+    </header>
+
+    <section class="adult-card" id="today-card">
+      <h2>Histórico de hoje</h2>
+      <div id="adult-today">Carregando…</div>
+    </section>
+
+    <section class="adult-card" id="days-card">
+      <h2>Histórico dos dias</h2>
+      <div id="adult-history">Carregando…</div>
+    </section>
+
+    <section class="adult-card">
+      <h2>Backup</h2>
+      <div class="adult-actions">
+        <button id="export-backup" type="button">Exportar backup</button>
+        <label class="adult-file-button">Importar backup<input id="import-backup" type="file" accept="application/json,.json" hidden></label>
+      </div>
+      <p class="adult-note">A importação substitui o estado local e tenta sincronizá-lo com o servidor.</p>
+    </section>
+
+    <section class="adult-card">
+      <h2>Sincronização</h2>
+      <div class="adult-actions">
+        <button id="refresh-remote" type="button">Atualizar do servidor</button>
+      </div>
+      <pre id="sync-info" class="adult-sync-info"></pre>
+    </section>
+  </main>
+  <script src="storage.js"></script>
+  <script src="adults.js"></script>
+</body>
+</html>
