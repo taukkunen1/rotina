@@ -11,10 +11,6 @@
   function localData() {
     return { config: storage.readJSON(storage.CONFIG_KEY, {}), state: storage.readJSON(storage.STATE_KEY, {}), revision: 0, serverUpdatedAt: null };
   }
-  function formatDate(date) {
-    const [year, month, day] = String(date).split('-');
-    return year && month && day ? `${day}/${month}/${year}` : String(date);
-  }
   async function loadRemote() {
     try {
       const response = await fetch(storage.DATA_ENDPOINT, { cache: 'no-store' });
@@ -30,8 +26,7 @@
     }
   }
   function historyEntries() {
-    const history = data.state?.history || {};
-    return Object.entries(history).sort((a,b) => b[0].localeCompare(a[0]));
+    return Object.entries(data.state?.history || {}).sort((a,b) => b[0].localeCompare(a[0]));
   }
   function renderToday() {
     const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date());
@@ -40,15 +35,10 @@
     const done = Number(item.done || 0), total = Number(item.total || 0);
     $('adult-today').innerHTML = `<div class="adult-metric"><strong>${done}/${total}</strong><span>Tarefas concluídas</span></div><div class="adult-metric"><strong>${esc(item.pointsEarnedThatDay ?? 0)}</strong><span>Pontos</span></div><div class="adult-metric"><strong>${item.perfect ? 'Sim' : 'Não'}</strong><span>Dia perfeito</span></div>`;
   }
-  function renderHistory() {
-    const entries = historyEntries();
-    if (!entries.length) { $('adult-history').innerHTML = '<p>Sem histórico disponível.</p>'; return; }
-    $('adult-history').innerHTML = `<div class="adult-history-list">${entries.map(([date, item]) => `<article><strong>${esc(formatDate(date))}</strong><span>${Number(item.done || 0)}/${Number(item.total || 0)} tarefas</span><span>${esc(item.pointsEarnedThatDay ?? 0)} pontos</span></article>`).join('')}</div>`;
-  }
   function renderSync() {
     $('sync-info').textContent = `Revisão: ${data.revision || 'local'}\nAtualizado: ${data.serverUpdatedAt || 'não informado'}\nHistórico: ${historyEntries().length} dia(s)`;
   }
-  function render() { renderToday(); renderHistory(); renderSync(); }
+  function render() { renderToday(); renderSync(); }
   function exportBackup() {
     const blob = new Blob([JSON.stringify({ config: data.config, state: data.state, revision: data.revision, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
