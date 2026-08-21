@@ -23,12 +23,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Validate HTML structure and publish artifacts
+      - name: Validate HTML structure
         shell: python
         run: |
           from pathlib import Path
           import re
-
           html = Path('index.html').read_text(encoding='utf-8')
           if not html.lstrip().lower().startswith('<!doctype html>'):
               raise SystemExit('index.html is missing a valid doctype')
@@ -42,10 +41,14 @@ jobs:
           for artifact in ('\\\\n<script>', 'Rotina do rotina'):
               if artifact in html:
                   raise SystemExit(f'Forbidden publish artifact: {artifact}')
-          print('HTML structure: OK')
+          for asset in ('styles.css','storage.js','autonomy.js','app-ui.js'):
+              if asset not in html:
+                  raise SystemExit(f'index.html does not load required asset: {asset}')
+          print('HTML structure and module links: OK')
 
       - name: Validate JavaScript syntax
         run: |
+          node --check storage.js
           node --check autonomy.js
           node --check app-ui.js
           python - <<'PY'
@@ -66,11 +69,22 @@ jobs:
           print(f'JavaScript syntax: OK ({len(blocks)} inline blocks)')
           PY
 
+      - name: Validate CSS module
+        shell: python
+        run: |
+          from pathlib import Path
+          css = Path('styles.css').read_text(encoding='utf-8')
+          if len(css.strip()) < 1000:
+              raise SystemExit('styles.css is unexpectedly small')
+          if css.count('{') != css.count('}'):
+              raise SystemExit('styles.css has unbalanced braces')
+          print('CSS module: OK')
+
       - name: Validate required modules
         shell: python
         run: |
           from pathlib import Path
-          required=['autonomy.js','app-ui.js','ui.css']
+          required=['styles.css','storage.js','autonomy.js','app-ui.js','ui.css']
           missing=[p for p in required if not Path(p).is_file()]
           if missing:
               raise SystemExit('Missing required modules: '+', '.join(missing))
