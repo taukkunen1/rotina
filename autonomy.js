@@ -76,6 +76,7 @@
       if(action==='advance') autonomy.courage.level=Math.min(5,autonomy.courage.level+1);
       if(action==='independent') autonomy.mission.status='independent';
       if(action==='help'){ autonomy.mission.status='help'; kind='help'; }
+      if(action==='skip') autonomy.mission.status='not-needed';
       persist();
       pulse(button,kind);
       renderAutonomy(true,action);
@@ -97,18 +98,22 @@
         ${level<5?'<button class="autonomy-btn" data-autonomy-action="advance">Avançar degrau</button>':''}
       </div>`;
     const mission=MISSIONS.find(x=>x.key===autonomy.mission.key)||missionForDay(TODAY());
-    const status=autonomy.mission.status==='independent'?'✓ Conseguiu sozinho hoje.':autonomy.mission.status==='help'?'🤝 Pediu ajuda quando precisou.':'';
+    const missionStatus={
+      independent:'✓ Conseguiu sozinho hoje.',
+      help:'🤝 Pediu ajuda quando precisou.',
+      'not-needed':'— Não precisou ser feita hoje.'
+    }[autonomy.mission.status]||'';
     m.innerHTML=`
       <div class="autonomy-card-head"><h3>🦅 Missão Independente</h3><span class="mission-icon">${mission.icon}</span></div>
       <p class="autonomy-copy mission-text">${mission.text}</p>
       <div class="autonomy-actions">
         <button class="autonomy-btn primary ${autonomy.mission.status==='independent'?'selected':''}" data-autonomy-action="independent">✓ Consegui sozinho</button>
         <button class="autonomy-btn help ${autonomy.mission.status==='help'?'selected':''}" data-autonomy-action="help">🤝 Precisei de ajuda</button>
+        <button class="autonomy-btn ${autonomy.mission.status==='not-needed'?'selected':''}" data-autonomy-action="skip">Não precisei hoje</button>
       </div>
-      <div class="autonomy-status ${autonomy.mission.status||''}">${status}</div>`;
+      <div class="autonomy-status ${autonomy.mission.status||''}">${missionStatus}</div>`;
     if(animate){
-      if(action==='advance') c.classList.add('autonomy-card-bump');
-      else if(action==='practice') c.classList.add('autonomy-card-bump');
+      if(action==='advance'||action==='practice') c.classList.add('autonomy-card-bump');
       else m.classList.add('autonomy-card-bump');
       setTimeout(()=>document.querySelectorAll('.autonomy-card-bump').forEach(x=>x.classList.remove('autonomy-card-bump')),450);
     }
