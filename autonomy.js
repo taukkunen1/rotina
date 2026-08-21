@@ -46,27 +46,30 @@
   }
 
   function mountAutonomy(){
-    if(document.getElementById('autonomy-tools')) return;
-    const host=document.querySelector('.content');
+    const host=document.getElementById('autonomy-tools') || document.querySelector('.content');
     if(!host) return;
 
-    const section=document.createElement('section');
-    section.id='autonomy-tools';
-    section.innerHTML=`
-      <div class="autonomy-heading">🌱 Autonomia e coragem</div>
-      <div class="autonomy-grid">
-        <article class="autonomy-card" id="courage-card"></article>
-        <article class="autonomy-card" id="mission-card"></article>
-      </div>
-      <article class="board-reminder" aria-label="Lembretes da lousa">
-        <div class="board-reminder-title">🧑‍🎨 Lembretes da lousa</div>
-        <p>🧩 <strong>Problema meu, solução minha:</strong> anote um pequeno problema de hoje e pense em opções antes de pedir que um adulto resolva.</p>
-        <p>🙂 <strong>Como estou me sentindo?</strong> desenhe um rosto na lousa mostrando como você está hoje.</p>
-        <div class="board-reminder-note">Sem pontos e sem cobrança automática. É uma prática diária na lousa.</div>
-      </article>`;
-    host.appendChild(section);
+    if(host.id==='autonomy-tools'){
+      host.innerHTML=`
+        <div class="autonomy-heading">🌱 Autonomia e coragem</div>
+        <div class="autonomy-grid">
+          <article class="autonomy-card" id="courage-card"></article>
+          <article class="autonomy-card" id="mission-card"></article>
+        </div>
+        <article class="board-reminder" aria-label="Lembretes da lousa">
+          <div class="board-reminder-title">🧑‍🎨 Lembretes da lousa</div>
+          <p>🧩 <strong>Problema meu, solução minha:</strong> anote um pequeno problema de hoje e pense em opções antes de pedir que um adulto resolva.</p>
+          <p>🙂 <strong>Como estou me sentindo?</strong> desenhe um rosto na lousa mostrando como você está hoje.</p>
+          <div class="board-reminder-note">Sem pontos e sem cobrança automática. É uma prática diária na lousa.</div>
+        </article>`;
+    } else if(!document.getElementById('autonomy-tools')) {
+      const section=document.createElement('section');
+      section.id='autonomy-tools';
+      host.appendChild(section);
+      return mountAutonomy();
+    }
 
-    section.addEventListener('click',event=>{
+    host.onclick=event=>{
       const button=event.target.closest('button[data-autonomy-action]');
       if(!button) return;
       const autonomy=ensureState();
@@ -78,7 +81,7 @@
       if(action==='help') autonomy.mission.status='help';
       persist();
       renderAutonomy();
-    });
+    };
 
     renderAutonomy();
   }
@@ -101,7 +104,7 @@
     let tries=0;
     const timer=setInterval(()=>{
       tries++;
-      if(document.querySelector('.content')&&typeof state!=='undefined'){
+      if(document.getElementById('autonomy-tools')&&typeof state!=='undefined'){
         clearInterval(timer);
         mountAutonomy();
       }
