@@ -3,15 +3,15 @@
   "encoding": "utf-8",
   "chunkSize": 8000,
   "totalChunks": 1,
-  "totalSize": 7559,
-  "sha256": "29cb84d7865e698a502850d85148e8eed97d19212931525fe8b479159e379c4a",
+  "totalSize": 7491,
+  "sha256": "c15da170e7e9fc21d6b38808312706d7684e1e31e174b205d169eb1245fd272c",
   "chunks": [
     {
       "chunk": 0,
       "file": "0000.txt",
       "start": 0,
-      "end": 7559,
-      "size": 7559
+      "end": 7491,
+      "size": 7491
     }
   ]
 }
