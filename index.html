@@ -2036,6 +2036,22 @@
 </div>
 
 <script>
+/* Rede de segurança: se QUALQUER coisa der erro em qualquer parte do
+   código abaixo (cache antigo, extensão do navegador, timing estranho),
+   isso mostra um aviso claro com botão de recarregar — em vez de
+   deixar a tela parcialmente em branco sem nenhuma explicação. */
+window.addEventListener('error', function(e){
+  if(document.getElementById('appCrashBanner')) return;
+  var banner = document.createElement('div');
+  banner.id = 'appCrashBanner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#ff6b6b;color:#2a1414;padding:14px 16px;text-align:center;font-family:sans-serif;font-size:.95rem;box-shadow:0 2px 10px rgba(0,0,0,.4);';
+  banner.innerHTML = '⚠️ Algo não carregou direito. <button id="appCrashReloadBtn" style="margin-left:8px;background:#2a1414;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-weight:bold;cursor:pointer;">Recarregar</button>';
+  document.body.appendChild(banner);
+  document.getElementById('appCrashReloadBtn').addEventListener('click', function(){
+    location.reload();
+  });
+});
+
 /* DEFAULT_CONFIG só vale na primeira abertura; depois é tudo editável
    pela tela e fica salvo no navegador. */
 const DEFAULT_CONFIG = {
@@ -4848,6 +4864,15 @@ function onMarkClick(e){
       totalDelta += addPoints(task.pts);
       addLog(`+${task.pts} · ${task.txt}`);
       fireConfetti(btn);
+      // salto pra Bebê na 1ª tarefa concluída de hoje (pedido pontual) —
+      // depois disso o crescimento normal (1 dia = 1 unidade) já cobre o
+      // resto do ciclo até 31/08 sem folga sobrando.
+      const doneCountToday = Object.values(state.checkedToday).filter(s=>s==='done').length;
+      if(doneCountToday === 1 && !state.bebeBoostAug21Applied){
+        state.petMaxDaysEquivalentEverSeen = Math.max(Number(state.petMaxDaysEquivalentEverSeen)||0, 14);
+        state.bebeBoostAug21Applied = true;
+        addLog(`🎉 ${CONFIG.pet.name} deu um salto e virou Bebê!`);
+      }
     } else if(clickedStatus === 'help'){
       const helpPts = taskHelpPoints(task);
       totalDelta += addPoints(helpPts);
@@ -5508,9 +5533,38 @@ document.getElementById('importFile').addEventListener('change', (e)=>{
   e.target.value = '';
 });
 
-render();
-autoPullOnStartup();
-startPeriodicSync();
+function showFatalErrorBanner(err){
+  try{
+    const div = document.createElement('div');
+    div.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#ff6b6b;color:#2a1414;padding:14px 16px;font-family:sans-serif;font-size:.85rem;text-align:center;';
+    div.innerHTML = `⚠️ O app encontrou um problema ao carregar e não conseguiu mostrar tudo.<br>
+      <button id="__fatalReloadBtn" style="margin-top:8px;background:#2a1414;color:#fff;border:none;padding:7px 16px;border-radius:6px;font-weight:bold;cursor:pointer;">🔄 Recarregar a página</button>`;
+    document.body.prepend(div);
+    document.getElementById('__fatalReloadBtn').addEventListener('click', ()=>{
+      location.reload(true);
+    });
+  }catch(e2){ /* nada mais a fazer se nem isso funcionar */ }
+}
+
+try{
+  render();
+}catch(err){
+  showFatalErrorBanner(err);
+}
+try{
+  autoPullOnStartup();
+}catch(err){
+  showFatalErrorBanner(err);
+}
+try{
+  startPeriodicSync();
+}catch(err){ /* sincronização periódica é só um extra, não crítica */ }
+
+window.addEventListener('error', function(e){
+  // se alguma coisa quebrar depois (fora dos try/catch de cima), ainda
+  // assim avisa em vez de deixar a tela pela metade sem explicação
+  if(!document.getElementById('__fatalReloadBtn')) showFatalErrorBanner(e.error);
+});
 </script>
 </body>
 </html>
