@@ -1,34 +1,41 @@
-/* Tema global e hierarquia visual */
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
+
+/* Tema global, hierarquia visual e tipografia */
 :root{
-  --board:#101d1a;
-  --board-edge:#08110f;
-  --chalk:#fffdf6;
-  --chalk-dim:#c4d0ca;
-  --yellow:#ffd84d;
-  --pink:#ff6fb5;
-  --blue:#4fd6ff;
-  --orange:#ff9d4d;
-  --green:#55e887;
-  --red:#ff6678;
-  --wood:#b8733f;
-  --wood-dark:#71401f;
-  --line:rgba(226,255,242,.20);
-  --focus:#ffe785;
+  --board:#101d1a; --board-edge:#08110f; --chalk:#fffdf6; --chalk-dim:#c4d0ca;
+  --yellow:#ffd84d; --pink:#ff6fb5; --blue:#4fd6ff; --orange:#ff9d4d;
+  --green:#55e887; --red:#ff6678; --wood:#b8733f; --wood-dark:#71401f;
+  --line:rgba(226,255,242,.20); --focus:#ffe785;
+  --font-body:'Nunito',system-ui,sans-serif;
+  --font-display:'Baloo 2',var(--font-body);
+  --font-mono:'Space Mono',ui-monospace,monospace;
 }
-body{background:radial-gradient(circle at 12% 5%,rgba(79,214,255,.11),transparent 27%),radial-gradient(circle at 88% 10%,rgba(255,111,181,.10),transparent 25%),radial-gradient(circle at 50% 100%,rgba(85,232,135,.08),transparent 35%),var(--board)}
+
+html{font-family:var(--font-body)}
+body{font-family:var(--font-body);font-size:16px;line-height:1.5;letter-spacing:.01em;background:radial-gradient(circle at 12% 5%,rgba(79,214,255,.11),transparent 27%),radial-gradient(circle at 88% 10%,rgba(255,111,181,.10),transparent 25%),radial-gradient(circle at 50% 100%,rgba(85,232,135,.08),transparent 35%),var(--board)}
+button,input,select,textarea{font:inherit}
+h1,h2,h3,.period-title,.adult-card h2,.celebration-title{font-family:var(--font-display);font-weight:800;letter-spacing:.015em;line-height:1.12}
+h1{font-size:clamp(1.7rem,4vw,2.45rem)}
+h2{font-size:clamp(1.2rem,3vw,1.65rem)}
+h3{font-size:1.08rem}
+.topbar h1{text-shadow:0 0 18px rgba(255,216,77,.35);letter-spacing:.025em}
+.topbar-context,.hint,.adult-note{font-weight:600;letter-spacing:.02em}
+.num,.points,#totalPoints,.compact-timer-display{font-family:var(--font-mono);font-weight:700;font-variant-numeric:tabular-nums}
+.btn,.icon-btn,.adult-page-link,.task,.hair-btn,.compact-timer button{font-weight:800;letter-spacing:.015em}
+.task{font-size:.98rem}.task small,.task .sub{font-size:.78rem;font-weight:600;color:var(--chalk-dim)}
+.period-title,.period h2,.focus-step .focus-label{color:var(--yellow);text-shadow:0 0 10px rgba(255,216,77,.16)}
 .board-frame{box-shadow:0 22px 60px rgba(0,0,0,.58),0 0 30px rgba(79,214,255,.06),inset 0 0 0 6px var(--wood-dark)}
 .board-inner{border-color:var(--wood);box-shadow:inset 0 0 28px rgba(255,216,77,.025)}
 .topbar{background:linear-gradient(135deg,rgba(12,31,27,.98),rgba(16,38,33,.94));border-bottom-color:rgba(255,216,77,.24)}
-.topbar h1{text-shadow:0 0 18px rgba(255,216,77,.35)}
-.topbar-context{margin:.2rem 0 0;font-size:.72rem;color:var(--chalk-dim);letter-spacing:.03em}
+.topbar-context{margin:.2rem 0 0;font-size:.78rem;color:var(--chalk-dim)}
 .daily-routine{display:flex;flex-direction:column;gap:12px}.daily-routine>.periods{order:3}.daily-routine>.hair-section{order:4}.daily-routine>#gameTimerSection{order:5}.daily-routine>.block-collapsible{order:8}.daily-routine>#focusCard{order:1}.daily-routine>#weekendIndicator,.daily-routine>#lightDayBanner,.daily-routine>#freshStartArea{order:0}.daily-routine>#invisibleWinsCard{order:6}
 .pacus-total{background:linear-gradient(135deg,rgba(79,214,255,.10),rgba(85,232,135,.08));border-color:rgba(79,214,255,.32);box-shadow:0 0 18px rgba(79,214,255,.06)}.pacus-total .num{color:var(--green);text-shadow:0 0 12px rgba(85,232,135,.38)}
 .icon-btn{border-color:rgba(79,214,255,.30);background:rgba(79,214,255,.045);color:var(--chalk)}.icon-btn:hover{border-color:var(--blue);background:rgba(79,214,255,.13);box-shadow:0 0 14px rgba(79,214,255,.12)}
 .icon-btn.primary{color:#241e08;border-color:var(--yellow);background:linear-gradient(135deg,var(--yellow),#ffbf45);box-shadow:0 5px 16px rgba(255,190,69,.18)}
 .block,.block-collapsible,.focus-card,.hair-section,.adult-card{border-color:rgba(79,214,255,.20);box-shadow:0 8px 24px rgba(0,0,0,.10)}
-.period-title,.period h2,.focus-step .focus-label{color:var(--yellow);text-shadow:0 0 10px rgba(255,216,77,.16)}.task.done{background:linear-gradient(90deg,rgba(85,232,135,.14),rgba(79,214,255,.05));border-color:rgba(85,232,135,.38)}.task.done .check{color:var(--green)}.task:hover{border-color:rgba(79,214,255,.45);background:rgba(79,214,255,.055)}
+.task.done{background:linear-gradient(90deg,rgba(85,232,135,.14),rgba(79,214,255,.05));border-color:rgba(85,232,135,.38)}.task.done .check{color:var(--green)}.task:hover{border-color:rgba(79,214,255,.45);background:rgba(79,214,255,.055)}
 .points{color:var(--yellow);text-shadow:0 0 8px rgba(255,216,77,.25)}.weekend-indicator{background:rgba(255,157,77,.13);border-color:rgba(255,157,77,.48);color:#ffc48d}.light-day-banner{background:rgba(79,214,255,.11);border-color:rgba(79,214,255,.42);color:#9ce9ff}
 .game-timer-fill{background:linear-gradient(90deg,var(--pink),#b77cff)}.game-timer-btn{background:linear-gradient(135deg,var(--pink),#c36cff);color:#2a0d21}.adult-page-header{background:linear-gradient(135deg,rgba(79,214,255,.07),rgba(255,111,181,.05))}.adult-page-link{background:linear-gradient(135deg,rgba(79,214,255,.14),rgba(85,232,135,.12));border-color:rgba(79,214,255,.38)}
 .adult-page-shell{max-width:980px}.adult-card h2{color:var(--yellow)}.adult-card{position:relative}.adult-card:has(.adult-page-link){border-left:3px solid rgba(79,214,255,.5)}
 @media (prefers-reduced-motion:no-preference){.icon-btn,.adult-page-link,.task{transition:transform .15s ease,background .15s ease,border-color .15s ease,box-shadow .15s ease}.task:hover,.adult-page-link:hover{transform:translateY(-1px)}}
-@media(max-width:760px){.topbar{align-items:flex-start}.topbar-right{width:100%;flex-wrap:wrap}.daily-routine{gap:10px}}
+@media(max-width:760px){body{font-size:15px}.topbar{align-items:flex-start}.topbar-right{width:100%;flex-wrap:wrap}.daily-routine{gap:10px}.task{font-size:.94rem}}
