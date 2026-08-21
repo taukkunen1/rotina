@@ -6,7 +6,7 @@
 <script>
 (function(){'use strict';var migrationKey='hector_rotina_remote_storage_migrated_v1';var legacyKeys=['hector_rotina_config_v3','hector_rotina_state_v3'];try{if(localStorage.getItem(migrationKey)!=='done'){legacyKeys.forEach(function(key){localStorage.removeItem(key);});localStorage.setItem(migrationKey,'done');}}catch(e){console.warn('Legacy storage cleanup skipped',e);}})();
 </script>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><title>Rotina do Pacus</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="autonomy.css?v=20260821-2">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><title>Rotina do Pacus</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="theme.css?v=20260821-1"><link rel="stylesheet" href="autonomy.css?v=20260821-2">
 </head><body>
 <span class="points-delta" id="pointsDelta"></span><div class="mini-pacus" id="miniPacus"></div>
 <div class="overlay" id="evolutionCelebration" style="z-index:700; align-items:center;"><div class="celebration-card" id="celebrationCard"><div class="celebration-mascot" id="celebrationMascot"></div><div class="celebration-title">🎉 Pacus evoluiu! 🎉</div><div class="celebration-stage" id="celebrationStage"></div><button class="btn save" id="celebrationCloseBtn">continuar</button></div></div>
