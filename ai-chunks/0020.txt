@@ -1,4 +1,13 @@
-lyNewsDismissBtn').addEventListener('click', ()=>{
+.weeklyNewsSeen){ el.innerHTML=''; return; }
+
+  el.innerHTML = `
+    <div class="family-announcement">
+      <div class="title">🏆 Notícia da semana!</div>
+      <div class="msg">Você acertou a aposta com a Walda — respondeu certinho o que é ser uma <b>pessoa autêntica</b>! <b>+5 Pacus Points</b> de bônus! 🎉</div>
+      <button class="dismiss-btn" id="weeklyNewsDismissBtn">demais! 🌟</button>
+    </div>
+  `;
+  document.getElementById('weeklyNewsDismissBtn').addEventListener('click', ()=>{
     state.weeklyNewsSeen = true;
     saveState(state);
     renderWeeklyNewsAnnouncement();
@@ -193,10 +202,4 @@ function renderRewards(){
   const rEl = document.getElementById('rewards');
   rEl.innerHTML = '';
   CONFIG.rewards.forEach(r=>{
-    const cost = effectiveRewardCost(r);
-    const canAfford = state.totalPoints >= cost;
-    const redeemedToday = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
-    const atDailyLimit = r.maxPerDay != null && redeemedToday >= r.maxPerDay;
-    const capNote = r.maxPerDay != null ? `<span class="cap-note">${redeemedToday}/${r.maxPerDay} hoje</span>` : '';
-    const div = document.createElement('div');
-    div.className = 'reward';
+    const cost = eff

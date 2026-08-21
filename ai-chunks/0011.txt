@@ -32,9 +32,49 @@ function startTimeRemainingTicking(){
 
 function loadState(){
   let raw = null;
-  try{ raw = localStorage.getItem(STORAGE_STATE_KEY); }catch(e){}
-  let state = raw ? JSON.parse(raw) : null;
-  if(!state) state = { totalPoints:120, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveLastSyncISO:null, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, hairByDate:{} };
+
+  try{
+    raw = localStorage.getItem(STORAGE_STATE_KEY);
+  }catch(e){
+    console.warn('Não foi possível acessar o localStorage:', e);
+  }
+
+  let state = null;
+
+  try{
+    state = raw ? JSON.parse(raw) : null;
+  }catch(e){
+    console.warn('Dados locais corrompidos ou incompatíveis:', e);
+
+    // Remove apenas o estado problemático
+    try{
+      localStorage.removeItem(STORAGE_STATE_KEY);
+    }catch(err){}
+    
+    state = null;
+  }
+
+  if(!state){
+    state = {
+      totalPoints:120,
+      checkedToday:{},
+      lastDate:todayISO(),
+      log:[],
+      history:{},
+      lastSeenPetStage:0,
+      petCompletedDays:[],
+      petLastCompletionISO:null,
+      revision:0,
+      driveRevision:0,
+      driveLastSyncISO:null,
+      driveConflictCount:0,
+      lastBackupISO:null,
+      backupReminderDismissedFor:null,
+      driveFileId:null,
+      hairByDate:{}
+    };
+  }
+
   return reconcileState(state);
 }
 
@@ -179,14 +219,4 @@ function reconcileState(state){
   }
   if(!state.familyAnnouncementResetV4Applied){
     state.familyGameNightAnnouncementSeen = false;
-    state.familyAnnouncementResetV4Applied = true;
-  }
-  if(!state.dismissAllAnnouncementsV1Applied){
-    state.familyGameNightAnnouncementSeen = true;
-    state.weeklyNewsSeen = true;
-    state.dismissAllAnnouncementsV1Applied = true;
-  }
-  if(!state.waldaBetBonusApplied){
-    state.totalPoints = Math.max(0, Math.min(1000, (Number(state.totalPoints)||0) + 5));
-    if(!state.log) state.log = [];
-    state.log.unshift('🏆 +5 · acertou a aposta com a Walda 
+    state.familyA

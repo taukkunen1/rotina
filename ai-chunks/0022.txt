@@ -1,4 +1,12 @@
-.filter(s=>s==='done').length;
+heckedToday[id] = clickedStatus;
+    if(clickedStatus === 'done'){
+      totalDelta += addPoints(task.pts);
+      addLog(`+${task.pts} · ${task.txt}`);
+      fireConfetti(btn);
+      // salto pra Bebê na 1ª tarefa concluída de hoje (pedido pontual) —
+      // depois disso o crescimento normal (1 dia = 1 unidade) já cobre o
+      // resto do ciclo até 31/08 sem folga sobrando.
+      const doneCountToday = Object.values(state.checkedToday).filter(s=>s==='done').length;
       if(doneCountToday === 1 && !state.bebeBoostAug21Applied){
         state.petMaxDaysEquivalentEverSeen = Math.max(Number(state.petMaxDaysEquivalentEverSeen)||0, 14);
         state.bebeBoostAug21Applied = true;
@@ -171,11 +179,4 @@ function renderEditorBad(){
     const row = document.createElement('div');
     row.className = 'edit-row';
     row.innerHTML = `
-      <input type="text" value="${escapeAttr(h.txt)}" data-field="txt" placeholder="hábito (ex: brigou -10, ajudou +5)">
-      ${stepperHTML('pts', h.pts, true)}
-      <button class="del" title="remover">🗑</button>
-    `;
-    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ h.txt = e.target.value; });
-    wireStepper(row, h, 'pts', true);
-    row.querySelector('.del').addEventListener('click', ()=>{
-      draft.badHabits = draft.badHabits.filter(x=
+      <input type="text" value=

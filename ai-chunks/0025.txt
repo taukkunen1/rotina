@@ -1,4 +1,14 @@
- style="display:none;" class="drive-setup">
+adBtn">☁️⬇️ forçar carregar agora</button>
+    `;
+  }
+
+  el.innerHTML = `
+    <div class="drive-sync">
+      <h3>☁️ Sincronizado com Google Drive</h3>
+      <div class="hint">O Drive guarda os dados, o histórico e uma cópia diária. O app continua funcionando offline e sincroniza quando a conexão volta.</div>
+      <div class="status">${statusHtml}</div>
+      <div class="drive-sync-row">${actionsHtml}</div>
+      <div id="driveSetupInfo" style="display:none;" class="drive-setup">
         <b>Passo a passo:</b>
         <ol>
           <li>Acesse <code>script.google.com</code> → "Novo projeto".</li>

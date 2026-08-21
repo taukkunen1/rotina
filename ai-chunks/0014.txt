@@ -1,4 +1,14 @@
-— usada tanto ao abrir o app quanto
+toISOString();
+  const remoteConfig = sanitizeRemoteConfig(remote.config);
+  const localConfigValid = isValidPeriodsConfig(CONFIG);
+  const useRemoteConfig = remoteConfig && (!localConfigValid || localState.updatedAt < (remoteState.updatedAt||''));
+  return {
+    config: useRemoteConfig ? remoteConfig : (localConfigValid ? CONFIG : JSON.parse(JSON.stringify(DEFAULT_CONFIG))),
+    state: merged
+  };
+}
+
+// Busca e mescla os dados do Drive — usada tanto ao abrir o app quanto
 // na sincronização periódica de segurança (a cada 5 min). SEMPRE mescla
 // (nunca substitui de uma vez): mesmo quando o Drive parece "mais novo",
 // os dados locais podem ter progresso que o Drive ainda não tem (ex:
@@ -213,8 +223,4 @@ function renderGameTimer(){
     <div class="game-timer">
       <h3>🎮 Tempo de Jogo</h3>
       <div class="hint">Cota de ${CONFIG.screenDailyLimitHours || 2}h por dia.</div>
-      ${locked ? `<div class="game-timer-locked">🔒 Termine as tarefas da Manhã pra desbloquear</div>` : ''}
-      <div class="game-timer-used" id="gameTimerUsed">${remaining > 0 ? `<b>${formatMinSec(remaining)}</b> restantes hoje` : `<b>tempo de hoje acabou</b>`}</div>
-      <div class="game-timer-track"><div class="game-timer-fill ${used>=limit?'over-limit':''}" id="gameTimerBarFill" style="width:${pct}%"></div></div>
-      <button class="game-timer-btn ${running?'running':''}" id="gameTimerToggleBtn" ${locked?'disabled':''}>
-        ${r
+      ${locked ? `<div class="game-timer-locked">🔒 Termine as tarefas da Manhã pra desbloquear</div>` :

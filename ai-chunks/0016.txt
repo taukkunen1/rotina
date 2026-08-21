@@ -1,4 +1,14 @@
- const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+){
+  const cycle = getPetCycle();
+  const maxStage = CONFIG.pet.stages.length - 1;
+  const completed = new Set(Array.isArray(state.petCompletedDays) ? state.petCompletedDays : []);
+  const perfectBonus = new Set(Array.isArray(state.petPerfectBonusDays) ? state.petPerfectBonusDays : []);
+  const validDays = [];
+  let bonusDays = 0;
+  for(let i=0;i<cycle.totalDays;i++){
+    const d = new Date(cycle.start);
+    d.setDate(d.getDate()+i);
+    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
     if(completed.has(iso)) validDays.push(iso);
     if(perfectBonus.has(iso)) bonusDays++;
   }
@@ -132,8 +142,4 @@ function buildPacusSVG(stageFloat){
         ${legs}
         <ellipse cx="110" cy="${bodyY+bodyH+4}" rx="${18+growth*9}" ry="${7+growth*3}" fill="url(#${gid}-body)"/>
         <ellipse cx="110" cy="${bodyY}" rx="${bodyW}" ry="${bodyH}" fill="url(#${gid}-body)"/>
-        <ellipse cx="110" cy="${bodyY+8}" rx="${bodyW*.68}" ry="${bodyH*.52}" fill="#fff" opacity=".3"/>
-        ${gills}
-        <circle cx="110" cy="${faceY}" r="32" fill="url(#${gid}-body)"/>
-        <g class="pacus-eye" style="transform-origin:97px ${faceY-4}px;"><circle cx="97" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="98" cy="${faceY-5.5}" r="1.4" fill="#fff"/></g>
-        <g class="pacus-eye" style="transform-origin:123px ${faceY-4}px; animation-delay:.08s;"><circle cx="123" cy="${faceY-4}" r="
+        <ellipse cx="110" cy="${bodyY+8}" rx="${bodyW*.68}" ry="${bodyH*.52

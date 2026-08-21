@@ -1,4 +1,8 @@
-4.5" fill="#3a2430"/><circle cx="124" cy="${faceY-5.5}" r="1.4" fill="#fff"/></g>
+}" fill="#fff" opacity=".3"/>
+        ${gills}
+        <circle cx="110" cy="${faceY}" r="32" fill="url(#${gid}-body)"/>
+        <g class="pacus-eye" style="transform-origin:97px ${faceY-4}px;"><circle cx="97" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="98" cy="${faceY-5.5}" r="1.4" fill="#fff"/></g>
+        <g class="pacus-eye" style="transform-origin:123px ${faceY-4}px; animation-delay:.08s;"><circle cx="123" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="124" cy="${faceY-5.5}" r="1.4" fill="#fff"/></g>
         <path d="M96 ${faceY+12} Q110 ${faceY+18+growth*2} 124 ${faceY+12}" stroke="#b9607f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
         <circle cx="89" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/><circle cx="131" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/>
       </g>
@@ -185,18 +189,3 @@ function renderPet(){
     <div class="pet-milestones">${milestoneHtml}</div>
     <div class="pet-caption">${caption}</div>
     <div id="petEvolvedBanner"></div>
-    <div class="streak-strip">${buildStreakStrip()}</div>
-  `;
-
-  wirePacusInteraction();
-  renderPacusDialogue();
-  startPacusDialogueTicking();
-
-  if(grewNow){
-    const mascotEl = el.querySelector('.pet-mascot');
-    if(mascotEl){
-      mascotEl.classList.remove('pet-growth-burst');
-      void mascotEl.offsetWidth;
-      mascotEl.classList.add('pet-growth-burst');
-      if(stage < 9){ mascotEl.classList.add('pet-hatch-crack'); }
-    }

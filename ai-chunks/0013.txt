@@ -1,4 +1,13 @@
-){
+ applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    return applicable.length > 0 && applicable.every(t=>isCountedDone(state.checkedToday[t.id]));
+  }
+  return !!(state.history[dateISO] && state.history[dateISO].perfect);
+}
+
+// Crescimento não exige dia perfeito, só engajamento real. isDayPerfect
+// continua controlando o bônus de tela e o selo "dia perfeito".
+function hasDayProgress(dateISO){
+  if(dateISO === todayISO()){
     const tasks = allTasks(dateISO);
     const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
     return applicable.some(t=>isCountedDone(state.checkedToday[t.id]));
@@ -178,14 +187,4 @@ function mergeRemoteData(remote){
   merged.lastSeenPetStage = Math.max(Number(remoteState.lastSeenPetStage)||0, Number(localState.lastSeenPetStage)||0);
   merged.log = [...(localState.log||[]), ...(remoteState.log||[])].slice(0,30);
   merged.revision = Math.max(Number(localState.revision)||0, Number(remoteState.revision)||0)+1;
-  merged.updatedAt = new Date().toISOString();
-  const remoteConfig = sanitizeRemoteConfig(remote.config);
-  const localConfigValid = isValidPeriodsConfig(CONFIG);
-  const useRemoteConfig = remoteConfig && (!localConfigValid || localState.updatedAt < (remoteState.updatedAt||''));
-  return {
-    config: useRemoteConfig ? remoteConfig : (localConfigValid ? CONFIG : JSON.parse(JSON.stringify(DEFAULT_CONFIG))),
-    state: merged
-  };
-}
-
-// Busca e mescla os dados do Drive 
+  merged.updatedAt = new Date().

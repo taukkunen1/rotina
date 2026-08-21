@@ -1,4 +1,11 @@
->x!==h);
+"${escapeAttr(h.txt)}" data-field="txt" placeholder="hábito (ex: brigou -10, ajudou +5)">
+      ${stepperHTML('pts', h.pts, true)}
+      <button class="del" title="remover">🗑</button>
+    `;
+    row.querySelector('[data-field=txt]').addEventListener('input', e=>{ h.txt = e.target.value; });
+    wireStepper(row, h, 'pts', true);
+    row.querySelector('.del').addEventListener('click', ()=>{
+      draft.badHabits = draft.badHabits.filter(x=>x!==h);
       renderEditorBad();
     });
     el.appendChild(row);
@@ -180,15 +187,4 @@ document.getElementById('adultTestBtn').addEventListener('click', ()=>{
   renderTestPanel();
 });
 document.getElementById('closeBtn').addEventListener('click', closeEditor);
-document.getElementById('cancelBtn').addEventListener('click', closeEditor);
-document.getElementById('overlay').addEventListener('click', e=>{
-  if(e.target.id === 'overlay') closeEditor();
-});
-
-document.getElementById('saveBtn').addEventListener('click', ()=>{
-  // limpa linhas vazias (sem nome) antes de salvar
-  ['manha','tarde','noite'].forEach(k=>{
-    draft.periods[k].tasks = draft.periods[k].tasks.filter(t=>t.txt.trim() !== '');
-  });
-  if(draft.periodsWeekend){
-    ['
+document.getElementById('cancelBtn').a

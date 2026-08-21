@@ -1,4 +1,18 @@
+    <div class="streak-strip">${buildStreakStrip()}</div>
+  `;
 
+  wirePacusInteraction();
+  renderPacusDialogue();
+  startPacusDialogueTicking();
+
+  if(grewNow){
+    const mascotEl = el.querySelector('.pet-mascot');
+    if(mascotEl){
+      mascotEl.classList.remove('pet-growth-burst');
+      void mascotEl.offsetWidth;
+      mascotEl.classList.add('pet-growth-burst');
+      if(stage < 9){ mascotEl.classList.add('pet-hatch-crack'); }
+    }
   }
 
   if(stage > state.lastSeenPetStage){
@@ -171,10 +185,4 @@ function render(){
       li.className = 'task'
         + (status === 'done' ? ' done' : '')
         + (status === 'na' ? ' na' : '')
-        + (status === 'x' ? ' notdone' : '')
-        + (status === 'help' ? ' helped' : '')
-        + (isSuggested ? ' suggested' : '');
-      li.innerHTML = `
-        <span class="task-reorder">
-          <button type="button" class="mini-reorder-btn" data-dir="up" data-period="${key}" data-task="${task.id}" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
-          <button type="button" class="mini-reorder-btn" data-dir="down" dat
+     

@@ -1,4 +1,8 @@
-unning ? '⏸️ Parar de jogar' : '▶️ Começar a jogar'}
+ ''}
+      <div class="game-timer-used" id="gameTimerUsed">${remaining > 0 ? `<b>${formatMinSec(remaining)}</b> restantes hoje` : `<b>tempo de hoje acabou</b>`}</div>
+      <div class="game-timer-track"><div class="game-timer-fill ${used>=limit?'over-limit':''}" id="gameTimerBarFill" style="width:${pct}%"></div></div>
+      <button class="game-timer-btn ${running?'running':''}" id="gameTimerToggleBtn" ${locked?'disabled':''}>
+        ${running ? '⏸️ Parar de jogar' : '▶️ Começar a jogar'}
       </button>
       ${adultUnlocked ? `<button class="icon-btn" id="gameTimerAdjustBtn" style="margin-top:8px;" title="Ajuste manual do tempo de hoje">⚙️ ajustar tempo de hoje</button>` : ''}
     </div>
@@ -203,14 +207,4 @@ function getPetCycle(){
   return { startISO, endISO, start, end, totalDays };
 }
 
-function computePetStage(){
-  const cycle = getPetCycle();
-  const maxStage = CONFIG.pet.stages.length - 1;
-  const completed = new Set(Array.isArray(state.petCompletedDays) ? state.petCompletedDays : []);
-  const perfectBonus = new Set(Array.isArray(state.petPerfectBonusDays) ? state.petPerfectBonusDays : []);
-  const validDays = [];
-  let bonusDays = 0;
-  for(let i=0;i<cycle.totalDays;i++){
-    const d = new Date(cycle.start);
-    d.setDate(d.getDate()+i);
-   
+function computePetStage(

@@ -1,4 +1,14 @@
-(pessoa autêntica)');
+nnouncementResetV4Applied = true;
+  }
+  if(!state.dismissAllAnnouncementsV1Applied){
+    state.familyGameNightAnnouncementSeen = true;
+    state.weeklyNewsSeen = true;
+    state.dismissAllAnnouncementsV1Applied = true;
+  }
+  if(!state.waldaBetBonusApplied){
+    state.totalPoints = Math.max(0, Math.min(1000, (Number(state.totalPoints)||0) + 5));
+    if(!state.log) state.log = [];
+    state.log.unshift('🏆 +5 · acertou a aposta com a Walda (pessoa autêntica)');
     state.waldaBetBonusApplied = true;
   }
   if(!state.celebrationReplayV1Applied){
@@ -167,13 +177,4 @@ function registerPetPerfectBonus(dateISO){
 function isDayPerfect(dateISO){
   if(dateISO === todayISO()){
     const tasks = allTasks(dateISO);
-    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    return applicable.length > 0 && applicable.every(t=>isCountedDone(state.checkedToday[t.id]));
-  }
-  return !!(state.history[dateISO] && state.history[dateISO].perfect);
-}
-
-// Crescimento não exige dia perfeito, só engajamento real. isDayPerfect
-// continua controlando o bônus de tela e o selo "dia perfeito".
-function hasDayProgress(dateISO){
-  if(dateISO === todayISO()
+    const
