@@ -22,25 +22,20 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
           p = Path('index.html')
           text = p.read_text(encoding='utf-8')
 
-          old = re.compile(r'function computePetStage\(\)\{.*?\n\}', re.S)
           new = '''function computePetStage(){
-  // Crescimento é determinado pelo calendário real, não pelo número de
-  // tarefas históricas. A escala visual continua sendo 0..23.
+  // Crescimento determinado pelo calendário real, na escala visual 0..23.
   const maxStage = 23;
   const iso = todayISO();
   const startISO = "2026-08-09";
   const babyISO = "2026-08-21";
   const endISO = "2026-08-31";
   let stageFloat;
-
   if(iso <= startISO){
     stageFloat = 0;
   } else if(iso < babyISO){
-    // 09/08 -> Ovo (0) e 21/08 -> Bebê (14).
     const start = new Date(startISO+"T00:00:00");
     const baby = new Date(babyISO+"T00:00:00");
     const current = new Date(iso+"T00:00:00");
@@ -48,37 +43,37 @@ jobs:
   } else if(iso >= endISO){
     stageFloat = 23;
   } else {
-    // 21/08 -> Bebê (14). Os 10 intervalos até 31/08 levam ao Adulto (23).
     const baby = new Date(babyISO+"T00:00:00");
     const end = new Date(endISO+"T00:00:00");
     const current = new Date(iso+"T00:00:00");
     stageFloat = 14 + 9 * (current-baby)/(end-baby);
   }
-
   stageFloat = Math.max(0, Math.min(maxStage, stageFloat));
   const daysEquivalent = Math.round(stageFloat);
   const stage = Math.floor(stageFloat + 1e-9);
-  return {
-    stage,
-    stageFloat,
-    unitsCompleted: daysEquivalent,
-    totalUnits: maxStage,
-    maxStage,
-    daysEquivalent,
-    cycleDays: maxStage,
-    todayPerfect: false,
-    canGrowToday: false,
-    completedDays: []
-  };
+  return { stage, stageFloat, unitsCompleted:daysEquivalent, totalUnits:maxStage,
+    maxStage, daysEquivalent, cycleDays:maxStage, todayPerfect:false,
+    canGrowToday:false, completedDays:[] };
 }'''
-          if 'const babyISO = "2026-08-21";' not in text:
-              text, count = old.subn(new, text, count=1)
-              if count != 1:
-                  raise SystemExit('computePetStage não encontrado.')
 
-          # Remove a trava antiga que preservava 17/23 ou qualquer outro valor
-          # calculado antes do calendário real.
-          text = re.sub(r'\n\s*// trava de segurança: o progresso do Pacus nunca pode andar pra trás.*?const completedDays = Math\.max\(rawCompletedDays, Number\(state\.petMaxDaysEquivalentEverSeen\) \|\| 0\);', '', text, flags=re.S)
+          if 'const babyISO = "2026-08-21";' not in text:
+              marker = 'function computePetStage(){'
+              start = text.find(marker)
+              if start < 0:
+                  raise SystemExit('computePetStage não encontrado.')
+              brace = text.find('{', start)
+              depth = 0
+              end = None
+              for i in range(brace, len(text)):
+                  if text[i] == '{': depth += 1
+                  elif text[i] == '}':
+                      depth -= 1
+                      if depth == 0:
+                          end = i + 1
+                          break
+              if end is None:
+                  raise SystemExit('Fim de computePetStage não encontrado.')
+              text = text[:start] + new + text[end:]
 
           p.write_text(text, encoding='utf-8')
           print('Renderizador do PACUS alinhado ao calendário 09/08-31/08.')
