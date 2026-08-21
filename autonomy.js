@@ -45,12 +45,17 @@
     host.innerHTML=`
       <div class="autonomy-heading"><span>🌱</span><span>Autonomia e coragem</span></div>
       <article class="autonomy-card" id="courage-card"></article>
-      <article class="board-reminder" aria-label="Lembretes da lousa">
-        <div class="board-reminder-title">🧑‍🎨 Lembretes da lousa</div>
-        <p>🧩 <strong>Problema meu, solução minha:</strong> anote um pequeno problema de hoje e pense em opções antes de pedir que um adulto resolva.</p>
-        <p>🙂 <strong>Como estou me sentindo?</strong> desenhe um rosto na lousa mostrando como você está hoje.</p>
-        <div class="board-reminder-note">Sem pontos e sem cobrança automática. É uma prática diária na lousa.</div>
-      </article>`;
+      <aside class="board-reminder" aria-label="Lembrete diário das atividades da lousa">
+        <div class="board-reminder-head">
+          <span class="board-reminder-bell">🔔</span>
+          <div><div class="board-reminder-title">Lembrete da lousa</div><div class="board-reminder-subtitle">Antes de terminar o dia, lembre destas duas atividades.</div></div>
+        </div>
+        <div class="board-reminder-list">
+          <div class="board-reminder-item"><span class="board-reminder-number">1</span><div><strong>Problema meu, solução minha</strong><span>Anote um pequeno problema e pense em opções antes de pedir que um adulto resolva.</span></div></div>
+          <div class="board-reminder-item"><span class="board-reminder-number">2</span><div><strong>Como estou me sentindo?</strong><span>Desenhe na lousa um rosto mostrando como você está se sentindo hoje.</span></div></div>
+        </div>
+        <div class="board-reminder-note">📝 As duas atividades são feitas na lousa. Sem pontos e sem registro no site.</div>
+      </aside>`;
     host.onclick=event=>{
       const button=event.target.closest('button[data-autonomy-action]');
       if(!button) return;
