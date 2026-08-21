@@ -3,9 +3,9 @@ name: Validate site before publish
 on:
   push:
     branches: [main]
-    paths: ['index.html','adultos.html','historico.html','*.js','*.css','.github/workflows/validate-site.yml']
+    paths: ['index.html','adultos.html','historico.html','*.js','*.css','apps-script/Code.gs','.github/workflows/validate-site.yml']
   pull_request:
-    paths: ['index.html','adultos.html','historico.html','*.js','*.css']
+    paths: ['index.html','adultos.html','historico.html','*.js','*.css','apps-script/Code.gs']
 
 permissions:
   contents: read
@@ -31,7 +31,7 @@ jobs:
           print('HTML: OK')
       - name: Validate JavaScript syntax
         run: |
-          for file in storage.js autonomy.js app-ui.js adults.js history.js; do node --check "$file"; done
+          for file in storage.js autonomy.js app-ui.js adults.js history.js apps-script/Code.gs; do node --check "$file"; done
           python - <<'PY'
           from pathlib import Path
           import re, subprocess, tempfile
@@ -48,7 +48,7 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
-          required=['styles.css','storage.js','autonomy.js','app-ui.js','ui.css','adults.js','history.js']
+          required=['styles.css','storage.js','autonomy.js','app-ui.js','ui.css','adults.js','history.js','apps-script/Code.gs']
           missing=[p for p in required if not Path(p).is_file()]
           if missing: raise SystemExit('Missing modules: '+', '.join(missing))
           print('Modules: OK')
