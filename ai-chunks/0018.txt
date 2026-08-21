@@ -1,4 +1,28 @@
-tBoundingClientRect: ()=>({left:window.innerWidth*0.8, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 350);
+
+  }
+
+  if(stage > state.lastSeenPetStage){
+    document.getElementById('petEvolvedBanner').innerHTML = `<div class="pet-evolved-banner">Pacus avançou para <b>${stageInfo.label}</b>.</div>`;
+    state.lastSeenPetStage = stage;
+    saveState(state);
+    showEvolutionCelebration(stageInfo, stage, maxStage);
+  }
+}
+
+function showEvolutionCelebration(stageInfo, stage, maxStage){
+  const overlay = document.getElementById('evolutionCelebration');
+  const mascotEl = document.getElementById('celebrationMascot');
+  mascotEl.innerHTML = buildPetVisual(stage);
+  document.getElementById('celebrationStage').innerHTML =
+    stage === maxStage
+      ? `O Pacus chegou em <b>${stageInfo.label}</b> — crescimento completo! 🏆`
+      : `O Pacus virou <b>${stageInfo.label}</b>!`;
+  overlay.classList.add('open');
+
+  // confete espalhado pela tela toda, não só perto do Pacus
+  fireConfetti(null, 40);
+  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.2, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 200);
+  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.8, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 350);
 
   const autoClose = setTimeout(closeEvolutionCelebration, 4500);
   overlay.dataset.autoCloseId = autoClose;
@@ -153,12 +177,4 @@ function render(){
       li.innerHTML = `
         <span class="task-reorder">
           <button type="button" class="mini-reorder-btn" data-dir="up" data-period="${key}" data-task="${task.id}" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
-          <button type="button" class="mini-reorder-btn" data-dir="down" data-period="${key}" data-task="${task.id}" ${idx===orderedTasks.length-1?'disabled':''} title="Mover pra baixo">▼</button>
-        </span>
-        <span class="mark-group" data-id="${task.id}">
-          <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
-          <button type="button" class="mark-btn mark-help ${status==='help'?'active':''}" data-status="help" title="Pedi ajuda / fizemos junto">🤝</button>
-          <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
-          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="${lightDay ? 'Não feito (dia leve, sem perder ponto)' : 'Não feito, perde metade dos pontos'}">✕</button>
-        </span>
-        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}${task.tier ? `<span class="tier-badge" title="${tierTitle[task.tier]||''}">${tierBadge[task.tier]||''}</span>` : ''}<span class="
+          <button type="button" class="mini-reorder-btn" data-dir="down" dat

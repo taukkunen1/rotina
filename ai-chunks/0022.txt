@@ -1,4 +1,44 @@
-addPoints(amount);
+.filter(s=>s==='done').length;
+      if(doneCountToday === 1 && !state.bebeBoostAug21Applied){
+        state.petMaxDaysEquivalentEverSeen = Math.max(Number(state.petMaxDaysEquivalentEverSeen)||0, 14);
+        state.bebeBoostAug21Applied = true;
+        addLog(`🎉 ${CONFIG.pet.name} deu um salto e virou Bebê!`);
+      }
+    } else if(clickedStatus === 'help'){
+      const helpPts = taskHelpPoints(task);
+      totalDelta += addPoints(helpPts);
+      state.helpRequestsCount = (Number(state.helpRequestsCount)||0) + 1;
+      addLog(`🤝 +${helpPts} · pediu ajuda em: ${task.txt} — isso é uma habilidade, não uma falha!`);
+      fireConfetti(btn, 8);
+    } else if(clickedStatus === 'na'){
+      addLog(`n/a · ${task.txt}`);
+    } else if(lightDay){
+      addLog(`✕ não realizado · ${task.txt} (dia leve, sem perder ponto)`);
+    } else {
+      const penalty = taskNotDonePenalty(task);
+      totalDelta += addPoints(-penalty);
+      addLog(`✕ não realizado · ${task.txt} (−${penalty})`);
+    }
+  }
+
+  const completedNow = syncPetCompletionFromDay(todayISO());
+  if(completedNow){
+    addLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
+  }
+  saveState(state);
+  bumpTotal(totalDelta, btn);
+  render();
+}
+
+document.getElementById('hairWashedBtn').addEventListener('click', ()=> setHairStatus('washed'));
+document.getElementById('hairNotWashedBtn').addEventListener('click', ()=> setHairStatus('not-washed'));
+
+document.getElementById('addPointsBtn').addEventListener('click', ()=>{
+  const raw = prompt('Quantos Pacus Points adicionar?', '5');
+  if(raw === null) return;
+  const amount = parseInt(raw, 10);
+  if(!amount || amount === 0) return;
+  const delta = addPoints(amount);
   addLog(`${amount>0?'+':''}${amount} · ajuste manual`, true);
   saveState(state);
   bumpTotal(delta);
@@ -138,40 +178,4 @@ function renderEditorBad(){
     row.querySelector('[data-field=txt]').addEventListener('input', e=>{ h.txt = e.target.value; });
     wireStepper(row, h, 'pts', true);
     row.querySelector('.del').addEventListener('click', ()=>{
-      draft.badHabits = draft.badHabits.filter(x=>x!==h);
-      renderEditorBad();
-    });
-    el.appendChild(row);
-  });
-}
-
-function renderEditorSchedule(){
-  const el = document.getElementById('editSchedule');
-  el.innerHTML = '';
-  const dayOrder = ['seg','ter','qua','qui','sex','sab','dom'];
-  const dayShort = {seg:'S',ter:'T',qua:'Q',qui:'Q',sex:'S',sab:'S',dom:'D'};
-  const periodLabels = {manha:'Manhã', tarde:'Tarde', noite:'Noite'};
-  draft.schedule.forEach(item=>{
-    if(item.pts == null) item.pts = 3;
-    if(!item.period) item.period = 'tarde';
-    const row = document.createElement('div');
-    row.className = 'edit-row-task';
-    const dayChips = dayOrder.map(d=>
-      `<button type="button" class="day-chip ${item.days.includes(d)?'active':''}" data-day="${d}" title="${WEEKDAY_LABELS[d]}">${dayShort[d]}</button>`
-    ).join('');
-    const periodOptions = Object.entries(periodLabels).map(([k,l])=>
-      `<option value="${k}" ${item.period===k?'selected':''}>${l}</option>`
-    ).join('');
-    row.innerHTML = `
-      <div class="edit-row-main">
-        <input type="text" value="${escapeAttr(item.label)}" data-field="label" placeholder="nome (ex: Inglês)">
-        <button class="del" title="remover">🗑</button>
-      </div>
-      <div class="day-chip-row">${dayChips}</div>
-      <div class="edit-row-main">
-        <input type="time" value="${item.start}" data-field="start" style="flex:1;">
-        <span style="color:var(--chalk-dim); font-size:.8rem;">até</span>
-        <input type="time" value="${item.end}" data-field="end" style="flex:1;">
-      </div>
-      <div class="edit-row-main">
-        <select data-field="period" style="flex:1; background:rgba(255,255,255,.05); bor
+      draft.badHabits = draft.badHabits.filter(x=

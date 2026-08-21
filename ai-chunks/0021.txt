@@ -1,4 +1,27 @@
-pTotal(delta, evt.currentTarget);
+    div.innerHTML = `
+      <div class="name">${r.txt}</div>
+      <span class="cost">${cost} PP</span>
+      ${capNote}
+      <button ${(canAfford && !atDailyLimit) ? '' : 'disabled'}>${atDailyLimit ? 'Limite hoje' : 'Resgatar'}</button>
+    `;
+    div.querySelector('button').addEventListener('click', (evt)=>{
+      if(state.totalPoints < cost) return;
+      const redeemed = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
+      if(r.maxPerDay != null && redeemed >= r.maxPerDay) return;
+
+      const delta = addPoints(-cost);
+      addLog(`🎁 Resgatou: ${r.txt} (−${cost})`);
+      if(r.grantsHours){
+        addGameTimerBonusHours(r.grantsHours);
+        addLog(`🎮 +${r.grantsHours}h de jogo hoje (bônus da recompensa)`);
+      }
+      if(!state.gameTimer.redemptions) state.gameTimer.redemptions = {};
+      state.gameTimer.redemptions[r.id] = redeemed + 1;
+      if(!state.lifetimeRedemptions) state.lifetimeRedemptions = {};
+      state.lifetimeRedemptions[r.id] = (state.lifetimeRedemptions[r.id] || 0) + 1;
+
+      saveState(state);
+      bumpTotal(delta, evt.currentTarget);
       renderRewards();
       renderLog();
       renderGameTimer();
@@ -155,38 +178,7 @@ function onMarkClick(e){
       totalDelta += addPoints(task.pts);
       addLog(`+${task.pts} · ${task.txt}`);
       fireConfetti(btn);
-    } else if(clickedStatus === 'help'){
-      const helpPts = taskHelpPoints(task);
-      totalDelta += addPoints(helpPts);
-      state.helpRequestsCount = (Number(state.helpRequestsCount)||0) + 1;
-      addLog(`🤝 +${helpPts} · pediu ajuda em: ${task.txt} — isso é uma habilidade, não uma falha!`);
-      fireConfetti(btn, 8);
-    } else if(clickedStatus === 'na'){
-      addLog(`n/a · ${task.txt}`);
-    } else if(lightDay){
-      addLog(`✕ não realizado · ${task.txt} (dia leve, sem perder ponto)`);
-    } else {
-      const penalty = taskNotDonePenalty(task);
-      totalDelta += addPoints(-penalty);
-      addLog(`✕ não realizado · ${task.txt} (−${penalty})`);
-    }
-  }
-
-  const completedNow = syncPetCompletionFromDay(todayISO());
-  if(completedNow){
-    addLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
-  }
-  saveState(state);
-  bumpTotal(totalDelta, btn);
-  render();
-}
-
-document.getElementById('hairWashedBtn').addEventListener('click', ()=> setHairStatus('washed'));
-document.getElementById('hairNotWashedBtn').addEventListener('click', ()=> setHairStatus('not-washed'));
-
-document.getElementById('addPointsBtn').addEventListener('click', ()=>{
-  const raw = prompt('Quantos Pacus Points adicionar?', '5');
-  if(raw === null) return;
-  const amount = parseInt(raw, 10);
-  if(!amount || amount === 0) return;
-  const delta = 
+      // salto pra Bebê na 1ª tarefa concluída de hoje (pedido pontual) —
+      // depois disso o crescimento normal (1 dia = 1 unidade) já cobre o
+      // resto do ciclo até 31/08 sem folga sobrando.
+      const doneCountToday = Object.values(state.checkedToday)

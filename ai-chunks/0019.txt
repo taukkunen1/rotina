@@ -1,4 +1,12 @@
-task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
+a-period="${key}" data-task="${task.id}" ${idx===orderedTasks.length-1?'disabled':''} title="Mover pra baixo">▼</button>
+        </span>
+        <span class="mark-group" data-id="${task.id}">
+          <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
+          <button type="button" class="mark-btn mark-help ${status==='help'?'active':''}" data-status="help" title="Pedi ajuda / fizemos junto">🤝</button>
+          <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
+          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="${lightDay ? 'Não feito (dia leve, sem perder ponto)' : 'Não feito, perde metade dos pontos'}">✕</button>
+        </span>
+        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}${task.tier ? `<span class="tier-badge" title="${tierTitle[task.tier]||''}">${tierBadge[task.tier]||''}</span>` : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
         <span class="pts">${status==='na' ? 'n/a' : status==='help' ? '+'+taskHelpPoints(task) : status==='x' ? (lightDay ? 'dia leve' : '−'+taskNotDonePenalty(task)) : '+'+task.pts}</span>
       `;
       ul.appendChild(li);
@@ -186,36 +194,4 @@ function renderWeeklyNewsAnnouncement(){
       <button class="dismiss-btn" id="weeklyNewsDismissBtn">demais! 🌟</button>
     </div>
   `;
-  document.getElementById('weeklyNewsDismissBtn').addEventListener('click', ()=>{
-    state.weeklyNewsSeen = true;
-    saveState(state);
-    renderWeeklyNewsAnnouncement();
-  });
-}
-
-function renderBackupReminder(){
-  const el = document.getElementById('backupReminder');
-  if(!el) return;
-
-  const today = todayISO();
-  const daysSinceBackup = state.lastBackupISO ? daysBetween(state.lastBackupISO, today) : Infinity;
-  const dismissed = state.backupReminderDismissedFor === today;
-
-  const shouldShow = daysSinceBackup >= 7 && !dismissed;
-
-  if(!shouldShow){ el.innerHTML=''; return; }
-
-  const msg = state.lastBackupISO
-    ? `Já faz ${daysSinceBackup} dias desde o último backup. Que tal exportar de novo?`
-    : `Vocês ainda não fizeram nenhum backup. Vale exportar um agora pra não perder o progresso.`;
-
-  el.innerHTML = `
-    <div class="backup-reminder">
-      <span>💾 ${msg}</span>
-      <span>
-        <button id="backupReminderExportBtn">exportar agora</button>
-        <button class="dismiss" id="backupReminderDismissBtn">lembrar depois</button>
-      </span>
-    </div>
-  `;
-  document.getElem
+  document.getElementById('week

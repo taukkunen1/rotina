@@ -1,4 +1,25 @@
-       state.driveRevision = Math.max(remoteRevision, localRevision);
+— usada tanto ao abrir o app quanto
+// na sincronização periódica de segurança (a cada 5 min). SEMPRE mescla
+// (nunca substitui de uma vez): mesmo quando o Drive parece "mais novo",
+// os dados locais podem ter progresso que o Drive ainda não tem (ex:
+// uma aba antiga sincronizando antes). mergeRemoteData usa união/máximo
+// em tudo que é progresso acumulado, então nunca perde o que já foi
+// conquistado.
+async function pullAndMergeFromDrive(){
+  if(!APPS_SCRIPT_URL) return;
+  suppressAutoPush = true;
+  try{
+    const res = await fetch(DATA_ENDPOINT, {method:'GET', cache:'no-store'});
+    if(res.ok){
+      const backup = await res.json();
+      if(backup && backup.config && backup.state){
+        const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
+        const localRevision = Number(state.driveRevision)||0;
+        if(remoteRevision !== localRevision || JSON.stringify(backup.config) !== JSON.stringify(CONFIG)){
+          const merged = mergeRemoteData(backup);
+          CONFIG = merged.config;
+          state = merged.state;
+          state.driveRevision = Math.max(remoteRevision, localRevision);
           state.driveLastSyncISO = todayISO();
           saveConfig(CONFIG);
           saveState(state);
@@ -196,25 +217,4 @@ function renderGameTimer(){
       <div class="game-timer-used" id="gameTimerUsed">${remaining > 0 ? `<b>${formatMinSec(remaining)}</b> restantes hoje` : `<b>tempo de hoje acabou</b>`}</div>
       <div class="game-timer-track"><div class="game-timer-fill ${used>=limit?'over-limit':''}" id="gameTimerBarFill" style="width:${pct}%"></div></div>
       <button class="game-timer-btn ${running?'running':''}" id="gameTimerToggleBtn" ${locked?'disabled':''}>
-        ${running ? '⏸️ Parar de jogar' : '▶️ Começar a jogar'}
-      </button>
-      ${adultUnlocked ? `<button class="icon-btn" id="gameTimerAdjustBtn" style="margin-top:8px;" title="Ajuste manual do tempo de hoje">⚙️ ajustar tempo de hoje</button>` : ''}
-    </div>
-  `;
-  document.getElementById('gameTimerToggleBtn').addEventListener('click', ()=>{
-    if(gameTimerIsRunning()) stopGameTimer(); else startGameTimer();
-  });
-
-  const adjustBtn = document.getElementById('gameTimerAdjustBtn');
-  if(adjustBtn){
-    adjustBtn.addEventListener('click', ()=>{
-      const currentRemainingMin = Math.round(remaining/60);
-      const raw = prompt('Quantos minutos você quer que sobrem hoje?', String(Math.max(0, currentRemainingMin)));
-      if(raw === null) return;
-      const targetMin = parseInt(raw, 10);
-      if(isNaN(targetMin) || targetMin < 0) return;
-      const deltaSeconds = (targetMin*60) - remaining;
-      addGameTimerBonusHours(deltaSeconds/3600);
-      addLog(`⚙️ tempo de hoje ajustado pra ${targetMin} min restantes`, true);
-      saveState(state);
-      renderGameTim
+        ${r

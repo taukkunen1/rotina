@@ -1,4 +1,32 @@
-itle">🌟 Coisas que você conseguiu hoje</div>
+', (evt)=>{
+    const delta = addPoints(1);
+    addLog(`⭐ +1 · Missão de recuperação: ${mission}`);
+    state.recoveryMissionDone = { date: todayISO(), mission };
+    saveState(state);
+    bumpTotal(delta, evt.currentTarget);
+    fireConfetti(evt.currentTarget, 16);
+    render();
+  });
+}
+
+// 🌟 Vitórias invisíveis — mostra o que já foi conquistado hoje, mesmo
+// que o dia não tenha sido perfeito.
+function renderInvisibleWinsCard(){
+  const el = document.getElementById('invisibleWinsCard');
+  if(!el) return;
+  const tasks = allTasks(todayISO());
+  const doneTasks = tasks.filter(t => isCountedDone(state.checkedToday[t.id]));
+  const hasNotDone = Object.values(state.checkedToday).includes('x');
+  const recovered = state.freshStartActiveDate === todayISO();
+
+  if(doneTasks.length === 0){ el.innerHTML = ''; return; }
+
+  const items = doneTasks.slice(0, 6).map(t => `<li>${taskIcon(t.txt)} ${t.txt}</li>`);
+  if(hasNotDone && recovered) items.push('<li>🌱 Voltou depois de um momento difícil</li>');
+
+  el.innerHTML = `
+    <div class="wins-card">
+      <div class="wins-title">🌟 Coisas que você conseguiu hoje</div>
       <ul class="wins-list">${items.join('')}</ul>
     </div>
   `;
@@ -181,34 +209,4 @@ function fixFamilyGameNightV3(cfg){
 function fixFamilyGameNightV4(cfg){
   if(!cfg || cfg.familyGameNightV4Applied) return cfg;
   if(Array.isArray(cfg.schedule)){
-    const item = cfg.schedule.find(s=>s.id === 'sc4');
-    if(item){
-      item.period = "noite";
-      item.start = "21:00";
-      item.end = "23:00";
-    }
-  }
-  cfg.familyGameNightV4Applied = true;
-  return cfg;
-}
-
-// Recompensa: Passeio Especial (ele escolhe).
-function addOutingRewardV1(cfg){
-  if(!cfg || cfg.outingRewardV1Applied) return cfg;
-  if(!Array.isArray(cfg.rewards)) cfg.rewards = [];
-  if(!cfg.rewards.some(r=>r.id === 'r3')){
-    cfg.rewards.push({ id:"r3", txt:"Passeio Especial (você escolhe)", cost:500 });
-  }
-  cfg.outingRewardV1Applied = true;
-  return cfg;
-}
-
-// "Arrumar a bagunça" era vaga — quebrada em 5 tarefas pequenas e
-// concretas (começo/fim claros): cartas, carrinhos, bolinhas, caixas,
-// e conferência final da sala.
-function splitBagunçaV1(cfg){
-  if(!cfg || cfg.splitBagunçaV1Applied) return cfg;
-  const newTasks = [
-    { id:"n5_cartas", txt:"Guardar as cartas de bafo", pts:1, fullPenalty:true, sub:"na caixinha delas" },
-    { id:"n5_carrinhos", txt:"Guardar os carrinhos", pts:1, fullPenalty:true, sub:"na caixa/prateleira" },
-    { id:"n5_bolinhas", txt:"Guardar as bolin
+    const item = cfg.schedule.find(s=>s.id

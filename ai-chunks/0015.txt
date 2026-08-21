@@ -1,4 +1,25 @@
-er();
+unning ? '⏸️ Parar de jogar' : '▶️ Começar a jogar'}
+      </button>
+      ${adultUnlocked ? `<button class="icon-btn" id="gameTimerAdjustBtn" style="margin-top:8px;" title="Ajuste manual do tempo de hoje">⚙️ ajustar tempo de hoje</button>` : ''}
+    </div>
+  `;
+  document.getElementById('gameTimerToggleBtn').addEventListener('click', ()=>{
+    if(gameTimerIsRunning()) stopGameTimer(); else startGameTimer();
+  });
+
+  const adjustBtn = document.getElementById('gameTimerAdjustBtn');
+  if(adjustBtn){
+    adjustBtn.addEventListener('click', ()=>{
+      const currentRemainingMin = Math.round(remaining/60);
+      const raw = prompt('Quantos minutos você quer que sobrem hoje?', String(Math.max(0, currentRemainingMin)));
+      if(raw === null) return;
+      const targetMin = parseInt(raw, 10);
+      if(isNaN(targetMin) || targetMin < 0) return;
+      const deltaSeconds = (targetMin*60) - remaining;
+      addGameTimerBonusHours(deltaSeconds/3600);
+      addLog(`⚙️ tempo de hoje ajustado pra ${targetMin} min restantes`, true);
+      saveState(state);
+      renderGameTimer();
     });
   }
 
@@ -192,23 +213,4 @@ function computePetStage(){
   for(let i=0;i<cycle.totalDays;i++){
     const d = new Date(cycle.start);
     d.setDate(d.getDate()+i);
-    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-    if(completed.has(iso)) validDays.push(iso);
-    if(perfectBonus.has(iso)) bonusDays++;
-  }
-  const rawCompletedDays = Math.min(cycle.totalDays, validDays.length + bonusDays);
-
-  // trava de segurança: o progresso do Pacus nunca pode andar pra trás na
-  // tela, mesmo que uma sincronização ou uma aba antiga em cache recalcule
-  // um valor menor por engano — sempre usamos o maior já visto.
-  const previousHWM = Number(state.petMaxDaysEquivalentEverSeen) || 0;
-  if(rawCompletedDays > previousHWM){
-    state.petMaxDaysEquivalentEverSeen = rawCompletedDays;
-    try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
-  }
-  const completedDays = Math.max(rawCompletedDays, Number(state.petMaxDaysEquivalentEverSeen) || 0);
-
-  const stageFloat = Math.min(maxStage, completedDays);
-  const stage = Math.min(maxStage, completedDays);
-  const todayHasProgress = hasDayProgress(todayISO());
-  const canGrowToday = todayISO() >= cycle.sta
+   

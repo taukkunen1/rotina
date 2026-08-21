@@ -1,4 +1,33 @@
-erPetDayCompletion(dateISO);
+){
+    const tasks = allTasks(dateISO);
+    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+    return applicable.some(t=>isCountedDone(state.checkedToday[t.id]));
+  }
+  const entry = state.history[dateISO];
+  return !!(entry && entry.done > 0);
+}
+
+function syncPetCompletionFromDay(dateISO){
+  let grew = false;
+  if(hasDayProgress(dateISO)) grew = registerPetDayCompletion(dateISO) || grew;
+  if(isDayPerfect(dateISO)) grew = registerPetPerfectBonus(dateISO) || grew;
+  return grew;
+}
+
+function closeOutDay(state, dateISO){
+  if(!dateISO) return;
+  const tasks = allTasks(dateISO);
+  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
+  const total = applicable.length;
+  const done = applicable.filter(t=>isCountedDone(state.checkedToday[t.id])).length;
+  const pointsEarnedThatDay = tasks.reduce((s,t)=>{
+    const st = state.checkedToday[t.id];
+    if(st === 'done') return s + t.pts;
+    if(st === 'help') return s + taskHelpPoints(t);
+    return s;
+  }, 0);
+  const perfect = total > 0 && done === total;
+  if(done > 0) registerPetDayCompletion(dateISO);
   if(perfect) registerPetPerfectBonus(dateISO);
   const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
   const periodsCompleted = periodsCompletedFrom(state.checkedToday, dateISO);
@@ -159,25 +188,4 @@ function mergeRemoteData(remote){
   };
 }
 
-// Busca e mescla os dados do Drive — usada tanto ao abrir o app quanto
-// na sincronização periódica de segurança (a cada 5 min). SEMPRE mescla
-// (nunca substitui de uma vez): mesmo quando o Drive parece "mais novo",
-// os dados locais podem ter progresso que o Drive ainda não tem (ex:
-// uma aba antiga sincronizando antes). mergeRemoteData usa união/máximo
-// em tudo que é progresso acumulado, então nunca perde o que já foi
-// conquistado.
-async function pullAndMergeFromDrive(){
-  if(!APPS_SCRIPT_URL) return;
-  suppressAutoPush = true;
-  try{
-    const res = await fetch(DATA_ENDPOINT, {method:'GET', cache:'no-store'});
-    if(res.ok){
-      const backup = await res.json();
-      if(backup && backup.config && backup.state){
-        const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
-        const localRevision = Number(state.driveRevision)||0;
-        if(remoteRevision !== localRevision || JSON.stringify(backup.config) !== JSON.stringify(CONFIG)){
-          const merged = mergeRemoteData(backup);
-          CONFIG = merged.config;
-          state = merged.state;
-   
+// Busca e mescla os dados do Drive 

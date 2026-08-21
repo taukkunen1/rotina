@@ -1,4 +1,30 @@
--08-17","2026-08-18"].forEach(iso=>{
+(pessoa autêntica)');
+    state.waldaBetBonusApplied = true;
+  }
+  if(!state.celebrationReplayV1Applied){
+    state.lastSeenPetStage = 0;
+    state.celebrationReplayV1Applied = true;
+  }
+  if(!state.perfectBonusBackfillV1Applied){
+    if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
+    Object.keys(state.history || {}).forEach(iso=>{
+      if(state.history[iso] && state.history[iso].perfect && !state.petPerfectBonusDays.includes(iso)){
+        state.petPerfectBonusDays.push(iso);
+      }
+    });
+    state.petPerfectBonusDays.sort();
+    state.perfectBonusBackfillV1Applied = true;
+  }
+  if(!state.hairCorrectionAug1718Applied){
+    if(!state.hairByDate) state.hairByDate = {};
+    state.hairByDate["2026-08-17"] = "not-washed";
+    state.hairByDate["2026-08-18"] = "washed";
+    if(state.history["2026-08-17"]) state.history["2026-08-17"].hair = "not-washed";
+    if(state.history["2026-08-18"]) state.history["2026-08-18"].hair = "washed";
+    state.hairCorrectionAug1718Applied = true;
+  }
+  if(!state.backfillGapDaysV1Applied){
+    ["2026-08-17","2026-08-18"].forEach(iso=>{
       if(!state.history[iso] || !state.history[iso].total){
         const tasks = allTasks(iso);
         state.history[iso] = {
@@ -150,33 +176,4 @@ function isDayPerfect(dateISO){
 // Crescimento não exige dia perfeito, só engajamento real. isDayPerfect
 // continua controlando o bônus de tela e o selo "dia perfeito".
 function hasDayProgress(dateISO){
-  if(dateISO === todayISO()){
-    const tasks = allTasks(dateISO);
-    const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    return applicable.some(t=>isCountedDone(state.checkedToday[t.id]));
-  }
-  const entry = state.history[dateISO];
-  return !!(entry && entry.done > 0);
-}
-
-function syncPetCompletionFromDay(dateISO){
-  let grew = false;
-  if(hasDayProgress(dateISO)) grew = registerPetDayCompletion(dateISO) || grew;
-  if(isDayPerfect(dateISO)) grew = registerPetPerfectBonus(dateISO) || grew;
-  return grew;
-}
-
-function closeOutDay(state, dateISO){
-  if(!dateISO) return;
-  const tasks = allTasks(dateISO);
-  const applicable = tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-  const total = applicable.length;
-  const done = applicable.filter(t=>isCountedDone(state.checkedToday[t.id])).length;
-  const pointsEarnedThatDay = tasks.reduce((s,t)=>{
-    const st = state.checkedToday[t.id];
-    if(st === 'done') return s + t.pts;
-    if(st === 'help') return s + taskHelpPoints(t);
-    return s;
-  }, 0);
-  const perfect = total > 0 && done === total;
-  if(done > 0) regist
+  if(dateISO === todayISO()

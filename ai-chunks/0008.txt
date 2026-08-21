@@ -1,4 +1,27 @@
-eitura rápida)
+do" },
+      { key:"young2", label:"Quase adulto" },
+      { key:"young3", label:"Quase pronto" },
+      { key:"young4", label:"Última fase" },
+      { key:"adulto", label:"Pacus adulto" },
+    ],
+  }};
+
+const STORAGE_CONFIG_KEY = "hector_rotina_config_v3";
+const STORAGE_STATE_KEY  = "hector_rotina_state_v3";
+const APP_VERSION = "2026.08.11-pacus-v4";
+
+/* Sincronização com Google Drive via Apps Script — guarda os dados
+   (não o código, que fica no GitHub Pages). Setup: script.google.com →
+   novo projeto → cole o código do botão "ver código do Apps Script" →
+   Implantar → App da Web, executar como eu, acesso qualquer pessoa →
+   cole a URL /exec abaixo. */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec";
+// ?data=1 pede só os dados (backup); sem parâmetro, serve o app.
+const DATA_ENDPOINT = APPS_SCRIPT_URL + "?data=1";
+
+function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9); }
+
+// mapeia palavra-chave da tarefa pra um emoji (pista visual de leitura rápida)
 const ICON_RULES = [
   [/cama/i, "🛏️"], [/água/i, "💧"], [/dente/i, "🦷"], [/rosto|banho/i, "🧼"],
   [/duolingo|inglês|idioma/i, "🗣️"], [/ler|livro|capítulo/i, "📖"],
@@ -176,32 +199,4 @@ function renderRecoveryMission(el){
       <button class="recovery-mission-btn" id="recoveryMissionBtn">concluí! 🎉</button>
     </div>
   `;
-  document.getElementById('recoveryMissionBtn').addEventListener('click', (evt)=>{
-    const delta = addPoints(1);
-    addLog(`⭐ +1 · Missão de recuperação: ${mission}`);
-    state.recoveryMissionDone = { date: todayISO(), mission };
-    saveState(state);
-    bumpTotal(delta, evt.currentTarget);
-    fireConfetti(evt.currentTarget, 16);
-    render();
-  });
-}
-
-// 🌟 Vitórias invisíveis — mostra o que já foi conquistado hoje, mesmo
-// que o dia não tenha sido perfeito.
-function renderInvisibleWinsCard(){
-  const el = document.getElementById('invisibleWinsCard');
-  if(!el) return;
-  const tasks = allTasks(todayISO());
-  const doneTasks = tasks.filter(t => isCountedDone(state.checkedToday[t.id]));
-  const hasNotDone = Object.values(state.checkedToday).includes('x');
-  const recovered = state.freshStartActiveDate === todayISO();
-
-  if(doneTasks.length === 0){ el.innerHTML = ''; return; }
-
-  const items = doneTasks.slice(0, 6).map(t => `<li>${taskIcon(t.txt)} ${t.txt}</li>`);
-  if(hasNotDone && recovered) items.push('<li>🌱 Voltou depois de um momento difícil</li>');
-
-  el.innerHTML = `
-    <div class="wins-card">
-      <div class="wins-t
+  document.getElementById('recoveryMissionBtn').addEventListener('click

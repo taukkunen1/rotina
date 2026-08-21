@@ -1,4 +1,40 @@
-der:1px solid var(--line); color:var(--chalk); border-radius:6px; padding:6px; font-family:inherit; font-size:.8rem;">${periodOptions}</select>
+>x!==h);
+      renderEditorBad();
+    });
+    el.appendChild(row);
+  });
+}
+
+function renderEditorSchedule(){
+  const el = document.getElementById('editSchedule');
+  el.innerHTML = '';
+  const dayOrder = ['seg','ter','qua','qui','sex','sab','dom'];
+  const dayShort = {seg:'S',ter:'T',qua:'Q',qui:'Q',sex:'S',sab:'S',dom:'D'};
+  const periodLabels = {manha:'Manhã', tarde:'Tarde', noite:'Noite'};
+  draft.schedule.forEach(item=>{
+    if(item.pts == null) item.pts = 3;
+    if(!item.period) item.period = 'tarde';
+    const row = document.createElement('div');
+    row.className = 'edit-row-task';
+    const dayChips = dayOrder.map(d=>
+      `<button type="button" class="day-chip ${item.days.includes(d)?'active':''}" data-day="${d}" title="${WEEKDAY_LABELS[d]}">${dayShort[d]}</button>`
+    ).join('');
+    const periodOptions = Object.entries(periodLabels).map(([k,l])=>
+      `<option value="${k}" ${item.period===k?'selected':''}>${l}</option>`
+    ).join('');
+    row.innerHTML = `
+      <div class="edit-row-main">
+        <input type="text" value="${escapeAttr(item.label)}" data-field="label" placeholder="nome (ex: Inglês)">
+        <button class="del" title="remover">🗑</button>
+      </div>
+      <div class="day-chip-row">${dayChips}</div>
+      <div class="edit-row-main">
+        <input type="time" value="${item.start}" data-field="start" style="flex:1;">
+        <span style="color:var(--chalk-dim); font-size:.8rem;">até</span>
+        <input type="time" value="${item.end}" data-field="end" style="flex:1;">
+      </div>
+      <div class="edit-row-main">
+        <select data-field="period" style="flex:1; background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--chalk); border-radius:6px; padding:6px; font-family:inherit; font-size:.8rem;">${periodOptions}</select>
         ${stepperHTML('pts', item.pts)}
       </div>
     `;
@@ -155,43 +191,4 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
     draft.periods[k].tasks = draft.periods[k].tasks.filter(t=>t.txt.trim() !== '');
   });
   if(draft.periodsWeekend){
-    ['manha','tarde','noite'].forEach(k=>{
-      draft.periodsWeekend[k].tasks = draft.periodsWeekend[k].tasks.filter(t=>t.txt.trim() !== '');
-    });
-  }
-  draft.badHabits = draft.badHabits.filter(h=>h.txt.trim() !== '');
-  draft.rewards = draft.rewards.filter(r=>r.txt.trim() !== '');
-  draft.schedule = (draft.schedule || []).filter(s=>s.label.trim() !== '' && s.days.length > 0);
-
-  const pinVal = document.getElementById('editorPinInput').value.trim();
-  draft.editorPin = pinVal;
-
-  const gameLimitVal = parseFloat(document.getElementById('gameLimitInput').value);
-  draft.screenDailyLimitHours = isNaN(gameLimitVal) || gameLimitVal < 0 ? 2 : gameLimitVal;
-
-  CONFIG = draft;
-  saveConfig(CONFIG);
-
-  // remove do estado marcado de hoje qualquer tarefa que não existe mais
-  // na rotina ativa de hoje (dia de escola ou fim de semana)
-  const validIds = new Set(allTasks().map(t=>t.id));
-  Object.keys(state.checkedToday).forEach(id=>{
-    if(!validIds.has(id)) delete state.checkedToday[id];
-  });
-  saveState(state);
-
-  closeEditor();
-  render();
-});
-
-/* ===================== EDITOR DE DIA ANTERIOR ===================== */
-let editingDate = null;
-
-function openDayEditor(dateISO){
-  editingDate = dateISO;
-  const entry = state.history[dateISO] || { done:0, total:0, pointsEarnedThatDay:0, perfect:false, screenMinutes:0 };
-  document.getElementById('dayEditorTitle').textContent = 'Editar ' + formatDateBR(dateISO);
-  document.getElementById('dayDone').value = entry.done;
-  document.getElementById('dayTotal').value = entry.total;
-  document.getElementById('dayPoints').value = entry.pointsEarnedThatDay;
-  document.getElementById('dayHair').value = getH
+    ['

@@ -1,4 +1,36 @@
-entById('backupReminderExportBtn').addEventListener('click', ()=>{
+lyNewsDismissBtn').addEventListener('click', ()=>{
+    state.weeklyNewsSeen = true;
+    saveState(state);
+    renderWeeklyNewsAnnouncement();
+  });
+}
+
+function renderBackupReminder(){
+  const el = document.getElementById('backupReminder');
+  if(!el) return;
+
+  const today = todayISO();
+  const daysSinceBackup = state.lastBackupISO ? daysBetween(state.lastBackupISO, today) : Infinity;
+  const dismissed = state.backupReminderDismissedFor === today;
+
+  const shouldShow = daysSinceBackup >= 7 && !dismissed;
+
+  if(!shouldShow){ el.innerHTML=''; return; }
+
+  const msg = state.lastBackupISO
+    ? `Já faz ${daysSinceBackup} dias desde o último backup. Que tal exportar de novo?`
+    : `Vocês ainda não fizeram nenhum backup. Vale exportar um agora pra não perder o progresso.`;
+
+  el.innerHTML = `
+    <div class="backup-reminder">
+      <span>💾 ${msg}</span>
+      <span>
+        <button id="backupReminderExportBtn">exportar agora</button>
+        <button class="dismiss" id="backupReminderDismissBtn">lembrar depois</button>
+      </span>
+    </div>
+  `;
+  document.getElementById('backupReminderExportBtn').addEventListener('click', ()=>{
     document.getElementById('exportBtn').click();
   });
   document.getElementById('backupReminderDismissBtn').addEventListener('click', ()=>{
@@ -168,27 +200,3 @@ function renderRewards(){
     const capNote = r.maxPerDay != null ? `<span class="cap-note">${redeemedToday}/${r.maxPerDay} hoje</span>` : '';
     const div = document.createElement('div');
     div.className = 'reward';
-    div.innerHTML = `
-      <div class="name">${r.txt}</div>
-      <span class="cost">${cost} PP</span>
-      ${capNote}
-      <button ${(canAfford && !atDailyLimit) ? '' : 'disabled'}>${atDailyLimit ? 'Limite hoje' : 'Resgatar'}</button>
-    `;
-    div.querySelector('button').addEventListener('click', (evt)=>{
-      if(state.totalPoints < cost) return;
-      const redeemed = (state.gameTimer.redemptions && state.gameTimer.redemptions[r.id]) || 0;
-      if(r.maxPerDay != null && redeemed >= r.maxPerDay) return;
-
-      const delta = addPoints(-cost);
-      addLog(`🎁 Resgatou: ${r.txt} (−${cost})`);
-      if(r.grantsHours){
-        addGameTimerBonusHours(r.grantsHours);
-        addLog(`🎮 +${r.grantsHours}h de jogo hoje (bônus da recompensa)`);
-      }
-      if(!state.gameTimer.redemptions) state.gameTimer.redemptions = {};
-      state.gameTimer.redemptions[r.id] = redeemed + 1;
-      if(!state.lifetimeRedemptions) state.lifetimeRedemptions = {};
-      state.lifetimeRedemptions[r.id] = (state.lifetimeRedemptions[r.id] || 0) + 1;
-
-      saveState(state);
-      bum

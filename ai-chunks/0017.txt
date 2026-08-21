@@ -1,4 +1,30 @@
-| !('IntersectionObserver' in window)) return;
+4.5" fill="#3a2430"/><circle cx="124" cy="${faceY-5.5}" r="1.4" fill="#fff"/></g>
+        <path d="M96 ${faceY+12} Q110 ${faceY+18+growth*2} 124 ${faceY+12}" stroke="#b9607f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <circle cx="89" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/><circle cx="131" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/>
+      </g>
+    </g>
+  </svg>`;
+}
+
+function buildPetVisual(stageFloat){
+  if(stageFloat < 9) return buildEggSVG(stageFloat/8);
+  return buildPacusSVG(stageFloat);
+}
+
+// Miniatura fixa no canto — aparece quando a seção principal sai da
+// tela. Toque rola de volta pro topo.
+let miniPacusObserverStarted = false;
+function renderMiniPacus(stageFloat){
+  const el = document.getElementById('miniPacus');
+  if(!el) return;
+  el.innerHTML = buildPetVisual(stageFloat);
+  startMiniPacusObserver();
+}
+function startMiniPacusObserver(){
+  if(miniPacusObserverStarted) return;
+  const target = document.getElementById('petSection');
+  const mini = document.getElementById('miniPacus');
+  if(!target || !mini || !('IntersectionObserver' in window)) return;
   const observer = new IntersectionObserver((entries)=>{
     entries.forEach(entry=>{
       mini.classList.toggle('visible', !entry.isIntersecting);
@@ -174,27 +200,3 @@ function renderPet(){
       mascotEl.classList.add('pet-growth-burst');
       if(stage < 9){ mascotEl.classList.add('pet-hatch-crack'); }
     }
-  }
-
-  if(stage > state.lastSeenPetStage){
-    document.getElementById('petEvolvedBanner').innerHTML = `<div class="pet-evolved-banner">Pacus avançou para <b>${stageInfo.label}</b>.</div>`;
-    state.lastSeenPetStage = stage;
-    saveState(state);
-    showEvolutionCelebration(stageInfo, stage, maxStage);
-  }
-}
-
-function showEvolutionCelebration(stageInfo, stage, maxStage){
-  const overlay = document.getElementById('evolutionCelebration');
-  const mascotEl = document.getElementById('celebrationMascot');
-  mascotEl.innerHTML = buildPetVisual(stage);
-  document.getElementById('celebrationStage').innerHTML =
-    stage === maxStage
-      ? `O Pacus chegou em <b>${stageInfo.label}</b> — crescimento completo! 🏆`
-      : `O Pacus virou <b>${stageInfo.label}</b>!`;
-  overlay.classList.add('open');
-
-  // confete espalhado pela tela toda, não só perto do Pacus
-  fireConfetti(null, 40);
-  setTimeout(()=> fireConfetti({ getBoundingClientRect: ()=>({left:window.innerWidth*0.2, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 200);
-  setTimeout(()=> fireConfetti({ ge

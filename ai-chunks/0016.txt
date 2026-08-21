@@ -1,4 +1,23 @@
-rtISO && todayISO() <= cycle.endISO && todayHasProgress && !completed.has(todayISO());
+ const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+    if(completed.has(iso)) validDays.push(iso);
+    if(perfectBonus.has(iso)) bonusDays++;
+  }
+  const rawCompletedDays = Math.min(cycle.totalDays, validDays.length + bonusDays);
+
+  // trava de segurança: o progresso do Pacus nunca pode andar pra trás na
+  // tela, mesmo que uma sincronização ou uma aba antiga em cache recalcule
+  // um valor menor por engano — sempre usamos o maior já visto.
+  const previousHWM = Number(state.petMaxDaysEquivalentEverSeen) || 0;
+  if(rawCompletedDays > previousHWM){
+    state.petMaxDaysEquivalentEverSeen = rawCompletedDays;
+    try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
+  }
+  const completedDays = Math.max(rawCompletedDays, Number(state.petMaxDaysEquivalentEverSeen) || 0);
+
+  const stageFloat = Math.min(maxStage, completedDays);
+  const stage = Math.min(maxStage, completedDays);
+  const todayHasProgress = hasDayProgress(todayISO());
+  const canGrowToday = todayISO() >= cycle.startISO && todayISO() <= cycle.endISO && todayHasProgress && !completed.has(todayISO());
   return {
     stage, stageFloat, unitsCompleted:completedDays, totalUnits:cycle.totalDays,
     maxStage, daysEquivalent:completedDays, cycleDays:cycle.totalDays,
@@ -117,30 +136,4 @@ function buildPacusSVG(stageFloat){
         ${gills}
         <circle cx="110" cy="${faceY}" r="32" fill="url(#${gid}-body)"/>
         <g class="pacus-eye" style="transform-origin:97px ${faceY-4}px;"><circle cx="97" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="98" cy="${faceY-5.5}" r="1.4" fill="#fff"/></g>
-        <g class="pacus-eye" style="transform-origin:123px ${faceY-4}px; animation-delay:.08s;"><circle cx="123" cy="${faceY-4}" r="4.5" fill="#3a2430"/><circle cx="124" cy="${faceY-5.5}" r="1.4" fill="#fff"/></g>
-        <path d="M96 ${faceY+12} Q110 ${faceY+18+growth*2} 124 ${faceY+12}" stroke="#b9607f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <circle cx="89" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/><circle cx="131" cy="${faceY+8}" r="4" fill="#f3a7c6" opacity=".72"/>
-      </g>
-    </g>
-  </svg>`;
-}
-
-function buildPetVisual(stageFloat){
-  if(stageFloat < 9) return buildEggSVG(stageFloat/8);
-  return buildPacusSVG(stageFloat);
-}
-
-// Miniatura fixa no canto — aparece quando a seção principal sai da
-// tela. Toque rola de volta pro topo.
-let miniPacusObserverStarted = false;
-function renderMiniPacus(stageFloat){
-  const el = document.getElementById('miniPacus');
-  if(!el) return;
-  el.innerHTML = buildPetVisual(stageFloat);
-  startMiniPacusObserver();
-}
-function startMiniPacusObserver(){
-  if(miniPacusObserverStarted) return;
-  const target = document.getElementById('petSection');
-  const mini = document.getElementById('miniPacus');
-  if(!target || !mini |
+        <g class="pacus-eye" style="transform-origin:123px ${faceY-4}px; animation-delay:.08s;"><circle cx="123" cy="${faceY-4}" r="

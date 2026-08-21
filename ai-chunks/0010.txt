@@ -1,4 +1,34 @@
-has de gude", pts:1, fullPenalty:true, sub:"no potinho" },
+ === 'sc4');
+    if(item){
+      item.period = "noite";
+      item.start = "21:00";
+      item.end = "23:00";
+    }
+  }
+  cfg.familyGameNightV4Applied = true;
+  return cfg;
+}
+
+// Recompensa: Passeio Especial (ele escolhe).
+function addOutingRewardV1(cfg){
+  if(!cfg || cfg.outingRewardV1Applied) return cfg;
+  if(!Array.isArray(cfg.rewards)) cfg.rewards = [];
+  if(!cfg.rewards.some(r=>r.id === 'r3')){
+    cfg.rewards.push({ id:"r3", txt:"Passeio Especial (você escolhe)", cost:500 });
+  }
+  cfg.outingRewardV1Applied = true;
+  return cfg;
+}
+
+// "Arrumar a bagunça" era vaga — quebrada em 5 tarefas pequenas e
+// concretas (começo/fim claros): cartas, carrinhos, bolinhas, caixas,
+// e conferência final da sala.
+function splitBagunçaV1(cfg){
+  if(!cfg || cfg.splitBagunçaV1Applied) return cfg;
+  const newTasks = [
+    { id:"n5_cartas", txt:"Guardar as cartas de bafo", pts:1, fullPenalty:true, sub:"na caixinha delas" },
+    { id:"n5_carrinhos", txt:"Guardar os carrinhos", pts:1, fullPenalty:true, sub:"na caixa/prateleira" },
+    { id:"n5_bolinhas", txt:"Guardar as bolinhas de gude", pts:1, fullPenalty:true, sub:"no potinho" },
     { id:"n5_caixas", txt:"Guardar as caixas", pts:1, fullPenalty:true, sub:"no lugar certo ou no lixo" },
     { id:"n5_sala", txt:"Deixar a sala livre do chão", pts:3, fullPenalty:true, sub:"conferência final — nada espalhado" },
   ];
@@ -176,31 +206,4 @@ function formatTimeRemaining(periodTimeStr){
   if(!start || !end) return null;
   const now = new Date();
   const startDate = new Date(now); startDate.setHours(start.hour, start.minute, 0, 0);
-  const endDate = new Date(now); endDate.setHours(end.hour, end.minute, 0, 0);
-  if(now < startDate){
-    return { text: `começa às ${String(start.hour).padStart(2,'0')}:${String(start.minute).padStart(2,'0')}`, urgency: 'none' };
-  }
-  if(now > endDate){
-    return { text: `período encerrado`, urgency: 'over' };
-  }
-  const diffMin = Math.max(0, Math.round((endDate - now)/60000));
-  const h = Math.floor(diffMin/60);
-  const m = diffMin%60;
-  const text = h > 0 ? `⏳ faltam ${h}h ${String(m).padStart(2,'0')}min` : `⏳ faltam ${m}min`;
-  const urgency = diffMin <= 30 ? 'high' : diffMin <= 60 ? 'medium' : 'low';
-  return { text, urgency };
-}
-
-let timeRemainingTickHandle = null;
-function updateTimeRemainingDisplays(){
-  document.querySelectorAll('.period').forEach(div=>{
-    const el = div.querySelector('.time-remaining');
-    const periodTime = div.dataset.periodTime;
-    if(!el || !periodTime) return;
-    const info = formatTimeRemaining(periodTime);
-    if(!info){ el.textContent = ''; el.className = 'time-remaining'; return; }
-    el.textContent = info.text;
-    el.className = 'time-remaining urgency-' + info.urgency;
-  });
-}
-function 
+  const endDate = new Date(now); endDate.setHours(end.hour, end.minute, 0, 

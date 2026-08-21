@@ -1,4 +1,31 @@
-startTimeRemainingTicking(){
+0);
+  if(now < startDate){
+    return { text: `começa às ${String(start.hour).padStart(2,'0')}:${String(start.minute).padStart(2,'0')}`, urgency: 'none' };
+  }
+  if(now > endDate){
+    return { text: `período encerrado`, urgency: 'over' };
+  }
+  const diffMin = Math.max(0, Math.round((endDate - now)/60000));
+  const h = Math.floor(diffMin/60);
+  const m = diffMin%60;
+  const text = h > 0 ? `⏳ faltam ${h}h ${String(m).padStart(2,'0')}min` : `⏳ faltam ${m}min`;
+  const urgency = diffMin <= 30 ? 'high' : diffMin <= 60 ? 'medium' : 'low';
+  return { text, urgency };
+}
+
+let timeRemainingTickHandle = null;
+function updateTimeRemainingDisplays(){
+  document.querySelectorAll('.period').forEach(div=>{
+    const el = div.querySelector('.time-remaining');
+    const periodTime = div.dataset.periodTime;
+    if(!el || !periodTime) return;
+    const info = formatTimeRemaining(periodTime);
+    if(!info){ el.textContent = ''; el.className = 'time-remaining'; return; }
+    el.textContent = info.text;
+    el.className = 'time-remaining urgency-' + info.urgency;
+  });
+}
+function startTimeRemainingTicking(){
   if(timeRemainingTickHandle) return;
   timeRemainingTickHandle = setInterval(updateTimeRemainingDisplays, 30000);
 }
@@ -162,30 +189,4 @@ function reconcileState(state){
   if(!state.waldaBetBonusApplied){
     state.totalPoints = Math.max(0, Math.min(1000, (Number(state.totalPoints)||0) + 5));
     if(!state.log) state.log = [];
-    state.log.unshift('🏆 +5 · acertou a aposta com a Walda (pessoa autêntica)');
-    state.waldaBetBonusApplied = true;
-  }
-  if(!state.celebrationReplayV1Applied){
-    state.lastSeenPetStage = 0;
-    state.celebrationReplayV1Applied = true;
-  }
-  if(!state.perfectBonusBackfillV1Applied){
-    if(!Array.isArray(state.petPerfectBonusDays)) state.petPerfectBonusDays = [];
-    Object.keys(state.history || {}).forEach(iso=>{
-      if(state.history[iso] && state.history[iso].perfect && !state.petPerfectBonusDays.includes(iso)){
-        state.petPerfectBonusDays.push(iso);
-      }
-    });
-    state.petPerfectBonusDays.sort();
-    state.perfectBonusBackfillV1Applied = true;
-  }
-  if(!state.hairCorrectionAug1718Applied){
-    if(!state.hairByDate) state.hairByDate = {};
-    state.hairByDate["2026-08-17"] = "not-washed";
-    state.hairByDate["2026-08-18"] = "washed";
-    if(state.history["2026-08-17"]) state.history["2026-08-17"].hair = "not-washed";
-    if(state.history["2026-08-18"]) state.history["2026-08-18"].hair = "washed";
-    state.hairCorrectionAug1718Applied = true;
-  }
-  if(!state.backfillGapDaysV1Applied){
-    ["2026
+    state.log.unshift('🏆 +5 · acertou a aposta com a Walda 
