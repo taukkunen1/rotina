@@ -1,6 +1,7 @@
 (() => {
   'use strict';
 
+  // Central persistence facade. Existing inline logic will delegate here in stages.
   const CONFIG_KEY = 'hector_rotina_config_v3';
   const STATE_KEY = 'hector_rotina_state_v3';
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec';
