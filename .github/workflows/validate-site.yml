@@ -3,9 +3,9 @@ name: Validate site before publish
 on:
   push:
     branches: [main]
-    paths: ['index.html','adultos.html','*.js','*.css','.github/workflows/validate-site.yml']
+    paths: ['index.html','adultos.html','historico.html','*.js','*.css','.github/workflows/validate-site.yml']
   pull_request:
-    paths: ['index.html','adultos.html','*.js','*.css']
+    paths: ['index.html','adultos.html','historico.html','*.js','*.css']
 
 permissions:
   contents: read
@@ -20,7 +20,7 @@ jobs:
         run: |
           from pathlib import Path
           import re
-          for filename in ('index.html','adultos.html'):
+          for filename in ('index.html','adultos.html','historico.html'):
               html=Path(filename).read_text(encoding='utf-8')
               if not html.lstrip().lower().startswith('<!doctype html>'): raise SystemExit(f'{filename}: missing doctype')
               for tag in ('html','head','body'):
@@ -31,11 +31,11 @@ jobs:
           print('HTML: OK')
       - name: Validate JavaScript syntax
         run: |
-          for file in storage.js autonomy.js app-ui.js adults.js; do node --check "$file"; done
+          for file in storage.js autonomy.js app-ui.js adults.js history.js; do node --check "$file"; done
           python - <<'PY'
           from pathlib import Path
           import re, subprocess, tempfile
-          for filename in ('index.html','adultos.html'):
+          for filename in ('index.html','adultos.html','historico.html'):
               html=Path(filename).read_text(encoding='utf-8')
               for i,block in enumerate(re.findall(r'<script(?:[^>]*)>(.*?)</script>',html,re.S|re.I)):
                   if not block.strip(): continue
@@ -48,7 +48,7 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
-          required=['styles.css','storage.js','autonomy.js','app-ui.js','ui.css','adults.js']
+          required=['styles.css','storage.js','autonomy.js','app-ui.js','ui.css','adults.js','history.js']
           missing=[p for p in required if not Path(p).is_file()]
           if missing: raise SystemExit('Missing modules: '+', '.join(missing))
           print('Modules: OK')
