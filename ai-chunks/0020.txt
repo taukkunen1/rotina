@@ -1,4 +1,13 @@
-full = state.history[iso];
+adStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'));
+  }
+
+  let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0;
+  days.forEach(iso=>{
+    const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
+    if(!entry) return;
+    if(iso !== todayISO()){
+      // dias fechados já têm pointsEarnedThatDay e screenMinutes calculados
+      const full = state.history[iso];
       if(full){
         totalPointsWeek += full.pointsEarnedThatDay || 0;
         totalScreenMin += full.screenMinutes || 0;
@@ -181,9 +190,4 @@ function renderRewards(){
 }
 
 // Comportamentos positivos espontâneos — cada um já vem com um elogio
-// específico (não genérico), pra reforçar exatamente o que ele fez bem.
-const POSITIVE_BEHAVIORS = [
-  { id:'helped', label:'Ajudou alguém', emoji:'🤝', praise:'Isso foi generosidade de verdade!' },
-  { id:'kind', label:'Foi gentil', emoji:'❤️', praise:'Gentileza gera gentileza!' },
-  { id:'persisted', label:'Não desistiu', emoji:'💪', praise:'Continuou tentando mesmo sendo difícil — isso é persistência!' },
-  { id:'solved
+// específico (não genérico), pra reforçar exatamente o que

@@ -1,4 +1,11 @@
-('active');
+('change', e=>{ item.period = e.target.value; });
+    wireStepper(row, item, 'pts');
+    row.querySelectorAll('.day-chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        const d = chip.getAttribute('data-day');
+        if(item.days.includes(d)) item.days = item.days.filter(x=>x!==d);
+        else item.days.push(d);
+        chip.classList.toggle('active');
       });
     });
     row.querySelector('.del').addEventListener('click', ()=>{
@@ -194,10 +201,4 @@ document.getElementById('dayOverlay').addEventListener('click', e=>{
 });
 
 document.getElementById('daySaveBtn').addEventListener('click', ()=>{
-  if(!editingDate) return;
-  const oldEntry = state.history[editingDate];
-  const oldPoints = oldEntry ? oldEntry.pointsEarnedThatDay : 0;
-
-  const done = Math.max(0, parseInt(document.getElementById('dayDone').value,10) || 0);
-  const total = Math.max(0, parseInt(document.getElementById('dayTotal').value,10) || 0);
-  const pointsEarnedThatDay = Math.max(0, parseIn
+ 

@@ -1,4 +1,13 @@
- = weekdayLetters[d.getDay()];
+);
+    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
+    days.push(iso);
+  }
+  const weekdayLetters = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  let progressDays = 0;
+  const cells = days.map(iso=>{
+    const isToday = iso === todayISO();
+    const d = new Date(iso+"T00:00:00");
+    const letter = weekdayLetters[d.getDay()];
     let entry = isToday ? liveTodayEntry() : state.history[iso];
     let cls = 'streak-cell none';
     if(entry && entry.total > 0){
@@ -146,20 +155,4 @@ function render(){
     div.innerHTML = `
       <div class="period-head"><h2>${period.label}</h2><span class="time">${period.time}</span></div>
       <span class="time-remaining" id="timeRemaining_${key}"></span>
-      <span class="progress-txt">${progressMsg}</span>
-      <div class="progress-bar"><div style="width:${pct}%"></div></div>
-      ${nextPreviewHtml}
-    `;
-    div.dataset.periodTime = period.time;
-    div.appendChild(ul);
-    periodsEl.appendChild(div);
-  });
-
-  renderFocusCard();
-  renderFreshStartArea();
-  renderInvisibleWinsCard();
-
-  updateTimeRemainingDisplays();
-  startTimeRemainingTicking();
-
-  
+      <span class="progress-txt">${progress

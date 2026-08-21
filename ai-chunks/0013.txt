@@ -1,4 +1,8 @@
-ISO] || null };
+erPetDayCompletion(dateISO);
+  if(perfect) registerPetPerfectBonus(dateISO);
+  const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
+  const periodsCompleted = periodsCompletedFrom(state.checkedToday, dateISO);
+  state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
 }
 
 function saveState(state, options={}){
@@ -175,19 +179,4 @@ async function autoPullOnStartup(){
           CONFIG = merged.config;
           state = merged.state;
           state.driveRevision = Math.max(remoteRevision, localRevision);
-          state.driveLastSyncISO = todayISO();
-          saveConfig(CONFIG);
-          saveState(state);
-          render();
-        }
-      }
-    }
-  }catch(err){
-    renderDriveSync();
-  }
-  suppressAutoPush = false;
-}
-
-function addLog(text, isParentAction){
-  const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-  state.log.unshift({ text: time+" — "
+          state.driveLas

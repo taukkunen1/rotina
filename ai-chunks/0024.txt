@@ -1,4 +1,10 @@
-t(document.getElementById('dayPoints').value,10) || 0);
+ if(!editingDate) return;
+  const oldEntry = state.history[editingDate];
+  const oldPoints = oldEntry ? oldEntry.pointsEarnedThatDay : 0;
+
+  const done = Math.max(0, parseInt(document.getElementById('dayDone').value,10) || 0);
+  const total = Math.max(0, parseInt(document.getElementById('dayTotal').value,10) || 0);
+  const pointsEarnedThatDay = Math.max(0, parseInt(document.getElementById('dayPoints').value,10) || 0);
   const hair = document.getElementById('dayHair').value || null;
   const perfect = total > 0 && done >= total;
 
@@ -153,12 +159,4 @@ function renderDriveSync(){
 
 async function driveSave(){
   try{
-    const backup = { config: CONFIG, state: state, exportedAt: new Date().toISOString() };
-    const res = await fetch(DATA_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita pré-checagem CORS
-      body: JSON.stringify(backup),
-    });
-    if(!res.ok) throw new Error('Falha ao salvar');
-    const data = await res.json();
-    if(!data.ok) throw new Error(data.error || 'Falha ao sa
+    const backup = { config: CONFIG, state: state, exportedAt: new Date(

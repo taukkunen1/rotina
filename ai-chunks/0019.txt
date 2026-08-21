@@ -1,4 +1,20 @@
-periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
+Msg}</span>
+      <div class="progress-bar"><div style="width:${pct}%"></div></div>
+      ${nextPreviewHtml}
+    `;
+    div.dataset.periodTime = period.time;
+    div.appendChild(ul);
+    periodsEl.appendChild(div);
+  });
+
+  renderFocusCard();
+  renderFreshStartArea();
+  renderInvisibleWinsCard();
+
+  updateTimeRemainingDisplays();
+  startTimeRemainingTicking();
+
+  periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
     btn.addEventListener('click', onMarkClick);
   });
 
@@ -211,13 +227,4 @@ function renderWeeklyReview(){
   for(let i=6; i>=0; i--){
     const d = new Date();
     d.setDate(d.getDate()-i);
-    days.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'));
-  }
-
-  let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0;
-  days.forEach(iso=>{
-    const entry = iso === todayISO() ? liveTodayEntry() : state.history[iso];
-    if(!entry) return;
-    if(iso !== todayISO()){
-      // dias fechados já têm pointsEarnedThatDay e screenMinutes calculados
-      const 
+    days.push(d.getFullYear()+"-"+String(d.getMonth()+1).p

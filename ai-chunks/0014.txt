@@ -1,4 +1,19 @@
-+text, parent: !!isParentAction });
+tSyncISO = todayISO();
+          saveConfig(CONFIG);
+          saveState(state);
+          render();
+        }
+      }
+    }
+  }catch(err){
+    renderDriveSync();
+  }
+  suppressAutoPush = false;
+}
+
+function addLog(text, isParentAction){
+  const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  state.log.unshift({ text: time+" — "+text, parent: !!isParentAction });
   state.log = state.log.slice(0, 30);
 }
 function bumpTotal(delta, anchorEl){
@@ -210,15 +225,4 @@ function customTimerRemainingNow(t){
 
 function setCustomTimerMinutes(id, minutes){
   const t = findCustomTimer(id);
-  if(!t || t.runningSince) return; // não dá pra mudar enquanto está rodando
-  const secs = Math.max(0, Math.round(minutes*60));
-  t.totalSeconds = secs;
-  t.remainingSeconds = secs;
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function startCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t || t.runningSince || t.remainingSeconds <= 0) retu
+  if(!t 

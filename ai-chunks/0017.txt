@@ -1,4 +1,13 @@
-rtISO, reached: true };
+{
+  const cycle = getPetCycle();
+  const sorted = [...(state.petCompletedDays||[])]
+    .filter(d => d >= cycle.startISO && d <= cycle.endISO)
+    .sort();
+  const milestones = [
+    [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
+  ];
+  return milestones.map(([day,label])=>{
+    if(day === 0) return { label, day, date: cycle.startISO, reached: true };
     const reached = sorted.length >= day;
     return { label, day, date: reached ? sorted[day-1] : null, reached };
   });
@@ -188,13 +197,4 @@ function buildStreakStrip(){
   const days = [];
   for(let i=6; i>=0; i--){
     const d = new Date();
-    d.setDate(d.getDate()-i);
-    const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
-    days.push(iso);
-  }
-  const weekdayLetters = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  let progressDays = 0;
-  const cells = days.map(iso=>{
-    const isToday = iso === todayISO();
-    const d = new Date(iso+"T00:00:00");
-    const letter
+    d.setDate(d.getDate()-i

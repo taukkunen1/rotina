@@ -1,4 +1,12 @@
-lvar');
+).toISOString() };
+    const res = await fetch(DATA_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita pré-checagem CORS
+      body: JSON.stringify(backup),
+    });
+    if(!res.ok) throw new Error('Falha ao salvar');
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Falha ao salvar');
 
     state.driveLastSyncISO = todayISO();
     saveState(state);

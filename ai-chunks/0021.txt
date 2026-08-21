@@ -1,4 +1,9 @@
-', label:'Resolveu um problema', emoji:'🧠', praise:'Pensou e resolveu sozinho — muito bem!' },
+ ele fez bem.
+const POSITIVE_BEHAVIORS = [
+  { id:'helped', label:'Ajudou alguém', emoji:'🤝', praise:'Isso foi generosidade de verdade!' },
+  { id:'kind', label:'Foi gentil', emoji:'❤️', praise:'Gentileza gera gentileza!' },
+  { id:'persisted', label:'Não desistiu', emoji:'💪', praise:'Continuou tentando mesmo sendo difícil — isso é persistência!' },
+  { id:'solved', label:'Resolveu um problema', emoji:'🧠', praise:'Pensou e resolveu sozinho — muito bem!' },
   { id:'initiative', label:'Teve iniciativa', emoji:'🚀', praise:'Não esperou pedirem — tomou a frente!' },
 ];
 
@@ -176,15 +181,4 @@ document.getElementById('addPointsBtn').addEventListener('click', ()=>{
 
 document.getElementById('resetBtn').addEventListener('click', ()=>{
   if(!confirm('Isso apaga os Pacus Points, o histórico de hoje e o histórico de dias. Tem certeza?')) return;
-  state = { totalPoints:0, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, driveLastSyncISO:null, hairByDate:{} };
-  saveState(state);
-  render();
-});
-
-/* ===================== EDITOR ===================== */
-let draft = null; // cópia de trabalho do CONFIG enquanto o modal está aberto
-
-function openEditor(){
-  draft = JSON.parse(JSON.stringify(CONFIG));
-  renderEditorPeriod('manha', 'editManha');
-  renderEditorPeriod('tarde', 'ed
+  state = { totalPoints:0, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId

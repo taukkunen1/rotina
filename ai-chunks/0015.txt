@@ -1,4 +1,15 @@
-rn;
+|| t.runningSince) return; // não dá pra mudar enquanto está rodando
+  const secs = Math.max(0, Math.round(minutes*60));
+  t.totalSeconds = secs;
+  t.remainingSeconds = secs;
+  t.finished = false;
+  saveState(state);
+  renderCustomTimers();
+}
+
+function startCustomTimer(id){
+  const t = findCustomTimer(id);
+  if(!t || t.runningSince || t.remainingSeconds <= 0) return;
   t.runningSince = Date.now();
   t.finished = false;
   saveState(state);
@@ -192,14 +203,4 @@ function svgAttrs(){
 
 function buildEggSVG(progress){
   const p = Math.max(0, Math.min(1, progress));
-  const wobble = Math.sin(p*Math.PI*3)*1.4;
-  const gid = uid('egg');
-  const cracks = [
-    ["M94 80 L106 96 L98 109 L112 125 L103 142", 0.12],
-    ["M80 96 L92 108 L84 122 L96 136", 0.32],
-    ["M124 90 L113 105 L126 117 L116 132 L123 147", 0.52],
-    ["M76 124 L89 131 L82 147", 0.72],
-    ["M132 119 L122 128 L134 141", 0.88]
-  ];
-  const crackSvg = cracks.map(([d,start],i)=>{
-    const opacity = p <
+  const wobble = Math.sin(p*Math.PI*3)*
