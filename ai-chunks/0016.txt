@@ -1,4 +1,18 @@
-1.4;
+rtISO && todayISO() <= cycle.endISO && todayHasProgress && !completed.has(todayISO());
+  return {
+    stage, stageFloat, unitsCompleted:completedDays, totalUnits:cycle.totalDays,
+    maxStage, daysEquivalent:completedDays, cycleDays:cycle.totalDays,
+    todayPerfect:todayHasProgress, canGrowToday, completedDays:validDays
+  };
+}
+
+function svgAttrs(){
+  return 'viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Evolução do Pacus"';
+}
+
+function buildEggSVG(progress){
+  const p = Math.max(0, Math.min(1, progress));
+  const wobble = Math.sin(p*Math.PI*3)*1.4;
   const gid = uid('egg');
   const cracks = [
     ["M94 80 L106 96 L98 109 L112 125 L103 142", 0.12],
@@ -129,19 +143,4 @@ function startMiniPacusObserver(){
   if(miniPacusObserverStarted) return;
   const target = document.getElementById('petSection');
   const mini = document.getElementById('miniPacus');
-  if(!target || !mini || !('IntersectionObserver' in window)) return;
-  const observer = new IntersectionObserver((entries)=>{
-    entries.forEach(entry=>{
-      mini.classList.toggle('visible', !entry.isIntersecting);
-    });
-  }, { threshold: 0 });
-  observer.observe(target);
-  mini.addEventListener('click', ()=>{
-    target.scrollIntoView({ behavior:'smooth', block:'center' });
-  });
-  miniPacusObserverStarted = true;
-}
-
-// Pra cada marco de evolução, descobre em que dia ele foi alcançado (com
-// base na lista de dias completos, em ordem) — usado no mural de conquistas.
-function getMilestoneDates()
+  if(!target || !mini |

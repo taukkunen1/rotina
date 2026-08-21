@@ -1,4 +1,13 @@
-:null, driveLastSyncISO:null, hairByDate:{} };
+addPoints(amount);
+  addLog(`${amount>0?'+':''}${amount} · ajuste manual`, true);
+  saveState(state);
+  bumpTotal(delta);
+  render();
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(!confirm('Isso apaga os Pacus Points, o histórico de hoje e o histórico de dias. Tem certeza?')) return;
+  state = { totalPoints:0, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId:null, driveLastSyncISO:null, hairByDate:{} };
   saveState(state);
   render();
 });
@@ -165,11 +174,4 @@ function renderEditorSchedule(){
         <input type="time" value="${item.end}" data-field="end" style="flex:1;">
       </div>
       <div class="edit-row-main">
-        <select data-field="period" style="flex:1; background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--chalk); border-radius:6px; padding:6px; font-family:inherit; font-size:.8rem;">${periodOptions}</select>
-        ${stepperHTML('pts', item.pts)}
-      </div>
-    `;
-    row.querySelector('[data-field=label]').addEventListener('input', e=>{ item.label = e.target.value; });
-    row.querySelector('[data-field=start]').addEventListener('input', e=>{ item.start = e.target.value; });
-    row.querySelector('[data-field=end]').addEventListener('input', e=>{ item.end = e.target.value; });
-    row.querySelector('[data-field=period]').addEventListener
+        <select data-field="period" style="flex:1; background:rgba(255,255,255,.05); bor

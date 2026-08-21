@@ -1,4 +1,21 @@
- ele fez bem.
+pTotal(delta, evt.currentTarget);
+      renderRewards();
+      renderLog();
+      renderGameTimer();
+    });
+    rEl.appendChild(div);
+  });
+
+  const noteEl = document.getElementById('pointValueNote');
+  if(noteEl){
+    const brlValue = POINT_VALUE_BRL.toFixed(2).replace('.', ',');
+    const maxBrl = Math.round(MAX_POINTS * POINT_VALUE_BRL);
+    noteEl.textContent = `1 Pacus Point ≈ R$${brlValue} · máximo: ${MAX_POINTS} pontos (~R$${maxBrl})`;
+  }
+}
+
+// Comportamentos positivos espontâneos — cada um já vem com um elogio
+// específico (não genérico), pra reforçar exatamente o que ele fez bem.
 const POSITIVE_BEHAVIORS = [
   { id:'helped', label:'Ajudou alguém', emoji:'🤝', praise:'Isso foi generosidade de verdade!' },
   { id:'kind', label:'Foi gentil', emoji:'❤️', praise:'Gentileza gera gentileza!' },
@@ -172,13 +189,4 @@ document.getElementById('addPointsBtn').addEventListener('click', ()=>{
   if(raw === null) return;
   const amount = parseInt(raw, 10);
   if(!amount || amount === 0) return;
-  const delta = addPoints(amount);
-  addLog(`${amount>0?'+':''}${amount} · ajuste manual`, true);
-  saveState(state);
-  bumpTotal(delta);
-  render();
-});
-
-document.getElementById('resetBtn').addEventListener('click', ()=>{
-  if(!confirm('Isso apaga os Pacus Points, o histórico de hoje e o histórico de dias. Tem certeza?')) return;
-  state = { totalPoints:0, checkedToday:{}, lastDate:todayISO(), log:[], history:{}, lastSeenPetStage:0, petCompletedDays:[], petLastCompletionISO:null, revision:0, driveRevision:0, driveConflictCount:0, lastBackupISO:null, backupReminderDismissedFor:null, driveFileId
+  const delta = 

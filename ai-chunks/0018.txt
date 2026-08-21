@@ -1,4 +1,19 @@
-);
+tBoundingClientRect: ()=>({left:window.innerWidth*0.8, top:window.innerHeight*0.3, width:0, height:0}) }, 20), 350);
+
+  const autoClose = setTimeout(closeEvolutionCelebration, 4500);
+  overlay.dataset.autoCloseId = autoClose;
+}
+function closeEvolutionCelebration(){
+  const overlay = document.getElementById('evolutionCelebration');
+  if(overlay.dataset.autoCloseId) clearTimeout(Number(overlay.dataset.autoCloseId));
+  overlay.classList.remove('open');
+}
+
+function buildStreakStrip(){
+  const days = [];
+  for(let i=6; i>=0; i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
     const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');
     days.push(iso);
   }
@@ -146,13 +161,4 @@ function render(){
           <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
           <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="${lightDay ? 'Não feito (dia leve, sem perder ponto)' : 'Não feito, perde metade dos pontos'}">✕</button>
         </span>
-        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}${task.tier ? `<span class="tier-badge" title="${tierTitle[task.tier]||''}">${tierBadge[task.tier]||''}</span>` : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
-        <span class="pts">${status==='na' ? 'n/a' : status==='help' ? '+'+taskHelpPoints(task) : status==='x' ? (lightDay ? 'dia leve' : '−'+taskNotDonePenalty(task)) : '+'+task.pts}</span>
-      `;
-      ul.appendChild(li);
-    });
-
-    div.innerHTML = `
-      <div class="period-head"><h2>${period.label}</h2><span class="time">${period.time}</span></div>
-      <span class="time-remaining" id="timeRemaining_${key}"></span>
-      <span class="progress-txt">${progress
+        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}${task.tier ? `<span class="tier-badge" title="${tierTitle[task.tier]||''}">${tierBadge[task.tier]||''}</span>` : ''}<span class="

@@ -1,4 +1,18 @@
- if(!editingDate) return;
+airStatus(dateISO) || entry.hair || '';
+  document.getElementById('dayOverlay').classList.add('open');
+}
+function closeDayEditor(){
+  document.getElementById('dayOverlay').classList.remove('open');
+  editingDate = null;
+}
+document.getElementById('dayCloseBtn').addEventListener('click', closeDayEditor);
+document.getElementById('dayCancelBtn').addEventListener('click', closeDayEditor);
+document.getElementById('dayOverlay').addEventListener('click', e=>{
+  if(e.target.id === 'dayOverlay') closeDayEditor();
+});
+
+document.getElementById('daySaveBtn').addEventListener('click', ()=>{
+  if(!editingDate) return;
   const oldEntry = state.history[editingDate];
   const oldPoints = oldEntry ? oldEntry.pointsEarnedThatDay : 0;
 
@@ -144,19 +158,4 @@ function renderDriveSync(){
       const info = document.getElementById('driveSetupInfo');
       info.style.display = info.style.display === 'none' ? 'block' : 'none';
     });
-    document.getElementById('driveCopyCodeBtn').addEventListener('click', ()=>{
-      const box = document.getElementById('driveCodeBox');
-      box.value = APPS_SCRIPT_CODE;
-      box.style.display = box.style.display === 'none' ? 'block' : 'none';
-      if(box.style.display === 'block'){ box.focus(); box.select(); }
-    });
-    return;
-  }
-
-  document.getElementById('driveSaveBtn').addEventListener('click', driveSave);
-  document.getElementById('driveLoadBtn').addEventListener('click', driveLoad);
-}
-
-async function driveSave(){
-  try{
-    const backup = { config: CONFIG, state: state, exportedAt: new Date(
+    document.getElementById('d

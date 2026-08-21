@@ -159,7 +159,14 @@ function mergeRemoteData(remote){
   };
 }
 
-async function autoPullOnStartup(){
+// Busca e mescla os dados do Drive — usada tanto ao abrir o app quanto
+// na sincronização periódica de segurança (a cada 5 min). SEMPRE mescla
+// (nunca substitui de uma vez): mesmo quando o Drive parece "mais novo",
+// os dados locais podem ter progresso que o Drive ainda não tem (ex:
+// uma aba antiga sincronizando antes). mergeRemoteData usa união/máximo
+// em tudo que é progresso acumulado, então nunca perde o que já foi
+// conquistado.
+async function pullAndMergeFromDrive(){
   if(!APPS_SCRIPT_URL) return;
   suppressAutoPush = true;
   try{
@@ -169,14 +176,8 @@ async function autoPullOnStartup(){
       if(backup && backup.config && backup.state){
         const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
         const localRevision = Number(state.driveRevision)||0;
-        // SEMPRE mescla (nunca substitui de uma vez) — mesmo quando o Drive
-        // parece "mais novo", os dados locais podem ter progresso que o
-        // Drive ainda não tem (ex: uma aba antiga sincronizando antes).
-        // mergeRemoteData usa união/máximo em tudo que é progresso
-        // acumulado, então nunca perde o que já foi conquistado.
         if(remoteRevision !== localRevision || JSON.stringify(backup.config) !== JSON.stringify(CONFIG)){
           const merged = mergeRemoteData(backup);
           CONFIG = merged.config;
           state = merged.state;
-          state.driveRevision = Math.max(remoteRevision, localRevision);
-          state.driveLas
+   

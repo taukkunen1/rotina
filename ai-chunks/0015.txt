@@ -1,4 +1,26 @@
-|| t.runningSince) return; // não dá pra mudar enquanto está rodando
+er();
+    });
+  }
+
+  if(running) startGameTimerTicking(); else stopGameTimerTicking();
+}
+
+/* ===================== TIMERS AVULSOS (tempo livre pra qualquer coisa) ===================== */
+let customTimerTickHandle = null;
+
+function findCustomTimer(id){
+  return state.customTimers.find(t=>t.id===id);
+}
+
+function customTimerRemainingNow(t){
+  if(!t.runningSince) return t.remainingSeconds;
+  const elapsed = (Date.now() - t.runningSince)/1000;
+  return Math.max(0, t.remainingSeconds - elapsed);
+}
+
+function setCustomTimerMinutes(id, minutes){
+  const t = findCustomTimer(id);
+  if(!t || t.runningSince) return; // não dá pra mudar enquanto está rodando
   const secs = Math.max(0, Math.round(minutes*60));
   t.totalSeconds = secs;
   t.remainingSeconds = secs;
@@ -189,18 +211,4 @@ function computePetStage(){
   const stageFloat = Math.min(maxStage, completedDays);
   const stage = Math.min(maxStage, completedDays);
   const todayHasProgress = hasDayProgress(todayISO());
-  const canGrowToday = todayISO() >= cycle.startISO && todayISO() <= cycle.endISO && todayHasProgress && !completed.has(todayISO());
-  return {
-    stage, stageFloat, unitsCompleted:completedDays, totalUnits:cycle.totalDays,
-    maxStage, daysEquivalent:completedDays, cycleDays:cycle.totalDays,
-    todayPerfect:todayHasProgress, canGrowToday, completedDays:validDays
-  };
-}
-
-function svgAttrs(){
-  return 'viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Evolução do Pacus"';
-}
-
-function buildEggSVG(progress){
-  const p = Math.max(0, Math.min(1, progress));
-  const wobble = Math.sin(p*Math.PI*3)*
+  const canGrowToday = todayISO() >= cycle.sta

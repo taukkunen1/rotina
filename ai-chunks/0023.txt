@@ -1,4 +1,11 @@
-('change', e=>{ item.period = e.target.value; });
+der:1px solid var(--line); color:var(--chalk); border-radius:6px; padding:6px; font-family:inherit; font-size:.8rem;">${periodOptions}</select>
+        ${stepperHTML('pts', item.pts)}
+      </div>
+    `;
+    row.querySelector('[data-field=label]').addEventListener('input', e=>{ item.label = e.target.value; });
+    row.querySelector('[data-field=start]').addEventListener('input', e=>{ item.start = e.target.value; });
+    row.querySelector('[data-field=end]').addEventListener('input', e=>{ item.end = e.target.value; });
+    row.querySelector('[data-field=period]').addEventListener('change', e=>{ item.period = e.target.value; });
     wireStepper(row, item, 'pts');
     row.querySelectorAll('.day-chip').forEach(chip=>{
       chip.addEventListener('click', ()=>{
@@ -187,18 +194,4 @@ function openDayEditor(dateISO){
   document.getElementById('dayDone').value = entry.done;
   document.getElementById('dayTotal').value = entry.total;
   document.getElementById('dayPoints').value = entry.pointsEarnedThatDay;
-  document.getElementById('dayHair').value = getHairStatus(dateISO) || entry.hair || '';
-  document.getElementById('dayOverlay').classList.add('open');
-}
-function closeDayEditor(){
-  document.getElementById('dayOverlay').classList.remove('open');
-  editingDate = null;
-}
-document.getElementById('dayCloseBtn').addEventListener('click', closeDayEditor);
-document.getElementById('dayCancelBtn').addEventListener('click', closeDayEditor);
-document.getElementById('dayOverlay').addEventListener('click', e=>{
-  if(e.target.id === 'dayOverlay') closeDayEditor();
-});
-
-document.getElementById('daySaveBtn').addEventListener('click', ()=>{
- 
+  document.getElementById('dayHair').value = getH

@@ -1,4 +1,22 @@
-adStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'));
+entById('backupReminderExportBtn').addEventListener('click', ()=>{
+    document.getElementById('exportBtn').click();
+  });
+  document.getElementById('backupReminderDismissBtn').addEventListener('click', ()=>{
+    state.backupReminderDismissedFor = today;
+    saveState(state);
+    renderBackupReminder();
+  });
+}
+
+function renderWeeklyReview(){
+  const el = document.getElementById('weeklyReviewSection');
+  if(!el) return;
+
+  const days = [];
+  for(let i=6; i>=0; i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    days.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'));
   }
 
   let perfectDays = 0, totalPointsWeek = 0, totalScreenMin = 0;
@@ -173,21 +191,4 @@ function renderRewards(){
       state.lifetimeRedemptions[r.id] = (state.lifetimeRedemptions[r.id] || 0) + 1;
 
       saveState(state);
-      bumpTotal(delta, evt.currentTarget);
-      renderRewards();
-      renderLog();
-      renderGameTimer();
-    });
-    rEl.appendChild(div);
-  });
-
-  const noteEl = document.getElementById('pointValueNote');
-  if(noteEl){
-    const brlValue = POINT_VALUE_BRL.toFixed(2).replace('.', ',');
-    const maxBrl = Math.round(MAX_POINTS * POINT_VALUE_BRL);
-    noteEl.textContent = `1 Pacus Point ≈ R$${brlValue} · máximo: ${MAX_POINTS} pontos (~R$${maxBrl})`;
-  }
-}
-
-// Comportamentos positivos espontâneos — cada um já vem com um elogio
-// específico (não genérico), pra reforçar exatamente o que
+      bum

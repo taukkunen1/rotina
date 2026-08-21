@@ -1,4 +1,13 @@
-Msg}</span>
+task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
+        <span class="pts">${status==='na' ? 'n/a' : status==='help' ? '+'+taskHelpPoints(task) : status==='x' ? (lightDay ? 'dia leve' : '−'+taskNotDonePenalty(task)) : '+'+task.pts}</span>
+      `;
+      ul.appendChild(li);
+    });
+
+    div.innerHTML = `
+      <div class="period-head"><h2>${period.label}</h2><span class="time">${period.time}</span></div>
+      <span class="time-remaining" id="timeRemaining_${key}"></span>
+      <span class="progress-txt">${progressMsg}</span>
       <div class="progress-bar"><div style="width:${pct}%"></div></div>
       ${nextPreviewHtml}
     `;
@@ -209,22 +218,4 @@ function renderBackupReminder(){
       </span>
     </div>
   `;
-  document.getElementById('backupReminderExportBtn').addEventListener('click', ()=>{
-    document.getElementById('exportBtn').click();
-  });
-  document.getElementById('backupReminderDismissBtn').addEventListener('click', ()=>{
-    state.backupReminderDismissedFor = today;
-    saveState(state);
-    renderBackupReminder();
-  });
-}
-
-function renderWeeklyReview(){
-  const el = document.getElementById('weeklyReviewSection');
-  if(!el) return;
-
-  const days = [];
-  for(let i=6; i>=0; i--){
-    const d = new Date();
-    d.setDate(d.getDate()-i);
-    days.push(d.getFullYear()+"-"+String(d.getMonth()+1).p
+  document.getElem
