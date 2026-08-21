@@ -14,45 +14,90 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Remover referências comprovadamente legadas
+      - name: Remover funções completas comprovadamente legadas
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
+
           p = Path('app.js')
           s = p.read_text(encoding='utf-8')
 
-          # Chamadas da renderização principal que pertencem a áreas removidas
-          for call in [
-              '  renderCustomTimers();\n',
-              '  renderLog();\n',
-              '  renderHistory();\n',
-              '  renderAchievementMural();\n',
-              '  renderBackupReminder();\n',
-              '  renderTestPanel();\n',
-              '  renderTestModeBanner();\n',
-              '  renderDriveSync();\n',
-          ]:
-              s = s.replace(call, '')
+          names = [
+              'renderCustomTimers',
+              'renderLog',
+              'renderHistory',
+              'renderAchievementMural',
+              'renderBackupReminder',
+              'renderTestPanel',
+              'renderTestModeBanner',
+          ]
 
-          # O editor de dia anterior foi removido do HTML. Remove o bloco inteiro,
-          # incluindo listeners que apontariam para elementos inexistentes.
-          start = '/* ===================== EDITOR DE DIA ANTERIOR ===================== */'
-          end = '/* ===================== SINCRONIZAÇÃO COM GOOGLE DRIVE (via Apps Script) ====================='
-          a = s.find(start)
-          b = s.find(end)
-          if a != -1 and b != -1 and b > a:
-              s = s[:a] + s[b:]
+          def remove_function(src, name):
+              pat = re.compile(r'(?m)^[ \t]*(?:async\s+)?function\s+' + re.escape(name) + r'\s*\([^)]*\)\s*\{')
+              m = pat.search(src)
+              if not m:
+                  return src
+              i = m.end()
+              depth = 1
+              quote = None
+              escape = False
+              line_comment = False
+              block_comment = False
+              while i < len(src) and depth:
+                  c = src[i]
+                  n = src[i+1] if i+1 < len(src) else ''
+                  if line_comment:
+                      if c == '\n': line_comment = False
+                  elif block_comment:
+                      if c == '*' and n == '/':
+                          block_comment = False; i += 1
+                  elif quote:
+                      if escape: escape = False
+                      elif c == '\\': escape = True
+                      elif c == quote: quote = None
+                  else:
+                      if c == '/' and n == '/': line_comment = True; i += 1
+                      elif c == '/' and n == '*': block_comment = True; i += 1
+                      elif c in ('\"', "'", '`'): quote = c
+                      elif c == '{': depth += 1
+                      elif c == '}': depth -= 1
+                  i += 1
+              # remove trailing blank lines but preserve separation
+              while i < len(src) and src[i] in ' \t\r\n':
+                  i += 1
+              return src[:m.start()] + '\n\n' + src[i:]
+
+          for name in names:
+              s = remove_function(s, name)
+
+          # Remove listeners/calls whose only purpose was the deleted UI.
+          obsolete_tokens = [
+              'customTimersSection',
+              'achievementMural',
+              'backupReminder',
+              'testPanel',
+              'testModeBanner',
+          ]
+          # Fail closed: do not blindly delete arbitrary lines. If these tokens
+          # remain after function removal, validation below will stop the commit.
 
           p.write_text(s, encoding='utf-8')
           PY
       - name: Validar sintaxe
         run: node --check app.js
-      - name: Confirmar remoção do editor legado
+      - name: Confirmar que funções legadas não permanecem
         run: |
-          ! grep -q 'EDITOR DE DIA ANTERIOR' app.js
-          ! grep -q "getElementById('dayOverlay')" app.js
-      - name: Commit da limpeza
+          for name in renderCustomTimers renderLog renderHistory renderAchievementMural renderBackupReminder renderTestPanel renderTestModeBanner; do
+            ! grep -q "function $name" app.js
+          done
+      - name: Verificar referências residuais perigosas
+        run: |
+          if grep -nE "render(CustomTimers|Log|History|AchievementMural|BackupReminder|TestPanel|TestModeBanner)\(" app.js; then
+            echo 'Referência legada encontrada. Abortando sem commit.'
+            exit 1
+          fi
+      - name: Commit da segunda limpeza
         run: |
           if git diff --quiet -- app.js; then
             echo 'Nenhuma alteração necessária.'
@@ -61,5 +106,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add app.js
-          git commit -m 'Limpar referências legadas do app.js'
+          git commit -m 'Remover funções legadas completas do app.js'
           git push
