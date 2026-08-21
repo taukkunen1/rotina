@@ -12,7 +12,6 @@ function findDataFile() {
   const current = DriveApp.getFilesByName(DATA_FILE);
   if (current.hasNext()) return current.next();
 
-  // Migra automaticamente o arquivo principal anterior sem manter o nome antigo no código.
   const files = DriveApp.getFiles();
   const legacyPattern = /^rotina-(?!.*\d{4}-\d{2}-\d{2}\.json$).*backup\.json$/;
   while (files.hasNext()) {
@@ -109,8 +108,8 @@ function removeDailyCloseTrigger() {
 
 function checkDailyClose() {
   const hm = localHourMinute();
-  if (hm >= '23:59') return closeRoutineDay(isoDate(new Date()), true);
-  if (hm <= '00:10') closeRoutineDay(isoDateOffset(-1), false);
+  if (hm >= '23:59') return closeRoutineDay(isoDate(new Date()));
+  if (hm <= '00:10') return closeRoutineDay(isoDateOffset(-1));
 }
 
 function tasksForDate(config, dateISO) {
@@ -127,7 +126,11 @@ function tasksForDate(config, dateISO) {
   return result;
 }
 
-function closeRoutineDay(dateISO, markCheckedToday) {
+function taskPoints(tasks) {
+  return tasks.reduce((sum, task) => sum + Number(task && task.pts || 0), 0);
+}
+
+function closeRoutineDay(dateISO) {
   const lock = LockService.getScriptLock();
   try {
     lock.waitLock(10000);
@@ -141,24 +144,25 @@ function closeRoutineDay(dateISO, markCheckedToday) {
 
     const tasks = tasksForDate(config, dateISO);
     const previous = state.history[dateISO] || {};
+    const checkedToday = state.checkedToday || {};
+    const checkedTasks = tasks.filter(task => checkedToday[task.id] === true);
+
     const total = tasks.length || Number(previous.total || 0);
-    const pointsEarnedThatDay = tasks.length
-      ? tasks.reduce((sum, task) => sum + Number(task.pts || 0), 0)
+    const previousDone = Number(previous.done || 0);
+    const done = checkedTasks.length > 0 ? checkedTasks.length : Math.min(previousDone, total);
+    const pointsEarnedThatDay = checkedTasks.length > 0
+      ? taskPoints(checkedTasks)
       : Number(previous.pointsEarnedThatDay || 0);
+    const perfect = total > 0 && done === total;
 
     state.history[dateISO] = Object.assign({}, previous, {
-      done: total,
+      done: done,
       total: total,
       pointsEarnedThatDay: pointsEarnedThatDay,
-      perfect: total > 0,
-      screenMinutes: total > 0 ? Number(config.perfectDayBonusMinutes || 30) : Number(previous.screenMinutes || 0),
+      perfect: perfect,
+      screenMinutes: perfect ? Number(config.perfectDayBonusMinutes || 30) : Number(previous.screenMinutes || 0),
       autoClosedAt: new Date().toISOString()
     });
-
-    if (markCheckedToday && tasks.length) {
-      state.checkedToday = state.checkedToday || {};
-      tasks.forEach(task => { state.checkedToday[task.id] = true; });
-    }
 
     state.autoClosedDates[dateISO] = true;
     state.lastAutoClosedDate = dateISO;
@@ -173,6 +177,55 @@ function closeRoutineDay(dateISO, markCheckedToday) {
     file.setContent(JSON.stringify(data, null, 2));
     createDailyBackup(data);
     pruneDailyBackups();
+  } finally {
+    try { lock.releaseLock(); } catch (ignore) {}
+  }
+}
+
+// Executar uma vez para corrigir registros legados que foram fechados
+// indevidamente como 1/1 apesar de representarem um dia perfeito completo.
+function repairLegacyHistory() {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+    const file = findDataFile();
+    const data = readJson(file);
+    const state = data.state || {};
+    const config = data.config || {};
+    const history = state.history || {};
+    let changed = false;
+
+    Object.keys(history).forEach(dateISO => {
+      const item = history[dateISO] || {};
+      const done = Number(item.done || 0);
+      const total = Number(item.total || 0);
+      if (!item.perfect || done !== 1 || total !== 1) return;
+
+      const tasks = tasksForDate(config, dateISO);
+      if (!tasks.length) return;
+      item.done = tasks.length;
+      item.total = tasks.length;
+      item.pointsEarnedThatDay = taskPoints(tasks);
+      item.perfect = true;
+      item.legacyHistoryNormalizedAt = new Date().toISOString();
+      history[dateISO] = item;
+      changed = true;
+    });
+
+    if (!changed) return { ok:true, changed:false };
+
+    state.history = history;
+    data.state = state;
+    const currentRevision = Number(data.revision || state.driveRevision || 0);
+    const nextRevision = currentRevision + 1;
+    data.revision = nextRevision;
+    data.baseRevision = currentRevision;
+    data.serverUpdatedAt = new Date().toISOString();
+    state.driveRevision = nextRevision;
+    file.setContent(JSON.stringify(data, null, 2));
+    createDailyBackup(data);
+    pruneDailyBackups();
+    return { ok:true, changed:true, revision:nextRevision };
   } finally {
     try { lock.releaseLock(); } catch (ignore) {}
   }
