@@ -1,6 +1,4 @@
 const DATA_FILE = 'rotina-hector-backup.json';
-const APP_FILE = 'rotina-hector.html';
-const LEGACY_APP_FILE = 'rotina-hector-app.html';
 const BACKUP_PREFIX = 'rotina-hector-backup-';
 const MAX_DAILY_BACKUPS = 30;
 
@@ -25,28 +23,19 @@ function readJson(file) {
   }
 }
 
-function doGet(e) {
-  if (e.parameter && e.parameter.data === '1') {
-    const files = DriveApp.getFilesByName(DATA_FILE);
-    if (!files.hasNext()) return jsonResponse({ error: 'not_found' });
+// API contract: every GET returns JSON state. The web UI is served separately.
+function doGet() {
+  const files = DriveApp.getFilesByName(DATA_FILE);
+  if (!files.hasNext()) return jsonResponse({ ok: false, error: 'not_found' });
 
-    const data = readJson(files.next());
-    return jsonResponse(data);
-  }
-
-  let appFiles = DriveApp.getFilesByName(APP_FILE);
-  if (!appFiles.hasNext()) appFiles = DriveApp.getFilesByName(LEGACY_APP_FILE);
-
-  if (appFiles.hasNext()) {
-    return HtmlService
-      .createHtmlOutput(appFiles.next().getBlob().getDataAsString())
-      .setTitle('Rotina do Hector')
-      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
-  }
-
-  return HtmlService.createHtmlOutput(
-    'Ainda não encontrei o arquivo rotina-hector.html no Google Drive.'
-  );
+  const data = readJson(files.next());
+  return jsonResponse({
+    ok: true,
+    revision: Number(data.revision || (data.state && data.state.driveRevision) || 0),
+    config: data.config || {},
+    state: data.state || {},
+    serverUpdatedAt: data.serverUpdatedAt || null
+  });
 }
 
 function doPost(e) {
@@ -60,8 +49,6 @@ function doPost(e) {
   const lock = LockService.getScriptLock();
 
   try {
-    // Uma única gravação por vez. Sem isso, duas sessões podem aprovar a
-    // mesma revisão antes de qualquer uma terminar de salvar.
     lock.waitLock(10000);
 
     const file = findDataFile();
@@ -73,8 +60,6 @@ function doPost(e) {
     );
     const baseRevision = Number(incoming.baseRevision || 0);
 
-    // Depois que existe uma revisão remota, toda gravação precisa declarar
-    // qual versão o cliente usou como base.
     if (currentRevision > 0 && baseRevision !== currentRevision) {
       return jsonResponse({
         ok: false,
@@ -88,7 +73,6 @@ function doPost(e) {
     incoming.revision = nextRevision;
     incoming.serverUpdatedAt = new Date().toISOString();
     incoming.baseRevision = currentRevision;
-
     if (!incoming.state) incoming.state = {};
     incoming.state.driveRevision = nextRevision;
 
@@ -116,7 +100,6 @@ function createDailyBackup(data) {
   const date = Utilities.formatDate(new Date(), timezone, 'yyyy-MM-dd');
   const name = BACKUP_PREFIX + date + '.json';
   const backups = DriveApp.getFilesByName(name);
-
   if (!backups.hasNext()) {
     DriveApp.createFile(name, JSON.stringify(data, null, 2), MimeType.PLAIN_TEXT);
   }
@@ -125,19 +108,10 @@ function createDailyBackup(data) {
 function pruneDailyBackups() {
   const allBackups = [];
   const files = DriveApp.getFiles();
-
   while (files.hasNext()) {
     const file = files.next();
-    if (/^rotina-hector-backup-\d{4}-\d{2}-\d{2}[.]json$/.test(file.getName())) {
-      allBackups.push(file);
-    }
+    if (/^rotina-hector-backup-\d{4}-\d{2}-\d{2}[.]json$/.test(file.getName())) allBackups.push(file);
   }
-
-  allBackups.sort(function(a, b) {
-    return b.getDateCreated().getTime() - a.getDateCreated().getTime();
-  });
-
-  for (let i = MAX_DAILY_BACKUPS; i < allBackups.length; i++) {
-    allBackups[i].setTrashed(true);
-  }
+  allBackups.sort((a, b) => b.getDateCreated().getTime() - a.getDateCreated().getTime());
+  for (let i = MAX_DAILY_BACKUPS; i < allBackups.length; i++) allBackups[i].setTrashed(true);
 }
