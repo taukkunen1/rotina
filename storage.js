@@ -37,14 +37,4 @@
   }
 
   window.RotinaStorage = Object.freeze({CONFIG_KEY,STATE_KEY,APPS_SCRIPT_URL,DATA_ENDPOINT,readJSON,writeJSON,remove});
-
-  if(location.pathname.endsWith('/index.html') || location.pathname.endsWith('/rotina/') || location.pathname.endsWith('/rotina')){
-    if(!document.querySelector('script[data-rotina-app]')){
-      const script=document.createElement('script');
-      script.src='app.js';
-      script.defer=true;
-      script.dataset.rotinaApp='1';
-      document.head.appendChild(script);
-    }
-  }
 })();
