@@ -3318,7 +3318,14 @@ function mergeRemoteData(remote){
   };
 }
 
-async function autoPullOnStartup(){
+// Busca e mescla os dados do Drive — usada tanto ao abrir o app quanto
+// na sincronização periódica de segurança (a cada 5 min). SEMPRE mescla
+// (nunca substitui de uma vez): mesmo quando o Drive parece "mais novo",
+// os dados locais podem ter progresso que o Drive ainda não tem (ex:
+// uma aba antiga sincronizando antes). mergeRemoteData usa união/máximo
+// em tudo que é progresso acumulado, então nunca perde o que já foi
+// conquistado.
+async function pullAndMergeFromDrive(){
   if(!APPS_SCRIPT_URL) return;
   suppressAutoPush = true;
   try{
@@ -3328,11 +3335,6 @@ async function autoPullOnStartup(){
       if(backup && backup.config && backup.state){
         const remoteRevision = Number(backup.revision || backup.state.driveRevision)||0;
         const localRevision = Number(state.driveRevision)||0;
-        // SEMPRE mescla (nunca substitui de uma vez) — mesmo quando o Drive
-        // parece "mais novo", os dados locais podem ter progresso que o
-        // Drive ainda não tem (ex: uma aba antiga sincronizando antes).
-        // mergeRemoteData usa união/máximo em tudo que é progresso
-        // acumulado, então nunca perde o que já foi conquistado.
         if(remoteRevision !== localRevision || JSON.stringify(backup.config) !== JSON.stringify(CONFIG)){
           const merged = mergeRemoteData(backup);
           CONFIG = merged.config;
@@ -3349,6 +3351,19 @@ async function autoPullOnStartup(){
     renderDriveSync();
   }
   suppressAutoPush = false;
+}
+async function autoPullOnStartup(){
+  await pullAndMergeFromDrive();
+}
+
+// Sincronização periódica de segurança: além do envio instantâneo a
+// cada clique, busca e mescla o Drive de novo a cada 5 minutos — pega
+// qualquer atualização feita em outro aparelho/aba que não tenha
+// chegado na hora, sem depender só do clique.
+let periodicSyncHandle = null;
+function startPeriodicSync(){
+  if(periodicSyncHandle) return;
+  periodicSyncHandle = setInterval(pullAndMergeFromDrive, 5*60*1000);
 }
 
 function addLog(text, isParentAction){
@@ -5495,6 +5510,7 @@ document.getElementById('importFile').addEventListener('change', (e)=>{
 
 render();
 autoPullOnStartup();
+startPeriodicSync();
 </script>
 </body>
 </html>
