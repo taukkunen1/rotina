@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico · Rotina</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="ui.css">
+</head>
+<body class="adult-page history-page">
+  <main class="adult-page-shell">
+    <header class="adult-page-header">
+      <div>
+        <a class="adult-back" href="adultos.html">← Voltar ao Painel dos Adultos</a>
+        <h1>📅 Histórico dos dias</h1>
+        <p>Registro completo da rotina, pontos e desempenho diário.</p>
+      </div>
+      <div id="history-status" aria-live="polite">Carregando dados…</div>
+    </header>
+
+    <section class="adult-card history-card">
+      <div class="history-toolbar">
+        <p id="history-summary" class="adult-note">Carregando…</p>
+        <button id="history-refresh" type="button">Atualizar do servidor</button>
+      </div>
+      <div id="history-list">Carregando histórico…</div>
+    </section>
+  </main>
+  <script src="storage.js"></script>
+  <script src="history.js"></script>
+</body>
+</html>
