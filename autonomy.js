@@ -1,8 +1,10 @@
 (() => {
   'use strict';
   const TODAY = () => { const d=new Date(), p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; };
+
+  // Missões que podem ser feitas em casa. A missão não deve depender de haver escola
+  // ou compromisso externo no dia, evitando registros artificiais de sucesso.
   const MISSIONS=[
-    {key:'mochila',icon:'🎒',text:'Preparar a mochila para o próximo compromisso.'},
     {key:'roupa',icon:'👕',text:'Separar a roupa que vai usar.'},
     {key:'material',icon:'📚',text:'Organizar o próprio material.'},
     {key:'espaco',icon:'🧹',text:'Arrumar o próprio espaço.'},
@@ -17,12 +19,20 @@
     if(typeof state==='undefined') return null;
     if(!state.autonomy||typeof state.autonomy!=='object') state.autonomy={};
     const today=TODAY();
+    const expected=missionForDay(today);
     if(state.autonomy.date!==today){
       const level=Number(state.autonomy?.courage?.level)||1;
-      state.autonomy={date:today,courage:{level,practiced:false},mission:{key:missionForDay(today).key,status:null}};
+      state.autonomy={date:today,courage:{level,practiced:false},mission:{key:expected.key,status:null}};
     }
     state.autonomy.courage ||= {level:1,practiced:false};
-    state.autonomy.mission ||= {key:missionForDay(today).key,status:null};
+    state.autonomy.mission ||= {key:expected.key,status:null};
+
+    // Se a missão antiga deixou de existir, substitui pela missão válida do dia
+    // e limpa qualquer resultado que tenha sido registrado para a tarefa errada.
+    if(!MISSIONS.some(m=>m.key===state.autonomy.mission.key)){
+      state.autonomy.mission={key:expected.key,status:null};
+    }
+
     state.autonomy.courage.level=Math.min(5,Math.max(1,Number(state.autonomy.courage.level)||1));
     return state.autonomy;
   }
