@@ -1,4 +1,13 @@
-id">
+', label:'Resolveu um problema', emoji:'🧠', praise:'Pensou e resolveu sozinho — muito bem!' },
+  { id:'initiative', label:'Teve iniciativa', emoji:'🚀', praise:'Não esperou pedirem — tomou a frente!' },
+];
+
+function renderPositiveBehaviors(){
+  const el = document.getElementById('positiveBehaviors');
+  if(!el) return;
+
+  el.innerHTML = `
+    <div class="behavior-grid">
       ${POSITIVE_BEHAVIORS.map(b => `
         <div class="behavior-card">
           <button type="button" class="behavior-btn" data-id="${b.id}">${b.emoji} ${b.label}</button>
@@ -178,13 +187,4 @@ let draft = null; // cópia de trabalho do CONFIG enquanto o modal está aberto
 function openEditor(){
   draft = JSON.parse(JSON.stringify(CONFIG));
   renderEditorPeriod('manha', 'editManha');
-  renderEditorPeriod('tarde', 'editTarde');
-  renderEditorPeriod('noite', 'editNoite');
-  renderEditorBad();
-  renderEditorRewards();
-
-  const weekendToggle = document.getElementById('weekendToggle');
-  const weekendBody = document.getElementById('weekendEditorBody');
-  weekendToggle.checked = !!draft.periodsWeekend;
-  weekendBody.style.display = draft.periodsWeekend ? 'block' : 'none';
-  if(draf
+  renderEditorPeriod('tarde', 'ed

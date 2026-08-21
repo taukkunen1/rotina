@@ -1,4 +1,11 @@
- 'streak-cell none';
+ = weekdayLetters[d.getDay()];
+    let entry = isToday ? liveTodayEntry() : state.history[iso];
+    let cls = 'streak-cell none';
+    if(entry && entry.total > 0){
+      if(entry.perfect) cls = 'streak-cell perfect';
+      else if(entry.done === entry.total - 1) cls = 'streak-cell almost';
+      else if(entry.done > 0) cls = 'streak-cell partial';
+      else cls = 'streak-cell none';
     }
     if(entry && entry.done > 0) progressDays++;
     if(isToday) cls += ' today';
@@ -155,12 +162,4 @@ function render(){
   updateTimeRemainingDisplays();
   startTimeRemainingTicking();
 
-  periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
-    btn.addEventListener('click', onMarkClick);
-  });
-
-  periodsEl.querySelectorAll('.mini-reorder-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const periodKey = btn.getAttribute('data-period');
-      const taskId = btn.getAttribute('data-task');
-      const dir = btn.getAttribute('data-d
+  

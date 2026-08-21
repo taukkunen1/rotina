@@ -1,4 +1,16 @@
-(deltaEl){
++text, parent: !!isParentAction });
+  state.log = state.log.slice(0, 30);
+}
+function bumpTotal(delta, anchorEl){
+  const el = document.getElementById('totalPoints');
+  el.textContent = state.totalPoints;
+  el.classList.remove('bump');
+  void el.offsetWidth;
+  el.classList.add('bump');
+
+  if(delta){
+    const deltaEl = document.getElementById('pointsDelta');
+    if(deltaEl){
       const rect = (anchorEl || el).getBoundingClientRect();
       deltaEl.style.left = (rect.left + rect.width/2) + 'px';
       deltaEl.style.top = (rect.top - 6) + 'px';
@@ -209,21 +221,4 @@ function setCustomTimerMinutes(id, minutes){
 
 function startCustomTimer(id){
   const t = findCustomTimer(id);
-  if(!t || t.runningSince || t.remainingSeconds <= 0) return;
-  t.runningSince = Date.now();
-  t.finished = false;
-  saveState(state);
-  renderCustomTimers();
-  startCustomTimerTicking();
-}
-
-function pauseCustomTimer(id){
-  const t = findCustomTimer(id);
-  if(!t || !t.runningSince) return;
-  t.remainingSeconds = customTimerRemainingNow(t);
-  t.runningSince = null;
-  saveState(state);
-  renderCustomTimers();
-}
-
-function r
+  if(!t || t.runningSince || t.remainingSeconds <= 0) retu

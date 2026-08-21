@@ -1,4 +1,7 @@
-78)/.22}"/>` : '';
+ start ? 0 : Math.min(1,(p-start)/0.16);
+    return `<path d="${d}" class="egg-crack" stroke="#c9506f" stroke-width="${2+i*.25}" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>`;
+  }).join('');
+  const shellBreak = p > .78 ? `<path d="M62 118 Q100 ${142+p*10} 158 118" stroke="#c9506f" stroke-width="2.4" fill="none" opacity="${(p-.78)/.22}"/>` : '';
   // silhueta do filhote crescendo por dentro, visível através da casca
   const embryoOpacity = Math.max(0, p-0.3)*0.55;
   const embryoScale = 0.5 + p*0.5;
@@ -140,15 +143,4 @@ function getMilestoneDates(){
     [0,'Ovo'], [5,'Rachando'], [9,'Eclosão'], [14,'Bebê'], [19,'Jovem'], [23,'Adulto']
   ];
   return milestones.map(([day,label])=>{
-    if(day === 0) return { label, day, date: cycle.startISO, reached: true };
-    const reached = sorted.length >= day;
-    return { label, day, date: reached ? sorted[day-1] : null, reached };
-  });
-}
-
-function renderAchievementMural(){
-  const el = document.getElementById('achievementMuralSection');
-  if(!el) return;
-  const milestones = getMilestoneDates();
-  const cardsHtml = milestones.map(m=>`
-    <div class="m
+    if(day === 0) return { label, day, date: cycle.sta

@@ -1,4 +1,13 @@
-t.periodsWeekend){
+itTarde');
+  renderEditorPeriod('noite', 'editNoite');
+  renderEditorBad();
+  renderEditorRewards();
+
+  const weekendToggle = document.getElementById('weekendToggle');
+  const weekendBody = document.getElementById('weekendEditorBody');
+  weekendToggle.checked = !!draft.periodsWeekend;
+  weekendBody.style.display = draft.periodsWeekend ? 'block' : 'none';
+  if(draft.periodsWeekend){
     renderEditorPeriod('manha', 'editManhaWeekend', draft.periodsWeekend);
     renderEditorPeriod('tarde', 'editTardeWeekend', draft.periodsWeekend);
     renderEditorPeriod('noite', 'editNoiteWeekend', draft.periodsWeekend);
@@ -159,19 +168,4 @@ function renderEditorSchedule(){
         const d = chip.getAttribute('data-day');
         if(item.days.includes(d)) item.days = item.days.filter(x=>x!==d);
         else item.days.push(d);
-        chip.classList.toggle('active');
-      });
-    });
-    row.querySelector('.del').addEventListener('click', ()=>{
-      draft.schedule = draft.schedule.filter(x=>x!==item);
-      renderEditorSchedule();
-    });
-    el.appendChild(row);
-  });
-}
-
-function renderEditorRewards(){
-  const el = document.getElementById('editRewards');
-  el.innerHTML = '';
-  draft.rewards.forEach(r=>{
-    cons
+        chip.classList.toggle

@@ -1,4 +1,17 @@
-    <div class="wr-head">
+full = state.history[iso];
+      if(full){
+        totalPointsWeek += full.pointsEarnedThatDay || 0;
+        totalScreenMin += full.screenMinutes || 0;
+      }
+    }
+    if(entry.total > 0 && entry.perfect) perfectDays++;
+  });
+
+  const rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
+
+  el.innerHTML = `
+    <div class="weekly-review">
+      <div class="wr-head">
         <span class="wr-range">${rangeLabel}</span>
       </div>
       <div class="wr-stats">
@@ -173,13 +186,4 @@ const POSITIVE_BEHAVIORS = [
   { id:'helped', label:'Ajudou alguém', emoji:'🤝', praise:'Isso foi generosidade de verdade!' },
   { id:'kind', label:'Foi gentil', emoji:'❤️', praise:'Gentileza gera gentileza!' },
   { id:'persisted', label:'Não desistiu', emoji:'💪', praise:'Continuou tentando mesmo sendo difícil — isso é persistência!' },
-  { id:'solved', label:'Resolveu um problema', emoji:'🧠', praise:'Pensou e resolveu sozinho — muito bem!' },
-  { id:'initiative', label:'Teve iniciativa', emoji:'🚀', praise:'Não esperou pedirem — tomou a frente!' },
-];
-
-function renderPositiveBehaviors(){
-  const el = document.getElementById('positiveBehaviors');
-  if(!el) return;
-
-  el.innerHTML = `
-    <div class="behavior-gr
+  { id:'solved

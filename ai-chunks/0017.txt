@@ -1,4 +1,15 @@
-ural-card ${m.reached?'reached':''}">
+rtISO, reached: true };
+    const reached = sorted.length >= day;
+    return { label, day, date: reached ? sorted[day-1] : null, reached };
+  });
+}
+
+function renderAchievementMural(){
+  const el = document.getElementById('achievementMuralSection');
+  if(!el) return;
+  const milestones = getMilestoneDates();
+  const cardsHtml = milestones.map(m=>`
+    <div class="mural-card ${m.reached?'reached':''}">
       <div class="mural-stage">${m.label}</div>
       <div class="mural-date">${m.reached ? formatDateBR(m.date) : '—'}</div>
     </div>
@@ -186,11 +197,4 @@ function buildStreakStrip(){
   const cells = days.map(iso=>{
     const isToday = iso === todayISO();
     const d = new Date(iso+"T00:00:00");
-    const letter = weekdayLetters[d.getDay()];
-    let entry = isToday ? liveTodayEntry() : state.history[iso];
-    let cls = 'streak-cell none';
-    if(entry && entry.total > 0){
-      if(entry.perfect) cls = 'streak-cell perfect';
-      else if(entry.done === entry.total - 1) cls = 'streak-cell almost';
-      else if(entry.done > 0) cls = 'streak-cell partial';
-      else cls =
+    const letter

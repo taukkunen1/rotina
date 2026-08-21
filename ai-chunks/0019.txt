@@ -1,4 +1,12 @@
-ir');
+periodsEl.querySelectorAll('.mark-btn').forEach(btn=>{
+    btn.addEventListener('click', onMarkClick);
+  });
+
+  periodsEl.querySelectorAll('.mini-reorder-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const periodKey = btn.getAttribute('data-period');
+      const taskId = btn.getAttribute('data-task');
+      const dir = btn.getAttribute('data-dir');
       const periodTasks = getPeriodsFor(todayISO())[periodKey].tasks;
       moveTaskInOrder(periodKey, periodTasks, taskId, dir);
       render();
@@ -212,17 +220,4 @@ function renderWeeklyReview(){
     if(!entry) return;
     if(iso !== todayISO()){
       // dias fechados já têm pointsEarnedThatDay e screenMinutes calculados
-      const full = state.history[iso];
-      if(full){
-        totalPointsWeek += full.pointsEarnedThatDay || 0;
-        totalScreenMin += full.screenMinutes || 0;
-      }
-    }
-    if(entry.total > 0 && entry.perfect) perfectDays++;
-  });
-
-  const rangeLabel = `${formatDateBR(days[0])} – ${formatDateBR(days[6])} (hoje)`;
-
-  el.innerHTML = `
-    <div class="weekly-review">
-  
+      const 

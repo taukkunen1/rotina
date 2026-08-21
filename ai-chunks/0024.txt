@@ -1,4 +1,10 @@
-hatDay, perfect, screenMinutes: perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0, hair };
+t(document.getElementById('dayPoints').value,10) || 0);
+  const hair = document.getElementById('dayHair').value || null;
+  const perfect = total > 0 && done >= total;
+
+  if(!state.hairByDate) state.hairByDate = {};
+  if(hair) state.hairByDate[editingDate] = hair; else delete state.hairByDate[editingDate];
+  state.history[editingDate] = { done, total, pointsEarnedThatDay, perfect, screenMinutes: perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0, hair };
   if(perfect) registerPetDayCompletion(editingDate);
 
   // ajusta o saldo total pela diferença de pontos daquele dia
@@ -155,17 +161,4 @@ async function driveSave(){
     });
     if(!res.ok) throw new Error('Falha ao salvar');
     const data = await res.json();
-    if(!data.ok) throw new Error(data.error || 'Falha ao salvar');
-
-    state.driveLastSyncISO = todayISO();
-    saveState(state);
-    renderDriveSync();
-    alert('Salvo no Google Drive!');
-  }catch(err){
-    alert('Não consegui salvar no Google Drive. Confira se a URL do Apps Script está certa e se a implantação está ativa.');
-  }
-}
-
-async function driveLoad(){
-  try{
-    const res = await fetch(DATA_ENDPOINT, { method:
+    if(!data.ok) throw new Error(data.error || 'Falha ao sa

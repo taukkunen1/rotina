@@ -1,4 +1,17 @@
- 'GET' });
+lvar');
+
+    state.driveLastSyncISO = todayISO();
+    saveState(state);
+    renderDriveSync();
+    alert('Salvo no Google Drive!');
+  }catch(err){
+    alert('Não consegui salvar no Google Drive. Confira se a URL do Apps Script está certa e se a implantação está ativa.');
+  }
+}
+
+async function driveLoad(){
+  try{
+    const res = await fetch(DATA_ENDPOINT, { method: 'GET' });
     if(!res.ok) throw new Error('Falha ao carregar');
     const backup = await res.json();
     if(backup.error === 'not_found'){ alert('Nenhum backup encontrado no Google Drive ainda.'); return; }

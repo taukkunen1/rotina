@@ -36,6 +36,14 @@
 
   seedKnownPerfectDays(state);
 
+  if(!state.manualAdjustAug21Applied){
+    state.totalPoints = 461;
+    // 57% do ciclo de 23 dias = 13 dias — usa a marca d'água (nunca deixa
+    // o progresso ficar abaixo disso, e nunca sobrescreve dados reais).
+    state.petMaxDaysEquivalentEverSeen = Math.max(Number(state.petMaxDaysEquivalentEverSeen)||0, 13);
+    state.manualAdjustAug21Applied = true;
+  }
+
   // limpeza: remove qualquer registro de histórico com data no futuro (só pode
   // ter vindo de uma sessão anterior de teste de data) — evita que isso
   // inflacione o crescimento do Pacus ou bagunce as tabelas depois
@@ -168,17 +176,4 @@ function closeOutDay(state, dateISO){
   if(perfect) registerPetPerfectBonus(dateISO);
   const screenMinutes = perfect ? (CONFIG.perfectDayBonusMinutes || 30) : 0;
   const periodsCompleted = periodsCompletedFrom(state.checkedToday, dateISO);
-  state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[dateISO] || null };
-}
-
-function saveState(state, options={}){
-  if(!options.remote){
-    state.revision = (Number(state.revision)||0) + 1;
-    state.updatedAt = new Date().toISOString();
-  }
-  try{ localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(state)); }catch(e){}
-  scheduleAutoPush();
-}
-
-/* ---------- sincronização automática com o Google Drive ----------
-  
+  state.history[dateISO] = { done, total, pointsEarnedThatDay, perfect, screenMinutes, periodsCompleted, hair: state.hairByDate?.[date
