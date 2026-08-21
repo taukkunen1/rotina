@@ -1,17 +1,21 @@
-/* Cronômetro compacto da rotina */
-.compact-timer{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid rgba(120,220,170,.28);border-radius:14px;background:rgba(8,28,22,.62);box-shadow:0 6px 18px rgba(0,0,0,.12);white-space:nowrap}
-.compact-timer.is-running{border-color:rgba(104,211,145,.72);box-shadow:0 0 0 3px rgba(104,211,145,.08)}
-.timer-readout{font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.04em;color:var(--chalk,#e7eee8);min-width:62px;text-align:center;font-size:1rem}
-.timer-controls{display:flex;gap:4px}
-.timer-btn{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.035);color:var(--chalk,#e7eee8);cursor:pointer;font-weight:800;transition:transform .15s ease,background .15s ease,border-color .15s ease}
-.timer-btn:hover{transform:translateY(-1px);background:rgba(104,211,145,.14);border-color:rgba(104,211,145,.5)}
-.timer-btn.primary{background:rgba(104,211,145,.18);border-color:rgba(104,211,145,.52);color:#a7f3c4}
-.timer-set{display:flex;align-items:center;gap:3px;padding-left:6px;border-left:1px solid rgba(255,255,255,.1)}
-.timer-set label{display:flex;align-items:center;gap:2px;color:var(--chalk-dim,#9ba9a0);font-size:.64rem}
-.timer-set input{width:38px;padding:4px 2px;border:1px solid rgba(255,255,255,.16);border-radius:6px;background:rgba(0,0,0,.12);color:var(--chalk,#e7eee8);font:inherit;text-align:center;font-variant-numeric:tabular-nums}
-.timer-set input:focus{outline:none;border-color:rgba(104,211,145,.65)}
-.timer-set-sep{color:var(--chalk-dim,#9ba9a0);font-weight:700}
-@keyframes compactTimerPulse{0%,100%{opacity:1}50%{opacity:.62}}
-.compact-timer.is-finished .timer-readout{color:#ffd56b;animation:compactTimerPulse 1s ease infinite}
-@media(max-width:760px){.compact-timer{order:3;width:100%;justify-content:center}.topbar-right{flex-wrap:wrap}.timer-set{padding-left:4px}.timer-btn{width:28px;height:28px}}
+/* Cronômetro compacto da rotina: alto contraste e hierarquia visual */
+.compact-timer{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid rgba(72,208,255,.48);border-radius:15px;background:linear-gradient(135deg,rgba(10,45,58,.94),rgba(18,29,45,.94));box-shadow:0 8px 22px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.06);white-space:nowrap}
+.compact-timer.is-running{border-color:#4dd4ff;box-shadow:0 0 0 3px rgba(77,212,255,.14),0 8px 24px rgba(0,0,0,.25)}
+.timer-readout{font-variant-numeric:tabular-nums;font-weight:900;letter-spacing:.06em;color:#7ee7ff;min-width:66px;text-align:center;font-size:1.05rem;text-shadow:0 0 14px rgba(77,212,255,.32)}
+.timer-controls{display:flex;gap:5px}
+.timer-btn{width:31px;height:31px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.055);color:#edf8ff;cursor:pointer;font-weight:900;transition:transform .15s ease,background .15s ease,border-color .15s ease,box-shadow .15s ease}
+.timer-btn:hover{transform:translateY(-2px) scale(1.03);background:rgba(255,210,92,.16);border-color:rgba(255,210,92,.7);box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.timer-btn:active{transform:translateY(0) scale(.96)}
+.timer-btn.primary{background:linear-gradient(135deg,#ffcf4d,#ff9f43);border-color:#ffd86b;color:#20251d;box-shadow:0 3px 12px rgba(255,174,61,.22)}
+.timer-btn.primary:hover{background:linear-gradient(135deg,#ffe06f,#ffad52);border-color:#fff0a3}
+.timer-set{display:flex;align-items:center;gap:3px;padding-left:7px;border-left:1px solid rgba(126,231,255,.22)}
+.timer-set label{display:flex;align-items:center;gap:3px;color:#a9c6d0;font-size:.64rem;font-weight:700}
+.timer-set input{width:39px;padding:4px 2px;border:1px solid rgba(126,231,255,.3);border-radius:7px;background:rgba(0,0,0,.18);color:#fff4c9;font:inherit;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;transition:border-color .15s ease,box-shadow .15s ease,background .15s ease}
+.timer-set input:hover{border-color:rgba(255,210,92,.55)}
+.timer-set input:focus{outline:none;border-color:#ffd25c;background:rgba(255,210,92,.07);box-shadow:0 0 0 3px rgba(255,210,92,.12)}
+.timer-set-sep{color:#ffcf4d;font-weight:900}
+@keyframes compactTimerPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.035);opacity:.82}}
+.compact-timer.is-finished{border-color:#ff7a7a;background:linear-gradient(135deg,rgba(74,27,37,.96),rgba(45,23,32,.96));box-shadow:0 0 0 3px rgba(255,99,99,.12),0 8px 24px rgba(0,0,0,.25)}
+.compact-timer.is-finished .timer-readout{color:#ffd56b;text-shadow:0 0 16px rgba(255,99,99,.34);animation:compactTimerPulse 1s ease infinite}
+@media(max-width:760px){.compact-timer{order:3;width:100%;justify-content:center}.topbar-right{flex-wrap:wrap}.timer-set{padding-left:4px}.timer-btn{width:29px;height:29px}}
 @media(prefers-reduced-motion:reduce){.timer-btn{transition:none}.compact-timer.is-finished .timer-readout{animation:none}}
