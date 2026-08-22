@@ -1,1 +1,0 @@
-unction(){b.click();history.replaceState({},document.title,'index.html');},0);}}})();</script></body></html>
