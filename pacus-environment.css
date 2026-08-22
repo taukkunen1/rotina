@@ -1,0 +1,22 @@
+/* Única alteração ambiental do PACUS: um pequeno habitat natural, discreto e sem distrações. */
+.pet-section{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 78%, rgba(85,232,135,.14), transparent 30%),
+    linear-gradient(180deg, rgba(79,214,255,.025), rgba(85,232,135,.06));
+}
+.pet-section::before,
+.pet-section::after{
+  content:"";
+  position:absolute;
+  bottom:8px;
+  width:90px;
+  height:34px;
+  opacity:.22;
+  pointer-events:none;
+  background:linear-gradient(115deg, transparent 44%, rgba(85,232,135,.65) 45% 52%, transparent 53%),linear-gradient(70deg, transparent 42%, rgba(85,232,135,.5) 43% 50%, transparent 51%);
+  border-radius:50%;
+}
+.pet-section::before{left:8%;transform:rotate(-5deg)}
+.pet-section::after{right:8%;transform:scaleX(-1) rotate(-5deg)}
