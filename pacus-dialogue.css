@@ -1,0 +1,26 @@
+.pacus-dialogue{
+  width:min(520px,calc(100% - 28px));
+  margin:8px auto 0;
+  padding:9px 13px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  border:1px solid rgba(255,216,77,.28);
+  border-radius:14px;
+  background:rgba(12,30,25,.76);
+  color:#eef8f2;
+  font-family:var(--font-body,system-ui,sans-serif);
+  font-size:.88rem;
+  font-weight:700;
+  line-height:1.35;
+  text-align:center;
+  opacity:0;
+  transform:translateY(5px);
+  transition:opacity .45s ease,transform .45s ease;
+  box-shadow:0 5px 18px rgba(0,0,0,.16);
+}
+.pacus-dialogue.visible{opacity:1;transform:translateY(0)}
+.pacus-dialogue-mark{font-size:.85rem;flex:0 0 auto}
+@media(max-width:600px){.pacus-dialogue{font-size:.82rem;padding:8px 10px}}
+@media(prefers-reduced-motion:reduce){.pacus-dialogue{transition:none;transform:none}.pacus-dialogue.visible{transform:none}}
