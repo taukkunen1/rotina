@@ -30,20 +30,20 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 
 /* Task-first layout. */
 .content{padding:14px 18px 0;max-width:900px;margin-inline:auto;}
-.period{background:var(--ux-surface-2);border:1px solid var(--ux-border);box-shadow:none;border-radius:12px;margin-bottom:12px;}
-.period-head{padding:13px 14px 5px;}
+.periods{grid-template-columns:repeat(3,minmax(0,1fr));width:100%;min-width:0;}
+.period{min-width:0;background:var(--ux-surface-2);border:1px solid var(--ux-border);box-shadow:none;border-radius:12px;margin-bottom:12px;}
+.period-head{padding:13px 14px 5px;min-width:0;}
 .period-head h2{font-family:inherit;font-size:1rem;font-weight:700;}
 .progress-bar{height:6px;margin:6px 14px 10px;background:rgba(255,255,255,.08);}
 .progress-bar>div{background:var(--ux-accent);}
-.task{min-height:58px;padding:9px 12px;gap:8px;border-top:1px solid rgba(255,255,255,.06);}
+.task{min-width:0;min-height:58px;padding:9px 12px;gap:8px;border-top:1px solid rgba(255,255,255,.06);overflow:hidden;}
 .task-reorder{display:none!important;}
-.mark-group{display:flex;gap:4px;flex:0 0 auto;align-items:center;}
 .mark-group{display:flex;gap:4px;flex:0 0 auto;align-items:center;flex-wrap:nowrap;}
 .mark-btn{min-width:40px;min-height:40px;border-radius:9px;}
 .mark-done{font-size:1.05rem;font-weight:700;border-color:rgba(139,200,154,.45);}
 .mark-help,.mark-na,.mark-x{font-size:.82rem;opacity:.58;}
 .mark-help:hover,.mark-na:hover,.mark-x:hover,.mark-help.active,.mark-na.active,.mark-x.active{opacity:1;}
-.txt{line-height:1.35;}
+.txt{min-width:0;overflow-wrap:anywhere;word-break:break-word;line-height:1.35;}
 .txt .sub{color:var(--ux-muted);line-height:1.35;}
 .pts{font-variant-numeric:tabular-nums;color:var(--ux-muted);}
 .tier-badge{opacity:.55;filter:grayscale(.7);}
@@ -66,11 +66,6 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 .period-disclosure-body .progress-bar{margin-inline:0;}
 .period-disclosure-body .time-remaining{display:block;padding-bottom:4px;}
 
-/* Compact timer: one purpose, one action. */
-.period-disclosure-body{padding:0 14px;}
-.period-disclosure-body .progress-bar{margin-inline:0;}
-.period-disclosure-body .time-remaining{display:block;padding-bottom:4px;}
-
 #gameTimerSection{margin-top:14px;}
 .game-timer{background:var(--ux-surface-2);border:1px solid var(--ux-border);border-radius:12px;padding:14px;}
 .game-timer h3{font-family:inherit;font-size:1rem;margin:0 0 4px;}
@@ -86,6 +81,7 @@ button:disabled{cursor:not-allowed;opacity:.5;}
 .pet-growth-burst,.pacus-idle,.pacus-gill,.pacus-eye,.breathing-circle,.celebration-card{animation-duration:.01ms!important;animation-iteration-count:1!important;}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important;}}
 
+@media (max-width:760px){.periods{grid-template-columns:1fr;}.period{min-width:0;}}
 @media (max-width:600px){
   body{padding:0 0 28px;}
   .board-frame{border-radius:0;padding:0;box-shadow:none;}
