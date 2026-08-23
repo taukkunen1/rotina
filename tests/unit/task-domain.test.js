@@ -30,7 +30,7 @@ test('pedir ajuda gera pelo menos um ponto e arredonda para cima', () => {
 test('transição de estado remove efeito anterior antes de aplicar o novo', () => {
   const task = { pts: 5 };
   assert.deepEqual(domain.transition('done', 'help', task), { nextStatus:'help', delta:-2, action:'help' });
-  assert.deepEqual(domain.transition('help', 'done', task), { nextStatus:'done', delta:3, action:'done' });
+  assert.deepEqual(domain.transition('help', 'done', task), { nextStatus:'done', delta:2, action:'done' });
   assert.deepEqual(domain.transition('x', 'done', task), { nextStatus:'done', delta:9, action:'done' });
 });
 
