@@ -44,17 +44,22 @@
       + (suggested ? ' suggested' : '');
   }
 
-  function taskMarkup({ task, periodKey, index, total, status, suggested, lightDay, icon }){
+  function legacyTaskMarkup({ task, periodKey, index, total, status, suggested, lightDay, taskIcon, taskHelpPoints, taskNotDonePenalty }){
     const tierBadge = { essencial:'🔴', responsabilidade:'🟡', extra:'🟢' };
     const tierTitle = {
       essencial:'Essencial — precisa acontecer, mas você escolhe quando/ordem/ajuda',
       responsabilidade:'Responsabilidade — esperado, gera pontos',
       extra:'Extra — opcional, bônus maior'
     };
-    const safeTask = escapeHtml(task.txt);
-    const safeSub = task.sub ? `<span class="sub">${escapeHtml(task.sub)}</span>` : '';
-    const tier = task.tier ? `<span class="task-tier" title="${tierTitle[task.tier] || ''}">${tierBadge[task.tier] || ''}</span>` : '';
-    return `<li class="${taskClassName({ status, suggested })}" data-task-id="${escapeHtml(task.id)}">
+    const xTitle = lightDay ? 'Não feito (dia leve, sem perder ponto)' : 'Não feito, perde metade dos pontos';
+    const points = status === 'na'
+      ? 'n/a'
+      : status === 'help'
+        ? '+' + taskHelpPoints(task)
+        : status === 'x'
+          ? (lightDay ? 'dia leve' : '−' + taskNotDonePenalty(task))
+          : '+' + task.pts;
+    return `<li class="${taskClassName({ status, suggested })}">
       <span class="task-reorder">
         <button type="button" class="mini-reorder-btn" data-dir="up" data-period="${escapeHtml(periodKey)}" data-task="${escapeHtml(task.id)}" ${index===0?'disabled':''} title="Mover pra cima">▲</button>
         <button type="button" class="mini-reorder-btn" data-dir="down" data-period="${escapeHtml(periodKey)}" data-task="${escapeHtml(task.id)}" ${index===total-1?'disabled':''} title="Mover pra baixo">▼</button>
@@ -63,35 +68,52 @@
         <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
         <button type="button" class="mark-btn mark-help ${status==='help'?'active':''}" data-status="help" title="Pedi ajuda / fizemos junto">🤝</button>
         <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
-        <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="Não realizado" ${lightDay?'data-light-day="true"':''}>✕</button>
+        <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="${xTitle}">✕</button>
       </span>
-      <span class="task-main"><span class="task-icon">${icon}</span><span class="task-txt">${safeTask}</span>${tier}${safeSub}</span>
-      <span class="task-pts">${Number(task.pts)||0} PP</span>
+      <span class="txt">${suggested ? '<span class="suggested-flag">👉</span>' : ''}${task.tier ? `<span class="tier-badge" title="${tierTitle[task.tier]||''}">${tierBadge[task.tier]||''}</span>` : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${escapeHtml(task.txt)}${task.sub ? `<span class="sub">${escapeHtml(task.sub)}</span>` : ''}</span>
+      <span class="pts">${points}</span>
     </li>`;
   }
 
-  function periodMarkup({ periodKey, period, periodsObj, checkedToday, orderedTasks, isCountedDone, isLightDay, taskIcon }){
+  function periodMarkup({ periodKey, period, periodsObj, checkedToday, orderedTasks, isCountedDone, isLightDay, taskIcon, taskHelpPoints, taskNotDonePenalty }){
     const applicable = period.tasks.filter(task => checkedToday[task.id] !== 'na');
     const doneCount = applicable.filter(task => isCountedDone(checkedToday[task.id])).length;
     const progress = progressMessage(applicable.length, doneCount);
     const preview = nextPreview(periodKey, period, periodsObj, applicable.length, progress.pct, taskIcon);
     const nextSuggestedId = orderedTasks.find(task => !task.external && !checkedToday[task.id])?.id;
-    const tasks = orderedTasks.map((task, index) => taskMarkup({
-      task,
-      periodKey,
-      index,
-      total: orderedTasks.length,
-      status: checkedToday[task.id],
-      suggested: task.id === nextSuggestedId,
-      lightDay: isLightDay,
-      icon: taskIcon(task.txt)
+    const lightDay = isLightDay;
+    const tasks = orderedTasks.map((task, index) => legacyTaskMarkup({
+      task, periodKey, index, total: orderedTasks.length,
+      status: checkedToday[task.id], suggested: task.id === nextSuggestedId,
+      lightDay, taskIcon, taskHelpPoints, taskNotDonePenalty
     })).join('');
-    return `<div class="period ${escapeHtml(periodKey)}" data-period="${escapeHtml(periodKey)}">
-      <div class="period-head"><div><div class="period-title">${escapeHtml(period.label)}</div><div class="period-time">${escapeHtml(period.time)}</div></div><span class="progress-txt">${progress.text}</span></div>
-      <ul class="tasks">${tasks}</ul>
+    return `<div class="period ${escapeHtml(periodKey)}" data-period-time="${escapeHtml(period.time)}">
+      <div class="period-head"><h2>${escapeHtml(period.label)}</h2><span class="time">${escapeHtml(period.time)}</span></div>
+      <span class="time-remaining" id="timeRemaining_${escapeHtml(periodKey)}"></span>
+      <span class="progress-txt">${progress.text}</span>
       <div class="progress-bar"><div style="width:${progress.pct}%"></div></div>
       ${preview}
+      <ul class="tasks">${tasks}</ul>
     </div>`;
+  }
+
+  function renderPeriods(options){
+    const { periodsEl, periodsObj, checkedToday, getEffectiveTaskOrder, isCountedDone, isLightDay, taskIcon, taskHelpPoints, taskNotDonePenalty } = options;
+    if(!periodsEl) return '';
+    const markup = Object.entries(periodsObj).map(([periodKey, period]) => periodMarkup({
+      periodKey,
+      period,
+      periodsObj,
+      checkedToday,
+      orderedTasks: getEffectiveTaskOrder(periodKey, period.tasks),
+      isCountedDone,
+      isLightDay,
+      taskIcon,
+      taskHelpPoints,
+      taskNotDonePenalty
+    })).join('');
+    periodsEl.innerHTML = markup;
+    return markup;
   }
 
   window.PacusRoutineRenderer = {
@@ -100,7 +122,8 @@
     progressMessage,
     nextPreview,
     taskClassName,
-    taskMarkup,
-    periodMarkup
+    legacyTaskMarkup,
+    periodMarkup,
+    renderPeriods
   };
 })();
