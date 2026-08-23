@@ -33,44 +33,10 @@
   function todayISO() { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
   function hhmm(t) { return t ? String(t).slice(0, 5) : null; }
 
-  function client() {
-    if (!window.supabase?.createClient) throw new Error('Cliente Supabase não carregado');
-    if (!window.PacusSupabase) {
-      window.PacusSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' }
-      });
-    }
-    return window.PacusSupabase;
-  }
-
-  let sessionPromise = null;
-
-  async function ensureSession() {
-    const { data, error } = await client().auth.getSession();
-    if (error) throw error;
-    if (data.session) return data.session;
-    if (!sessionPromise) {
-      sessionPromise = client().auth.signInAnonymously()
-        .then(({ data: anon, error: anonError }) => {
-          if (anonError) throw anonError;
-          return anon.session;
-        })
-        .finally(() => { sessionPromise = null; });
-    }
-    return sessionPromise;
-  }
-
-  async function accessToken() {
-    try { const session = await ensureSession(); return session?.access_token || null; }
-    catch (_) { return null; }
-  }
-
   async function request(path, options = {}) {
-    const token = await accessToken();
-    if (!token) throw new Error('Sessão não encontrada');
     const headers = new Headers(options.headers || {});
     headers.set('apikey', SUPABASE_PUBLISHABLE_KEY);
-    headers.set('Authorization', `Bearer ${token}`);
+    headers.set('Authorization', `Bearer ${SUPABASE_PUBLISHABLE_KEY}`);
     headers.set('Content-Type', 'application/json');
     headers.set('Accept', 'application/json');
     const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { ...options, headers, cache: 'no-store' });
