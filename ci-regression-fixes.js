@@ -35,8 +35,28 @@
   }
 
   function normalizeAria(){
-    document.querySelectorAll('div[aria-label]:not([role])').forEach(el => {
-      el.setAttribute('role', 'group');
+    document.querySelectorAll('div[aria-label]').forEach(el => {
+      const label = (el.getAttribute('aria-label') || '').trim();
+      if(!label) {
+        el.removeAttribute('aria-label');
+        return;
+      }
+      if(el.hasAttribute('role')) return;
+
+      const containsInteractiveControl = el.matches('button, a, input, select, textarea') ||
+        !!el.querySelector('button, a, input, select, textarea, [role="button"], [role="checkbox"], [role="switch"]');
+      const isNamedRegion = el.matches('main, nav, aside, section, form, header, footer') ||
+        el.classList.contains('pet-day-track') || el.classList.contains('autonomy-steps');
+      const isDecorative = el.classList.contains('pacus-creature') || el.getAttribute('aria-hidden') === 'true';
+
+      if(isDecorative) {
+        el.removeAttribute('aria-label');
+        el.setAttribute('aria-hidden', 'true');
+      } else if(isNamedRegion || containsInteractiveControl) {
+        el.setAttribute('role', 'group');
+      } else {
+        el.removeAttribute('aria-label');
+      }
     });
   }
 
