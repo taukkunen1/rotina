@@ -18,7 +18,8 @@
       await loadScript('domain/task-domain.js?v=20260823-1');
       await loadScript('domain/routine-domain.js?v=20260823-1');
       await loadScript('domain/routine-state.js?v=20260823-2');
-    }catch(error){ console.warn('PACUS domain modules unavailable; keeping legacy runtime.', error); }
+      await loadScript('controllers/task-controller.js?v=20260823-1');
+    }catch(error){ console.warn('PACUS modules unavailable; keeping legacy runtime.', error); }
   }
 
   function installDomainAdapters(){
