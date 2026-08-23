@@ -2084,7 +2084,7 @@ function renderPet(){
     <div class="pet-stage-label">${stageInfo.label} · ${daysEquivalent}/${cycleDays} dias completos · adulto em 31/08</div>
     <div class="pet-day-progress">
       <div class="pet-day-progress-head"><span>Progresso do Pacus</span><b>${progressPct}%</b></div>
-      <div class="pet-day-track" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
+      <div class="pet-day-track" role="img" aria-label="${daysEquivalent} de ${cycleDays} dias completos"><div class="pet-day-fill" style="width:${progressPct}%"></div></div>
     </div>
     <div class="pet-milestones">${milestoneHtml}</div>
     <div class="pet-caption">${caption}</div>

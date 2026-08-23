@@ -155,11 +155,22 @@
     replaceRemote
   });
 
+  const realBrowserStorage = window.localStorage;
   const sessionOnlyStorage = Object.freeze({
-    getItem(key) { const value = readJSON(key, null); return value == null ? null : JSON.stringify(value); },
-    setItem(key, value) { try { memory[key] = JSON.parse(value); } catch (_) { memory[key] = value; } },
-    removeItem(key) { remove(key); },
-    clear() { Object.keys(memory).forEach(key => delete memory[key]); },
+    getItem(key) {
+      const value = readJSON(key, null);
+      if (value != null) return JSON.stringify(value);
+      try { return realBrowserStorage.getItem(key); } catch (_) { return null; }
+    },
+    setItem(key, value) {
+      try { memory[key] = JSON.parse(value); } catch (_) { memory[key] = value; }
+      try { realBrowserStorage.setItem(key, value); } catch (_) {}
+    },
+    removeItem(key) {
+      remove(key);
+      try { realBrowserStorage.removeItem(key); } catch (_) {}
+    },
+    clear() { Object.keys(memory).forEach(key => delete memory[key]); try { realBrowserStorage.clear(); } catch (_) {} },
     key(index) { return Object.keys(memory)[index] ?? null; },
     get length() { return Object.keys(memory).length; }
   });
