@@ -24,10 +24,10 @@ jobs:
               html=Path(filename).read_text(encoding='utf-8')
               if not html.lstrip().lower().startswith('<!doctype html>'): raise SystemExit(f'{filename}: missing doctype')
               for tag in ('html','head','body'):
-                  if len(re.findall(fr'<{tag}(?:\\s|>)',html,re.I)) != len(re.findall(fr'</{tag}>',html,re.I)): raise SystemExit(f'{filename}: unbalanced {tag}')
-              if len(re.findall(r'<script\\b',html,re.I)) != len(re.findall(r'</script>',html,re.I)): raise SystemExit(f'{filename}: unbalanced scripts')
-              if len(re.findall(r'<style\\b',html,re.I)) != len(re.findall(r'</style>',html,re.I)): raise SystemExit(f'{filename}: unbalanced styles')
-              if '\\\\n<script>' in html or 'Rotina do rotina' in html: raise SystemExit(f'{filename}: forbidden artifact')
+                  if len(re.findall(fr'<{tag}(?:\s|>)',html,re.I)) != len(re.findall(fr'</{tag}>',html,re.I)): raise SystemExit(f'{filename}: unbalanced {tag}')
+              if len(re.findall(r'<script\b',html,re.I)) != len(re.findall(r'</script>',html,re.I)): raise SystemExit(f'{filename}: unbalanced scripts')
+              if len(re.findall(r'<style\b',html,re.I)) != len(re.findall(r'</style>',html,re.I)): raise SystemExit(f'{filename}: unbalanced styles')
+              if '\\n<script>' in html or 'Rotina do rotina' in html: raise SystemExit(f'{filename}: forbidden artifact')
           print('HTML: OK')
       - name: Validate JavaScript syntax
         run: |
