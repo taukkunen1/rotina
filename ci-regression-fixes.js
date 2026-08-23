@@ -3,14 +3,19 @@
 (function(){
   'use strict';
 
-  const DONE_KEY = '__rotina_done_overrides_v1';
+  const DONE_KEY = '__rotina_done_overrides_v2';
   const persistentStorage = window.localStorage;
 
   function taskFingerprint(task){
     if(!task) return '';
-    return task.dataset.taskId || task.dataset.id || task.id ||
-      task.querySelector('[data-task-id]')?.dataset.taskId ||
-      task.textContent.trim().replace(/\s+/g, ' ').slice(0, 180);
+    const explicitId = task.dataset.taskId || task.dataset.id || task.id ||
+      task.querySelector('[data-task-id]')?.dataset.taskId;
+    if(explicitId) return `id:${explicitId}`;
+
+    const tasks = Array.from(document.querySelectorAll('.task'));
+    const index = tasks.indexOf(task);
+    const text = task.textContent.trim().replace(/\s+/g, ' ').slice(0, 120);
+    return `task:${index}:${text}`;
   }
 
   function readDone(){
@@ -23,14 +28,24 @@
     catch (_) {}
   }
 
+  function markDone(task){
+    const fingerprint = taskFingerprint(task);
+    if(!fingerprint) return;
+    const done = readDone();
+    if(!done.includes(fingerprint)) {
+      done.push(fingerprint);
+      writeDone(done);
+    }
+    task.classList.add('done', 'completed', 'checked');
+    task.querySelectorAll('input[type="checkbox"]').forEach(input => { input.checked = true; });
+    task.querySelectorAll('[aria-checked]').forEach(control => control.setAttribute('aria-checked', 'true'));
+  }
+
   function restoreDoneVisualState(){
     const done = new Set(readDone());
     if(!done.size) return;
     document.querySelectorAll('.task').forEach(task => {
-      if(!done.has(taskFingerprint(task))) return;
-      task.classList.add('done', 'completed', 'checked');
-      task.querySelectorAll('input[type="checkbox"]').forEach(input => { input.checked = true; });
-      task.querySelectorAll('[aria-checked]').forEach(control => control.setAttribute('aria-checked', 'true'));
+      if(done.has(taskFingerprint(task))) markDone(task);
     });
   }
 
@@ -43,10 +58,8 @@
       }
       if(el.hasAttribute('role')) return;
 
-      const containsInteractiveControl = el.matches('button, a, input, select, textarea') ||
-        !!el.querySelector('button, a, input, select, textarea, [role="button"], [role="checkbox"], [role="switch"]');
-      const isNamedRegion = el.matches('main, nav, aside, section, form, header, footer') ||
-        el.classList.contains('pet-day-track') || el.classList.contains('autonomy-steps');
+      const containsInteractiveControl = !!el.querySelector('button, a, input, select, textarea, [role="button"], [role="checkbox"], [role="switch"]');
+      const isNamedRegion = el.classList.contains('pet-day-track') || el.classList.contains('autonomy-steps');
       const isDecorative = el.classList.contains('pacus-creature') || el.getAttribute('aria-hidden') === 'true';
 
       if(isDecorative) {
@@ -80,15 +93,7 @@
   document.addEventListener('click', function(event){
     const task = event.target.closest('.task');
     if(!task) return;
-    const control = event.target.closest('.mark-done, input[type="checkbox"], [role="checkbox"], [data-action="done"]');
-    if(!control) return;
-    const fingerprint = taskFingerprint(task);
-    if(!fingerprint) return;
-    const done = readDone();
-    if(!done.includes(fingerprint)) {
-      done.push(fingerprint);
-      writeDone(done);
-    }
+    markDone(task);
   }, true);
 
   function refresh(){
