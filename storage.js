@@ -49,7 +49,6 @@
   async function getRemote() {
     const data = await rpc('get_routine_snapshot', { p_routine_id: ROUTINE_ID });
     if (!data || typeof data !== 'object') throw new Error('Snapshot inválido do Supabase');
-
     const config = data.config || {};
     const state = data.state || {};
     writeJSON(CONFIG_KEY, config);
@@ -59,12 +58,7 @@
       state,
       revision: Number(data.revision || 0),
       serverUpdatedAt: data.serverUpdatedAt || null,
-      domains: data.domains || {
-        routineConfig: config,
-        dailyState: state,
-        pointEvents: state.pointEvents || [],
-        history: state.history || {}
-      }
+      domains: data.domains || { routineConfig: config, dailyState: state, pointEvents: state.pointEvents || [], history: state.history || {} }
     };
   }
 
@@ -72,14 +66,10 @@
     const domains = window.RotinaDataModel
       ? window.RotinaDataModel.create(config || {}, state || {})
       : { schemaVersion: 2, routineConfig: config || {}, dailyState: state || {}, pointEvents: state?.pointEvents || [], history: state?.history || {} };
-
     return rpc('save_routine_snapshot', {
       p_routine_id: ROUTINE_ID,
       p_config: domains.routineConfig || {},
-      p_state: Object.assign({}, domains.dailyState || {}, {
-        history: domains.history || {},
-        pointEvents: domains.pointEvents || []
-      }),
+      p_state: Object.assign({}, domains.dailyState || {}, { history: domains.history || {}, pointEvents: domains.pointEvents || [] }),
       p_base_revision: Number(baseRevision || 0)
     });
   }
@@ -89,19 +79,7 @@
     return saveRemote(snapshot.config || {}, snapshot.state || {}, Number(snapshot.revision || 0));
   }
 
-  window.RotinaStorage = Object.freeze({
-    CONFIG_KEY,
-    STATE_KEY,
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY,
-    ROUTINE_ID,
-    readJSON,
-    writeJSON,
-    remove,
-    getRemote,
-    saveRemote,
-    replaceRemote
-  });
+  window.RotinaStorage = Object.freeze({ CONFIG_KEY, STATE_KEY, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, ROUTINE_ID, readJSON, writeJSON, remove, getRemote, saveRemote, replaceRemote });
 
   // Compatibilidade temporária do motor legado. É somente RAM.
   const sessionOnlyStorage = Object.freeze({
@@ -115,4 +93,4 @@
   window.__ROTINA_SESSION_STORAGE__ = sessionOnlyStorage;
 })();
 
-const localStorage = window.__ROTINA_SESSION_STORAGE__;
+const localStorage = window.__ROTINA_SESSION_STORAGE__; // Supabase is now the remote source of truth.
