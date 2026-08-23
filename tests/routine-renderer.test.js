@@ -24,9 +24,10 @@ test('task classes map statuses without leaking state decisions', () => {
 });
 
 test('renderer escapes task content', () => {
-  const html = R.taskMarkup({
+  const html = R.legacyTaskMarkup({
     task:{ id:'x', txt:'<img>', sub:'"quoted"', pts:2, tier:'extra' },
-    periodKey:'manha', index:0, total:1, status:undefined, suggested:false, lightDay:false, icon:'⭐'
+    periodKey:'manha', index:0, total:1, status:undefined, suggested:false, lightDay:false,
+    taskIcon:()=> '⭐', taskHelpPoints:()=>1, taskNotDonePenalty:()=>2
   });
   assert.match(html, /&lt;img&gt;/);
   assert.doesNotMatch(html, /<img>/);
@@ -42,4 +43,41 @@ test('next preview points to next period and final completion', () => {
   assert.match(R.nextPreview('manha', periods.manha, periods, 1, 100, ()=>'🍽️'), /A seguir: <b>Tarde<\/b>/);
   assert.match(R.nextPreview('noite', periods.noite, periods, 1, 100, ()=>'⭐'), /Terminou tudo por hoje/);
   assert.equal(R.nextPreview('manha', periods.manha, periods, 1, 50, ()=>'⭐'), '');
+});
+
+test('period markup preserves legacy controls, progress and point labels', () => {
+  const periods = {
+    manha:{ label:'Manhã', time:'08:00 – 12:00', tasks:[
+      { id:'a', txt:'Escovar', pts:2, tier:'essencial' },
+      { id:'b', txt:'Ler', pts:3, tier:'extra' }
+    ]},
+    tarde:{ label:'Tarde', time:'12:00 – 18:00', tasks:[] },
+    noite:{ label:'Noite', time:'18:00 – 22:00', tasks:[] }
+  };
+  const html = R.periodMarkup({
+    periodKey:'manha', period:periods.manha, periodsObj:periods,
+    checkedToday:{ a:'done', b:'help' }, orderedTasks:periods.manha.tasks,
+    isCountedDone:s=>s==='done'||s==='help', isLightDay:false,
+    taskIcon:()=> '⭐', taskHelpPoints:()=>2, taskNotDonePenalty:()=>3
+  });
+  assert.match(html, /timeRemaining_manha/);
+  assert.match(html, /mark-done active/);
+  assert.match(html, /mark-help active/);
+  assert.match(html, /\+2<\/span>/);
+  assert.match(html, /2\/2 feitas|tudo certo por aqui/);
+});
+
+test('renderPeriods delegates all periods and returns generated markup', () => {
+  const periods = {
+    manha:{ label:'Manhã', time:'08:00 – 12:00', tasks:[{ id:'a', txt:'A', pts:1 }] },
+    tarde:{ label:'Tarde', time:'12:00 – 18:00', tasks:[{ id:'b', txt:'B', pts:1 }] },
+    noite:{ label:'Noite', time:'18:00 – 22:00', tasks:[{ id:'c', txt:'C', pts:1 }] }
+  };
+  const periodsEl = { innerHTML:'' };
+  const markup = R.renderPeriods({
+    periodsEl, periodsObj:periods, checkedToday:{}, getEffectiveTaskOrder:(_, tasks)=>tasks,
+    isCountedDone:()=>false, isLightDay:false, taskIcon:()=> '⭐', taskHelpPoints:()=>1, taskNotDonePenalty:()=>1
+  });
+  assert.equal(periodsEl.innerHTML, markup);
+  assert.equal((markup.match(/class="period /g)||[]).length, 3);
 });
