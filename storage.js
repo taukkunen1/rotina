@@ -4,15 +4,10 @@
   const STATE_KEY = 'hector_rotina_state_v3';
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec';
   const DATA_ENDPOINT = APPS_SCRIPT_URL + '?data=1';
-
-  // Fonte persistente atual: servidor. O navegador mantém somente cache em RAM.
   const memory = Object.create(null);
-  function clone(value) {
-    try { return JSON.parse(JSON.stringify(value)); } catch (_) { return value; }
-  }
-  function readJSON(key, fallback = null) {
-    return Object.prototype.hasOwnProperty.call(memory, key) ? clone(memory[key]) : fallback;
-  }
+
+  function clone(value) { try { return JSON.parse(JSON.stringify(value)); } catch (_) { return value; } }
+  function readJSON(key, fallback = null) { return Object.prototype.hasOwnProperty.call(memory, key) ? clone(memory[key]) : fallback; }
   function writeJSON(key, value) { memory[key] = clone(value); return true; }
   function remove(key) { delete memory[key]; return true; }
 
@@ -22,14 +17,37 @@
     if (!remote || remote.ok === false) throw new Error('Resposta inválida do servidor');
     writeJSON(CONFIG_KEY, remote.config || {});
     writeJSON(STATE_KEY, remote.state || {});
-    return { config: remote.config || {}, state: remote.state || {}, revision: Number(remote.revision || 0), serverUpdatedAt: remote.serverUpdatedAt || null };
+    return {
+      config: remote.config || {}, state: remote.state || {},
+      revision: Number(remote.revision || 0), serverUpdatedAt: remote.serverUpdatedAt || null,
+      domains: remote.domains || {
+        routineConfig: remote.config || {},
+        dailyState: remote.state || {},
+        pointEvents: remote.state?.pointEvents || [],
+        history: remote.state?.history || {}
+      }
+    };
   }
 
   async function saveRemote(config, state, baseRevision = 0) {
+    const domains = window.RotinaDataModel
+      ? window.RotinaDataModel.create(config || {}, state || {})
+      : { schemaVersion: 2, routineConfig: config || {}, dailyState: state || {}, pointEvents: state?.pointEvents || [], history: state?.history || {} };
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ config, state, baseRevision: Number(baseRevision || 0) })
+      body: JSON.stringify({
+        schemaVersion: 2,
+        domains: {
+          routineConfig: domains.routineConfig,
+          dailyState: domains.dailyState,
+          pointEvents: domains.pointEvents,
+          history: domains.history
+        },
+        config: domains.routineConfig,
+        state: Object.assign({}, domains.dailyState, { history: domains.history, pointEvents: domains.pointEvents }),
+        baseRevision: Number(baseRevision || 0)
+      })
     });
     const result = await response.json();
     if (!result || result.ok === false) {
@@ -47,7 +65,7 @@
 
   window.RotinaStorage = Object.freeze({ CONFIG_KEY, STATE_KEY, APPS_SCRIPT_URL, DATA_ENDPOINT, readJSON, writeJSON, remove, getRemote, saveRemote, replaceRemote });
 
-  // Compatibilidade transitória do motor legado. Isto NÃO usa Web Storage.
+  // Compatibilidade temporária do motor legado. É somente RAM.
   const sessionOnlyStorage = Object.freeze({
     getItem(key) { const value = readJSON(key, null); return value == null ? null : JSON.stringify(value); },
     setItem(key, value) { try { memory[key] = JSON.parse(value); } catch (_) { memory[key] = value; } },
@@ -59,5 +77,4 @@
   window.__ROTINA_SESSION_STORAGE__ = sessionOnlyStorage;
 })();
 
-// Binding lexical usado pelos scripts legados. Nenhum dado sobrevive ao reload.
 const localStorage = window.__ROTINA_SESSION_STORAGE__;
