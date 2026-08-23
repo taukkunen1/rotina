@@ -1,4 +1,4 @@
-name: Browser and accessibility tests
+name: Regression tests
 
 on:
   push:
@@ -8,7 +8,6 @@ on:
       - 'adultos.html'
       - 'historico.html'
       - '*.js'
-      - '*.css'
       - 'tests/**'
       - 'package.json'
       - 'playwright.config.js'
@@ -19,7 +18,6 @@ on:
       - 'adultos.html'
       - 'historico.html'
       - '*.js'
-      - '*.css'
       - 'tests/**'
       - 'package.json'
       - 'playwright.config.js'
@@ -29,6 +27,16 @@ permissions:
   contents: read
 
 jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run deterministic domain regressions
+        run: npm run test:unit
+
   e2e:
     runs-on: ubuntu-latest
     steps:
@@ -40,5 +48,5 @@ jobs:
         run: npm install
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Run browser and accessibility tests
+      - name: Run browser and accessibility regressions
         run: npm run test:e2e
