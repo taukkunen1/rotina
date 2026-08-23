@@ -22,11 +22,14 @@
   }
 
   async function rpcRest(name, body) {
+    const client = authClient();
+    const session = client ? await client.auth.getSession().catch(() => ({data:{session:null}})) : {data:{session:null}};
+    const token = session?.data?.session?.access_token || SUPABASE_PUBLISHABLE_KEY;
     const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
       method: 'POST',
       headers: {
         apikey: SUPABASE_PUBLISHABLE_KEY,
-        Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(body)
@@ -62,6 +65,24 @@
     };
   }
 
+  async function getRuntimeState(date = null) {
+    const data = await rpc('child_get_runtime_state', {
+      p_routine_id: ROUTINE_ID,
+      ...(date ? { p_date: date } : {})
+    });
+    if (!data || typeof data !== 'object') throw new Error('Estado diário inválido do servidor');
+    return data;
+  }
+
+  async function completeTask(taskId, status = 'done', date = null) {
+    return rpc('child_complete_task', {
+      p_routine_id: ROUTINE_ID,
+      p_task_id: taskId,
+      p_status: status,
+      ...(date ? { p_date: date } : {})
+    });
+  }
+
   async function saveRemote(config, state, baseRevision = 0) {
     const domains = window.RotinaDataModel
       ? window.RotinaDataModel.create(config || {}, state || {})
@@ -84,10 +105,6 @@
       });
     }
 
-    // Child clients remain unauthenticated for now, but can no longer call
-    // the privileged full-snapshot writer. The server allow-lists the state
-    // fields accepted by this endpoint. Daily lifecycle validation moves to
-    // the server in step 3 of the roadmap.
     return rpc('save_child_state', payload);
   }
 
@@ -117,11 +134,12 @@
     writeJSON,
     remove,
     getRemote,
+    getRuntimeState,
+    completeTask,
     saveRemote,
     replaceRemote
   });
 
-  // Compatibilidade temporária do motor legado. É somente RAM.
   const sessionOnlyStorage = Object.freeze({
     getItem(key) { const value = readJSON(key, null); return value == null ? null : JSON.stringify(value); },
     setItem(key, value) { try { memory[key] = JSON.parse(value); } catch (_) { memory[key] = value; } },
@@ -133,4 +151,4 @@
   window.__ROTINA_SESSION_STORAGE__ = sessionOnlyStorage;
 })();
 
-const localStorage = window.__ROTINA_SESSION_STORAGE__; // Supabase is now the remote source of truth.
+const localStorage = window.__ROTINA_SESSION_STORAGE__; // Supabase is the remote source of truth.
