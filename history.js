@@ -51,6 +51,11 @@
     try { await loadRemote(); render(); }
     catch (_) { setStatus('Servidor indisponível'); $('history-list').innerHTML = '<p class="history-empty">Não foi possível carregar o histórico.</p>'; }
   }
-  async function start() { $('history-refresh').addEventListener('click', refresh); await refresh(); }
+  async function start() {
+    const user = await window.PacusAuth.requireAdult();
+    if (!user) return;
+    $('history-refresh').addEventListener('click', refresh);
+    await refresh();
+  }
   document.addEventListener('DOMContentLoaded', start);
 })();
