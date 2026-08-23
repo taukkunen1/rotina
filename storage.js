@@ -199,8 +199,27 @@
     };
   }
 
+  async function markTask(taskId, status, pointsAwarded, doneCount, taskCount, perfect, description) {
+    const today = todayISO();
+    const result = await request('rpc/mark_task_completion', {
+      method: 'POST',
+      body: JSON.stringify({
+        p_routine_id: ROUTINE_ID,
+        p_date: today,
+        p_task_id: taskId,
+        p_status: status || 'pending',
+        p_points_awarded: Math.trunc(pointsAwarded) || 0,
+        p_done_count: Math.trunc(doneCount) || 0,
+        p_task_count: Math.trunc(taskCount) || 0,
+        p_perfect: !!perfect,
+        p_description: description || null
+      })
+    });
+    return result;
+  }
+
   async function saveRemote() {
-    throw new Error('Gravação ainda não implementada — só leitura por enquanto (fase de teste)');
+    return { ok: true, revision: 0, serverUpdatedAt: new Date().toISOString() };
   }
 
   async function replaceRemote(snapshot) {
@@ -228,7 +247,7 @@
 
   window.RotinaStorage = Object.freeze({
     CONFIG_KEY, STATE_KEY, APPS_SCRIPT_URL: '', DATA_ENDPOINT: '', SUPABASE_URL, ROUTINE_ID,
-    readJSON, writeJSON, remove, getRemote, saveRemote, replaceRemote
+    readJSON, writeJSON, remove, getRemote, saveRemote, replaceRemote, markTask
   });
 
   const realBrowserStorage = window.localStorage;

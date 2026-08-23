@@ -2812,6 +2812,33 @@ function onMarkClick(e){
   if(completedNow){
     addLog(`🥚 ${CONFIG.pet.name} avançou: dia completo`);
   }
+
+  // Grava a marcação no Supabase (RPC atômica) com os valores que a gente
+  // já calculou aqui — a regra de pontuação continua vivendo só neste
+  // arquivo, o banco só recebe o resultado pronto.
+  if(window.RotinaStorage?.markTask){
+    const finalStatus = state.checkedToday[id]; // undefined | 'done' | 'help' | 'na' | 'x'
+    const pointsForThisTask = finalStatus === undefined ? 0 :
+      finalStatus === 'done' ? task.pts :
+      finalStatus === 'help' ? taskHelpPoints(task) :
+      finalStatus === 'na' ? 0 :
+      (lightDay ? 0 : -taskNotDonePenalty(task));
+    const dayTasks = allTasks(todayISO());
+    const applicableToday = dayTasks.filter(t => state.checkedToday[t.id] !== 'na');
+    const doneCountToday = applicableToday.filter(t => isCountedDone(state.checkedToday[t.id])).length;
+    const taskCountToday = applicableToday.length;
+    const perfectToday = taskCountToday > 0 && doneCountToday === taskCountToday;
+    window.RotinaStorage.markTask(
+      id,
+      finalStatus,
+      pointsForThisTask,
+      doneCountToday,
+      taskCountToday,
+      perfectToday,
+      `${task.txt} (${finalStatus || 'desmarcado'})`
+    ).catch(err => console.error('Falha ao gravar no Supabase:', err));
+  }
+
   saveState(state);
   bumpTotal(totalDelta, btn);
   render();
