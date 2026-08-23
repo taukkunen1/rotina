@@ -2230,80 +2230,16 @@ function render(){
   const PERIOD_ORDER = ['manha','tarde','noite'];
   const periodsObj = getPeriodsFor(todayISO());
 
-  Object.entries(periodsObj).forEach(([key, period])=>{
-    const div = document.createElement('div');
-    div.className = 'period ' + key;
-
-    const applicable = period.tasks.filter(t=>state.checkedToday[t.id] !== 'na');
-    const doneCount = applicable.filter(t=>isCountedDone(state.checkedToday[t.id])).length;
-    const remaining = applicable.length - doneCount;
-    const pct = applicable.length ? Math.round(100*doneCount/applicable.length) : 0;
-
-    let progressMsg;
-    if(applicable.length === 0){ progressMsg = 'nada marcado ainda'; }
-    else if(pct === 100){ progressMsg = 'tudo certo por aqui! ✅'; }
-    else if(remaining === 1){ progressMsg = 'falta só 1! 🔥'; }
-    else { progressMsg = `${doneCount}/${applicable.length} feitas`; }
-
-    // prévia da próxima etapa quando termina esse período — saber o que
-    // vem a seguir ajuda a reduzir a sensação de surpresa na transição.
-    let nextPreviewHtml = '';
-    if(pct === 100 && applicable.length > 0){
-      const idx = PERIOD_ORDER.indexOf(key);
-      const nextKey = idx >= 0 && idx < PERIOD_ORDER.length-1 ? PERIOD_ORDER[idx+1] : null;
-      if(nextKey && periodsObj[nextKey]){
-        const nextPeriod = periodsObj[nextKey];
-        const firstTask = nextPeriod.tasks[0];
-        nextPreviewHtml = `<div class="next-period-preview">➡️ A seguir: <b>${nextPeriod.label}</b>${firstTask ? ` — começando com ${taskIcon(firstTask.txt)} ${firstTask.txt}` : ''}</div>`;
-      } else if(!nextKey){
-        nextPreviewHtml = `<div class="next-period-preview">🎉 Terminou tudo por hoje!</div>`;
-      }
-    }
-
-    const ul = document.createElement('ul');
-    ul.className = 'tasks';
-    const orderedTasks = getEffectiveTaskOrder(key, period.tasks);
-    const nextSuggestedId = orderedTasks.find(t => !t.external && !state.checkedToday[t.id])?.id;
-    const tierBadge = { essencial:'🔴', responsabilidade:'🟡', extra:'🟢' };
-    const tierTitle = { essencial:'Essencial — precisa acontecer, mas você escolhe quando/ordem/ajuda', responsabilidade:'Responsabilidade — esperado, gera pontos', extra:'Extra — opcional, bônus maior' };
-    orderedTasks.forEach((task, idx)=>{
-      const li = document.createElement('li');
-      const status = state.checkedToday[task.id]; // 'done' | 'na' | 'x' | 'help' | undefined
-      const isSuggested = task.id === nextSuggestedId;
-      const lightDay = isLightDay(todayISO());
-      li.className = 'task'
-        + (status === 'done' ? ' done' : '')
-        + (status === 'na' ? ' na' : '')
-        + (status === 'x' ? ' notdone' : '')
-        + (status === 'help' ? ' helped' : '')
-        + (isSuggested ? ' suggested' : '');
-      li.innerHTML = `
-        <span class="task-reorder">
-          <button type="button" class="mini-reorder-btn" data-dir="up" data-period="${key}" data-task="${task.id}" ${idx===0?'disabled':''} title="Mover pra cima">▲</button>
-          <button type="button" class="mini-reorder-btn" data-dir="down" data-period="${key}" data-task="${task.id}" ${idx===orderedTasks.length-1?'disabled':''} title="Mover pra baixo">▼</button>
-        </span>
-        <span class="mark-group" data-id="${task.id}">
-          <button type="button" class="mark-btn mark-done ${status==='done'?'active':''}" data-status="done" title="Feito">✓</button>
-          <button type="button" class="mark-btn mark-help ${status==='help'?'active':''}" data-status="help" title="Pedi ajuda / fizemos junto">🤝</button>
-          <button type="button" class="mark-btn mark-na ${status==='na'?'active':''}" data-status="na" title="Não precisou realizar hoje">–</button>
-          <button type="button" class="mark-btn mark-x ${status==='x'?'active':''}" data-status="x" title="${lightDay ? 'Não feito (dia leve, sem perder ponto)' : 'Não feito, perde metade dos pontos'}">✕</button>
-        </span>
-        <span class="txt">${isSuggested ? '<span class="suggested-flag">👉</span>' : ''}${task.tier ? `<span class="tier-badge" title="${tierTitle[task.tier]||''}">${tierBadge[task.tier]||''}</span>` : ''}<span class="task-icon">${taskIcon(task.txt)}</span>${task.txt}${task.sub ? `<span class="sub">${task.sub}</span>` : ''}</span>
-        <span class="pts">${status==='na' ? 'n/a' : status==='help' ? '+'+taskHelpPoints(task) : status==='x' ? (lightDay ? 'dia leve' : '−'+taskNotDonePenalty(task)) : '+'+task.pts}</span>
-      `;
-      ul.appendChild(li);
-    });
-
-    div.innerHTML = `
-      <div class="period-head"><h2>${period.label}</h2><span class="time">${period.time}</span></div>
-      <span class="time-remaining" id="timeRemaining_${key}"></span>
-      <span class="progress-txt">${progressMsg}</span>
-      <div class="progress-bar"><div style="width:${pct}%"></div></div>
-      ${nextPreviewHtml}
-    `;
-    div.dataset.periodTime = period.time;
-    div.appendChild(ul);
-    periodsEl.appendChild(div);
+  PacusRoutineRenderer.renderPeriods({
+    periodsEl,
+    periodsObj,
+    checkedToday: state.checkedToday,
+    getEffectiveTaskOrder,
+    isCountedDone,
+    isLightDay: isLightDay(todayISO()),
+    taskIcon,
+    taskHelpPoints,
+    taskNotDonePenalty
   });
 
   renderFocusCard();
