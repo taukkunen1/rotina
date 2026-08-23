@@ -7,7 +7,6 @@
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BJUaEs1EMKYDfCkg_6wnYA_7sWmgXWT';
   const ROUTINE_ID = '077cb586-35c1-49a8-b864-8d2d88f1010f';
   const memory = Object.create(null);
-  let supabaseClient = null;
 
   function clone(value) {
     try { return JSON.parse(JSON.stringify(value)); } catch (_) { return value; }
@@ -18,18 +17,37 @@
   function writeJSON(key, value) { memory[key] = clone(value); return true; }
   function remove(key) { delete memory[key]; return true; }
 
-  function client() {
-    if (supabaseClient) return supabaseClient;
-    if (!window.supabase?.createClient) throw new Error('Cliente Supabase não carregado');
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+  function authClient() {
+    try { return window.PacusAuth?.client?.() || null; } catch (_) { return null; }
+  }
+
+  async function rpcRest(name, body) {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
     });
-    return supabaseClient;
+    const data = await response.json().catch(() => null);
+    if (!response.ok) throw new Error(data?.message || data?.hint || `Supabase RPC ${name} falhou (${response.status})`);
+    return data;
+  }
+
+  async function rpc(name, body) {
+    const client = authClient();
+    if (client) {
+      const { data, error } = await client.rpc(name, body);
+      if (error) throw error;
+      return data;
+    }
+    return rpcRest(name, body);
   }
 
   async function getRemote() {
-    const { data, error } = await client().rpc('get_routine_snapshot', { p_routine_id: ROUTINE_ID });
-    if (error) throw error;
+    const data = await rpc('get_routine_snapshot', { p_routine_id: ROUTINE_ID });
     if (!data || typeof data !== 'object') throw new Error('Snapshot inválido do Supabase');
 
     const config = data.config || {};
@@ -55,7 +73,7 @@
       ? window.RotinaDataModel.create(config || {}, state || {})
       : { schemaVersion: 2, routineConfig: config || {}, dailyState: state || {}, pointEvents: state?.pointEvents || [], history: state?.history || {} };
 
-    const { data, error } = await client().rpc('save_routine_snapshot', {
+    return rpc('save_routine_snapshot', {
       p_routine_id: ROUTINE_ID,
       p_config: domains.routineConfig || {},
       p_state: Object.assign({}, domains.dailyState || {}, {
@@ -64,13 +82,6 @@
       }),
       p_base_revision: Number(baseRevision || 0)
     });
-    if (error) throw error;
-    if (!data || data.ok === false) {
-      const err = new Error(data?.error || (data?.conflict ? 'conflict' : 'server_error'));
-      err.result = data;
-      throw err;
-    }
-    return data;
   }
 
   async function replaceRemote(snapshot) {
