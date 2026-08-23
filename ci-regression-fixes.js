@@ -4,6 +4,7 @@
   'use strict';
 
   const DONE_KEY = '__rotina_done_overrides_v1';
+  const persistentStorage = window.localStorage;
 
   function taskFingerprint(task){
     if(!task) return '';
@@ -13,12 +14,12 @@
   }
 
   function readDone(){
-    try { return JSON.parse(localStorage.getItem(DONE_KEY) || '[]'); }
+    try { return JSON.parse(persistentStorage.getItem(DONE_KEY) || '[]'); }
     catch (_) { return []; }
   }
 
   function writeDone(items){
-    try { localStorage.setItem(DONE_KEY, JSON.stringify(Array.from(new Set(items)))); }
+    try { persistentStorage.setItem(DONE_KEY, JSON.stringify(Array.from(new Set(items)))); }
     catch (_) {}
   }
 
@@ -26,7 +27,10 @@
     const done = new Set(readDone());
     if(!done.size) return;
     document.querySelectorAll('.task').forEach(task => {
-      if(done.has(taskFingerprint(task))) task.classList.add('done');
+      if(!done.has(taskFingerprint(task))) return;
+      task.classList.add('done', 'completed', 'checked');
+      task.querySelectorAll('input[type="checkbox"]').forEach(input => { input.checked = true; });
+      task.querySelectorAll('[aria-checked]').forEach(control => control.setAttribute('aria-checked', 'true'));
     });
   }
 
@@ -54,9 +58,10 @@
   }
 
   document.addEventListener('click', function(event){
-    const button = event.target.closest('.mark-done');
-    if(!button) return;
-    const task = button.closest('.task');
+    const task = event.target.closest('.task');
+    if(!task) return;
+    const control = event.target.closest('.mark-done, input[type="checkbox"], [role="checkbox"], [data-action="done"]');
+    if(!control) return;
     const fingerprint = taskFingerprint(task);
     if(!fingerprint) return;
     const done = readDone();
