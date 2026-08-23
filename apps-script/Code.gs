@@ -4,55 +4,123 @@ const MAX_DAILY_BACKUPS = 30;
 const TIMEZONE = 'America/Sao_Paulo';
 
 function jsonResponse(data) {
-  return ContentService.createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
 }
-
 function findDataFile() {
   const current = DriveApp.getFilesByName(DATA_FILE);
   if (current.hasNext()) return current.next();
-
   const files = DriveApp.getFiles();
   const legacyPattern = /^rotina-(?!.*\d{4}-\d{2}-\d{2}\.json$).*backup\.json$/;
   while (files.hasNext()) {
     const file = files.next();
-    if (legacyPattern.test(file.getName())) {
-      file.setName(DATA_FILE);
-      return file;
-    }
+    if (legacyPattern.test(file.getName())) { file.setName(DATA_FILE); return file; }
   }
   return DriveApp.createFile(DATA_FILE, '{}', MimeType.PLAIN_TEXT);
 }
-
 function readJson(file) {
-  try { return JSON.parse(file.getBlob().getDataAsString() || '{}'); }
-  catch (err) { return {}; }
+  try { return JSON.parse(file.getBlob().getDataAsString() || '{}'); } catch (err) { return {}; }
+}
+function isoDate(date) { return Utilities.formatDate(date || new Date(), TIMEZONE, 'yyyy-MM-dd'); }
+function isoDateOffset(days) { const d = new Date(); d.setDate(d.getDate() + days); return isoDate(d); }
+function localHourMinute() { return Utilities.formatDate(new Date(), TIMEZONE, 'HH:mm'); }
+
+/*
+ * DATA MODEL V2
+ *
+ * O arquivo físico continua sendo JSON apenas para a fase de transição.
+ * Internamente os dados já estão separados nos quatro domínios que serão
+ * tabelas/coleções no banco futuro:
+ *
+ * routineConfig: configuração estável da rotina
+ * dailyState: estado mutável do dia atual
+ * pointEvents: ledger imutável de alterações de pontos
+ * history: registros fechados por data
+ *
+ * O contrato HTTP continua aceitando config/state para não quebrar o frontend
+ * durante a migração. Isso permite trocar o Drive por SQL depois sem alterar
+ * as telas.
+ */
+function emptyModel() {
+  return { schemaVersion: 2, routineConfig: {}, dailyState: {}, pointEvents: [], history: {}, revision: 0, serverUpdatedAt: null };
 }
 
-function isoDate(date) {
-  return Utilities.formatDate(date || new Date(), TIMEZONE, 'yyyy-MM-dd');
+function isV2(data) {
+  return data && Number(data.schemaVersion) >= 2 && data.routineConfig && data.dailyState && data.history;
 }
 
-function isoDateOffset(days) {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  return isoDate(d);
+function modelFromLegacy(legacy) {
+  if (isV2(legacy)) return legacy;
+  const state = legacy && legacy.state ? legacy.state : {};
+  const config = legacy && legacy.config ? legacy.config : {};
+  const history = state.history || {};
+  const pointEvents = Array.isArray(state.pointEvents) ? state.pointEvents : [];
+
+  return {
+    schemaVersion: 2,
+    routineConfig: config,
+    dailyState: Object.assign({}, state, { history: undefined, pointEvents: undefined }),
+    pointEvents: pointEvents,
+    history: history,
+    revision: Number(legacy && legacy.revision || state.driveRevision || 0),
+    serverUpdatedAt: legacy && legacy.serverUpdatedAt || null
+  };
 }
 
-function localHourMinute() {
-  return Utilities.formatDate(new Date(), TIMEZONE, 'HH:mm');
+function legacyFromModel(model) {
+  const daily = Object.assign({}, model.dailyState || {});
+  daily.history = model.history || {};
+  daily.pointEvents = model.pointEvents || [];
+  daily.driveRevision = Number(model.revision || daily.driveRevision || 0);
+  return {
+    ok: true,
+    schemaVersion: 2,
+    revision: Number(model.revision || 0),
+    config: model.routineConfig || {},
+    state: daily,
+    serverUpdatedAt: model.serverUpdatedAt || null,
+    domains: {
+      routineConfig: model.routineConfig || {},
+      dailyState: model.dailyState || {},
+      pointEvents: model.pointEvents || [],
+      history: model.history || {}
+    }
+  };
+}
+
+function appendPointEventsFromState(model, oldState, newState) {
+  const oldTotal = Number(oldState && oldState.totalPoints || 0);
+  const newTotal = Number(newState && newState.totalPoints || 0);
+  const delta = newTotal - oldTotal;
+  if (!delta) return;
+  model.pointEvents = Array.isArray(model.pointEvents) ? model.pointEvents : [];
+  model.pointEvents.push({
+    id: Utilities.getUuid(),
+    type: 'state_reconciliation',
+    amount: delta,
+    balanceAfter: newTotal,
+    date: isoDate(new Date()),
+    createdAt: new Date().toISOString()
+  });
+}
+
+function persistModel(file, model, oldState) {
+  model.schemaVersion = 2;
+  model.revision = Number(model.revision || 0);
+  model.serverUpdatedAt = new Date().toISOString();
+  if (oldState) appendPointEventsFromState(model, oldState, model.dailyState || {});
+  file.setContent(JSON.stringify(model, null, 2));
 }
 
 function doGet() {
   const file = findDataFile();
-  const data = readJson(file);
-  return jsonResponse({
-    ok: true,
-    revision: Number(data.revision || (data.state && data.state.driveRevision) || 0),
-    config: data.config || {},
-    state: data.state || {},
-    serverUpdatedAt: data.serverUpdatedAt || null
-  });
+  const raw = readJson(file);
+  const model = modelFromLegacy(raw);
+  if (!isV2(raw)) {
+    model.revision = Number(raw.revision || 0);
+    model.serverUpdatedAt = raw.serverUpdatedAt || null;
+    file.setContent(JSON.stringify(model, null, 2));
+  }
+  return jsonResponse(legacyFromModel(model));
 }
 
 function doPost(e) {
@@ -64,29 +132,30 @@ function doPost(e) {
   try {
     lock.waitLock(10000);
     const file = findDataFile();
-    const current = readJson(file);
-    const currentRevision = Number(current.revision || (current.state && current.state.driveRevision) || 0);
+    const rawCurrent = readJson(file);
+    const current = modelFromLegacy(rawCurrent);
+    const currentRevision = Number(current.revision || 0);
     const baseRevision = Number(incoming.baseRevision || 0);
 
     if (currentRevision > 0 && baseRevision !== currentRevision) {
-      return jsonResponse({ ok:false, conflict:true, revision:currentRevision, data:current });
+      return jsonResponse({ ok:false, conflict:true, revision:currentRevision, data:legacyFromModel(current) });
     }
 
-    const nextRevision = currentRevision + 1;
-    incoming.revision = nextRevision;
-    incoming.serverUpdatedAt = new Date().toISOString();
-    incoming.baseRevision = currentRevision;
-    if (!incoming.state) incoming.state = {};
-    incoming.state.driveRevision = nextRevision;
+    const incomingLegacy = incoming.config || incoming.state ? incoming : legacyFromModel(current);
+    const next = modelFromLegacy(incomingLegacy);
+    next.routineConfig = incoming.config || next.routineConfig || {};
+    next.dailyState = incoming.state || next.dailyState || {};
+    next.history = (incoming.state && incoming.state.history) || next.history || {};
+    next.pointEvents = Array.isArray(incoming.pointEvents) ? incoming.pointEvents : (next.pointEvents || []);
+    next.revision = currentRevision + 1;
+    next.dailyState.driveRevision = next.revision;
 
-    file.setContent(JSON.stringify(incoming, null, 2));
-    createDailyBackup(incoming);
+    persistModel(file, next, current.dailyState || {});
+    createDailyBackup(next);
     pruneDailyBackups();
-    return jsonResponse({ ok:true, revision:nextRevision, serverUpdatedAt:incoming.serverUpdatedAt });
+    return jsonResponse({ ok:true, revision:next.revision, serverUpdatedAt:next.serverUpdatedAt });
   } catch (err) {
-    if (String(err && err.message || err).indexOf('Lock') !== -1) {
-      return jsonResponse({ ok:false, error:'lock_timeout' });
-    }
+    if (String(err && err.message || err).indexOf('Lock') !== -1) return jsonResponse({ ok:false, error:'lock_timeout' });
     return jsonResponse({ ok:false, error:'server_error' });
   } finally {
     try { lock.releaseLock(); } catch (ignore) {}
@@ -94,18 +163,12 @@ function doPost(e) {
 }
 
 function setupDailyCloseTrigger() {
-  ScriptApp.getProjectTriggers()
-    .filter(t => t.getHandlerFunction() === 'checkDailyClose')
-    .forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'checkDailyClose').forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('checkDailyClose').timeBased().everyMinutes(1).create();
 }
-
 function removeDailyCloseTrigger() {
-  ScriptApp.getProjectTriggers()
-    .filter(t => t.getHandlerFunction() === 'checkDailyClose')
-    .forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'checkDailyClose').forEach(t => ScriptApp.deleteTrigger(t));
 }
-
 function checkDailyClose() {
   const hm = localHourMinute();
   if (hm >= '23:59') return closeRoutineDay(isoDate(new Date()));
@@ -125,121 +188,80 @@ function tasksForDate(config, dateISO) {
   });
   return result;
 }
-
-function taskPoints(tasks) {
-  return tasks.reduce((sum, task) => sum + Number(task && task.pts || 0), 0);
-}
+function taskPoints(tasks) { return tasks.reduce((sum, task) => sum + Number(task && task.pts || 0), 0); }
 
 function closeRoutineDay(dateISO) {
   const lock = LockService.getScriptLock();
   try {
     lock.waitLock(10000);
     const file = findDataFile();
-    const data = readJson(file);
-    const state = data.state || {};
-    const config = data.config || {};
-    state.history = state.history || {};
+    const raw = readJson(file);
+    const model = modelFromLegacy(raw);
+    const state = model.dailyState || {};
+    const config = model.routineConfig || {};
+    model.history = model.history || {};
     state.autoClosedDates = state.autoClosedDates || {};
     if (state.autoClosedDates[dateISO]) return;
 
     const tasks = tasksForDate(config, dateISO);
-    const previous = state.history[dateISO] || {};
+    const previous = model.history[dateISO] || {};
     const checkedToday = state.checkedToday || {};
-    const checkedTasks = tasks.filter(task => checkedToday[task.id] === true);
-
+    const checkedTasks = tasks.filter(task => checkedToday[task.id] === true || checkedToday[task.id] === 'done' || checkedToday[task.id] === 'help');
     const total = tasks.length || Number(previous.total || 0);
     const previousDone = Number(previous.done || 0);
     const done = checkedTasks.length > 0 ? checkedTasks.length : Math.min(previousDone, total);
-    const pointsEarnedThatDay = checkedTasks.length > 0
-      ? taskPoints(checkedTasks)
-      : Number(previous.pointsEarnedThatDay || 0);
+    const pointsEarnedThatDay = checkedTasks.length > 0 ? taskPoints(checkedTasks) : Number(previous.pointsEarnedThatDay || 0);
     const perfect = total > 0 && done === total;
 
-    state.history[dateISO] = Object.assign({}, previous, {
-      done: done,
-      total: total,
-      pointsEarnedThatDay: pointsEarnedThatDay,
-      perfect: perfect,
+    model.history[dateISO] = Object.assign({}, previous, {
+      done, total, pointsEarnedThatDay, perfect,
       screenMinutes: perfect ? Number(config.perfectDayBonusMinutes || 30) : Number(previous.screenMinutes || 0),
       autoClosedAt: new Date().toISOString()
     });
-
     state.autoClosedDates[dateISO] = true;
     state.lastAutoClosedDate = dateISO;
-    const currentRevision = Number(data.revision || state.driveRevision || 0);
-    const nextRevision = currentRevision + 1;
-    data.state = state;
-    data.revision = nextRevision;
-    data.baseRevision = currentRevision;
-    data.serverUpdatedAt = new Date().toISOString();
-    state.driveRevision = nextRevision;
-
-    file.setContent(JSON.stringify(data, null, 2));
-    createDailyBackup(data);
+    model.dailyState = state;
+    model.revision = Number(model.revision || 0) + 1;
+    state.driveRevision = model.revision;
+    persistModel(file, model);
+    createDailyBackup(model);
     pruneDailyBackups();
-  } finally {
-    try { lock.releaseLock(); } catch (ignore) {}
-  }
+  } finally { try { lock.releaseLock(); } catch (ignore) {} }
 }
 
-// Executar uma vez para corrigir registros legados que foram fechados
-// indevidamente como 1/1 apesar de representarem um dia perfeito completo.
 function repairLegacyHistory() {
   const lock = LockService.getScriptLock();
   try {
     lock.waitLock(10000);
     const file = findDataFile();
-    const data = readJson(file);
-    const state = data.state || {};
-    const config = data.config || {};
-    const history = state.history || {};
+    const model = modelFromLegacy(readJson(file));
+    const config = model.routineConfig || {};
+    const history = model.history || {};
     let changed = false;
-
     Object.keys(history).forEach(dateISO => {
       const item = history[dateISO] || {};
-      const done = Number(item.done || 0);
-      const total = Number(item.total || 0);
+      const done = Number(item.done || 0), total = Number(item.total || 0);
       if (!item.perfect || done !== 1 || total !== 1) return;
-
       const tasks = tasksForDate(config, dateISO);
       if (!tasks.length) return;
-      item.done = tasks.length;
-      item.total = tasks.length;
-      item.pointsEarnedThatDay = taskPoints(tasks);
-      item.perfect = true;
-      item.legacyHistoryNormalizedAt = new Date().toISOString();
-      history[dateISO] = item;
-      changed = true;
+      item.done = tasks.length; item.total = tasks.length;
+      item.pointsEarnedThatDay = taskPoints(tasks); item.perfect = true;
+      item.legacyHistoryNormalizedAt = new Date().toISOString(); history[dateISO] = item; changed = true;
     });
-
     if (!changed) return { ok:true, changed:false };
-
-    state.history = history;
-    data.state = state;
-    const currentRevision = Number(data.revision || state.driveRevision || 0);
-    const nextRevision = currentRevision + 1;
-    data.revision = nextRevision;
-    data.baseRevision = currentRevision;
-    data.serverUpdatedAt = new Date().toISOString();
-    state.driveRevision = nextRevision;
-    file.setContent(JSON.stringify(data, null, 2));
-    createDailyBackup(data);
-    pruneDailyBackups();
-    return { ok:true, changed:true, revision:nextRevision };
-  } finally {
-    try { lock.releaseLock(); } catch (ignore) {}
-  }
+    model.history = history; model.revision = Number(model.revision || 0) + 1;
+    model.dailyState.driveRevision = model.revision;
+    persistModel(file, model); createDailyBackup(model); pruneDailyBackups();
+    return { ok:true, changed:true, revision:model.revision };
+  } finally { try { lock.releaseLock(); } catch (ignore) {} }
 }
 
 function createDailyBackup(data) {
   const date = Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd');
   const name = BACKUP_PREFIX + date + '.json';
   const backups = DriveApp.getFilesByName(name);
-  if (!backups.hasNext()) {
-    DriveApp.createFile(name, JSON.stringify(data, null, 2), MimeType.PLAIN_TEXT);
-  }
+  if (!backups.hasNext()) DriveApp.createFile(name, JSON.stringify(data, null, 2), MimeType.PLAIN_TEXT);
 }
-
 function pruneDailyBackups() {
   const allBackups = [];
   const files = DriveApp.getFiles();
