@@ -1,10 +1,7 @@
-(function(){
+(() => {
   'use strict';
 
-  // Home cleanup: keep the child-facing screen focused on the routine itself.
-  const DECORATIVE_SELECTORS = [
-    '#breathingBtn',
-    '#hairSection',
+  const HIDDEN_SELECTORS = [
     '#invisibleWinsCard',
     '#weeklyNewsAnnouncement',
     '#familyGameNightAnnouncement',
@@ -18,43 +15,44 @@
     '.mini-pacus'
   ];
 
-  const SECONDARY_ACTIONS = ['mark-help','mark-na','mark-x'];
+  const SECONDARY_ACTIONS = ['mark-help', 'mark-na', 'mark-x'];
 
   function compactTaskActions(){
-    document.querySelectorAll('.task .mark-group').forEach(function(group){
+    document.querySelectorAll('.task .mark-group').forEach(group => {
       if(group.querySelector('.task-secondary-actions')) return;
-      const secondary = Array.from(group.children).filter(function(el){
-        return SECONDARY_ACTIONS.some(function(cls){ return el.classList.contains(cls); });
-      });
+      const secondary = Array.from(group.children).filter(el =>
+        SECONDARY_ACTIONS.some(cls => el.classList.contains(cls))
+      );
       if(!secondary.length) return;
 
       const details = document.createElement('details');
       details.className = 'task-secondary-actions';
       const summary = document.createElement('summary');
       summary.textContent = 'mais';
-      summary.setAttribute('aria-label','Outras opções');
+      summary.setAttribute('aria-label', 'Outras opções');
       details.appendChild(summary);
-      secondary.forEach(function(el){ details.appendChild(el); });
+      secondary.forEach(el => details.appendChild(el));
       group.appendChild(details);
     });
   }
 
   function improveLabels(){
     const labels = {
-      '.mark-done':'Marcar como concluída',
-      '.mark-help':'Pedir ajuda ou fazer junto',
-      '.mark-na':'Marcar como não aplicável hoje',
-      '.mark-x':'Marcar como não realizado'
+      '.mark-done': 'Marcar como concluída',
+      '.mark-help': 'Pedir ajuda ou fazer junto',
+      '.mark-na': 'Marcar como não aplicável hoje',
+      '.mark-x': 'Marcar como não realizado'
     };
-    Object.entries(labels).forEach(function(entry){
-      document.querySelectorAll(entry[0]).forEach(function(btn){
-        btn.setAttribute('aria-label', entry[1]);
+    Object.entries(labels).forEach(([selector, label]) => {
+      document.querySelectorAll(selector).forEach(button => {
+        button.setAttribute('aria-label', label);
+        button.setAttribute('type', 'button');
       });
     });
   }
 
   function compactPeriods(){
-    document.querySelectorAll('.period').forEach(function(period, index){
+    document.querySelectorAll('.period').forEach((period, index) => {
       if(period.dataset.uxDisclosure === '1') return;
       const head = period.querySelector(':scope > .period-head');
       const list = period.querySelector(':scope > .tasks');
@@ -71,7 +69,7 @@
 
       const body = document.createElement('div');
       body.className = 'period-disclosure-body';
-      Array.from(period.children).forEach(function(child){
+      Array.from(period.children).forEach(child => {
         if(child !== head && child !== list) body.appendChild(child);
       });
       details.appendChild(body);
@@ -82,15 +80,16 @@
   }
 
   function hideDecorativeUI(){
-    DECORATIVE_SELECTORS.forEach(function(selector){
-      document.querySelectorAll(selector).forEach(function(el){
-        el.setAttribute('aria-hidden','true');
+    HIDDEN_SELECTORS.forEach(selector => {
+      document.querySelectorAll(selector).forEach(el => {
+        el.hidden = true;
+        el.setAttribute('aria-hidden', 'true');
       });
     });
   }
 
   function stopDecorativeEffects(){
-    try { window.fireConfetti = function(){}; } catch(e) {}
+    try { window.fireConfetti = function(){}; } catch(error) {}
     document.documentElement.classList.add('ux-2026');
   }
 
@@ -112,5 +111,5 @@
 
   apply();
   const observer = new MutationObserver(schedule);
-  observer.observe(document.body, {childList:true, subtree:true});
+  observer.observe(document.body, {childList: true, subtree: true});
 })();
