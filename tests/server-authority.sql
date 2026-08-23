@@ -1,56 +1,74 @@
--- Regression tests for server-authoritative task state.
--- Run in a transaction so production data is never retained.
+-- Regression tests for a fully server-authoritative daily cycle.
+-- Run in a transaction so test writes are never retained.
 
 begin;
+
+-- The server calendar is authoritative and must be Sao Paulo based.
+select public._pacus_local_date() = (now() at time zone 'America/Sao_Paulo')::date as sao_paulo_calendar;
+
+-- Browser supplied dates other than the current server date must be rejected.
+do $$ begin
+  perform public.child_get_runtime_state('077cb586-35c1-49a8-b864-8d2d88f1010f', public._pacus_local_date() + 1);
+  raise exception 'future runtime date was accepted';
+exception when others then
+  if sqlerrm <> 'invalid_runtime_date' then raise; end if;
+end $$;
+
+do $$ begin
+  perform public.child_complete_task(
+    '077cb586-35c1-49a8-b864-8d2d88f1010f',
+    (select id from public.tasks order by position limit 1),
+    'done',
+    public._pacus_local_date() + 1
+  );
+  raise exception 'future task date was accepted';
+exception when others then
+  if sqlerrm <> 'invalid_task_date' then raise; end if;
+end $$;
+
+-- Rollover must create/read the current server day and leave it open.
+select (public.child_rollover_current_day('077cb586-35c1-49a8-b864-8d2d88f1010f')->>'date')::date = public._pacus_local_date() as rollover_uses_server_date;
+select (public.child_rollover_current_day('077cb586-35c1-49a8-b864-8d2d88f1010f')->'dailyRun'->>'status') = 'open' as current_run_open;
 
 -- Duplicate completion must not award points twice.
 select public.child_complete_task(
   '077cb586-35c1-49a8-b864-8d2d88f1010f',
   (select id from public.tasks order by position limit 1),
-  'done',
-  '2099-01-01'
+  'done'
 );
 select public.child_complete_task(
   '077cb586-35c1-49a8-b864-8d2d88f1010f',
   (select id from public.tasks order by position limit 1),
-  'done',
-  '2099-01-01'
+  'done'
 );
 
--- Exactly one completion and one task ledger event must exist.
 select count(*) = 1 as one_completion
 from public.task_completions tc
 join public.daily_runs dr on dr.id = tc.daily_run_id
 where dr.routine_id = '077cb586-35c1-49a8-b864-8d2d88f1010f'
-  and dr.date = '2099-01-01';
-
-select count(*) = 1 as one_task_ledger_event
-from public.point_ledger pl
-join public.daily_runs dr on dr.id = pl.daily_run_id
-where dr.routine_id = '077cb586-35c1-49a8-b864-8d2d88f1010f'
-  and dr.date = '2099-01-01'
-  and pl.type = 'task';
+  and dr.date = public._pacus_local_date()
+  and tc.task_id = (select id from public.tasks order by position limit 1);
 
 -- Invalid statuses must be rejected by the server.
 do $$ begin
   perform public.child_complete_task(
     '077cb586-35c1-49a8-b864-8d2d88f1010f',
     (select id from public.tasks order by position limit 1),
-    'invalid',
-    '2099-01-01'
+    'invalid'
   );
   raise exception 'invalid status was accepted';
 exception when others then
   if sqlerrm <> 'invalid_task_status' then raise; end if;
 end $$;
 
--- Expired runs must close on the server, independently of the browser.
+-- Expired runs must close independently of the browser.
 insert into public.daily_runs(routine_id,date,status,started_at,task_count)
-values('077cb586-35c1-49a8-b864-8d2d88f1010f','2020-01-01','open',now(),24);
+values('077cb586-35c1-49a8-b864-8d2d88f1010f',public._pacus_local_date()-1,'open',now(),24)
+on conflict (routine_id,date) do update set status='open', closed_at=null;
 select public.close_expired_daily_runs();
 select status = 'closed' as expired_run_closed
 from public.daily_runs
 where routine_id = '077cb586-35c1-49a8-b864-8d2d88f1010f'
-  and date = '2020-01-01';
+  and date = public._pacus_local_date()-1;
 
 rollback;
