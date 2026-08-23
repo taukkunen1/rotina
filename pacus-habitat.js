@@ -77,13 +77,8 @@
     creature.classList.remove('pacus-moving');
     void creature.offsetWidth;
     creature.classList.add('pacus-moving');
-
-    // Em alguns ciclos ele descansa parcialmente escondido, mantendo uma parte visível.
-    if (Math.random() < 0.32) {
-      creature.classList.add('partially-hidden');
-    } else {
-      creature.classList.remove('partially-hidden');
-    }
+    if (Math.random() < 0.32) creature.classList.add('partially-hidden');
+    else creature.classList.remove('partially-hidden');
   }
 
   function start() {
@@ -95,6 +90,16 @@
     setInterval(() => showFact(habitat), 24 * 60 * 60 * 1000);
   }
 
+  function loadCalendarGrowth(){
+    if(document.getElementById('pacusCalendarGrowthScript')) return;
+    const script = document.createElement('script');
+    script.id = 'pacusCalendarGrowthScript';
+    script.src = 'pacus-calendar-growth.js?v=20260823-1';
+    script.onload = () => { if(typeof window.renderPet === 'function') window.renderPet(); };
+    document.head.appendChild(script);
+  }
+
+  loadCalendarGrowth();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
   else start();
 })();
