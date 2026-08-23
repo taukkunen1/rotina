@@ -76,7 +76,9 @@ button:disabled{cursor:not-allowed;opacity:.5;}
   .topbar{padding:12px 14px;align-items:flex-start;}
   .topbar h1{font-size:1.05rem;white-space:normal;}
   .topbar-context{font-size:.72rem;}
-  .pacus-total{display:none;}
+  .pacus-total{display:flex;flex-direction:column;align-items:flex-end;gap:0;white-space:nowrap;}
+  .pacus-total .label{font-size:.62rem;line-height:1.1;}
+  .pacus-total .num{font-size:1rem;line-height:1.15;}
   .content{padding:10px 10px 0;}
   .period{border-radius:10px;}
   .task{grid-template-columns:auto 1fr auto;}
