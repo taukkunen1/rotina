@@ -34,7 +34,7 @@
 #compact-game-timer .game-timer h3,#compact-game-timer .hint,#compact-game-timer .game-timer-track{display:none}
 #compact-game-timer .game-timer-used{margin:0;font-size:.72rem;white-space:nowrap}
 #compact-game-timer .game-timer-btn{padding:5px 8px;font-size:.68rem;background:transparent;color:var(--chalk);border:1px solid var(--line)}
-#compact-game-timer .game-timer-locked{margin:0;padding:4px 7px;font-size:.68rem;background:transparent;border:0}
+#compact-game-timer .game-timer-locked{margin:0;padding:4px 7px;font-size:.68rem;background:rgba(0,0,0,.15);border:0}
 
 /* Painel dos Adultos */
 .adult-page{min-height:100vh;margin:0;background:var(--bg,#101d19);color:var(--chalk,#e8ece8);font-family:inherit}

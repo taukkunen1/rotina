@@ -26,20 +26,20 @@ test.describe('rotina do dia', () => {
   });
 
   test('todos os controles principais da primeira tarefa ficam visíveis', async ({ page }) => {
-    const firstTask = page.locator('.task').first();
+    const firstTask = page.locator('.task:visible').first();
     for (const selector of ['.mark-done', '.mark-help', '.mark-na', '.mark-x']) {
       await expect(firstTask.locator(selector)).toBeVisible();
     }
   });
 
   test('concluir uma tarefa altera o estado visual e sobrevive ao reload', async ({ page }) => {
-    const done = page.locator('.mark-done').first();
+    const done = page.locator('.mark-done:visible').first();
     const task = done.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " task ")]').first();
     await done.click();
     await expect(task).toHaveClass(/done|completed|checked/);
     await page.reload();
     await waitForRoutine(page);
-    await expect(page.locator('.task').first()).toHaveClass(/done|completed|checked/);
+    await expect(page.locator('.task:visible').first()).toHaveClass(/done|completed|checked/);
   });
 
   test('módulos de domínio são carregados e o runtime continua saudável', async ({ page }) => {
@@ -64,7 +64,7 @@ test.describe('responsividade', () => {
   });
 
   test('botões de tarefa possuem área de toque utilizável', async ({ page }) => {
-    const button = page.locator('.mark-done').first();
+    const button = page.locator('.mark-done:visible').first();
     const box = await button.boundingBox();
     expect(box).not.toBeNull();
     expect(Math.min(box.width, box.height), 'controle de toque não deve ser minúsculo').toBeGreaterThanOrEqual(32);
