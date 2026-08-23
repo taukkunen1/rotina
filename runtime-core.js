@@ -1,6 +1,5 @@
 (() => {
   'use strict';
-  function clone(value){ return JSON.parse(JSON.stringify(value)); }
 
   function loadScript(src){
     return new Promise((resolve,reject)=>{
@@ -19,6 +18,7 @@
       await loadScript('domain/routine-domain.js?v=20260823-1');
       await loadScript('domain/routine-state.js?v=20260823-2');
       await loadScript('controllers/task-controller.js?v=20260823-1');
+      await loadScript('renderers/routine-renderer.js?v=20260823-1');
     }catch(error){ console.warn('PACUS modules unavailable; keeping legacy runtime.', error); }
   }
 
