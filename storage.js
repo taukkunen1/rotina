@@ -6,6 +6,7 @@
   const SUPABASE_URL = 'https://aictkwkcyqjsakugiwra.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BJUaEs1EMKYDfCkg_6wnYA_7sWmgXWT';
   const ROUTINE_ID = '077cb586-35c1-49a8-b864-8d2d88f1010f';
+  const LEGACY_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec';
   const memory = Object.create(null);
 
   function clone(value) { try { return JSON.parse(JSON.stringify(value)); } catch (_) { return value; } }
@@ -115,7 +116,44 @@
     return saveRemote(snapshot.config || {}, snapshot.state || {}, Number(snapshot.revision || 0));
   }
 
-  window.RotinaStorage = Object.freeze({ CONFIG_KEY, STATE_KEY, APPS_SCRIPT_URL: '', DATA_ENDPOINT: '', SUPABASE_URL, ROUTINE_ID, readJSON, writeJSON, remove, getRemote, saveRemote, replaceRemote });
+  // Compatibilidade: o motor antigo ainda chama o endpoint do Apps Script.
+  // Em vez de manter dois backends, interceptamos essas chamadas e as enviamos
+  // para o Supabase. O código antigo pode desaparecer depois da migração completa.
+  const nativeFetch = window.fetch.bind(window);
+  window.fetch = async function(input, init = {}) {
+    const url = typeof input === 'string' ? input : input?.url || '';
+    if (!url.startsWith(LEGACY_APPS_SCRIPT_URL)) return nativeFetch(input, init);
+
+    try {
+      const method = (init.method || (typeof input !== 'string' && input?.method) || 'GET').toUpperCase();
+      if (method === 'GET') {
+        const remote = await getRemote();
+        return new Response(JSON.stringify({ ok: true, ...remote }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      const rawBody = init.body || '';
+      const body = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
+      const result = await saveRemote(body.config || body.domains?.routineConfig || {}, body.state || body.domains?.dailyState || {}, Number(body.baseRevision || 0));
+      return new Response(JSON.stringify(result), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    } catch (error) {
+      const result = error?.result || { ok: false, error: error?.message || 'storage_error' };
+      return new Response(JSON.stringify(result), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+  };
+
+  window.RotinaStorage = Object.freeze({
+    CONFIG_KEY,
+    STATE_KEY,
+    APPS_SCRIPT_URL: '',
+    DATA_ENDPOINT: '',
+    SUPABASE_URL,
+    ROUTINE_ID,
+    readJSON,
+    writeJSON,
+    remove,
+    getRemote,
+    saveRemote,
+    replaceRemote
+  });
 
   const sessionOnlyStorage = Object.freeze({
     getItem(key) { const value = readJSON(key, null); return value == null ? null : JSON.stringify(value); },
