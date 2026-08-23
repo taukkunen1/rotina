@@ -29,7 +29,7 @@
     next.gameTimer = ensureObject(next.gameTimer, {date:today,usedSeconds:0,runningSince:null,bonusSeconds:0,redemptions:{}});
     if(!next.gameTimer.date) next.gameTimer.date = today;
     if(!Number.isFinite(Number(next.gameTimer.usedSeconds))) next.gameTimer.usedSeconds = 0;
-    if(!Number.isFinite(Number(next.gameTimer.bonusSeconds))) next.gameTimer.bonusSeconds = 0;
+    if(next.gameTimer.bonusSeconds === null || !Number.isFinite(Number(next.gameTimer.bonusSeconds))) next.gameTimer.bonusSeconds = 0;
     if(next.gameTimer.runningSince !== null && !Number.isFinite(Number(next.gameTimer.runningSince))) next.gameTimer.runningSince = null;
     if(!next.gameTimer.redemptions || typeof next.gameTimer.redemptions !== 'object') next.gameTimer.redemptions = {};
     return next;

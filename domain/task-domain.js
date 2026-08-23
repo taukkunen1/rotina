@@ -40,7 +40,7 @@
     let delta = 0;
 
     if(current === 'done') delta -= points;
-    else if(current === 'help') delta -= taskHelpPoints(task);
+    else if(current === 'help') delta -= Math.floor(points / 2);
     else if(current === 'x' && !lightDay) delta += taskNotDonePenalty(task);
 
     if(current === clicked){
