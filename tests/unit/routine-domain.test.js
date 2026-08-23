@@ -1,35 +1,51 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const vm = require('node:vm');
+const domain = require('../../domain/routine-domain.js');
 
-const context = { window: {} };
-vm.createContext(context);
-vm.runInContext(fs.readFileSync('routine-domain.js', 'utf8'), context);
-const D = context.window.RoutineDomain;
+function config(){
+  return {
+    periods:{
+      manha:{tasks:[{id:'m'}]},
+      tarde:{tasks:[{id:'t'}]},
+      noite:{tasks:[{id:'n'}]}
+    },
+    periodsWeekend:{
+      manha:{tasks:[{id:'wm'}]},
+      tarde:{tasks:[{id:'wt'}]},
+      noite:{tasks:[{id:'wn'}]}
+    },
+    schedule:[{id:'eng',label:'Inglês',days:['seg'],start:'09:00',end:'10:00',period:'manha',pts:3}],
+    scheduleExceptions:[{id:'extra',date:'2026-08-18',label:'Consulta',start:'15:00',end:'16:00',period:'tarde',pts:2}]
+  };
+}
 
-test('normaliza estados inválidos para pending', () => {
-  assert.equal(D.normalizeStatus('done'), 'done');
-  assert.equal(D.normalizeStatus('wat'), 'pending');
+test('identifica dias da semana em formato usado pela rotina', () => {
+  assert.equal(domain.weekdayKeyFor('2026-08-17'), 'seg');
+  assert.equal(domain.weekdayKeyFor('2026-08-23'), 'dom');
 });
 
-test('calcula pontos sem conceder pontos para helped por padrão', () => {
-  assert.equal(D.pointsFor({ pts: 3 }, 'done'), 3);
-  assert.equal(D.pointsFor({ pts: 3 }, 'helped'), 0);
-  assert.equal(D.pointsFor({ pts: 3, helpPoints: 1 }, 'helped'), 1);
-  assert.equal(D.pointsFor({ pts: 3 }, 'not_done'), 0);
+test('usa rotina de fim de semana apenas sábado e domingo', () => {
+  assert.equal(domain.isWeekendISO('2026-08-22'), true);
+  assert.equal(domain.isWeekendISO('2026-08-23'), true);
+  assert.equal(domain.isWeekendISO('2026-08-17'), false);
 });
 
-test('total é determinístico e não depende da UI', () => {
-  const tasks = [{id:'a',pts:2},{id:'b',pts:4},{id:'c',pts:1}];
-  assert.equal(D.totalPoints(tasks, {a:'done',b:'not_done',c:'done'}), 3);
+test('injeta compromisso recorrente no período correto sem mutar a configuração', () => {
+  const cfg = config();
+  const result = domain.periodsFor(cfg, '2026-08-17');
+  assert.deepEqual(result.manha.tasks.map(t => t.id), ['m','sched_eng']);
+  assert.deepEqual(cfg.periods.manha.tasks.map(t => t.id), ['m']);
 });
 
-test('virada de dia usa data de calendário e não horário UTC do navegador', () => {
-  assert.equal(D.isDayExpired('2026-08-22', new Date('2026-08-23T02:30:00Z'), 'America/Sao_Paulo'), true);
-  assert.equal(D.isDayExpired('2026-08-23', new Date('2026-08-23T02:30:00Z'), 'America/Sao_Paulo'), false);
+test('injeta exceção somente na data correspondente', () => {
+  const cfg = config();
+  const match = domain.periodsFor(cfg, '2026-08-18');
+  const other = domain.periodsFor(cfg, '2026-08-19');
+  assert.equal(match.tarde.tasks.some(t => t.id === 'exc_extra'), true);
+  assert.equal(other.tarde.tasks.some(t => t.id === 'exc_extra'), false);
 });
 
-test('nextDay atravessa mês e ano sem mutação externa', () => {
-  assert.equal(D.nextDay('2026-12-31'), '2027-01-01');
+test('flattenTasks mantém ordem manhã, tarde e noite', () => {
+  const periods = {manha:{tasks:[{id:'m'}]},tarde:{tasks:[{id:'t'}]},noite:{tasks:[{id:'n'}]}};
+  assert.deepEqual(domain.flattenTasks(periods).map(t => t.id), ['m','t','n']);
 });

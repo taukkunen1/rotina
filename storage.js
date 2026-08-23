@@ -1,11 +1,12 @@
 (() => {
   'use strict';
 
-  const CONFIG_KEY = 'rotina_config_session_v4';
-  const STATE_KEY = 'rotina_state_session_v4';
+  const CONFIG_KEY = 'hector_rotina_config_v3';
+  const STATE_KEY = 'hector_rotina_state_v3';
   const SUPABASE_URL = 'https://aictkwkcyqjsakugiwra.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BJUaEs1EMKYDfCkg_6wnYA_7sWmgXWT';
   const ROUTINE_ID = '077cb586-35c1-49a8-b864-8d2d88f1010f';
+  const LEGACY_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec';
   const memory = Object.create(null);
 
   function clone(value) { try { return JSON.parse(JSON.stringify(value)); } catch (_) { return value; } }
@@ -13,59 +14,101 @@
   function writeJSON(key, value) { memory[key] = clone(value); return true; }
   function remove(key) { delete memory[key]; return true; }
 
-  function authClient() { try { return window.PacusAuth?.client?.() || null; } catch (_) { return null; } }
-
-  async function rpcRest(name, body) {
-    const client = authClient();
-    const session = client ? await client.auth.getSession().catch(() => ({ data: { session: null } })) : { data: { session: null } };
-    const token = session?.data?.session?.access_token || SUPABASE_PUBLISHABLE_KEY;
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
-      method: 'POST',
-      headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body || {})
-    });
-    const data = await response.json().catch(() => null);
-    if (!response.ok) throw new Error(data?.message || data?.hint || `Supabase RPC ${name} falhou (${response.status})`);
-    return data;
+  function accessToken() {
+    try {
+      const prefix = `sb-${SUPABASE_URL.split('//')[1].split('.')[0]}-auth-token`;
+      const raw = window.localStorage.getItem(prefix);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed?.access_token || null;
+    } catch (_) { return null; }
   }
 
-  async function rpc(name, body) {
-    const client = authClient();
-    if (client) {
-      const { data, error } = await client.rpc(name, body || {});
-      if (error) throw error;
-      return data;
+  async function request(path, options = {}) {
+    const token = accessToken();
+    if (!token) throw new Error('Sessão adulta não encontrada');
+    const headers = new Headers(options.headers || {});
+    headers.set('apikey', SUPABASE_PUBLISHABLE_KEY);
+    headers.set('Authorization', `Bearer ${token}`);
+    headers.set('Content-Type', 'application/json');
+    headers.set('Accept', 'application/json');
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { ...options, headers, cache: 'no-store' });
+    const text = await response.text();
+    let body = null;
+    try { body = text ? JSON.parse(text) : null; } catch (_) { body = text; }
+    if (!response.ok) {
+      const message = body?.message || body?.error_description || body?.hint || body?.details || `Supabase HTTP ${response.status}`;
+      const error = new Error(message);
+      error.status = response.status;
+      error.body = body;
+      throw error;
     }
-    return rpcRest(name, body);
+    return body;
   }
 
-  function normalizeModel(data) {
-    if (!data || typeof data !== 'object') throw new Error('Modelo inválido do Supabase');
-    const config = data.config || {};
-    const state = data.state || {};
+  function normalizeConfig(config) {
+    const cfg = clone(config || {});
+    if (!cfg.periods) cfg.periods = {};
+    if (!Array.isArray(cfg.badHabits)) cfg.badHabits = [];
+    if (!Array.isArray(cfg.rewards)) cfg.rewards = [];
+    if (!Array.isArray(cfg.schedule)) cfg.schedule = [];
+    if (!Array.isArray(cfg.scheduleExceptions)) cfg.scheduleExceptions = [];
+    if (cfg.periodsWeekend === undefined) cfg.periodsWeekend = null;
+    return cfg;
+  }
+
+  function normalizeState(state) {
+    const s = clone(state || {});
+    if (!s.checkedToday) s.checkedToday = {};
+    if (!s.history) s.history = {};
+    if (!Array.isArray(s.log)) s.log = [];
+    if (!Array.isArray(s.petCompletedDays)) s.petCompletedDays = [];
+    if (!Array.isArray(s.petPerfectBonusDays)) s.petPerfectBonusDays = [];
+    if (!s.hairByDate) s.hairByDate = {};
+    if (!s.customTaskOrder) s.customTaskOrder = {};
+    return s;
+  }
+
+  async function getRemote() {
+    const rows = await request(`routine_snapshots?routine_id=eq.${ROUTINE_ID}&select=config,state,revision,updated_at&limit=1`);
+    const data = rows?.[0];
+    if (!data) throw new Error('Snapshot da rotina não encontrado');
+    const config = normalizeConfig(data.config);
+    const state = normalizeState(data.state);
     writeJSON(CONFIG_KEY, config);
     writeJSON(STATE_KEY, state);
     return {
-      config, state, revision: Number(data.revision || 0), serverUpdatedAt: data.serverUpdatedAt || null,
-      domains: window.RotinaDataModel ? window.RotinaDataModel.create(config, state) : { routineConfig: config, dailyState: state, pointEvents: [], history: {} }
+      config,
+      state,
+      revision: Number(data.revision || 0),
+      serverUpdatedAt: data.updated_at || null,
+      domains: { routineConfig: config, dailyState: state, pointEvents: state.pointEvents || [], history: state.history || {} }
     };
   }
 
-  async function getRemote() { return normalizeModel(await rpc('get_routine_model', { p_routine_id: ROUTINE_ID })); }
+  async function saveRemote(config, state, baseRevision = 0) {
+    const currentRows = await request(`routine_snapshots?routine_id=eq.${ROUTINE_ID}&select=revision&limit=1`);
+    const serverRevision = Number(currentRows?.[0]?.revision || 0);
+    const expectedRevision = Number(baseRevision || 0);
 
-  // Current-day state is intentionally server dated. The browser never supplies a day.
-  async function getRuntimeState() { return rpc('child_get_runtime_state', { p_routine_id: ROUTINE_ID }); }
-  async function rolloverCurrentDay() { return rpc('child_rollover_current_day', { p_routine_id: ROUTINE_ID }); }
-  async function completeTask(taskId, status = 'done') {
-    return rpc('child_complete_task', { p_routine_id: ROUTINE_ID, p_task_id: taskId, p_status: status });
-  }
+    if (expectedRevision && serverRevision !== expectedRevision) {
+      const remote = await getRemote();
+      const error = new Error('conflict');
+      error.result = { ok: false, conflict: true, revision: remote.revision, data: remote };
+      throw error;
+    }
 
-  async function saveRemote(config, state) {
-    const adult = window.PacusAuth?.hasAdultAccess ? await window.PacusAuth.hasAdultAccess().catch(() => false) : false;
-    const data = adult
-      ? await rpc('save_routine_model', { p_routine_id: ROUTINE_ID, p_config: config || {}, p_state: state || {} })
-      : await rpc('save_child_ui_state', { p_routine_id: ROUTINE_ID, p_state: state || {} });
-    return normalizeModel(data);
+    const nextRevision = Math.max(serverRevision, expectedRevision) + 1;
+    const payload = { routine_id: ROUTINE_ID, config: normalizeConfig(config), state: normalizeState(state), revision: nextRevision };
+    const rows = await request(`routine_snapshots?routine_id=eq.${ROUTINE_ID}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({ config: payload.config, state: payload.state, revision: payload.revision })
+    });
+    const data = rows?.[0] || {};
+    writeJSON(CONFIG_KEY, payload.config);
+    writeJSON(STATE_KEY, payload.state);
+    return { ok: true, revision: Number(data.revision || nextRevision), serverUpdatedAt: data.updated_at || new Date().toISOString() };
   }
 
   async function replaceRemote(snapshot) {
@@ -75,9 +118,43 @@
     return normalizeModel(await rpc('save_routine_model', { p_routine_id: ROUTINE_ID, p_config: snapshot.config || {}, p_state: snapshot.state || {} }));
   }
 
+  // Compatibilidade: o motor antigo ainda chama o endpoint do Apps Script.
+  // Em vez de manter dois backends, interceptamos essas chamadas e as enviamos
+  // para o Supabase. O código antigo pode desaparecer depois da migração completa.
+  const nativeFetch = window.fetch.bind(window);
+  window.fetch = async function(input, init = {}) {
+    const url = typeof input === 'string' ? input : input?.url || '';
+    if (!url.startsWith(LEGACY_APPS_SCRIPT_URL)) return nativeFetch(input, init);
+
+    try {
+      const method = (init.method || (typeof input !== 'string' && input?.method) || 'GET').toUpperCase();
+      if (method === 'GET') {
+        const remote = await getRemote();
+        return new Response(JSON.stringify({ ok: true, ...remote }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      const rawBody = init.body || '';
+      const body = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
+      const result = await saveRemote(body.config || body.domains?.routineConfig || {}, body.state || body.domains?.dailyState || {}, Number(body.baseRevision || 0));
+      return new Response(JSON.stringify(result), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    } catch (error) {
+      const result = error?.result || { ok: false, error: error?.message || 'storage_error' };
+      return new Response(JSON.stringify(result), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+  };
+
   window.RotinaStorage = Object.freeze({
-    CONFIG_KEY, STATE_KEY, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, ROUTINE_ID,
-    readJSON, writeJSON, remove, getRemote, getRuntimeState, rolloverCurrentDay, completeTask, saveRemote, replaceRemote
+    CONFIG_KEY,
+    STATE_KEY,
+    APPS_SCRIPT_URL: '',
+    DATA_ENDPOINT: '',
+    SUPABASE_URL,
+    ROUTINE_ID,
+    readJSON,
+    writeJSON,
+    remove,
+    getRemote,
+    saveRemote,
+    replaceRemote
   });
 
   const sessionOnlyStorage = Object.freeze({
