@@ -17,23 +17,33 @@
   ];
 
   const SPOTS = [
-    { x: 10, y: 58, name: 'entre as plantas' },
+    { x: 12, y: 62, name: 'entre as plantas' },
     { x: 29, y: 68, name: 'perto das pedras' },
-    { x: 49, y: 54, name: 'no cantinho tranquilo' },
-    { x: 69, y: 65, name: 'perto do abrigo' },
-    { x: 86, y: 52, name: 'atrás das plantas' }
+    { x: 48, y: 52, name: 'no cantinho tranquilo' },
+    { x: 68, y: 65, name: 'perto do abrigo' },
+    { x: 86, y: 54, name: 'atrás das plantas' }
   ];
 
-  const TODAY = () => {
+  let moveTimer = null;
+  let factTimer = null;
+  let observedSection = null;
+  let observer = null;
+
+  function todayKey(){
     const d = new Date(), p = n => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
-  };
+  }
 
-  function ensureHabitat() {
+  function factIndexForToday(){
+    const d = new Date(todayKey() + 'T00:00:00');
+    return Math.abs(Math.floor(d.getTime() / 86400000)) % FACTS.length;
+  }
+
+  function ensureHabitat(){
     const section = document.getElementById('petSection');
-    if (!section) return null;
+    if(!section) return null;
     let habitat = section.querySelector('.pacus-habitat');
-    if (!habitat) {
+    if(!habitat){
       habitat = document.createElement('div');
       habitat.className = 'pacus-habitat';
       habitat.setAttribute('aria-label', 'Ambiente do Pacus');
@@ -52,42 +62,73 @@
     return habitat;
   }
 
-  function showFact(habitat) {
-    const fact = habitat.querySelector('.pacus-fact');
-    if (!fact) return;
-    const key = `pacus-fact-${TODAY()}`;
-    let index = Number(localStorage.getItem(key));
-    if (!Number.isInteger(index)) {
-      const day = Math.floor(new Date(TODAY() + 'T00:00:00').getTime() / 86400000);
-      index = Math.abs(day) % FACTS.length;
-      localStorage.setItem(key, String(index));
-    }
-    fact.textContent = `💡 Curiosidade: ${FACTS[index]}`;
+  function showFact(habitat){
+    const fact = habitat && habitat.querySelector('.pacus-fact');
+    if(!fact) return;
+    fact.textContent = `💡 Curiosidade: ${FACTS[factIndexForToday()]}`;
     fact.classList.add('visible');
     setTimeout(() => fact.classList.remove('visible'), 8500);
   }
 
-  function movePacus(habitat) {
+  function movePacus(habitat){
+    if(!habitat || !habitat.isConnected) return;
     const creature = habitat.querySelector('.pacus-creature');
-    if (!creature) return;
+    if(!creature) return;
     const spot = SPOTS[Math.floor(Math.random() * SPOTS.length)];
+
+    /* O CSS anima left/top. Antes o código só alterava variáveis --pacus-x/y
+       que nenhum seletor consumia, portanto o Pacus nunca saía do lugar. */
+    creature.style.left = `${spot.x}%`;
+    creature.style.top = `${spot.y}%`;
     creature.style.setProperty('--pacus-x', `${spot.x}%`);
     creature.style.setProperty('--pacus-y', `${spot.y}%`);
     creature.classList.toggle('facing-left', spot.x > 55);
     creature.classList.remove('pacus-moving');
     void creature.offsetWidth;
     creature.classList.add('pacus-moving');
-    if (Math.random() < 0.32) creature.classList.add('partially-hidden');
-    else creature.classList.remove('partially-hidden');
+    creature.classList.toggle('partially-hidden', Math.random() < 0.32);
   }
 
-  function start() {
-    const habitat = ensureHabitat();
-    if (!habitat) return setTimeout(start, 300);
+  function startMovement(habitat){
+    clearInterval(moveTimer);
+    movePacus(habitat);
+    moveTimer = setInterval(() => {
+      const current = ensureHabitat();
+      movePacus(current);
+    }, 14000);
+  }
+
+  function startFacts(habitat){
+    clearInterval(factTimer);
     setTimeout(() => showFact(habitat), 3500);
-    setTimeout(() => movePacus(habitat), 1200);
-    setInterval(() => movePacus(habitat), 30000);
-    setInterval(() => showFact(habitat), 24 * 60 * 60 * 1000);
+    factTimer = setInterval(() => {
+      const current = ensureHabitat();
+      showFact(current);
+    }, 24 * 60 * 60 * 1000);
+  }
+
+  function attachObserver(){
+    const section = document.getElementById('petSection');
+    if(!section || section === observedSection) return;
+    if(observer) observer.disconnect();
+    observedSection = section;
+    observer = new MutationObserver(() => {
+      /* renderPet substitui o conteúdo de petSection. Recriamos o habitat
+         depois da renderização, sem duplicar timers. */
+      if(!section.querySelector('.pacus-habitat')){
+        const habitat = ensureHabitat();
+        movePacus(habitat);
+      }
+    });
+    observer.observe(section, { childList:true });
+  }
+
+  function start(){
+    const habitat = ensureHabitat();
+    if(!habitat) return setTimeout(start, 300);
+    attachObserver();
+    startMovement(habitat);
+    startFacts(habitat);
   }
 
   function loadCalendarGrowth(){
@@ -95,11 +136,15 @@
     const script = document.createElement('script');
     script.id = 'pacusCalendarGrowthScript';
     script.src = 'pacus-calendar-growth.js?v=20260823-1';
-    script.onload = () => { if(typeof window.renderPet === 'function') window.renderPet(); };
+    script.onload = () => {
+      if(typeof window.renderPet === 'function') window.renderPet();
+      /* renderPet substitui o HTML inteiro; garantir habitat depois disso. */
+      requestAnimationFrame(start);
+    };
     document.head.appendChild(script);
   }
 
   loadCalendarGrowth();
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once:true });
   else start();
 })();
