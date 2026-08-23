@@ -1,30 +1,51 @@
 (() => {
   'use strict';
+
   const CONFIG_KEY = 'hector_rotina_config_v3';
   const STATE_KEY = 'hector_rotina_state_v3';
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0RETrtzuA3pwdXu3qB2PN611q3PRY0Tw8CUyF7AyashsCKTm3yZ93s7iGtDe8m35p/exec';
-  const DATA_ENDPOINT = APPS_SCRIPT_URL + '?data=1';
+  const SUPABASE_URL = 'https://aictkwkcyqjsakugiwra.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BJUaEs1EMKYDfCkg_6wnYA_7sWmgXWT';
+  const ROUTINE_ID = '077cb586-35c1-49a8-b864-8d2d88f1010f';
   const memory = Object.create(null);
+  let supabaseClient = null;
 
-  function clone(value) { try { return JSON.parse(JSON.stringify(value)); } catch (_) { return value; } }
-  function readJSON(key, fallback = null) { return Object.prototype.hasOwnProperty.call(memory, key) ? clone(memory[key]) : fallback; }
+  function clone(value) {
+    try { return JSON.parse(JSON.stringify(value)); } catch (_) { return value; }
+  }
+  function readJSON(key, fallback = null) {
+    return Object.prototype.hasOwnProperty.call(memory, key) ? clone(memory[key]) : fallback;
+  }
   function writeJSON(key, value) { memory[key] = clone(value); return true; }
   function remove(key) { delete memory[key]; return true; }
 
+  function client() {
+    if (supabaseClient) return supabaseClient;
+    if (!window.supabase?.createClient) throw new Error('Cliente Supabase não carregado');
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
+    return supabaseClient;
+  }
+
   async function getRemote() {
-    const response = await fetch(DATA_ENDPOINT, { cache: 'no-store' });
-    const remote = await response.json();
-    if (!remote || remote.ok === false) throw new Error('Resposta inválida do servidor');
-    writeJSON(CONFIG_KEY, remote.config || {});
-    writeJSON(STATE_KEY, remote.state || {});
+    const { data, error } = await client().rpc('get_routine_snapshot', { p_routine_id: ROUTINE_ID });
+    if (error) throw error;
+    if (!data || typeof data !== 'object') throw new Error('Snapshot inválido do Supabase');
+
+    const config = data.config || {};
+    const state = data.state || {};
+    writeJSON(CONFIG_KEY, config);
+    writeJSON(STATE_KEY, state);
     return {
-      config: remote.config || {}, state: remote.state || {},
-      revision: Number(remote.revision || 0), serverUpdatedAt: remote.serverUpdatedAt || null,
-      domains: remote.domains || {
-        routineConfig: remote.config || {},
-        dailyState: remote.state || {},
-        pointEvents: remote.state?.pointEvents || [],
-        history: remote.state?.history || {}
+      config,
+      state,
+      revision: Number(data.revision || 0),
+      serverUpdatedAt: data.serverUpdatedAt || null,
+      domains: data.domains || {
+        routineConfig: config,
+        dailyState: state,
+        pointEvents: state.pointEvents || [],
+        history: state.history || {}
       }
     };
   }
@@ -33,29 +54,23 @@
     const domains = window.RotinaDataModel
       ? window.RotinaDataModel.create(config || {}, state || {})
       : { schemaVersion: 2, routineConfig: config || {}, dailyState: state || {}, pointEvents: state?.pointEvents || [], history: state?.history || {} };
-    const response = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        schemaVersion: 2,
-        domains: {
-          routineConfig: domains.routineConfig,
-          dailyState: domains.dailyState,
-          pointEvents: domains.pointEvents,
-          history: domains.history
-        },
-        config: domains.routineConfig,
-        state: Object.assign({}, domains.dailyState, { history: domains.history, pointEvents: domains.pointEvents }),
-        baseRevision: Number(baseRevision || 0)
-      })
+
+    const { data, error } = await client().rpc('save_routine_snapshot', {
+      p_routine_id: ROUTINE_ID,
+      p_config: domains.routineConfig || {},
+      p_state: Object.assign({}, domains.dailyState || {}, {
+        history: domains.history || {},
+        pointEvents: domains.pointEvents || []
+      }),
+      p_base_revision: Number(baseRevision || 0)
     });
-    const result = await response.json();
-    if (!result || result.ok === false) {
-      const error = new Error(result?.error || (result?.conflict ? 'conflict' : 'server_error'));
-      error.result = result;
-      throw error;
+    if (error) throw error;
+    if (!data || data.ok === false) {
+      const err = new Error(data?.error || (data?.conflict ? 'conflict' : 'server_error'));
+      err.result = data;
+      throw err;
     }
-    return result;
+    return data;
   }
 
   async function replaceRemote(snapshot) {
@@ -63,7 +78,19 @@
     return saveRemote(snapshot.config || {}, snapshot.state || {}, Number(snapshot.revision || 0));
   }
 
-  window.RotinaStorage = Object.freeze({ CONFIG_KEY, STATE_KEY, APPS_SCRIPT_URL, DATA_ENDPOINT, readJSON, writeJSON, remove, getRemote, saveRemote, replaceRemote });
+  window.RotinaStorage = Object.freeze({
+    CONFIG_KEY,
+    STATE_KEY,
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    ROUTINE_ID,
+    readJSON,
+    writeJSON,
+    remove,
+    getRemote,
+    saveRemote,
+    replaceRemote
+  });
 
   // Compatibilidade temporária do motor legado. É somente RAM.
   const sessionOnlyStorage = Object.freeze({
