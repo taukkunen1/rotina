@@ -1745,3 +1745,15 @@
     .topbar{ flex-wrap:wrap; }
     .topbar h1{ font-size:1.25rem; }
   }
+
+.period-disclosure{ display:flex; flex-direction:column; }
+.period-disclosure > summary{
+  display:flex; align-items:baseline; justify-content:space-between;
+  cursor:pointer; list-style:none;
+  font-family:"Segoe Print","Bradley Hand",cursive; font-weight:normal;
+  font-size:1.3rem; margin-bottom:2px;
+}
+.period-disclosure > summary::-webkit-details-marker{ display:none; }
+.period-disclosure > summary .ux-disclosure-hint{
+  font-size:.62rem; color:var(--chalk-dim); text-transform:uppercase;
+}
