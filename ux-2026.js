@@ -17,7 +17,9 @@
   ];
 
   function scrubVisibleHectorReferences(root){
-    const walker = document.createTreeWalker(root || document.body, NodeFilter.SHOW_TEXT);
+    const scope = root || document.body;
+    if(!scope) return;
+    const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT);
     const nodes = [];
     let node;
     while((node = walker.nextNode())) nodes.push(node);
@@ -32,6 +34,7 @@
       if(group.querySelector('.task-secondary-actions')) return;
       const secondary = Array.from(group.children).filter(el => SECONDARY.some(cls => el.classList.contains(cls)));
       if(!secondary.length) return;
+
       const details = document.createElement('details');
       details.className = 'task-secondary-actions';
       const summary = document.createElement('summary');
@@ -50,6 +53,7 @@
       '.mark-na': 'Marcar como não aplicável hoje',
       '.mark-x': 'Marcar como não realizado'
     };
+
     Object.entries(labels).forEach(([selector, label]) => {
       document.querySelectorAll(selector).forEach(button => {
         button.setAttribute('aria-label', label);
@@ -60,21 +64,25 @@
 
   function parsePeriodTime(text){
     if(!text) return null;
-    const parts = text.split(/[–-]/).map(s => s.trim());
+    const parts = text.split(/[–-]/).map(value => value.trim());
     if(parts.length < 2) return null;
-    const parse = value => {
+
+    const parseTime = value => {
       const match = value.match(/^(\d{1,2}):(\d{2})/);
       return match ? Number(match[1]) * 60 + Number(match[2]) : null;
     };
-    const start = parse(parts[0]);
-    const end = parse(parts[parts.length - 1]);
+
+    const start = parseTime(parts[0]);
+    const end = parseTime(parts[parts.length - 1]);
     return start == null || end == null ? null : {start, end};
   }
 
   function getPreferredPeriodIndex(periods){
     const now = new Date();
     const minutes = now.getHours() * 60 + now.getMinutes();
-    const ranges = periods.map(period => parsePeriodTime(period.dataset.periodTime || period.querySelector('.time')?.textContent || ''));
+    const ranges = periods.map(period => parsePeriodTime(
+      period.dataset.periodTime || period.querySelector('.time')?.textContent || ''
+    ));
     const current = ranges.findIndex(range => range && minutes >= range.start && minutes <= range.end);
     if(current >= 0) return current;
     const upcoming = ranges.findIndex(range => range && minutes < range.start);
@@ -84,26 +92,37 @@
   function compactPeriods(){
     const periods = Array.from(document.querySelectorAll('.period'));
     if(!periods.length) return;
+
     const preferredIndex = getPreferredPeriodIndex(periods);
     periods.forEach((period, index) => {
       if(period.dataset.uxDisclosure === '1') return;
+
       const head = period.querySelector(':scope > .period-head');
       const list = period.querySelector(':scope > .tasks');
       if(!head || !list) return;
+
       const details = document.createElement('details');
       details.className = 'period-disclosure';
       details.open = index === preferredIndex;
+
       const summary = document.createElement('summary');
-      const title = head.querySelector('h2');
-      const label = title ? title.textContent : 'Período';
-      summary.innerHTML = '<span>' + label + '</span><span class="ux-disclosure-hint">ver tarefas</span>';
+      const titleElement = head.querySelector('h2');
+      const label = titleElement ? titleElement.textContent : 'Período';
+      const labelSpan = document.createElement('span');
+      labelSpan.textContent = label;
+      const hintSpan = document.createElement('span');
+      hintSpan.className = 'ux-disclosure-hint';
+      hintSpan.textContent = 'ver tarefas';
+      summary.append(labelSpan, hintSpan);
       details.appendChild(summary);
+
       const body = document.createElement('div');
       body.className = 'period-disclosure-body';
       Array.from(period.children).forEach(child => {
         if(child !== head && child !== list) body.appendChild(child);
       });
       if(body.childNodes.length) details.appendChild(body);
+
       details.appendChild(list);
       period.replaceChildren(details);
       period.dataset.uxDisclosure = '1';
@@ -131,7 +150,7 @@
     improveLabels();
     compactPeriods();
     hideDecorativeUI();
-    scrubVisibleHectorReferences(document.body);
+    scrubVisibleHectorReferences();
     document.querySelectorAll('#legacyRuntimeMounts').forEach(el => el.setAttribute('aria-hidden', 'true'));
     stopDecorativeEffects();
   }
@@ -142,7 +161,19 @@
     requestAnimationFrame(apply);
   }
 
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply, {once:true});
-  else apply();
-  new MutationObserver(schedule).observe(document.body, {childList:true, subtree:true});
+  function observe(){
+    if(document.body) {
+      new MutationObserver(schedule).observe(document.body, {childList:true, subtree:true});
+    }
+  }
+
+  if(document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      apply();
+      observe();
+    }, {once:true});
+  } else {
+    apply();
+    observe();
+  }
 })();
