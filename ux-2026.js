@@ -15,27 +15,6 @@
     '.mini-pacus'
   ];
 
-  const SECONDARY_ACTIONS = ['mark-help', 'mark-na', 'mark-x'];
-
-  function compactTaskActions(){
-    document.querySelectorAll('.task .mark-group').forEach(group => {
-      if(group.querySelector('.task-secondary-actions')) return;
-      const secondary = Array.from(group.children).filter(el =>
-        SECONDARY_ACTIONS.some(cls => el.classList.contains(cls))
-      );
-      if(!secondary.length) return;
-
-      const details = document.createElement('details');
-      details.className = 'task-secondary-actions';
-      const summary = document.createElement('summary');
-      summary.textContent = 'mais';
-      summary.setAttribute('aria-label', 'Outras opções');
-      details.appendChild(summary);
-      secondary.forEach(el => details.appendChild(el));
-      group.appendChild(details);
-    });
-  }
-
   function improveLabels(){
     const labels = {
       '.mark-done': 'Marcar como concluída',
@@ -73,12 +52,9 @@
       return parsePeriodTime(time);
     });
 
-    // Primeiro: período em andamento.
     const current = ranges.findIndex(range => range && minutes >= range.start && minutes <= range.end);
     if(current >= 0) return current;
 
-    // Se todos já terminaram, deixa aberto o último período. Isso evita a
-    // situação absurda de abrir a manhã às 22h só porque ela é a primeira.
     const upcoming = ranges.findIndex(range => range && minutes < range.start);
     if(upcoming >= 0) return upcoming;
     return Math.max(0, periods.length - 1);
@@ -135,7 +111,6 @@
   function apply(){
     scheduled = false;
     hideDecorativeUI();
-    compactTaskActions();
     improveLabels();
     compactPeriods();
     stopDecorativeEffects();
