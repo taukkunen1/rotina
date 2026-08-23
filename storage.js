@@ -43,13 +43,21 @@
     return window.PacusSupabase;
   }
 
+  let sessionPromise = null;
+
   async function ensureSession() {
     const { data, error } = await client().auth.getSession();
     if (error) throw error;
     if (data.session) return data.session;
-    const { data: anon, error: anonError } = await client().auth.signInAnonymously();
-    if (anonError) throw anonError;
-    return anon.session;
+    if (!sessionPromise) {
+      sessionPromise = client().auth.signInAnonymously()
+        .then(({ data: anon, error: anonError }) => {
+          if (anonError) throw anonError;
+          return anon.session;
+        })
+        .finally(() => { sessionPromise = null; });
+    }
+    return sessionPromise;
   }
 
   async function accessToken() {
