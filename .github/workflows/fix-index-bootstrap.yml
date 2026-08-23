@@ -2,7 +2,9 @@ name: Fix index bootstrap
 
 on:
   push:
-    branches: [fix/main-runtime-duplicate-bootstrap]
+    branches:
+      - fix/main-runtime-duplicate-bootstrap
+      - refactor/remove-legacy-safe
     paths:
       - 'scripts/fix-index-duplicate-bootstrap.py'
       - '.github/workflows/fix-index-bootstrap.yml'
@@ -16,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: fix/main-runtime-duplicate-bootstrap
+          ref: ${{ github.ref_name }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -28,4 +30,4 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           git commit -m 'fix: remove duplicate app bootstrap'
-          git push origin HEAD:fix/main-runtime-duplicate-bootstrap
+          git push origin HEAD:${{ github.ref_name }}
