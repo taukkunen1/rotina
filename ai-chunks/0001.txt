@@ -1,1 +1,1 @@
-laceState({},document.title,'index.html');},0);}}})();</script></body></html>
+ation.search);if(p.get('adultEdit')==='1'||p.get('adultPoints')==='1'){var id=p.get('adultEdit')==='1'?'editBtn':'addPointsBtn';var b=document.getElementById(id);if(b){setTimeout(function(){b.click();history.replaceState({},document.title,'index.html');},0);}}})();</script></body></html>
