@@ -51,8 +51,46 @@
     });
   }
 
+  function parsePeriodTime(text){
+    if(!text) return null;
+    const parts = text.split(/[–-]/).map(s => s.trim());
+    if(parts.length < 2) return null;
+    const parse = value => {
+      const match = value.match(/^(\d{1,2}):(\d{2})/);
+      return match ? Number(match[1]) * 60 + Number(match[2]) : null;
+    };
+    const start = parse(parts[0]);
+    const end = parse(parts[parts.length - 1]);
+    if(start == null || end == null) return null;
+    return { start, end };
+  }
+
+  function getPreferredPeriodIndex(periods){
+    const now = new Date();
+    const minutes = now.getHours() * 60 + now.getMinutes();
+    const ranges = periods.map(period => {
+      const time = period.dataset.periodTime || period.querySelector('.period .time')?.textContent || '';
+      return parsePeriodTime(time);
+    });
+
+    // Primeiro: período em andamento.
+    const current = ranges.findIndex(range => range && minutes >= range.start && minutes <= range.end);
+    if(current >= 0) return current;
+
+    // Se todos já terminaram, deixa aberto o último período. Isso evita a
+    // situação absurda de abrir a manhã às 22h só porque ela é a primeira.
+    const upcoming = ranges.findIndex(range => range && minutes < range.start);
+    if(upcoming >= 0) return upcoming;
+    return Math.max(0, periods.length - 1);
+  }
+
   function compactPeriods(){
-    document.querySelectorAll('.period').forEach((period, index) => {
+    const periods = Array.from(document.querySelectorAll('.period'));
+    if(!periods.length) return;
+
+    const preferredIndex = getPreferredPeriodIndex(periods);
+
+    periods.forEach((period, index) => {
       if(period.dataset.uxDisclosure === '1') return;
       const head = period.querySelector(':scope > .period-head');
       const list = period.querySelector(':scope > .tasks');
@@ -60,7 +98,7 @@
 
       const details = document.createElement('details');
       details.className = 'period-disclosure';
-      details.open = index === 0;
+      details.open = index === preferredIndex;
 
       const summary = document.createElement('summary');
       const title = head.querySelector('h2');
