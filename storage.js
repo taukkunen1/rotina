@@ -66,20 +66,60 @@
     const domains = window.RotinaDataModel
       ? window.RotinaDataModel.create(config || {}, state || {})
       : { schemaVersion: 2, routineConfig: config || {}, dailyState: state || {}, pointEvents: state?.pointEvents || [], history: state?.history || {} };
-    return rpc('save_routine_snapshot', {
+
+    const payload = {
       p_routine_id: ROUTINE_ID,
-      p_config: domains.routineConfig || {},
-      p_state: Object.assign({}, domains.dailyState || {}, { history: domains.history || {}, pointEvents: domains.pointEvents || [] }),
+      p_state: Object.assign({}, domains.dailyState || {}, { pointEvents: domains.pointEvents || [] }),
       p_base_revision: Number(baseRevision || 0)
-    });
+    };
+
+    const adult = window.PacusAuth?.hasAdultAccess
+      ? await window.PacusAuth.hasAdultAccess().catch(() => false)
+      : false;
+
+    if (adult) {
+      return rpc('save_routine_snapshot', {
+        ...payload,
+        p_config: domains.routineConfig || {}
+      });
+    }
+
+    // Child clients remain unauthenticated for now, but can no longer call
+    // the privileged full-snapshot writer. The server allow-lists the state
+    // fields accepted by this endpoint. Daily lifecycle validation moves to
+    // the server in step 3 of the roadmap.
+    return rpc('save_child_state', payload);
   }
 
   async function replaceRemote(snapshot) {
     if (!snapshot || typeof snapshot !== 'object' || !snapshot.state) throw new Error('Backup inválido');
-    return saveRemote(snapshot.config || {}, snapshot.state || {}, Number(snapshot.revision || 0));
+
+    const adult = window.PacusAuth?.hasAdultAccess
+      ? await window.PacusAuth.hasAdultAccess().catch(() => false)
+      : false;
+    if (!adult) throw new Error('Autenticação adulta necessária para restaurar backup');
+
+    return rpc('save_routine_snapshot', {
+      p_routine_id: ROUTINE_ID,
+      p_config: snapshot.config || {},
+      p_state: snapshot.state || {},
+      p_base_revision: Number(snapshot.revision || 0)
+    });
   }
 
-  window.RotinaStorage = Object.freeze({ CONFIG_KEY, STATE_KEY, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, ROUTINE_ID, readJSON, writeJSON, remove, getRemote, saveRemote, replaceRemote });
+  window.RotinaStorage = Object.freeze({
+    CONFIG_KEY,
+    STATE_KEY,
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    ROUTINE_ID,
+    readJSON,
+    writeJSON,
+    remove,
+    getRemote,
+    saveRemote,
+    replaceRemote
+  });
 
   // Compatibilidade temporária do motor legado. É somente RAM.
   const sessionOnlyStorage = Object.freeze({
