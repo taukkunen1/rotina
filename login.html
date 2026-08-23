@@ -8,6 +8,23 @@
 </style></head>
 <body class="adult-page"><main class="auth-shell"><section class="auth-card"><a class="adult-back" href="index.html">← Voltar</a><h1>🔒 Área dos Adultos</h1><p>Acesso protegido para configurar a rotina e consultar os registros.</p>
 <form id="auth-form"><label class="auth-field"><span>E-mail</span><input id="email" type="email" autocomplete="email" required></label><label class="auth-field"><span>Senha</span><input id="password" type="password" autocomplete="current-password" minlength="8" required></label><label class="auth-field" id="name-field" hidden><span>Nome</span><input id="name" type="text" autocomplete="name"></label><div id="auth-error" class="auth-error" aria-live="polite"></div><div class="auth-actions"><button id="submit-btn" type="submit">Entrar</button><button id="switch-btn" class="auth-switch" type="button">Primeiro acesso? Criar conta adulta</button></div></form><p class="auth-note">A sessão de autenticação não é persistida pelo PACUS em localStorage. Ao fechar/recarregar, será necessário entrar novamente.</p></section></main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="auth.js?v=20260823-1"></script><script>
-(() => { const form=document.getElementById('auth-form'), email=document.getElementById('email'), password=document.getElementById('password'), name=document.getElementById('name'), nameField=document.getElementById('name-field'), error=document.getElementById('auth-error'), submit=document.getElementById('submit-btn'), sw=document.getElementById('switch-btn'); let signup=false; const next=new URLSearchParams(location.search).get('next')||'adultos.html'; sw.onclick=()=>{signup=!signup;nameField.hidden=!signup;submit.textContent=signup?'Criar acesso':'Entrar';sw.textContent=signup?'Já tenho acesso. Entrar':'Primeiro acesso? Criar conta adulta';error.textContent='';}; form.onsubmit=async e=>{e.preventDefault();error.textContent='';submit.disabled=true;try{if(signup){const r=await PacusAuth.signUp(email.value.trim(),password.value,name.value.trim());if(!r.confirmed){error.textContent='Conta criada. Confirme seu e-mail e depois entre novamente.';return;}}else await PacusAuth.signIn(email.value.trim(),password.value);location.replace(next);}catch(err){error.textContent=err.message||'Não foi possível autenticar.';}finally{submit.disabled=false;}}; })();
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="auth.js?v=20260823-2"></script><script>
+(() => {
+  const form=document.getElementById('auth-form'), email=document.getElementById('email'), password=document.getElementById('password'), name=document.getElementById('name'), nameField=document.getElementById('name-field'), error=document.getElementById('auth-error'), submit=document.getElementById('submit-btn'), sw=document.getElementById('switch-btn');
+  let signup=false;
+  const requestedNext=new URLSearchParams(location.search).get('next');
+  const next=window.PacusAuth.safeNext(requestedNext||'adultos.html');
+  sw.onclick=()=>{signup=!signup;nameField.hidden=!signup;submit.textContent=signup?'Criar acesso':'Entrar';sw.textContent=signup?'Já tenho acesso. Entrar':'Primeiro acesso? Criar conta adulta';error.textContent='';};
+  form.onsubmit=async e=>{
+    e.preventDefault();error.textContent='';submit.disabled=true;
+    try{
+      if(signup){
+        const r=await PacusAuth.signUp(email.value.trim(),password.value,name.value.trim());
+        if(!r.confirmed){error.textContent='Conta criada. Confirme seu e-mail e depois entre novamente.';return;}
+      }else await PacusAuth.signIn(email.value.trim(),password.value);
+      location.replace(next);
+    }catch(err){error.textContent=err.message||'Não foi possível autenticar.';}
+    finally{submit.disabled=false;}
+  };
+})();
 </script></body></html>
