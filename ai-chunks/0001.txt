@@ -1,1 +1,1 @@
-laceState({},document.title,'index.html');},0);}}})();</script></body></html>
+Id(id);if(b){setTimeout(function(){b.click();history.replaceState({},document.title,'index.html');},0);}}})();</script></body></html>
