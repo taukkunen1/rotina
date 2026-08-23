@@ -1,8 +1,8 @@
 (() => {
   'use strict';
 
-  const CONFIG_KEY = 'hector_rotina_config_v3';
-  const STATE_KEY = 'hector_rotina_state_v3';
+  const CONFIG_KEY = 'rotina_config_session_v4';
+  const STATE_KEY = 'rotina_state_session_v4';
   const SUPABASE_URL = 'https://aictkwkcyqjsakugiwra.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BJUaEs1EMKYDfCkg_6wnYA_7sWmgXWT';
   const ROUTINE_ID = '077cb586-35c1-49a8-b864-8d2d88f1010f';
@@ -23,7 +23,7 @@
 
   async function rpcRest(name, body) {
     const client = authClient();
-    const session = client ? await client.auth.getSession().catch(() => ({data:{session:null}})) : {data:{session:null}};
+    const session = client ? await client.auth.getSession().catch(() => ({ data: { session: null } })) : { data: { session: null } };
     const token = session?.data?.session?.access_token || SUPABASE_PUBLISHABLE_KEY;
     const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
       method: 'POST',
@@ -49,9 +49,8 @@
     return rpcRest(name, body);
   }
 
-  async function getRemote() {
-    const data = await rpc('get_routine_snapshot', { p_routine_id: ROUTINE_ID });
-    if (!data || typeof data !== 'object') throw new Error('Snapshot inválido do Supabase');
+  function normalizeModel(data) {
+    if (!data || typeof data !== 'object') throw new Error('Modelo inválido do Supabase');
     const config = data.config || {};
     const state = data.state || {};
     writeJSON(CONFIG_KEY, config);
@@ -61,8 +60,14 @@
       state,
       revision: Number(data.revision || 0),
       serverUpdatedAt: data.serverUpdatedAt || null,
-      domains: data.domains || { routineConfig: config, dailyState: state, pointEvents: state.pointEvents || [], history: state.history || {} }
+      domains: window.RotinaDataModel
+        ? window.RotinaDataModel.create(config, state)
+        : { routineConfig: config, dailyState: state, pointEvents: [], history: {} }
     };
+  }
+
+  async function getRemote() {
+    return normalizeModel(await rpc('get_routine_model', { p_routine_id: ROUTINE_ID }));
   }
 
   async function getRuntimeState(date = null) {
@@ -83,61 +88,33 @@
     });
   }
 
-  async function saveRemote(config, state, baseRevision = 0) {
-    const domains = window.RotinaDataModel
-      ? window.RotinaDataModel.create(config || {}, state || {})
-      : { schemaVersion: 2, routineConfig: config || {}, dailyState: state || {}, pointEvents: state?.pointEvents || [], history: state?.history || {} };
-
-    const payload = {
-      p_routine_id: ROUTINE_ID,
-      p_state: Object.assign({}, domains.dailyState || {}, { pointEvents: domains.pointEvents || [] }),
-      p_base_revision: Number(baseRevision || 0)
-    };
-
+  async function saveRemote(config, state) {
     const adult = window.PacusAuth?.hasAdultAccess
       ? await window.PacusAuth.hasAdultAccess().catch(() => false)
       : false;
-
-    if (adult) {
-      return rpc('save_routine_snapshot', {
-        ...payload,
-        p_config: domains.routineConfig || {}
-      });
-    }
-
-    return rpc('save_child_state', payload);
+    const data = adult
+      ? await rpc('save_routine_model', { p_routine_id: ROUTINE_ID, p_config: config || {}, p_state: state || {} })
+      : await rpc('save_child_ui_state', { p_routine_id: ROUTINE_ID, p_state: state || {} });
+    return normalizeModel(data);
   }
 
   async function replaceRemote(snapshot) {
     if (!snapshot || typeof snapshot !== 'object' || !snapshot.state) throw new Error('Backup inválido');
-
     const adult = window.PacusAuth?.hasAdultAccess
       ? await window.PacusAuth.hasAdultAccess().catch(() => false)
       : false;
     if (!adult) throw new Error('Autenticação adulta necessária para restaurar backup');
-
-    return rpc('save_routine_snapshot', {
+    return normalizeModel(await rpc('save_routine_model', {
       p_routine_id: ROUTINE_ID,
       p_config: snapshot.config || {},
-      p_state: snapshot.state || {},
-      p_base_revision: Number(snapshot.revision || 0)
-    });
+      p_state: snapshot.state || {}
+    }));
   }
 
   window.RotinaStorage = Object.freeze({
-    CONFIG_KEY,
-    STATE_KEY,
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY,
-    ROUTINE_ID,
-    readJSON,
-    writeJSON,
-    remove,
-    getRemote,
-    getRuntimeState,
-    completeTask,
-    saveRemote,
-    replaceRemote
+    CONFIG_KEY, STATE_KEY, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, ROUTINE_ID,
+    readJSON, writeJSON, remove, getRemote, getRuntimeState, completeTask,
+    saveRemote, replaceRemote
   });
 
   const sessionOnlyStorage = Object.freeze({
@@ -151,4 +128,4 @@
   window.__ROTINA_SESSION_STORAGE__ = sessionOnlyStorage;
 })();
 
-const localStorage = window.__ROTINA_SESSION_STORAGE__; // Supabase is the remote source of truth.
+const localStorage = window.__ROTINA_SESSION_STORAGE__;
