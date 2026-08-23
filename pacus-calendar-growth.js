@@ -104,7 +104,7 @@
       <div class="pet-stage-label">${stageInfo.label} · ${d.elapsed}/${d.totalIntervals} dias decorridos · adulto em 31/08</div>
       <div class="pet-day-progress">
         <div class="pet-day-progress-head"><span>Progresso do Pacus</span><b>${d.progressPct}%</b></div>
-        <div class="pet-day-track" aria-label="${d.elapsed} de ${d.totalIntervals} dias decorridos"><div class="pet-day-fill" style="width:${d.progressPct}%"></div></div>
+        <div class="pet-day-track" role="img" aria-label="${d.elapsed} de ${d.totalIntervals} dias decorridos"><div class="pet-day-fill" style="width:${d.progressPct}%"></div></div>
       </div>
       <div class="pet-milestones">${milestoneHtml}</div>
       <div class="pet-caption">${caption}</div>

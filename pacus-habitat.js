@@ -33,7 +33,7 @@
     let habitat=section.querySelector('.pacus-habitat');
     if(!habitat){
       habitat=document.createElement('div'); habitat.className='pacus-habitat'; habitat.setAttribute('aria-label','Habitat do Pacus');
-      habitat.innerHTML=`<div class="habitat-water"></div><div class="habitat-surface"></div><div class="habitat-sand"></div><div class="habitat-plants plant-left"></div><div class="habitat-plants plant-mid"></div><div class="habitat-plants plant-right"></div><div class="habitat-rock rock-one"></div><div class="habitat-rock rock-two"></div><div class="pacus-creature" aria-label="Pacus, o axolote"></div><div class="pacus-shelter shelter-left"><span></span></div><div class="pacus-shelter shelter-right"><span></span></div><div class="pacus-fact" aria-live="polite"></div>`;
+      habitat.innerHTML=`<div class="habitat-water"></div><div class="habitat-surface"></div><div class="habitat-sand"></div><div class="habitat-plants plant-left"></div><div class="habitat-plants plant-mid"></div><div class="habitat-plants plant-right"></div><div class="habitat-rock rock-one"></div><div class="habitat-rock rock-two"></div><div class="pacus-creature" role="img" aria-label="Pacus, o axolote"></div><div class="pacus-shelter shelter-left"><span></span></div><div class="pacus-shelter shelter-right"><span></span></div><div class="pacus-fact" aria-live="polite"></div>`;
       section.appendChild(habitat);
     }
     habitat.dataset.stage=stage(); habitat.style.setProperty('--growth',growth()); return habitat;

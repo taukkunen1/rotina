@@ -78,7 +78,7 @@
     c.innerHTML=`
       <div class="autonomy-card-head"><h3>🦁 Escada da Coragem</h3><span class="autonomy-level">${level}/5</span></div>
       <p class="autonomy-level-name">${LEVELS[level-1]}</p>
-      <div class="autonomy-steps" aria-label="Nível ${level} de 5">${[1,2,3,4,5].map(n=>`<span class="autonomy-step ${n<=level?'active':''} ${animate&&action==='advance'&&n===level?'new-step':''}"><i>${n}</i></span>`).join('')}</div>
+      <div class="autonomy-steps" role="img" aria-label="Nível ${level} de 5">${[1,2,3,4,5].map(n=>`<span class="autonomy-step ${n<=level?'active':''} ${animate&&action==='advance'&&n===level?'new-step':''}"><i>${n}</i></span>`).join('')}</div>
       <p class="autonomy-copy">${autonomy.courage.practiced?'Hoje você praticou. Coragem também é tentar.':'Escolha um pequeno desafio e pratique hoje.'}</p>
       <div class="autonomy-actions">
         <button class="autonomy-btn primary ${autonomy.courage.practiced?'selected':''}" data-autonomy-action="practice">${autonomy.courage.practiced?'✓ Pratiquei hoje':'Pratiquei hoje'}</button>
