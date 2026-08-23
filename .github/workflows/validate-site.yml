@@ -24,14 +24,14 @@ jobs:
               html=Path(filename).read_text(encoding='utf-8')
               if not html.lstrip().lower().startswith('<!doctype html>'): raise SystemExit(f'{filename}: missing doctype')
               for tag in ('html','head','body'):
-                  if len(re.findall(fr'<{tag}(?:\s|>)',html,re.I)) != len(re.findall(fr'</{tag}>',html,re.I)): raise SystemExit(f'{filename}: unbalanced {tag}')
-              if len(re.findall(r'<script\b',html,re.I)) != len(re.findall(r'</script>',html,re.I)): raise SystemExit(f'{filename}: unbalanced scripts')
-              if len(re.findall(r'<style\b',html,re.I)) != len(re.findall(r'</style>',html,re.I)): raise SystemExit(f'{filename}: unbalanced styles')
+                  if len(re.findall(fr'<{tag}(?:\\s|>)',html,re.I)) != len(re.findall(fr'</{tag}>',html,re.I)): raise SystemExit(f'{filename}: unbalanced {tag}')
+              if len(re.findall(r'<script\\b',html,re.I)) != len(re.findall(r'</script>',html,re.I)): raise SystemExit(f'{filename}: unbalanced scripts')
+              if len(re.findall(r'<style\\b',html,re.I)) != len(re.findall(r'</style>',html,re.I)): raise SystemExit(f'{filename}: unbalanced styles')
               if '\\\\n<script>' in html or 'Rotina do rotina' in html: raise SystemExit(f'{filename}: forbidden artifact')
           print('HTML: OK')
       - name: Validate JavaScript syntax
         run: |
-          for file in storage.js autonomy.js app-ui.js adults.js history.js; do node --check "$file"; done
+          for file in storage.js data-model.js app.js app-ui.js adults.js history.js runtime-core.js date-rollover-v1.js compact-timer.js autonomy.js pacus-habitat.js ux-2026.js; do node --check "$file"; done
           cp apps-script/Code.gs /tmp/apps-script-check.js
           node --check /tmp/apps-script-check.js
           python - <<'PY'
@@ -50,7 +50,10 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
-          required=['styles.css','storage.js','autonomy.js','app-ui.js','ui.css','adults.js','history.js','apps-script/Code.gs']
+          required=['styles.css','storage.js','data-model.js','app.js','runtime-core.js','date-rollover-v1.js','compact-timer.js','autonomy.js','pacus-habitat.js','ux-2026.js','app-ui.js','ui.css','adults.js','history.js','apps-script/Code.gs']
           missing=[p for p in required if not Path(p).is_file()]
           if missing: raise SystemExit('Missing modules: '+', '.join(missing))
+          forbidden=['runtime-repair.js','runtime-guard-v2.js']
+          stale=[p for p in forbidden if Path(p).exists()]
+          if stale: raise SystemExit('Superseded runtime modules still present: '+', '.join(stale))
           print('Modules: OK')
