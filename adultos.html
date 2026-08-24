@@ -1,2 +1,68 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><title>Painel dos Adultos · Rotina</title><link rel="stylesheet" href="styles.css?v=20260823-3"><link rel="stylesheet" href="ui.css?v=20260821-2"><link rel="stylesheet" href="theme.css?v=20260821-3"></head><body class="adult-page"><main class="adult-page-shell"><header class="adult-page-header"><div><a class="adult-back" href="index.html">← Voltar para a rotina</a><h1>🔒 Painel dos Adultos</h1><p>Configuração, acompanhamento, histórico, sincronização e backup.</p></div><div><div id="adult-status" aria-live="polite">Verificando acesso…</div><button id="adult-logout" type="button">Sair</button></div></header><section class="adult-card"><h2>⚙️ Configurar a rotina</h2><p class="adult-note">Tarefas, pontos, horários, fim de semana, recompensas, compromissos, tempo de jogo e segurança.</p><div class="adult-actions"><a class="adult-page-link" href="index.html?adultEdit=1">Abrir editor completo</a></div></section><section class="adult-card"><h2>Pacus Points</h2><p class="adult-note">Ajuste manualmente os pontos apenas aqui.</p><div class="adult-actions"><a class="adult-page-link" href="index.html?adultPoints=1">+ pontos</a></div></section><section class="adult-card" id="today-card"><h2>Histórico de hoje</h2><div id="adult-today">Carregando…</div></section><section class="adult-card adult-history-link-card"><h2>Histórico completo</h2><p class="adult-note">Consulte todos os dias registrados em uma página separada.</p><a class="adult-page-link" href="historico.html">📅 Abrir histórico dos dias</a></section><section class="adult-card"><h2>Sincronização</h2><div class="adult-actions"><button id="refresh-remote" type="button">Atualizar do servidor</button></div><pre id="sync-info" class="adult-sync-info"></pre></section><section class="adult-card"><h2>Backup</h2><div class="adult-actions"><button id="export-backup" type="button">Exportar backup</button><label class="adult-file-button">Restaurar backup<input id="import-backup" type="file" accept="application/json,.json" hidden></label></div><p class="adult-note">O backup é restaurado diretamente no servidor.</p></section></main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="auth.js?v=20260824-1"></script><script src="storage.js?v=20260824-1"></script><script src="adults.js?v=20260824-1"></script></body></html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Painel dos Adultos · Rotina</title>
+<link rel="stylesheet" href="styles.css?v=20260823-3">
+<link rel="stylesheet" href="ui.css?v=20260821-2">
+<link rel="stylesheet" href="theme.css?v=20260821-3">
+<link rel="stylesheet" href="adult-editor.css?v=20260824-1">
+</head>
+<body class="adult-page">
+<main class="adult-page-shell">
+<header class="adult-page-header">
+  <div>
+    <a class="adult-back" href="index.html">← Voltar para a rotina</a>
+    <h1>🔒 Painel dos Adultos</h1>
+    <p>Administração da rotina, do PACUS, histórico, sincronização e backup.</p>
+  </div>
+  <div>
+    <div id="adult-status" aria-live="polite">Verificando acesso…</div>
+    <button id="adult-logout" type="button">Sair</button>
+  </div>
+</header>
+<section class="adult-card" id="editor">
+  <div class="editor-toolbar">
+    <div><h2>⚙️ Editor do aplicativo</h2><p class="adult-note">Aqui ficam as configurações. A tela principal continua limpa e sem controles administrativos.</p></div>
+    <div class="editor-actions"><button class="adult-page-link" id="reload-editor" type="button">↻ Atualizar</button><button class="adult-page-link" id="save-editor" type="button">Salvar alterações</button></div>
+  </div>
+  <div id="editor-status" class="editor-status" aria-live="polite"></div>
+  <div class="adult-editor-shell">
+    <nav class="adult-editor-nav" aria-label="Editor">
+      <button type="button" class="active" data-pane="routine">📋 Rotina</button>
+      <button type="button" data-pane="pacus">🦎 PACUS</button>
+      <button type="button" data-pane="settings">⚙️ Configurações</button>
+      <button type="button" data-pane="data">💾 Dados</button>
+    </nav>
+    <div class="adult-editor-main">
+      <section class="editor-pane active" id="pane-routine">
+        <div class="editor-toolbar"><div><h2>Rotina</h2><p class="adult-note">Edite as tarefas diretamente no painel dos adultos.</p></div><div class="editor-actions"><button type="button" class="editor-small-btn active" data-period="manha">☀️ Manhã</button><button type="button" class="editor-small-btn" data-period="tarde">🌤️ Tarde</button><button type="button" class="editor-small-btn" data-period="noite">🌙 Noite</button></div></div>
+        <div class="editor-card"><div class="editor-toolbar"><div><h3 id="period-title">Manhã</h3></div><button type="button" class="editor-small-btn" id="add-task">+ Adicionar tarefa</button></div><div id="task-list"></div></div>
+      </section>
+      <section class="editor-pane" id="pane-pacus">
+        <div class="editor-toolbar"><div><h2>🦎 PACUS</h2><p class="adult-note">PACUS é o axolote do aplicativo. Nesta etapa configuramos seus dados, habitat e comportamento sem mexer diretamente no código.</p></div></div>
+        <div class="editor-grid">
+          <div class="editor-card"><h3>Identidade</h3><label>Nome<input id="pacus-name" type="text" maxlength="40"></label><label>Espécie<input id="pacus-species" type="text" maxlength="40"></label></div>
+          <div class="editor-card"><h3>Ambiente</h3><label>Largura<input id="pacus-width" type="number" min="1" max="1000" step="1"></label><label>Altura<input id="pacus-height" type="number" min="1" max="1000" step="1"></label><label>Profundidade<input id="pacus-depth" type="number" min="1" max="1000" step="1"></label></div>
+          <div class="editor-card"><h3>Comportamento</h3><label>Velocidade de nado<input id="pacus-swim" type="number" min="0" max="10" step="0.1"></label><label>Duração do esconderijo (s)<input id="pacus-hide" type="number" min="0.1" max="60" step="0.1"></label><label>Pausa antes de sair (s)<input id="pacus-pause" type="number" min="0" max="60" step="0.1"></label><label>Frequência de exploração (%)<input id="pacus-explore" type="number" min="0" max="100" step="1"></label></div>
+          <div class="editor-card"><h3>Prévia</h3><div class="editor-pacus-preview" aria-label="Prévia do PACUS"><div class="editor-pacus-avatar">🦎</div></div><p class="adult-note">A prévia visual definitiva continuará usando o PACUS existente no projeto.</p></div>
+        </div>
+      </section>
+      <section class="editor-pane" id="pane-settings"><div class="editor-grid"><div class="editor-card"><h3>Período selecionado</h3><label>Nome da seção<input id="period-label" type="text" maxlength="40"></label><label>Faixa de horário<input id="period-time" type="text" maxlength="40"></label></div><div class="editor-card"><h3>Tempo de tela</h3><label>Limite diário em horas<input id="screen-limit" type="number" min="0" max="24" step="0.5"></label></div></div></section>
+      <section class="editor-pane" id="pane-data"><div class="editor-grid"><div class="editor-card"><h3>Histórico de hoje</h3><div id="adult-today">Carregando…</div></div><div class="editor-card"><h3>Sincronização</h3><div class="adult-actions"><button id="refresh-remote" type="button">Atualizar do servidor</button></div><pre id="sync-info" class="adult-sync-info"></pre></div><div class="editor-card"><h3>Backup</h3><div class="adult-actions"><button id="export-backup" type="button">Exportar backup</button><label class="adult-file-button">Restaurar backup<input id="import-backup" type="file" accept="application/json,.json" hidden></label></div><p class="adult-note">O backup continua sendo restaurado no servidor.</p></div><div class="editor-card"><h3>Histórico completo</h3><p class="adult-note">Consulte todos os dias registrados.</p><a class="adult-page-link" href="historico.html">📅 Abrir histórico</a></div></div></section>
+    </div>
+  </div>
+</section>
+<section class="adult-card"><h2>Pacus Points</h2><p class="adult-note">Ajuste manualmente os pontos apenas aqui.</p><div class="adult-actions"><a class="adult-page-link" href="index.html?adultPoints=1">+ pontos</a></div></section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="auth.js?v=20260824-1"></script>
+<script src="storage.js?v=20260824-1"></script>
+<script src="adults.js?v=20260824-1"></script>
+<script src="adult-editor.js?v=20260824-1"></script>
+</body>
+</html>
