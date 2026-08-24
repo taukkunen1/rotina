@@ -10,28 +10,21 @@
   const memory = Object.create(null);
 
   const DOW_TO_PT = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
-
   const PET_STAGES = [
-    { key: 'ovo', label: 'Ovo intacto' }, { key: 'ovo1', label: 'Primeira rachadura' },
-    { key: 'ovo2', label: 'Rachadura inicial' }, { key: 'ovo3', label: 'Rachando' },
-    { key: 'ovo4', label: 'Mais rachaduras' }, { key: 'ovo5', label: 'Casca cedendo' },
-    { key: 'ovo6', label: 'Quase abrindo' }, { key: 'ovo7', label: 'Casca bem rachada' },
-    { key: 'ovo8', label: 'Pronto para nascer' }, { key: 'hatch1', label: 'Começando a eclodir' },
-    { key: 'hatch2', label: 'Cabeça aparecendo' }, { key: 'hatch3', label: 'Saindo da casca' },
-    { key: 'hatch4', label: 'Recém-nascido' }, { key: 'hatch5', label: 'Primeiros movimentos' },
-    { key: 'baby1', label: 'Bebê Pacus' }, { key: 'baby2', label: 'Bebê crescendo' },
-    { key: 'baby3', label: 'Filhote' }, { key: 'baby4', label: 'Filhote forte' },
-    { key: 'baby5', label: 'Jovem' }, { key: 'young1', label: 'Jovem crescendo' },
-    { key: 'young2', label: 'Quase adulto' }, { key: 'young3', label: 'Quase pronto' },
-    { key: 'young4', label: 'Última fase' }, { key: 'adulto', label: 'Pacus adulto' }
+    { key:'ovo', label:'Ovo intacto' }, { key:'ovo1', label:'Primeira rachadura' }, { key:'ovo2', label:'Rachadura inicial' }, { key:'ovo3', label:'Rachando' },
+    { key:'ovo4', label:'Mais rachaduras' }, { key:'ovo5', label:'Casca cedendo' }, { key:'ovo6', label:'Quase abrindo' }, { key:'ovo7', label:'Casca bem rachada' },
+    { key:'ovo8', label:'Pronto para nascer' }, { key:'hatch1', label:'Começando a eclodir' }, { key:'hatch2', label:'Cabeça aparecendo' }, { key:'hatch3', label:'Saindo da casca' },
+    { key:'hatch4', label:'Recém-nascido' }, { key:'hatch5', label:'Primeiros movimentos' }, { key:'baby1', label:'Bebê Pacus' }, { key:'baby2', label:'Bebê crescendo' },
+    { key:'baby3', label:'Filhote' }, { key:'baby4', label:'Filhote forte' }, { key:'baby5', label:'Jovem' }, { key:'young1', label:'Jovem crescendo' },
+    { key:'young2', label:'Quase adulto' }, { key:'young3', label:'Quase pronto' }, { key:'young4', label:'Última fase' }, { key:'adulto', label:'Pacus adulto' }
   ];
 
   function clone(value) { try { return JSON.parse(JSON.stringify(value)); } catch (_) { return value; } }
   function readJSON(key, fallback = null) { return Object.prototype.hasOwnProperty.call(memory, key) ? clone(memory[key]) : fallback; }
   function writeJSON(key, value) { memory[key] = clone(value); return true; }
   function remove(key) { delete memory[key]; return true; }
-  function todayISO() { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
-  function hhmm(t) { return t ? String(t).slice(0, 5) : null; }
+  function todayISO() { return new Intl.DateTimeFormat('en-CA', { timeZone:'America/Sao_Paulo' }).format(new Date()); }
+  function hhmm(value) { return value ? String(value).slice(0, 5) : null; }
 
   async function request(path, options = {}) {
     const headers = new Headers(options.headers || {});
@@ -39,18 +32,21 @@
     headers.set('Authorization', `Bearer ${SUPABASE_PUBLISHABLE_KEY}`);
     headers.set('Content-Type', 'application/json');
     headers.set('Accept', 'application/json');
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { ...options, headers, cache: 'no-store' });
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { ...options, headers, cache:'no-store' });
     const text = await response.text();
     let body = null;
     try { body = text ? JSON.parse(text) : null; } catch (_) { body = text; }
     if (!response.ok) {
-      const message = body?.message || body?.error_description || body?.hint || body?.details || `Supabase HTTP ${response.status}`;
-      const error = new Error(message);
+      const error = new Error(body?.message || body?.error_description || body?.hint || body?.details || `Supabase HTTP ${response.status}`);
       error.status = response.status;
       error.body = body;
       throw error;
     }
     return body;
+  }
+
+  function rpc(name, payload) {
+    return request(`rpc/${name}`, { method:'POST', body:JSON.stringify(payload || {}) });
   }
 
   async function loadConfig() {
@@ -66,12 +62,12 @@
 
     const periodsByKey = {};
     (periods || []).filter(p => p.key !== 'outros').forEach(p => {
-      periodsByKey[p.key] = { label: p.label, time: `${hhmm(p.start_time)} – ${hhmm(p.end_time)}`, tasks: [] };
+      periodsByKey[p.key] = { label:p.label, time:`${hhmm(p.start_time)} – ${hhmm(p.end_time)}`, tasks:[] };
     });
     (tasks || []).forEach(t => {
       const key = t.routine_periods?.key;
       if (!key || !periodsByKey[key]) return;
-      const entry = { id: t.id, txt: t.title, pts: t.points };
+      const entry = { id:t.id, txt:t.title, pts:t.points };
       if (t.subtitle) entry.sub = t.subtitle;
       if (t.tier) entry.tier = t.tier;
       if (t.external) entry.external = true;
@@ -81,86 +77,81 @@
 
     const settings = settingsRows?.[0] || {};
     const pet = petRows?.[0] || {};
-
     return {
-      periods: periodsByKey,
-      periodsWeekend: null,
-      badHabits: [],
-      rewards: (rewards || []).map(r => {
-        const entry = { id: r.id, txt: r.title, cost: r.cost };
+      periods:periodsByKey,
+      periodsWeekend:null,
+      badHabits:[],
+      rewards:(rewards || []).map(r => {
+        const entry = { id:r.id, txt:r.title, cost:r.cost };
         if (r.grants_hours != null) entry.grantsHours = Number(r.grants_hours);
         if (r.max_per_day != null) entry.maxPerDay = r.max_per_day;
         return entry;
       }),
-      screenDailyLimitHours: settings.screen_daily_limit_hours ?? 2,
-      perfectDayBonusMinutes: settings.perfect_day_bonus_minutes ?? 30,
-      historyStartDate: settings.history_start_date || null,
-      schedule: (schedule || []).map(s => ({
-        id: s.id, label: s.label,
-        days: (s.days_of_week || []).map(n => DOW_TO_PT[n]).filter(Boolean),
-        start: hhmm(s.start_time), end: hhmm(s.end_time), period: s.period_key, pts: s.points
-      })),
-      scheduleExceptions: (exceptions || []).map(e => ({
-        id: e.id, date: e.date, label: e.label, period: e.period_key, pts: e.points,
-        start: hhmm(e.start_time), end: hhmm(e.end_time)
-      })),
-      pet: {
-        name: pet.name || 'Pacus',
-        growthStartDate: pet.growth_start_date || null,
-        growthEndDate: pet.growth_end_date || null,
-        stages: PET_STAGES
+      screenDailyLimitHours:settings.screen_daily_limit_hours ?? 2,
+      perfectDayBonusMinutes:settings.perfect_day_bonus_minutes ?? 30,
+      historyStartDate:settings.history_start_date || null,
+      schedule:(schedule || []).map(s => ({ id:s.id, label:s.label, days:(s.days_of_week || []).map(n => DOW_TO_PT[n]).filter(Boolean), start:hhmm(s.start_time), end:hhmm(s.end_time), period:s.period_key, pts:s.points })),
+      scheduleExceptions:(exceptions || []).map(e => ({ id:e.id, date:e.date, label:e.label, period:e.period_key, pts:e.points, start:hhmm(e.start_time), end:hhmm(e.end_time) })),
+      pet:{ name:pet.name || 'Pacus', growthStartDate:pet.growth_start_date || null, growthEndDate:pet.growth_end_date || null, stages:PET_STAGES }
+    };
+  }
+
+  function normalizeRuntimeState(runtime) {
+    if (!runtime || typeof runtime !== 'object') throw new Error('invalid_runtime_state');
+    const dailyRun = runtime.dailyRun || {};
+    const checkedToday = {};
+    (runtime.completions || []).forEach(completion => {
+      if (completion?.task_id) checkedToday[completion.task_id] = completion.status;
+    });
+
+    const history = {};
+    Object.entries(runtime.history || {}).forEach(([date, item]) => {
+      const done = Number(item?.done ?? 0);
+      const total = Number(item?.total ?? 0);
+      const points = Number(item?.pointsEarnedThatDay ?? 0);
+      history[date] = {
+        ...item,
+        done,
+        total,
+        doneCount:done,
+        taskCount:total,
+        pointsEarnedThatDay:points,
+        points,
+        perfect:!!item?.perfect
+      };
+    });
+
+    const date = runtime.date || dailyRun.date || todayISO();
+    return {
+      lastDate:date,
+      checkedToday,
+      customTaskOrder:{},
+      totalPoints:Number(runtime.balance ?? 0),
+      log:[],
+      history,
+      hairByDate:{},
+      petCompletedDays:[],
+      petPerfectBonusDays:[],
+      lastSeenPetStage:0,
+      petLastCompletionISO:null,
+      petMaxDaysEquivalentEverSeen:0,
+      gameTimer:{ date, usedSeconds:0, runningSince:null, bonusSeconds:0, redemptions:{} },
+      lifetimeRedemptions:{},
+      dailyRun:{
+        id:dailyRun.id || null,
+        date,
+        status:dailyRun.status || 'open',
+        doneCount:Number(dailyRun.done_count ?? 0),
+        taskCount:Number(dailyRun.task_count ?? 0),
+        points:Number(dailyRun.points_earned ?? 0),
+        perfect:!!dailyRun.perfect
       }
     };
   }
 
   async function loadState() {
-    const today = todayISO();
-    const [todayRun, allRuns, ledgerRows, uiRows, redemptionRows] = await Promise.all([
-      request(`daily_runs?routine_id=eq.${ROUTINE_ID}&date=eq.${today}&limit=1`),
-      request(`daily_runs?routine_id=eq.${ROUTINE_ID}&order=date.asc`),
-      request(`point_ledger?order=created_at.desc&limit=1`),
-      request(`daily_ui_state?routine_id=eq.${ROUTINE_ID}&order=date.desc&limit=1`),
-      request(`reward_redemptions?select=reward_id`)
-    ]);
-
-    const run = todayRun?.[0] || null;
-    const checkedToday = {};
-    if (run) {
-      const completions = await request(`task_completions?daily_run_id=eq.${run.id}`);
-      (completions || []).forEach(c => { checkedToday[c.task_id] = c.status; });
-    }
-
-    const history = {};
-    (allRuns || []).forEach(r => {
-      history[r.date] = { doneCount: r.done_count, taskCount: r.task_count, points: r.points_earned, perfect: r.perfect, screenMinutes: r.screen_minutes };
-    });
-
-    const ui = uiRows?.[0] || {};
-    const lifetimeRedemptions = {};
-    (redemptionRows || []).forEach(r => { lifetimeRedemptions[r.reward_id] = (lifetimeRedemptions[r.reward_id] || 0) + 1; });
-
-    return {
-      lastDate: today,
-      checkedToday,
-      customTaskOrder: {},
-      totalPoints: ledgerRows?.[0]?.balance_after ?? 0,
-      log: [],
-      history,
-      hairByDate: {},
-      petCompletedDays: ui.pet_completed_days || [],
-      petPerfectBonusDays: ui.pet_perfect_bonus_days || [],
-      lastSeenPetStage: ui.last_seen_pet_stage ?? 0,
-      petLastCompletionISO: ui.pet_last_completion_at ? ui.pet_last_completion_at.slice(0, 10) : null,
-      petMaxDaysEquivalentEverSeen: 0,
-      gameTimer: {
-        date: today,
-        usedSeconds: ui.game_used_seconds || 0,
-        runningSince: ui.game_running_since || null,
-        bonusSeconds: ui.game_bonus_seconds || 0,
-        redemptions: ui.reward_redemptions || {}
-      },
-      lifetimeRedemptions
-    };
+    const runtime = await rpc('child_get_runtime_state', { p_routine_id:ROUTINE_ID });
+    return normalizeRuntimeState(runtime);
   }
 
   async function getRemote() {
@@ -168,38 +159,31 @@
     writeJSON(CONFIG_KEY, config);
     writeJSON(STATE_KEY, state);
     return {
-      config, state, revision: 0, serverUpdatedAt: new Date().toISOString(),
-      domains: { routineConfig: config, dailyState: state, pointEvents: [], history: state.history || {} }
+      config, state, revision:0, serverUpdatedAt:new Date().toISOString(),
+      domains:{ routineConfig:config, dailyState:state, pointEvents:[], history:state.history || {} }
     };
   }
 
+  // Mantido temporariamente para compatibilidade. A etapa 2 substituirá esta RPC.
   async function markTask(taskId, status, pointsAwarded, doneCount, taskCount, perfect, description) {
-    const today = todayISO();
-    const result = await request('rpc/mark_task_completion', {
-      method: 'POST',
-      body: JSON.stringify({
-        p_routine_id: ROUTINE_ID,
-        p_date: today,
-        p_task_id: taskId,
-        p_status: status || 'pending',
-        p_points_awarded: Math.trunc(pointsAwarded) || 0,
-        p_done_count: Math.trunc(doneCount) || 0,
-        p_task_count: Math.trunc(taskCount) || 0,
-        p_perfect: !!perfect,
-        p_description: description || null
+    return request('rpc/mark_task_completion', {
+      method:'POST',
+      body:JSON.stringify({
+        p_routine_id:ROUTINE_ID,
+        p_date:todayISO(),
+        p_task_id:taskId,
+        p_status:status || 'pending',
+        p_points_awarded:Math.trunc(pointsAwarded) || 0,
+        p_done_count:Math.trunc(doneCount) || 0,
+        p_task_count:Math.trunc(taskCount) || 0,
+        p_perfect:!!perfect,
+        p_description:description || null
       })
     });
-    return result;
   }
 
-  async function saveRemote() {
-    return { ok: true, revision: 0, serverUpdatedAt: new Date().toISOString() };
-  }
-
-  async function replaceRemote(snapshot) {
-    if (!snapshot || typeof snapshot !== 'object' || !snapshot.state) throw new Error('Backup inválido');
-    return saveRemote();
-  }
+  async function saveRemote() { return { ok:true, revision:0, serverUpdatedAt:new Date().toISOString() }; }
+  async function replaceRemote(snapshot) { if (!snapshot || typeof snapshot !== 'object' || !snapshot.state) throw new Error('Backup inválido'); return saveRemote(); }
 
   const nativeFetch = window.fetch.bind(window);
   window.fetch = async function(input, init = {}) {
@@ -209,19 +193,18 @@
       const method = (init.method || (typeof input !== 'string' && input?.method) || 'GET').toUpperCase();
       if (method === 'GET') {
         const remote = await getRemote();
-        return new Response(JSON.stringify({ ok: true, ...remote }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify({ ok:true, ...remote }), { status:200, headers:{ 'Content-Type':'application/json' } });
       }
-      const result = await saveRemote();
-      return new Response(JSON.stringify(result), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify(await saveRemote()), { status:200, headers:{ 'Content-Type':'application/json' } });
     } catch (error) {
-      const result = error?.result || { ok: false, error: error?.message || 'storage_error' };
-      return new Response(JSON.stringify(result), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify(error?.result || { ok:false, error:error?.message || 'storage_error' }), { status:200, headers:{ 'Content-Type':'application/json' } });
     }
   };
 
   window.RotinaStorage = Object.freeze({
-    CONFIG_KEY, STATE_KEY, APPS_SCRIPT_URL: '', DATA_ENDPOINT: '', SUPABASE_URL, ROUTINE_ID,
-    readJSON, writeJSON, remove, getRemote, saveRemote, replaceRemote, markTask
+    CONFIG_KEY, STATE_KEY, APPS_SCRIPT_URL:'', DATA_ENDPOINT:'', SUPABASE_URL, ROUTINE_ID,
+    readJSON, writeJSON, remove, getRemote, saveRemote, replaceRemote, markTask,
+    loadState, normalizeRuntimeState
   });
 
   const realBrowserStorage = window.localStorage;
