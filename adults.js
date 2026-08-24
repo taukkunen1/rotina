@@ -3,7 +3,6 @@
   const $ = (id) => document.getElementById(id);
   const storage = window.RotinaStorage;
   let data = { config: {}, state: {}, revision: 0, serverUpdatedAt: null };
-
   function esc(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function setStatus(text) { $('adult-status').textContent = text; }
   async function loadRemote() { try { data = await storage.getRemote(); setStatus('Sincronizado com o servidor'); } catch (error) { data = { config: {}, state: {}, revision: 0, serverUpdatedAt: null }; setStatus('Servidor indisponível'); } }
@@ -18,6 +17,8 @@
   async function start() {
     const user = await window.PacusAuth.requireAdult();
     if (!user) return;
+    setStatus(`Acesso adulto: ${user.email || 'sessão ativa'}`);
+    $('adult-logout').addEventListener('click', () => window.PacusAuth.signOut());
     $('export-backup').addEventListener('click', exportBackup);
     $('import-backup').addEventListener('change', async e => { if(!e.target.files?.[0]) return; try { await importBackup(e.target.files[0]); } catch(err) { console.error(err); setStatus('Erro ao restaurar backup no servidor'); } e.target.value=''; });
     $('refresh-remote').addEventListener('click', async()=>{setStatus('Atualizando…');await loadRemote();render();});

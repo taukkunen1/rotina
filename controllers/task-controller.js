@@ -25,7 +25,15 @@
       if(result.nextStatus) state.checkedToday[taskId] = result.nextStatus;
       else delete state.checkedToday[taskId];
       state.points = Math.max(0, (Number(state.points) || 0) + result.delta);
-      await persist({ taskId, status:result.nextStatus, action:result.action, delta:result.delta, state });
+
+      const persisted = await persist({ taskId, status:result.nextStatus, action:result.action, delta:result.delta, state });
+      // Quando a persistência devolve um snapshot server-authoritative, ele
+      // substitui o resultado otimista do cliente. A transição local continua
+      // apenas para resposta imediata da interface.
+      if(persisted && persisted.state && typeof persisted.state === 'object') {
+        Object.assign(state, persisted.state);
+        state.points = Number(persisted.state.totalPoints ?? persisted.state.points ?? 0);
+      }
       render();
       return result;
     }
