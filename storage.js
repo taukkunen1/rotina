@@ -164,22 +164,23 @@
     };
   }
 
-  // Mantido temporariamente para compatibilidade. A etapa 2 substituirá esta RPC.
-  async function markTask(taskId, status, pointsAwarded, doneCount, taskCount, perfect, description) {
-    return request('rpc/mark_task_completion', {
-      method:'POST',
-      body:JSON.stringify({
-        p_routine_id:ROUTINE_ID,
-        p_date:todayISO(),
-        p_task_id:taskId,
-        p_status:status || 'pending',
-        p_points_awarded:Math.trunc(pointsAwarded) || 0,
-        p_done_count:Math.trunc(doneCount) || 0,
-        p_task_count:Math.trunc(taskCount) || 0,
-        p_perfect:!!perfect,
-        p_description:description || null
-      })
+  // Etapa 2: o servidor recebe apenas tarefa e status. Pontos, contadores e
+  // transições são calculados por child_mark_task/child_complete_task.
+  async function markTask(taskId, status) {
+    const runtime = await rpc('child_mark_task', {
+      p_routine_id:ROUTINE_ID,
+      p_task_id:taskId,
+      p_status:status || 'pending'
     });
+    const state = normalizeRuntimeState(runtime);
+    writeJSON(STATE_KEY, state);
+    return {
+      ...runtime,
+      state,
+      status:runtime.status ?? (status || null),
+      pointsAwarded:Number(runtime.pointsAwarded ?? 0),
+      action:runtime.action || null
+    };
   }
 
   async function saveRemote() { return { ok:true, revision:0, serverUpdatedAt:new Date().toISOString() }; }
