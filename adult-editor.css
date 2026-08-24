@@ -1,0 +1,20 @@
+/* Editor administrativo do PACUS. Não altera a tela principal. */
+.adult-editor-shell{display:grid;grid-template-columns:220px minmax(0,1fr);gap:18px;margin-top:18px}
+.adult-editor-nav{position:sticky;top:16px;align-self:start;display:grid;gap:7px}
+.adult-editor-nav button{width:100%;text-align:left;border:1px solid var(--chalk-dim);background:transparent;color:inherit;border-radius:12px;padding:11px 12px;cursor:pointer}
+.adult-editor-nav button.active{background:var(--chalk-dim);color:#111}
+.adult-editor-main{min-width:0}
+.editor-pane{display:none}.editor-pane.active{display:block}
+.editor-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.editor-toolbar h2{margin:0}.editor-actions{display:flex;gap:8px;flex-wrap:wrap}
+.editor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.editor-card{border:1px solid var(--chalk-dim);border-radius:14px;padding:14px;background:rgba(255,255,255,.025)}
+.editor-card h3{margin:0 0 10px}.editor-card label{display:grid;gap:5px;font-size:.85rem;margin-bottom:10px}
+.editor-card input,.editor-card select,.editor-card textarea{width:100%;box-sizing:border-box;border:1px solid var(--chalk-dim);border-radius:9px;padding:9px;background:transparent;color:inherit;font:inherit}
+.editor-task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid var(--chalk-dim);border-radius:11px;padding:10px;margin-bottom:8px}
+.editor-task-main{min-width:0}.editor-task-title{font-weight:700;overflow-wrap:anywhere}.editor-task-sub{font-size:.75rem;opacity:.72;margin-top:2px}
+.editor-task-actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}.editor-task-actions button,.editor-small-btn{border:1px solid var(--chalk-dim);background:transparent;color:inherit;border-radius:8px;padding:7px 9px;cursor:pointer}
+.editor-task-actions button.danger{border-color:#a55}.editor-empty{opacity:.65;padding:12px 0}.editor-status{min-height:1.2em;font-size:.82rem;opacity:.8}.editor-pacus-preview{min-height:180px;border-radius:16px;border:1px solid var(--chalk-dim);display:grid;place-items:center;position:relative;overflow:hidden;background:linear-gradient(180deg,#18303a,#0d171c)}
+.editor-pacus-preview::before{content:'🌿    🌿       🪨       🌿';position:absolute;inset:18px;opacity:.6;font-size:1.5rem;display:flex;align-items:flex-start;justify-content:space-around}
+.editor-pacus-avatar{font-size:4rem;z-index:1;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
+@media(max-width:760px){.adult-editor-shell{grid-template-columns:1fr}.adult-editor-nav{position:static;display:flex;overflow-x:auto;padding-bottom:2px}.adult-editor-nav button{min-width:max-content;width:auto}.editor-grid{grid-template-columns:1fr}.editor-task{grid-template-columns:auto minmax(0,1fr)}}
