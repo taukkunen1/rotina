@@ -2,107 +2,18 @@
    Goals: lower cognitive load, task-first hierarchy, progressive disclosure,
    accessible focus/contrast, responsive layout, reduced motion and less visual noise.
 */
-/* Focused home UX: clear task actions, accessible focus, restrained color,
-   responsive layout and reduced motion. */
-:root{
-  --ux-surface:#18231f;
-  --ux-surface-2:#202e28;
-  --ux-border:rgba(247,244,236,.14);
-  --ux-text:#f7f4ec;
-  --ux-muted:#c7c0b0;
-  --ux-accent:#d9c46a;
-  --ux-success:#8bc89a;
-  --ux-danger:#d98b8b;
-  --ux-focus:#f4df8a;
-}
-html{scroll-behavior:smooth;}
-body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ux-text);background:var(--ux-surface);}
-.topbar h1{font-family:inherit;color:var(--ux-text);text-shadow:none;font-weight:700;}
-.icon-btn.primary{color:var(--ux-accent);border-color:rgba(217,196,106,.35);}
-.icon-btn.primary:hover{background:rgba(217,196,106,.08);}
-.pacus-total .num{color:var(--ux-success);font-family:inherit;font-weight:700;}
-
-/* Reduce decorative noise and keep the primary task visible. */
+:root{--ux-surface:#18231f;--ux-surface-2:#202e28;--ux-border:rgba(247,244,236,.14);--ux-text:#f7f4ec;--ux-muted:#c7c0b0;--ux-accent:#d9c46a;--ux-success:#8bc89a;--ux-danger:#d98b8b;--ux-focus:#f4df8a;}
+html{scroll-behavior:smooth;overflow-x:hidden;} body{max-width:100%;overflow-x:hidden;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ux-text);background:var(--ux-surface);}
+.topbar h1{font-family:inherit;color:var(--ux-text);text-shadow:none;font-weight:700;}.icon-btn.primary{color:var(--ux-accent);border-color:rgba(217,196,106,.35);}.icon-btn.primary:hover{background:rgba(217,196,106,.08);}.pacus-total .num{color:var(--ux-success);font-family:inherit;font-weight:700;}
 .points-delta,.mini-pacus,#breathingBtn,#hairSection,#invisibleWinsCard,#weeklyNewsAnnouncement,#familyGameNightAnnouncement,#freshStartArea,#achievementMuralSection,.streak-strip,.block-collapsible:has(#rewards),.block-collapsible:has(#weeklyReviewSection),.confetti-piece{display:none!important;}
-.pet-section{margin-bottom:14px;}
-.pet-mascot-wrap{max-width:180px;margin-inline:auto;}
-.pet-caption{font-size:.82rem;line-height:1.45;color:var(--ux-muted);}
-
-/* Task-first layout. */
-.content{padding:14px 18px 0;max-width:900px;margin-inline:auto;}
-.period{background:var(--ux-surface-2);border:1px solid var(--ux-border);box-shadow:none;border-radius:12px;margin-bottom:12px;}
-.period-head{padding:13px 14px 5px;}
-.period-head h2{font-family:inherit;font-size:1rem;font-weight:700;}
-.progress-bar{height:6px;margin:6px 14px 10px;background:rgba(255,255,255,.08);}
-.progress-bar>div{background:var(--ux-accent);}
-.task{min-height:58px;padding:9px 12px;gap:8px;border-top:1px solid rgba(255,255,255,.06);}
-.task-reorder{display:none!important;}
-.mark-group{display:flex;gap:4px;flex:0 0 auto;align-items:center;}
-.mark-group{display:flex;gap:4px;flex:0 0 auto;align-items:center;flex-wrap:nowrap;}
-.mark-btn{min-width:40px;min-height:40px;border-radius:9px;}
-.mark-done{font-size:1.05rem;font-weight:700;border-color:rgba(139,200,154,.45);}
-.mark-help,.mark-na,.mark-x{font-size:.82rem;opacity:.58;}
-.mark-help:hover,.mark-na:hover,.mark-x:hover,.mark-help.active,.mark-na.active,.mark-x.active{opacity:1;}
-.txt{line-height:1.35;}
-.txt .sub{color:var(--ux-muted);line-height:1.35;}
-.pts{font-variant-numeric:tabular-nums;color:var(--ux-muted);}
-.tier-badge{opacity:.55;filter:grayscale(.7);}
-.next-period-preview{margin:0 14px 12px;padding:9px 10px;border-left:3px solid var(--ux-accent);background:rgba(217,196,106,.06);color:var(--ux-muted);font-size:.78rem;}
-
-/* Progressive disclosure: secondary actions and later periods are collapsed. */
-.task-secondary-actions{display:inline-block;position:relative;}
-.task-secondary-actions summary{list-style:none;display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:40px;padding:0 7px;border:1px solid var(--ux-border);border-radius:9px;color:var(--ux-muted);font-size:.72rem;cursor:pointer;user-select:none;}
-.task-secondary-actions summary::-webkit-details-marker{display:none;}
-.task-secondary-actions[open] summary{color:var(--ux-text);border-color:rgba(217,196,106,.45);}
-.task-secondary-actions .mark-btn{margin-top:4px;display:inline-flex;}
-.task-secondary-actions[open]{padding-bottom:2px;}
-.period-disclosure>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;cursor:pointer;list-style:none;font-weight:700;}
-.period-disclosure>summary::-webkit-details-marker{display:none;}
-.period-disclosure>summary::before{content:'＋';color:var(--ux-muted);font-size:.9rem;}
-.period-disclosure[open]>summary::before{content:'−';}
-.ux-disclosure-hint{font-size:.72rem;color:var(--ux-muted);font-weight:400;}
-.period-disclosure-body{padding:0 14px;}
-.period-disclosure-body .progress-txt{display:block;padding:0 0 6px;}
-.period-disclosure-body .progress-bar{margin-inline:0;}
-.period-disclosure-body .time-remaining{display:block;padding-bottom:4px;}
-
-/* Compact timer: one purpose, one action. */
-.period-disclosure-body{padding:0 14px;}
-.period-disclosure-body .progress-bar{margin-inline:0;}
-.period-disclosure-body .time-remaining{display:block;padding-bottom:4px;}
-
-#gameTimerSection{margin-top:14px;}
-.game-timer{background:var(--ux-surface-2);border:1px solid var(--ux-border);border-radius:12px;padding:14px;}
-.game-timer h3{font-family:inherit;font-size:1rem;margin:0 0 4px;}
-.game-timer .hint{font-size:.75rem;color:var(--ux-muted);}
-.game-timer-track{height:7px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden;}
-.game-timer-fill{background:var(--ux-accent);}
-.game-timer-btn{width:100%;min-height:44px;margin-top:10px;border-radius:9px;font-weight:700;}
-
-button,a,input,select{font:inherit;}
-button,.icon-btn,.adult-page-link{min-height:40px;}
-:focus-visible{outline:3px solid var(--ux-focus)!important;outline-offset:3px!important;}
-button:disabled{cursor:not-allowed;opacity:.5;}
-.pet-growth-burst,.pacus-idle,.pacus-gill,.pacus-eye,.breathing-circle,.celebration-card{animation-duration:.01ms!important;animation-iteration-count:1!important;}
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important;}}
-
-@media (max-width:600px){
-  body{padding:0 0 28px;}
-  .board-frame{border-radius:0;padding:0;box-shadow:none;}
-  .board-inner{border:0;border-radius:0;padding-bottom:12px;}
-  .topbar{padding:12px 14px;align-items:flex-start;}
-  .topbar h1{font-size:1.05rem;white-space:normal;}
-  .topbar-context{font-size:.72rem;}
-  .pacus-total{display:none;}
-  .content{padding:10px 10px 0;}
-  .period{border-radius:10px;}
-  .task{grid-template-columns:auto 1fr auto;}
-  .mark-group{gap:3px;}
-  .mark-btn{min-width:38px;min-height:38px;}
-  .mark-help,.mark-na,.mark-x{min-width:34px;}
-  .task-secondary-actions summary{min-width:38px;min-height:38px;}
-  .pts{font-size:.72rem;}
-  .topbar-right{gap:6px;}
-  .icon-btn.primary{padding:7px 9px;font-size:.72rem;}
-}
-@media (min-width:900px){.daily-routine{padding-inline:26px;}.periods{max-width:820px;margin-inline:auto;}}
+.pet-section{margin-bottom:14px;}.pet-mascot-wrap{max-width:180px;margin-inline:auto;}.pet-caption{font-size:.82rem;line-height:1.45;color:var(--ux-muted);}
+.content{padding:14px 18px 0;max-width:900px;width:100%;min-width:0;margin-inline:auto;}.periods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;max-width:100%;min-width:0;overflow:hidden;}.period{min-width:0;max-width:100%;background:var(--ux-surface-2);border:1px solid var(--ux-border);box-shadow:none;border-radius:12px;margin-bottom:12px;overflow:hidden;}.period-head{padding:13px 14px 5px;min-width:0;}.period-head h2{font-family:inherit;font-size:1rem;font-weight:700;}.progress-bar{height:6px;margin:6px 14px 10px;background:rgba(255,255,255,.08);}.progress-bar>div{background:var(--ux-accent);}
+.task{min-width:0;max-width:100%;min-height:58px;padding:9px 12px;gap:8px;border-top:1px solid rgba(255,255,255,.06);overflow:hidden;}.task-reorder{display:none!important;}.mark-group{display:flex;gap:4px;flex:0 0 auto;align-items:center;flex-wrap:nowrap;}.mark-btn{min-width:40px;min-height:40px;border-radius:9px;}.mark-done{font-size:1.05rem;font-weight:700;border-color:rgba(139,200,154,.45);}.mark-help,.mark-na,.mark-x{font-size:.82rem;opacity:.58;}.mark-help:hover,.mark-na:hover,.mark-x:hover,.mark-help.active,.mark-na.active,.mark-x.active{opacity:1;}.txt{min-width:0;overflow-wrap:anywhere;word-break:break-word;line-height:1.35;}.txt .sub{color:var(--ux-muted);line-height:1.35;}.pts{font-variant-numeric:tabular-nums;color:var(--ux-muted);}.tier-badge{opacity:.55;filter:grayscale(.7);}.next-period-preview{margin:0 14px 12px;padding:9px 10px;border-left:3px solid var(--ux-accent);background:rgba(217,196,106,.06);color:var(--ux-muted);font-size:.78rem;}
+.task-secondary-actions{display:inline-block;position:relative;}.task-secondary-actions summary{list-style:none;display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:40px;padding:0 7px;border:1px solid var(--ux-border);border-radius:9px;color:var(--ux-muted);font-size:.72rem;cursor:pointer;user-select:none;}.task-secondary-actions summary::-webkit-details-marker{display:none;}.task-secondary-actions[open] summary{color:var(--ux-text);border-color:rgba(217,196,106,.45);}.task-secondary-actions .mark-btn{margin-top:4px;display:inline-flex;}.task-secondary-actions[open]{padding-bottom:2px;}
+.period-disclosure>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;cursor:pointer;list-style:none;font-weight:700;}.period-disclosure>summary::-webkit-details-marker{display:none;}.period-disclosure>summary::before{content:'＋';color:var(--ux-muted);font-size:.9rem;}.period-disclosure[open]>summary::before{content:'−';}.ux-disclosure-hint{font-size:.72rem;color:var(--ux-muted);font-weight:400;}.period-disclosure-body{padding:0 14px;}.period-disclosure-body .progress-txt{display:block;padding:0 0 6px;}.period-disclosure-body .progress-bar{margin-inline:0;}.period-disclosure-body .time-remaining{display:block;padding-bottom:4px;}
+#gameTimerSection{margin-top:14px;}.game-timer{background:var(--ux-surface-2);border:1px solid var(--ux-border);border-radius:12px;padding:14px;}.game-timer h3{font-family:inherit;font-size:1rem;margin:0 0 4px;}.game-timer .hint{font-size:.75rem;color:var(--ux-muted);}.game-timer-track{height:7px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden;}.game-timer-fill{background:var(--ux-accent);}.game-timer-btn{width:100%;min-height:44px;margin-top:10px;border-radius:9px;font-weight:700;}
+button,a,input,select{font:inherit;}button,.icon-btn,.adult-page-link{min-height:40px;}:focus-visible{outline:3px solid var(--ux-focus)!important;outline-offset:3px!important;}button:disabled{cursor:not-allowed;opacity:.5;}.pet-growth-burst,.pacus-idle,.pacus-gill,.pacus-eye,.breathing-circle,.celebration-card{animation-duration:.01ms!important;animation-iteration-count:1!important;}@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important;}}
+/* Three fully expanded periods need more width than this UI has. Stack them before a column can be clipped. */
+@media (max-width:1100px){.periods{grid-template-columns:1fr;overflow:visible;}.period:not(:last-child){border-right:1px solid var(--ux-border);border-bottom:1px dashed var(--ux-border);}}
+@media (max-width:600px){body{padding:0 0 28px;}.board-frame{border-radius:0;padding:0;box-shadow:none;}.board-inner{border:0;border-radius:0;padding-bottom:12px;}.topbar{padding:12px 14px;align-items:flex-start;}.topbar h1{font-size:1.05rem;white-space:normal;}.topbar-context{font-size:.72rem;}.pacus-total{display:none;}.content{padding:10px 10px 0;}.period{border-radius:10px;}.task{grid-template-columns:auto 1fr auto;}.mark-group{gap:3px;}.mark-btn{min-width:38px;min-height:38px;}.mark-help,.mark-na,.mark-x{min-width:34px;}.task-secondary-actions summary{min-width:38px;min-height:38px;}.pts{font-size:.72rem;}.topbar-right{gap:6px;}.icon-btn.primary{padding:7px 9px;font-size:.72rem;}}
+@media (min-width:1101px){.daily-routine{padding-inline:26px;}.periods{max-width:820px;margin-inline:auto;}}
